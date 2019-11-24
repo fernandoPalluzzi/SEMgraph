@@ -5,7 +5,7 @@ SEMgraph is an R package for network analysis and causal inference through Struc
 
 ## Installation
 
-The development version of SEMgraph can be installed from CRAN:
+The development version of SEMgraph can be installed from GitHub, using devtools R library:
 
 ```{r, eval = FALSE}
 devtools::install_github("fernandoPalluzzi/SEMgraph")
