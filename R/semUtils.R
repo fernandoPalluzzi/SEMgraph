@@ -1,12 +1,24 @@
-# SEMgraph 0.3.3
-#
-# This is the SEMgraph package for statistical graph analysis using
-# Structural Equation Models
-# Typically, SEMgraph requires three input elements:
-# 1) Interactome (e.g. KEGG singaling pathways or STRING PPI)
-# 2) Quantitative data (e.g. GWAS, DNA-methylation arrays, RNA-seq)
-# 3) Case/Control identifiers
-#
+#  SEMgraph library
+#  Copyright (C) 2019 Fernando Palluzzi; Mario Grassi
+#  e-mail: <fernando.palluzzi@gmail.com>
+#  University of Pavia, Department of Brain and Behavioral Sciences
+#  Via Bassi 21, Pavia, 27100 Italy
+
+#  SEMgraph is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+
+#  SEMgraph is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# -------------------------------------------------------------------- #
+
 
 arrowDirection <- function(ug, dg, ...) {
 	ftm <- as_edgelist(ug)
@@ -23,7 +35,7 @@ arrowDirection <- function(ug, dg, ...) {
 
 #' @title Graph properties summary and graph correction
 #'
-#' @description Produces a summary of network properties and returns 
+#' @description Produces a summary of network properties and returns
 #' the largest network component without self-loops.
 #' @param g Input network as an igraph object.
 #' @param ... arguments to be passed to or from other methods.
@@ -48,21 +60,21 @@ properties <- function(g)
 	print(table(sapply(gcs, vcount)))
 	cat("Percent of vertices in the giant component:",
 	    round(100*vcount(ig1)/vcount(ig), 1), "%\n\n")
-	
+
 	print(c(is.simple = is_simple(ig1),
 	        #is.connected = is_connected(ig1),
 	        is.dag = is_dag(ig1),
 	        is.directed = is_directed(ig1),
 	        is.weighted = is_weighted(ig1)))
-		 	
+
 	#require(SEMID)
 	#L <- as.matrix(as_adj(ig1))
 	#O <- diag(rep(0, vcount(ig1)))
 	#print(c(is.globally.indentifiable = SEMID::graphID.globalID(L, O)))
-	
+
 	print(c(which.mutual = table(which_mutual(ig1))))
 	print(E(ig1)[which_mutual(ig1)])
-	
+
 	return(list(ig1 = ig1, gcs = gcs[-which.max(vsize)]))
 }
 
@@ -70,15 +82,15 @@ properties <- function(g)
 #'
 #' @description Merge a list of directed and/or undirected networks into one.
 #' @param g List of igraph objects to be merged.
-#' @param gref Reference input graph, used to define color code: 
-#' "yellow", common nodes between merged and reference graphs; 
-#' "lightblue", nodes in the merged graph that are absent in reference one. 
+#' @param gref Reference input graph, used to define color code:
+#' "yellow", common nodes between merged and reference graphs;
+#' "lightblue", nodes in the merged graph that are absent in reference one.
 #' If gref = NULL (default), no nodes colour will be added.
-#' @param gnet External directed interaction network as an igraph object. 
-#' When a directed interactome is provided, missing edge directions will 
-#' be recovered from it, and a directed output network will be enforced. 
+#' @param gnet External directed interaction network as an igraph object.
+#' When a directed interactome is provided, missing edge directions will
+#' be recovered from it, and a directed output network will be enforced.
 #' If gnet = NULL (default), a merged undirected network will be produced.
-#' @param verbose A logical value. If FALSE (default), the output merged 
+#' @param verbose A logical value. If FALSE (default), the output merged
 #' graph will not be plotted to screen.
 #' @param ... arguments to be passed to or from other methods.
 #'
@@ -92,26 +104,26 @@ properties <- function(g)
 #' group <- c(rep(0, 17), rep(1, 15))
 #' graph <- properties(kegg.pathways$hsa04540_Gap_junction)[[1]]
 #' data <- t(FTLDu_GSE13162)
-#' 
+#'
 #' # Generating graphs
 #' fit <- SEMfit(graph, data, group, B = NULL, perm = 10000)
 #' ndf <- vcount(graph)*(vcount(graph) - 1)/2 - ecount(graph)
 #' ggm <- SEMggm(fit = fit, gnet = kegg, d = 2, perm = 10000, alpha = 1/ndf)
-#' 
+#'
 #' # Defining graph variables
 #' ig <- ggm$graph$ig        # directed graph
 #' guu <- ggm$graph$guu      # undirected graph
-#' 
+#'
 #' # Merging without external directed intractome
 #' UG <- mergeGraph(g = list(ig, guu))
 #' gplot(UG)
-#' 
+#'
 #' # Recover edge directions from external intractome
 #' DG <- mergeGraph(g = list(ig, guu), gnet = kegg)
 #' gplot(DG)
 #'
 mergeGraph <- function(g = list(), gref = NULL, gnet = NULL, verbose = FALSE, ...)
-{	
+{
 	g1 <- list()
 	for (i in 1:length(g)) {
 		V(g[[i]])$color <- NA
@@ -130,7 +142,7 @@ mergeGraph <- function(g = list(), gref = NULL, gnet = NULL, verbose = FALSE, ..
 			}
 		}
 	}
-	
+
 	Ug <- igraph::graph.union(g1)
 	# Vertex color attribute with (UX,UY,LX,LY,LM) nodes
 	if (is_igraph(gref)) {
@@ -140,7 +152,7 @@ mergeGraph <- function(g = list(), gref = NULL, gnet = NULL, verbose = FALSE, ..
 	} else {
 		V(Ug)$color <- "white"
 	}
-	
+
 	# Edge weight attribute (example con weight = pvalue)
 	#W <- NULL
 	#for (i in 1:length(g)) {
@@ -153,17 +165,17 @@ mergeGraph <- function(g = list(), gref = NULL, gnet = NULL, verbose = FALSE, ..
 	#E(Ug)$weight <- 1
 	if (verbose) plot(Ug)
 	#gplot(Ug)
-	
+
 	return(Ug)
 }
 
 #' @title Network nodes merging by a user-defined membership attribute
 #'
-#' @description Merge groups of network nodes using a custom membership 
+#' @description Merge groups of network nodes using a custom membership
 #' attribute (e.g., cluster membership).
 #' @param graph Network as an igraph object.
-#' @param membership Cluster membership. A vector of cluster membership 
-#' identifiers, where vector names correspond to network node names. 
+#' @param membership Cluster membership. A vector of cluster membership
+#' identifiers, where vector names correspond to network node names.
 #' Network clustering can be done using \code{\link[SEMgraph]{clusterGraph}}.
 #' @param ... arguments to be passed to or from other methods.
 #'
@@ -178,25 +190,25 @@ mergeGraph <- function(g = list(), gref = NULL, gnet = NULL, verbose = FALSE, ..
 #' group <- c(rep(0, 17), rep(1, 15))
 #' graph <- properties(kegg.pathways$hsa04540_Gap_junction)[[1]]
 #' data <- t(FTLDu_GSE13162)
-#' 
+#'
 #' # Extracting hidden modules with SEMfsr
-#' fsr.uv <- SEMfsr(graph = graph, data = data, group = group, 
+#' fsr.uv <- SEMfsr(graph = graph, data = data, group = group,
 #'                  type = "ebc",
 #'                  HM = "UV",
 #'                  size = 15)
-#' 
+#'
 #' # Merging nodes into modules
 #' cg <- mergeNodes(graph = graph, membership = fsr.uv$M)
 #'
 mergeNodes <- function(graph, membership, ...)
-{ 
+{
 	# Set membership object
 	if (is.numeric(membership)) {
 		nodes <- names(membership)
 		membership <- paste0("GM", membership)
 		names(membership) <- nodes
 	}
-	
+
 	LM <- NULL
 	for (i in 1:length(table(membership))) { #i=1
 		m <- names(table(membership))[i]
@@ -204,21 +216,21 @@ mergeNodes <- function(graph, membership, ...)
 		LM <- c(LM, list(LMi))
 	}
 	names(LM) <- names(table(membership))
-	
+
 	# Visualize graph object
 	gLM <- as_graphnel(graph)
 	for (i in 1:length(LM)) { #i=3
 		gLMi <- graph::combineNodes(LM[[i]], gLM, names(LM)[i], mean)
 		gLM <- gLMi
 	}
-	
+
 	ig <- graph_from_graphnel(gLM)
 	if (length(V(ig)$color) == 0) V(ig)$color <- "white"
 	V(ig)$color[substr(V(ig)$name, 2, 2) == "M"] <- "green"
 	vcol <- V(ig)$color
 	names(vcol) <- V(ig)$name
 	gplot(ig)
-	
+
 	return(gLM = ig)
 }
 
@@ -245,7 +257,7 @@ gplot<- function(x, psize=80, main="", ...)
 	ecol<- E(x)$color
 	elwd<- E(x)$width
 	elab<- E(x)$label
-	
+
 	if(length(vcol)>0) {
 	 names(vcol)<- V(x)$name
 	 vcol<- vcol[graph::nodes(g)]
@@ -263,7 +275,7 @@ gplot<- function(x, psize=80, main="", ...)
 	}
 	if(length(ecol)>0) {
 	 names(ecol)<- gsub("\\|", "~", attr(E(x), "vnames"))
-	 ecol<- ecol[graph::edgeNames(g,recipEdges="distinct")] 
+	 ecol<- ecol[graph::edgeNames(g,recipEdges="distinct")]
 	}
 	if(length(elwd)>0) {
 	 names(elwd)<- gsub("\\|", "~", attr(E(x), "vnames"))
@@ -271,18 +283,18 @@ gplot<- function(x, psize=80, main="", ...)
 	}
 	if(length(elab)>0) {
 	 names(elab)<- gsub("\\|", "~", attr(E(x), "vnames"))
-	 elab<- elab[graph::edgeNames(g,recipEdges="distinct")] 
+	 elab<- elab[graph::edgeNames(g,recipEdges="distinct")]
 	}else{
 	 elab<- rep("", ecount(x))
 	 names(elab)<- gsub("\\|", "~", attr(E(x), "vnames"))
 	}
-	
+
 	if (graph::isDirected(g)) {
 	 g<- Rgraphviz::layoutGraph(g, layoutType="dot", edgeAttrs=list(label=elab))
 	}else{
 	 g<- Rgraphviz::layoutGraph(g, layoutType="fdp", edgeAttrs=list(label=elab))
 	}
-	graph::nodeRenderInfo(g)<- list(col="black", fill=vcol, lty=1, label=vlab,lwd=1, 
+	graph::nodeRenderInfo(g)<- list(col="black", fill=vcol, lty=1, label=vlab,lwd=1,
 	        textCol="black", fontsize=15, shape="circle", width=vsize, height=vsize)
 	graph::edgeRenderInfo(g)<- list(col=ecol, lty=1, lwd=elwd)
 	graph::graphRenderInfo(g)<- list(main=main)
@@ -296,7 +308,7 @@ gplot<- function(x, psize=80, main="", ...)
 #' @param n. Sample size (i.e., the number of subjects).
 #' @param alpha Significance level used to compute the correlation threshold.
 #' By default, alpha = 0.05.
-#' @param type. Correlation type: "marg" for marginal correlation, and 
+#' @param type. Correlation type: "marg" for marginal correlation, and
 #' "cond" for conditional correlation.
 #' @param ... arguments to be passed to or from other methods.
 #'
@@ -335,23 +347,23 @@ corr2graph<- function(R, n, alpha=0.05, type="marg", ...)
 	if( length(del)>0 ) A<- A[-del,-del]
 	graph<- graph_from_adjacency_matrix(A, mode="undirected")
 	plot(graph)
-	
+
 	return( graph )
 }
 
 #' @title Path diagram to graph
 #'
-#' @description Convert a path diagram, specified using lavaan syntax, 
+#' @description Convert a path diagram, specified using lavaan syntax,
 #' to an igraph object.
 #' @param model Path diagram using lavaan syntax.
-#' @param directed Logical value. If TRUE (default), edge directions from 
-#' the path diagram will be preserved. If FALSE, the resulting graph will 
+#' @param directed Logical value. If TRUE (default), edge directions from
+#' the path diagram will be preserved. If FALSE, the resulting graph will
 #' be undirected.
-#' @param psi Logical value. If TRUE (default) covariances will be converted 
-#' into bidirected graph edges. If FALSE, covariances will be excluded from 
+#' @param psi Logical value. If TRUE (default) covariances will be converted
+#' into bidirected graph edges. If FALSE, covariances will be excluded from
 #' the output graph.
-#' @param verbose Logical value. If TRUE (default), a plot of the output 
-#' graph will be generated. For large graphs, this could significantly 
+#' @param verbose Logical value. If TRUE (default), a plot of the output
+#' graph will be generated. For large graphs, this could significantly
 #' increase computation time. If FALSE, graph plotting will be disabled.
 #' @param ... arguments to be passed to or from other methods.
 #'
@@ -362,9 +374,9 @@ corr2graph<- function(R, n, alpha=0.05, type="marg", ...)
 #' @return An igraph object.
 #'
 #' @examples
-#' 
+#'
 #' # Writing path diagram in lavaan syntax
-#' 
+#'
 #' model <- '
 #' # path diagram
 #' y1 ~ x1
@@ -373,7 +385,7 @@ corr2graph<- function(R, n, alpha=0.05, type="marg", ...)
 #' y4 ~ x1 + y1 + y3
 #' # covariances
 #' y1 ~~ y2'
-#' 
+#'
 #' # Converting path diagram into graph
 #' graph <- lavaan2graph(model)
 #' graph
@@ -396,7 +408,7 @@ lavaan2graph<- function(model, directed=TRUE, psi=TRUE, verbose=TRUE, ...)
 
 #' @title Graph to dagitty DAG format
 #'
-#' @description Convert an igraph object to a dagitty directed acyclic 
+#' @description Convert an igraph object to a dagitty directed acyclic
 #' graph (DAG).
 #' @param graph igraph object.
 #' @param ... arguments to be passed to or from other methods.
@@ -425,7 +437,7 @@ graph2dagitty<- function(graph, ...)
 
 #' @title Graph to path diagram
 #'
-#' @description Convert an igraph object to a path diagram, specified 
+#' @description Convert an igraph object to a path diagram, specified
 #' using lavaan syntax.
 #' @param graph An igraph object.
 #' @param nodes Subset of nodes to be included in the path diagram.
@@ -443,7 +455,7 @@ graph2lavaan<- function(graph, nodes=V(graph)$name, ...)
 	# Set from-to-matrix representation of edge links
 	ig<- induced_subgraph(graph, vids= which(V(graph)$name %in% nodes))
 	ftm<- as_data_frame(ig) #head(ftm)
-		
+
 	if( is.directed(ig) & sum(which_mutual(ig))>0 ){
 	 sel<- as.numeric(c(E(ig)[which_mutual(ig)]))
 	 ftm<- as_data_frame(ig)[-sel,]
@@ -460,21 +472,21 @@ graph2lavaan<- function(graph, nodes=V(graph)$name, ...)
 	}
 	model<- paste(c(sort(modelY), modelV), collapse="\n")
 	return( model )
-}	
+}
 
 #' @title Convert directed graphs to bow-free acyclic path diagrams (BAPs)
 #'
 #' @description Convert cycle-containing directed graphs into BAPs.
 #' When converting a graph to a SEM, it is desirable to have a recursive
 #' (i.e., acyclic) model, that can be viewed as a directed acyclic graph
-#' (DAG). BAPs are DAGs extension, allowing the presence of bidirected 
+#' (DAG). BAPs are DAGs extension, allowing the presence of bidirected
 #' edges that can be interpreted as covariances (or latent variables
 #' connecting pairs of nodes). Although cycles are permitted by SEM
-#' theory, it is possible to convert them into BAPs. The graph2bap 
+#' theory, it is possible to convert them into BAPs. The graph2bap
 #' function enables topological sorting of the input graph until a cycle
-#' is found. The first node of the cycle is defined by the hierarchical 
-#' order, and thus the last edge of the cycle is determined (namely, 
-#' the terminal edge). The terminal directed edge of each cycle is changed 
+#' is found. The first node of the cycle is defined by the hierarchical
+#' order, and thus the last edge of the cycle is determined (namely,
+#' the terminal edge). The terminal directed edge of each cycle is changed
 #' into a bidirected one, converting the input directed graph to a BAP.
 #' @param graph A directed graph as an igraph object.
 #' @param ... arguments to be passed to or from other methods.

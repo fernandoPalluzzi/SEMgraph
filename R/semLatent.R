@@ -1,12 +1,24 @@
-# SEMgraph 0.3.3
-#
-# This is the SEMgraph package for statistical graph analysis using
-# Structural Equation Models
-# Typically, SEMgraph requires three input elements:
-# 1) Interactome (e.g. KEGG singaling pathways or STRING PPI)
-# 2) Quantitative data (e.g. GWAS, DNA-methylation arrays, RNA-seq)
-# 3) Case/Control identifiers
-#
+#  SEMgraph library
+#  Copyright (C) 2019 Fernando Palluzzi; Mario Grassi
+#  e-mail: <fernando.palluzzi@gmail.com>
+#  University of Pavia, Department of Brain and Behavioral Sciences
+#  Via Bassi 21, Pavia, 27100 Italy
+
+#  SEMgraph is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+
+#  SEMgraph is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# -------------------------------------------------------------------- #
+
 
 ggm.set <- function(x, y, alpha) {
 	# P-values via Large-Scale (glasso) Gaussian Graphical Model
@@ -22,7 +34,7 @@ ggm.set <- function(x, y, alpha) {
 
 psi2guv <- function(guu, ig, gnet, alpha, verbose, ...)
 {
-	# Adding new nodes to undirected graph (guu) from the interactome  
+	# Adding new nodes to undirected graph (guu) from the interactome
 	vids <- which(V(guu)$name %in% V(gnet)$name)
 	guu <- induced_subgraph(graph = guu, vids = vids)
 	if (verbose) {
@@ -31,7 +43,7 @@ psi2guv <- function(guu, ig, gnet, alpha, verbose, ...)
 	}
 	ftm <- as_edgelist(guu)
 	vpath <- ftmuv <- NULL
-	
+
 	for (i in 1:nrow(ftm)) { #i=1
 		if(distances(gnet, ftm[i, 1], ftm[i, 2], weights = NA) == Inf) next
 		path <- shortest_paths(gnet, ftm[i, 1], ftm[i, 2],
@@ -43,7 +55,7 @@ psi2guv <- function(guu, ig, gnet, alpha, verbose, ...)
 		#vpath
 		for(h in 1:(length(V) - 1)) ftmuv <- rbind(ftmuv, c(V[h], V[h + 1]))
 	}
-	
+
 	# Graph with added nodes from interactome (guv)
 	ftmuv <- stats::na.omit(ftmuv[duplicated(ftmuv) != TRUE,])
 	if (nrow(ftmuv) > 0) {
@@ -51,7 +63,7 @@ psi2guv <- function(guu, ig, gnet, alpha, verbose, ...)
 		guv <- simplify(guv, remove.loops = TRUE)
 		vv <- V(guv)$name[-which(V(guv)$name %in% V(ig)$name)]
 		uv <- V(ig)$name[which(V(ig)$name %in% unique(vpath))]
-		
+
 		V(guv)$color[V(guv)$name %in% V(guu)$name] <- "lightblue"
 		V(guv)$color[V(guv)$name %in% vv] <- "yellow"
 		V(guv)$color[V(guv)$name %in% uv] <- "green"
@@ -64,7 +76,7 @@ psi2guv <- function(guu, ig, gnet, alpha, verbose, ...)
 		guv <- NA
 		cat("\nno edges u--v found !\n\n")
 	}
-	
+
 	return(guv)
 }
 
@@ -74,7 +86,7 @@ psi2gUX <- function(duv, ig, gnet, data, alpha, verbose, ...)
 	degree.in <- igraph::degree(ig, v = V(ig)$name, mode = "in")
 	xx <- V(ig)$name[degree.in == 0]
 	cxx <- V(duv)$name[V(duv)$name %in% xx]
-	
+
 	if (length(cxx) > 1) {
 		AN <- unique(unlist(neighborhood(gnet, nodes = cxx, mode = "in")))
 		#AN <- parents(gnet, nodes = cxx)
@@ -90,7 +102,7 @@ psi2gUX <- function(duv, ig, gnet, data, alpha, verbose, ...)
 		idx <- colnames(data) %in% AN[-which(AN %in% cxx)]
 		X <- as.matrix(data[, idx])
 		#head(X)
-		
+
 		Bxx <- ggm.set(x = as.matrix(X), y = as.matrix(Y), alpha = alpha)
 		if (sum(Bxx) == 0) {
 			cat("\nno AN(x) found !\n\n")
@@ -102,7 +114,7 @@ psi2gUX <- function(duv, ig, gnet, data, alpha, verbose, ...)
 			to <- rownames(Bxx)[i]
 			ftmX <- rbind(ftmX, cbind(from, rep(to, length(from))))
 		}
-		
+
 		gUX <- graph_from_data_frame(ftmX, directed = TRUE)
 		V(gUX)$color <- "yellow"
 		V(gUX)$color[V(gUX)$name %in% cxx] <- "orange"
@@ -114,7 +126,7 @@ psi2gUX <- function(duv, ig, gnet, data, alpha, verbose, ...)
 		cat("\nno psi(x,x) found !\n\n")
 		return(NA)
 	}
-	
+
 	return(gUX)
 }
 
@@ -124,7 +136,7 @@ psi2gUY <- function(duv, ig, gnet, data, alpha, verbose, ...)
 	degree.out <- igraph::degree(duv, v = V(duv)$name, mode = "out")
 	yy <- V(ig)$name[degree.out == 0]
 	cyy <- V(duv)$name[V(duv)$name %in% yy]
-	
+
 	if (length(cyy) > 1) {
 		DE <- unique(unlist(neighborhood(gnet, nodes = cyy, mode = "out")))
 		#DE <- siblings(gnet, nodes = cyy)
@@ -150,7 +162,7 @@ psi2gUY <- function(duv, ig, gnet, data, alpha, verbose, ...)
 			to <- colnames(Byy)[Byy[i,] == 1]
 			ftmY <- rbind(ftmY, cbind(rep(from, length(to)), to))
 		}
-		
+
 		gUY <- graph_from_data_frame(ftmY, directed = TRUE)
 		V(gUY)$color <- "yellow"
 		V(gUY)$color[V(gUY)$name %in% cyy] <- "orange"
@@ -162,20 +174,20 @@ psi2gUY <- function(duv, ig, gnet, data, alpha, verbose, ...)
 		cat("\nno psi(y,y) found !\n\n")
 		return(NA)
 	}
-	
+
 	return(gUY)
 }
 
 #' @title Network community plotting utility
 #'
-#' @description Merge and plot network communities of a graph as single 
+#' @description Merge and plot network communities of a graph as single
 #' nodes.
 #' @param g An igraph object.
 #' @param membership a vector of node memberships.
 #' @param l igraph layout option.
-#' @param global Logical value. If TRUE, the plot of the input graph 
-#' (coloured by cluster membership) will be generated alongwith independent 
-#' module plots. If the input graph is very large, plotting could be 
+#' @param global Logical value. If TRUE, the plot of the input graph
+#' (coloured by cluster membership) will be generated alongwith independent
+#' module plots. If the input graph is very large, plotting could be
 #' computationally intensive (by default, global = FALSE).
 #'
 #' @import igraph
@@ -189,7 +201,7 @@ psi2gUY <- function(duv, ig, gnet, data, alpha, verbose, ...)
 #' G <- cplot(graph, membership, global = TRUE)
 #'
 cplot <- function(g, membership, l = layout.auto, global = FALSE) {
-	
+
 	# Cluster visualization
 	V(g)$M[which(V(g)$name %in% names(membership))] <- membership
 	if(is.character(V(g)$M)) V(g)$M <- substr(V(g)$M, 3, 10L)
@@ -201,12 +213,12 @@ cplot <- function(g, membership, l = layout.auto, global = FALSE) {
 		gplot(g)
 		Sys.sleep(5)
 	}
-	
+
 	# Within cluster visualization
 	M <- names(table(V(g)$M))
 	K <- length(table(V(g)$M))
 	vcol <- as.numeric(M) + 1
-	
+
 	HM <- lapply(1:K, function(x) induced_subgraph(g, V(g)$name[V(g)$M == M[x]]))
 	names(HM) <- paste0("HM", M)
 	d <- igraph::degree(g, mode = "all")*2 + 1
@@ -217,7 +229,7 @@ cplot <- function(g, membership, l = layout.auto, global = FALSE) {
 		Sys.sleep(3)
 	})
 	try(E(g)$weight <- weight)
-	
+
 	return(invisible(c(list(g = g), HM)))
 }
 
@@ -225,29 +237,29 @@ cplot <- function(g, membership, l = layout.auto, global = FALSE) {
 #'
 #' @description Graph clustering utility.
 #' @param graph An igraph object.
-#' @param HM Hidden model type. This parameter is only required by 
-#' \code{\link[SEMgraph]{SEMfsr}}), and it is automatically set to NULL 
+#' @param HM Hidden model type. This parameter is only required by
+#' \code{\link[SEMgraph]{SEMfsr}}), and it is automatically set to NULL
 #' when clusterGraph is used as a stand alone function.
-#' For each defined hidden module: 
-#' (i) if HM = "LV", a latent variable (LV) will be defined as common 
-#' unknown cause acting on cluster nodes; (ii) if HM = "CV", cluster nodes 
-#' will be considered as regressors of a latent composite variable (CV); 
-#' (iii) if HM = "UV", an unmeasured variable (UV) is defined, where source 
-#' nodes of the module (i.e., in-degree = 0) act as common regressors 
-#' influencing the other nodes via an unmeasured variable (see also 
+#' For each defined hidden module:
+#' (i) if HM = "LV", a latent variable (LV) will be defined as common
+#' unknown cause acting on cluster nodes; (ii) if HM = "CV", cluster nodes
+#' will be considered as regressors of a latent composite variable (CV);
+#' (iii) if HM = "UV", an unmeasured variable (UV) is defined, where source
+#' nodes of the module (i.e., in-degree = 0) act as common regressors
+#' influencing the other nodes via an unmeasured variable (see also
 #' \code{\link[SEMgraph]{SEMfsr}}).
-#' @param type Network clustering method. If type = "ebc" (default), network 
-#' modules are generated using edge betweenness clustering method (see 
-#' \code{\link[igraph]{cluster_edge_betweenness}}). Other clustering methods 
-#' include: "fgc" (fast greedy method), "lbc" (label propagation method), 
-#' "lec" (leading eigenvector method), "loc" (multi-level optimization), 
-#' "opc" (optimal communiy structure), "sgc" (spinglass statistical 
-#' mechanics), "wtc" (walktrap community structure with short random walks), 
+#' @param type Network clustering method. If type = "ebc" (default), network
+#' modules are generated using edge betweenness clustering method (see
+#' \code{\link[igraph]{cluster_edge_betweenness}}). Other clustering methods
+#' include: "fgc" (fast greedy method), "lbc" (label propagation method),
+#' "lec" (leading eigenvector method), "loc" (multi-level optimization),
+#' "opc" (optimal communiy structure), "sgc" (spinglass statistical
+#' mechanics), "wtc" (walktrap community structure with short random walks),
 #' and "tahc" (tree agglomerative hierarchical clustering).
-#' @param size Minimum number of nodes per hidden module. By default, a 
+#' @param size Minimum number of nodes per hidden module. By default, a
 #' minimum number of 3 nodes is required.
-#' @param verbose A logical value. If FALSE (default), the processed graphs 
-#' will not be plotted to screen, saving execution time (they will be 
+#' @param verbose A logical value. If FALSE (default), the processed graphs
+#' will not be plotted to screen, saving execution time (they will be
 #' returned anyway).
 #' @param ... arguments to be passed to or from other methods.
 #'
@@ -258,11 +270,11 @@ cplot <- function(g, membership, l = layout.auto, global = FALSE) {
 #'
 #' @references
 #'
-#' Fortunato S, Hric D. Community detection in networks: A user guide (2016). 
+#' Fortunato S, Hric D. Community detection in networks: A user guide (2016).
 #' Phys Rep; 659: 1-44. http://dx.doi.org/10.1016/j.physrep.2016.09.002
-#' 
-#' Yu M, Hillebrand A, Tewarie P, Meier J, van Dijk B, Van Mieghem P, 
-#' Stam CJ (2015). Hierarchical clustering in minimum spanning trees. 
+#'
+#' Yu M, Hillebrand A, Tewarie P, Meier J, van Dijk B, Van Mieghem P,
+#' Stam CJ (2015). Hierarchical clustering in minimum spanning trees.
 #' Chaos 25(2): 023107.  https://doi.org/10.1063/1.4908014
 #'
 #' @return If HM is not "none" a list of 3 objects is returned:
@@ -288,7 +300,7 @@ clusterGraph <- function(graph, type, HM = "none", size = 3, verbose = FALSE, ..
 		                    mode = "collapse",
 		                    edge.attr.comb = "ignore")
 	}
-	
+
 	if (type == "tahc") {
 		# Tree Agglomerative Hierarchical Clustering (TAHC)
 		mst <- minimum.spanning.tree(ug,
@@ -328,10 +340,10 @@ clusterGraph <- function(graph, type, HM = "none", size = 3, verbose = FALSE, ..
 			plot(cls, ug)
 			Sys.sleep(5)}
 	}
-		
+
 	K <- length(cnames)
 	if (K == 0) return(cat("No communities with size >", size, "found!\n"))
-	
+
 	if (HM == "UV") {
 		V(graph)$M <- 999
 		V(graph)$M[which(V(graph)$name %in% names(membership))]<- membership
@@ -340,7 +352,7 @@ clusterGraph <- function(graph, type, HM = "none", size = 3, verbose = FALSE, ..
 		gHC <- lapply(1:K, function(x) induced_subgraph(graph, V(graph)$name[V(graph)$M==M[x]]))
 		names(gHC) <- paste0("HM", M)
 		gLM <- NULL
-		
+
 	} else if (HM == "LV") {
 		ftm <- data.frame(from = c(paste0("LX", membership)),
 			              to = names(membership))
@@ -351,7 +363,7 @@ clusterGraph <- function(graph, type, HM = "none", size = 3, verbose = FALSE, ..
 		V(gLM)$color <- ifelse(V(gLM)$LV == 1, "lightblue", "yellow")
 		# plot(gLM)
 		gHC <- NULL
-		
+
 	} else if (HM == "CV") {
 		ftm <- data.frame(from = names(membership),
 			              to = c(paste0("CY", membership)))
@@ -362,69 +374,69 @@ clusterGraph <- function(graph, type, HM = "none", size = 3, verbose = FALSE, ..
 		V(gLM)$color <- ifelse(V(gLM)$LV == 1, "lightblue", "green")
 		# plot(gLM)
 		gHC <- NULL
-		
+
 	} else if (HM == "none") {
 		return(membership)
 	}
-	
+
 	if (verbose & HM != "UV") {
 		plot(gLM)
 		Sys.sleep(5)
 	}
 	#readline(prompt = "Press [enter] to continue")
-	
+
 	return(list(gHM = gLM, M = membership, gHC = gHC))
 }
 
 #' @title Network extension through covariance analysis
 #'
-#' @description SEMextend extends an input network using significant 
-#' residual covariances (derived from \code{\link[SEMgraph]{SEMbap}}) 
-#' between three types of nodes: (i) connectors, being nodes with in- and 
-#' out-degree greater than 0, (ii) sources, with in-degree = 0, and 
-#' (iii) targets, with out-degree = 0. Network extension is performed in 
-#' three ways: (i) new external nodes connecting pairs of nodes with 
-#' significant residual covariances; (ii) new external parent nodes 
-#' connecting source nodes; (iii) new external child nodes connecting 
-#' target nodes. Parent and child nodes are found using de-sparsified 
-#' graphical lasso method (D-S_GL), from \code{\link[SILGGM]{SILGGM}} 
-#' function. Added nodes (connectors, regressors, and response variables) 
-#' can already be present in the input graph. The extended output network 
+#' @description SEMextend extends an input network using significant
+#' residual covariances (derived from \code{\link[SEMgraph]{SEMbap}})
+#' between three types of nodes: (i) connectors, being nodes with in- and
+#' out-degree greater than 0, (ii) sources, with in-degree = 0, and
+#' (iii) targets, with out-degree = 0. Network extension is performed in
+#' three ways: (i) new external nodes connecting pairs of nodes with
+#' significant residual covariances; (ii) new external parent nodes
+#' connecting source nodes; (iii) new external child nodes connecting
+#' target nodes. Parent and child nodes are found using de-sparsified
+#' graphical lasso method (D-S_GL), from \code{\link[SILGGM]{SILGGM}}
+#' function. Added nodes (connectors, regressors, and response variables)
+#' can already be present in the input graph. The extended output network
 #' will be fitted using \code{\link[SEMgraph]{SEMfit}}.
-#' @param fit A fitted SEM object of class \code{\link{lavaan}} produced 
+#' @param fit A fitted SEM object of class \code{\link{lavaan}} produced
 #' by \code{\link[SEMgraph]{SEMbap}}.
-#' @param data A matrix with rows corresponding to subjects, and columns 
+#' @param data A matrix with rows corresponding to subjects, and columns
 #' to graph nodes.
-#' @param gnet External interaction network as an igraph object. Interaction 
-#' data from this network will be used to integrate additional interaction 
-#' information inside the model. Two preset databases are available: 
-#' (i) kegg, for KEGG signaling pathways (directed), and (ii) string, 
-#' for STRING protein interactions (undirected). Note that, if the input 
-#' graph is undirected, an undirected reference interactome is expected. 
-#' In case a directed interactome is used with an undirected input, a 
+#' @param gnet External interaction network as an igraph object. Interaction
+#' data from this network will be used to integrate additional interaction
+#' information inside the model. Two preset databases are available:
+#' (i) kegg, for KEGG signaling pathways (directed), and (ii) string,
+#' for STRING protein interactions (undirected). Note that, if the input
+#' graph is undirected, an undirected reference interactome is expected.
+#' In case a directed interactome is used with an undirected input, a
 #' directed output network will be enforced.
-#' @param B Node-node interaction fixed weight. If B is NULL (default), 
-#' beta coefficients will be estimated by MLE. If B is numeric, it will 
-#' be used as a scaling factor for the edge weights in the graph object 
-#' (graph attribute E(graph)$weight). Since SEMgraph scales data before 
-#' model fitting, we suggest a grid search for the optimal B value in the 
-#' interval [0, 0.3]. As a rule of thumb, to our experience, B = 0.1 
+#' @param B Node-node interaction fixed weight. If B is NULL (default),
+#' beta coefficients will be estimated by MLE. If B is numeric, it will
+#' be used as a scaling factor for the edge weights in the graph object
+#' (graph attribute E(graph)$weight). Since SEMgraph scales data before
+#' model fitting, we suggest a grid search for the optimal B value in the
+#' interval [0, 0.3]. As a rule of thumb, to our experience, B = 0.1
 #' performs well on any network.
-#' @param perm Number of permutations. By default, perm is set to 0 and 
-#' conventional standard errors will be computed. If perm > 1, P-values 
-#' will be computed from a moment-based chi-squared approximation derived 
-#' from the empirical distribution of permuted data (Larson and Owen, 2015). 
-#' To reduce computational time costs per permutation, we suggest perm = 500 
-#' (this will leave P-values precision almost unaltered). If perm = 1, 
+#' @param perm Number of permutations. By default, perm is set to 0 and
+#' conventional standard errors will be computed. If perm > 1, P-values
+#' will be computed from a moment-based chi-squared approximation derived
+#' from the empirical distribution of permuted data (Larson and Owen, 2015).
+#' To reduce computational time costs per permutation, we suggest perm = 500
+#' (this will leave P-values precision almost unaltered). If perm = 1,
 #' no P-values are calculated.
-#' @param alpha Significance level used for GGM search of common regressors 
-#' and common response variables. By default, alpha is set to 0.05. 
-#' As a general rule, to limit the number of added nodes with large networks, 
-#' we suggest to set alpha as 1/df, where the degrees of freedom 
-#' df = vcount(graph)*(vcount(graph)-1)/2 - ecount(graph). This will limit 
+#' @param alpha Significance level used for GGM search of common regressors
+#' and common response variables. By default, alpha is set to 0.05.
+#' As a general rule, to limit the number of added nodes with large networks,
+#' we suggest to set alpha as 1/df, where the degrees of freedom
+#' df = vcount(graph)*(vcount(graph)-1)/2 - ecount(graph). This will limit
 #' the number of new nodes proportionally to the graph sparsity.
-#' @param verbose A logical value. If FALSE (default), the processed graphs 
-#' will not be plotted to screen, saving execution time (they will be 
+#' @param verbose A logical value. If FALSE (default), the processed graphs
+#' will not be plotted to screen, saving execution time (they will be
 #' returned anyway).
 #' @param ... arguments to be passed to or from other methods.
 #'
@@ -435,14 +447,14 @@ clusterGraph <- function(graph, type, HM = "none", size = 3, verbose = FALSE, ..
 #' @export
 #'
 #' @references
-#' 
-#' Grassi M & Palluzzi F (in preparation). SEMgraph: An R Package for 
-#' Pathway and Network Analysis of Genomics Data with Structural Equation 
-#' Models (SEM). Journal of Statistical Software (xxxx) 
-#' 
-#' Zhang R, Ren Z, Chen W (2018). SILGGM: An extensive R package for 
-#' efficient statistical inference in large-scale gene networks. 
-#' PLoS Comput. Biol., 14(8): e1006369. 
+#'
+#' Grassi M & Palluzzi F (in preparation). SEMgraph: An R Package for
+#' Pathway and Network Analysis of Genomics Data with Structural Equation
+#' Models (SEM). Journal of Statistical Software (xxxx)
+#'
+#' Zhang R, Ren Z, Chen W (2018). SILGGM: An extensive R package for
+#' efficient statistical inference in large-scale gene networks.
+#' PLoS Comput. Biol., 14(8): e1006369.
 #' https://doi.org/10.1371/journal.pcbi.1006369
 #'
 #' @return A list of 5 objects:
@@ -452,49 +464,49 @@ clusterGraph <- function(graph, type, HM = "none", size = 3, verbose = FALSE, ..
 #' \item "model", SEM model as a string;
 #' \item "graph", list of four igraph objects, contianing:
 #' \itemize{
-#' \item "duv", the extended directed (or bidirected) network with new 
+#' \item "duv", the extended directed (or bidirected) network with new
 #' nodes from the external interactome,
 #' \item "gUX", extended source network with unmeasured variables,
 #' \item "gUY", extended target network with unmeasured variables,
 #' \item "Ug", union of duv, gUX, and gUY graphs;
 #' }
-#' \item "dataXY", input data subset mapping graph nodes, plus group at 
-#' the first column (if no group is specified, this column will take NA 
+#' \item "dataXY", input data subset mapping graph nodes, plus group at
+#' the first column (if no group is specified, this column will take NA
 #' values).
 #' }
-#' @seealso \code{\link{igraph}}, \code{\link[lavaan]{lavaan}}, 
+#' @seealso \code{\link{igraph}}, \code{\link[lavaan]{lavaan}},
 #' \code{\link{SILGGM}}
-#' 
+#'
 #' @examples
 #' # Specifying data groups
 #' group <- c(rep(0, 17), rep(1, 15))
-#' # Return graph properties, take the largest component, and convert 
+#' # Return graph properties, take the largest component, and convert
 #' # grapNEL to igraph
 #' graph <- properties(kegg.pathways$hsa04540_Gap_junction)[[1]]
 #' # Transpose data matrix: 32 subjectx (rows) x 19726 genes (columns)
 #' data <- t(FTLDu_GSE13162)
-#' 
+#'
 #' # Network fitting
 #' fit <- SEMfit(graph, data, group, B = NULL, perm = 10000)
 #' # Network degrees of freedom
 #' ndf <- vcount(graph)*(vcount(graph) - 1)/2 - ecount(graph)
-#' 
+#'
 #' # Bow-free interaction search through GGMs
 #' ggm <- SEMggm(fit = fit, gnet = kegg, d = 2, perm = 10000,
 #'               alpha = 1/ndf,
 #'               verbose = FALSE)
-#' 
+#'
 #' # Network extension
 #' ext <- SEMext(fit = ggm, gnet = kegg, data = data, B = NULL, d = 2,
 #'               perm = 10000,
 #'               alpha = 1/ndf,
 #'               verbose = TRUE)
-#' 
+#'
 #' # Results summary
 #' summary(ext$gest)
 #' pval <- ext$gest@res$pchisq[-c(1:3)]
 #' length(which(p.adjust(pval, method = "BH") < 0.1))
-#' 
+#'
 #' # Plot output graphs
 #' par(mfrow = c(2, 2), mar = c(1, 1, 1, 1))
 #' W <- ext$graph$guv; E(W)$weight <- 1       # connectors
@@ -506,7 +518,7 @@ clusterGraph <- function(graph, type, HM = "none", size = 3, verbose = FALSE, ..
 #' plot(X, main = "Extended source network")
 #' plot(Y, main = "Extended target network")
 #' plot(U, main = "Extended input network")
-#' 
+#'
 #' # SEM fitting of the extracted graphs (guv, gux, guy)
 #' sem.w <- SEMfit(graph = W, data = data, group = group, B = NULL, perm = 0)
 #' summary(sem.w$fit)
@@ -528,8 +540,8 @@ SEMext<- function(fit, data, gnet, d, B=NULL, perm=0, alpha=0.05, verbose=FALSE,
 	if( nrow(SET1) == 0 ){
 	 cat("NULL SEM fitting: No.covariances=0 !","\n\n")
 	 return(list(fit=NULL, gest=NULL, model=NULL, graph=NULL, dataXY=NULL))
-	}	
-	
+	}
+
 	# Search of bow-free acyclic covariances from interactome
 	if( is.directed(gnet) ) ugnet<- as.undirected(gnet, mode="collapse")
 	ftm1<- NULL
@@ -545,11 +557,11 @@ SEMext<- function(fit, data, gnet, d, B=NULL, perm=0, alpha=0.05, verbose=FALSE,
 	  sp<- distances(ugnet, a, b, mode="all", weights=NA)
 	  if(sp <= d) ftm1[j,]<- c(a,b) else ftm1[j,]<- c(NA,NA)
 	 }else{ ftm1[j,]<- c(NA,NA) }
-	} 
+	}
 	ftm1<- na.omit(ftm1)
 	cat("\n", "n.selected covariances:", nrow(SET1),
 	    "n.imported from interactome:", nrow(ftm1), "\n\n")
-			
+
 	# Search of external nodes from interactome
 	guv<- psi2guv(guu=guu, ig=ig, gnet=gnet, alpha, verbose=verbose)
 	if( is.directed(gnet) ){
@@ -557,7 +569,7 @@ SEMext<- function(fit, data, gnet, d, B=NULL, perm=0, alpha=0.05, verbose=FALSE,
 	 gUX<- psi2gUX(duv=duv, ig=ig, gnet=gnet, data, alpha, verbose=verbose)
 	 gUY<- psi2gUY(duv=duv, ig=ig, gnet=gnet, data, alpha, verbose=verbose)
 	}else{ gUX<- gUY<- NA }
-	
+
 	# SEM fitting of the merged (expanded) graph Ug
 	cat("\n")
 	if( is.directed(gnet) ){
@@ -570,34 +582,34 @@ SEMext<- function(fit, data, gnet, d, B=NULL, perm=0, alpha=0.05, verbose=FALSE,
 	fit2<- SEMfit(graph=Ug, data=data, group=group, B=B, perm=perm)
 	#summary(fit2$fit)
 	graph<- list(guv=guv, gux=gUX, guy=gUY, Ug=Ug)
-	
+
 	return( list(fit=fit2$fit, gest=fit2$gest, model=fit2$model, graph=graph, dataXY=fit2$dataXY) )
 }
 
 #' @title Hidden module scoring and fitting via Factor Score Regression (FSR)
 #'
-#' @description Generate factor scores, principal component scores, or 
-#' projection scores of latent, composite, and unmeasured variable modules, 
+#' @description Generate factor scores, principal component scores, or
+#' projection scores of latent, composite, and unmeasured variable modules,
 #' respectively, and fit them in a SEM with exogenous group effect.
 #' @param graph An igraph object.
-#' @param data A matrix or data.frame. Rows correspond to subjects, and 
+#' @param data A matrix or data.frame. Rows correspond to subjects, and
 #' columns to graph nodes.
-#' @param group A binary vector. This vector must be as long as the number 
-#' of subjects. Each vector element must be 1 for cases and 0 for control 
+#' @param group A binary vector. This vector must be as long as the number
+#' of subjects. Each vector element must be 1 for cases and 0 for control
 #' subjects.
-#' @param HM Hidden model type. For each defined hidden module: 
-#' (i) if HM = "LV", a latent variable (LV) will be defined as common 
-#' unknown cause acting on cluster nodes; (ii) if HM = "CV", cluster nodes 
-#' will be considered as regressors of a latent composite variable (CV); 
-#' (iii) if HM = "UV", an unmeasured variable (UV) model will be generated 
-#' for each latent module, where source nodes (i.e., in-degree = 0) act 
+#' @param HM Hidden model type. For each defined hidden module:
+#' (i) if HM = "LV", a latent variable (LV) will be defined as common
+#' unknown cause acting on cluster nodes; (ii) if HM = "CV", cluster nodes
+#' will be considered as regressors of a latent composite variable (CV);
+#' (iii) if HM = "UV", an unmeasured variable (UV) model will be generated
+#' for each latent module, where source nodes (i.e., in-degree = 0) act
 #' as common regressors influencing the other nodes via an unmeasured variable.
-#' @param size Minimum number of nodes per hidden module. By default, a 
+#' @param size Minimum number of nodes per hidden module. By default, a
 #' minimum number of 3 nodes is required.
-#' @param type Graph clustering method, from \code{\link{igraph}} R package 
+#' @param type Graph clustering method, from \code{\link{igraph}} R package
 #' (see also \code{\link[SEMgraph]{clusterGraph}}).
-#' @param verbose A logical value. If FALSE (default), the processed graphs 
-#' will not be plotted to screen, saving execution time (they will be 
+#' @param verbose A logical value. If FALSE (default), the processed graphs
+#' will not be plotted to screen, saving execution time (they will be
 #' returned anyway).
 #' @param ... arguments to be passed to or from other methods.
 #'
@@ -608,20 +620,20 @@ SEMext<- function(fit, data, gnet, d, B=NULL, perm=0, alpha=0.05, verbose=FALSE,
 #' @export
 #'
 #' @references
-#' 
-#' Hoshino, T., & Bentler, P.M. (2013). Bias in factor score regression 
-#' and a simple solution. In de Leon, A.R., & Chough, K.C. (Eds.). 
-#' Analysis of Mixed Data: Methods & Applications. 
+#'
+#' Hoshino, T., & Bentler, P.M. (2013). Bias in factor score regression
+#' and a simple solution. In de Leon, A.R., & Chough, K.C. (Eds.).
+#' Analysis of Mixed Data: Methods & Applications.
 #' New York: Chapman and Hall/CRC
-#' 
-#' Bai, J; Li, K (2012). Statistical analysis of factor models of high 
-#' dimension. Ann. Statist. 40 (2012), no. 1, 436-465. 
+#'
+#' Bai, J; Li, K (2012). Statistical analysis of factor models of high
+#' dimension. Ann. Statist. 40 (2012), no. 1, 436-465.
 #' doi:10.1214/11-AOS966.
-#' 
-#' Davies PT & Tso M K-S (1982). Procedures for Reduced-Rank Regression. 
-#' Journal of the Royal Statistical Society. Series C (Applied Statistics), 
+#'
+#' Davies PT & Tso M K-S (1982). Procedures for Reduced-Rank Regression.
+#' Journal of the Royal Statistical Society. Series C (Applied Statistics),
 #' Vol. 31, No. 3, pp. 244-255
-#' 
+#'
 #' @return A list of 3 objects:
 #' \enumerate{
 #' \item "fit", hidden module fitting as a lavaan object;
@@ -635,26 +647,26 @@ SEMext<- function(fit, data, gnet, d, B=NULL, perm=0, alpha=0.05, verbose=FALSE,
 #' group <- c(rep(0, 17), rep(1, 15))
 #' graph <- properties(kegg.pathways$hsa04540_Gap_junction)[[1]]
 #' data <- t(FTLDu_GSE13162)
-#' 
+#'
 #' # Module finding and Factor Score Regression
 #' fsr.uv <- SEMfsr(graph = graph, data = data, group = group,
 #'                  type = "ebc",
 #'                  HM = "LV",
 #'                  size = 15,
 #'                  verbose = TRUE)
-#' 
+#'
 #' # Output summary
 #' summary(fsr.uv$fit)
 #' # Group membership
 #' table(fsr.uv$M)
 #' # Module scores
 #' head(fsr.uv$dataHM)
-#' 
+#'
 #' # Hidden modules
 #' gHC <- fsr.uv$gHC
 #' gHC
 #' gplot(x = gHC$g)
-#' 
+#'
 #' # Hidden modules reduction and fitting pipeline
 #' fit <- SEMfit(graph, data, group, B = NULL, perm = 10000)
 #' ggm <- SEMggm(fit = fit, gnet = kegg, d = 2,
@@ -667,7 +679,7 @@ SEMext<- function(fit, data, gnet, d, B=NULL, perm=0, alpha=0.05, verbose=FALSE,
 #'               verbose = FALSE)
 #' cg <- mergeNodes(graph = ext$graph$Ug, membership = fsr.uv$M)
 #' properties(cg)
-#' 
+#'
 #' # Adding hidden module data to the original data
 #' data2 <- cbind(fsr.uv$dataHM[, -1], data)
 #' head(data2)[, 1:10]
@@ -676,13 +688,13 @@ SEMext<- function(fit, data, gnet, d, B=NULL, perm=0, alpha=0.05, verbose=FALSE,
 #' summary(fit.hm$gest)
 #'
 SEMfsr <- function(graph, data, group, type, HM, size = 3, verbose = FALSE, ...)
-{  
+{
 	# Set SEM objects
 	nodes <- colnames(data)[colnames(data) %in% V(graph)$name]
 	dataY <- data[, nodes]
 	ig <- induced_subgraph(graph, vids = which(V(graph)$name %in% nodes))
 	ig <- simplify(ig, remove.loops = TRUE)
-	
+
 	# Hidden modules LX -> Y
 	if (HM == "LV") {
 		LX <- clusterGraph(graph = ig, type = type,
@@ -694,7 +706,7 @@ SEMfsr <- function(graph, data, group, type, HM, size = 3, verbose = FALSE, ...)
 		membership <- LX[[2]]
 		gLC <- LX[[3]]
 		LX <- V(gLM)$name[substr(V(gLM)$name, 1, 1) == "L"]
-		
+
 		# Latent Variables(LV) model
 		K <- as.numeric(names(table(membership)))
 		LV <- NULL
@@ -714,7 +726,7 @@ SEMfsr <- function(graph, data, group, type, HM, size = 3, verbose = FALSE, ...)
 		model <- paste0(colnames(LV), "~group")
 	}
 	#cat(model)
-	
+
 	# Hidden modules X -> LY
 	if (HM == "CV") {
 		LY <- clusterGraph(graph = ig, type = type,
@@ -726,7 +738,7 @@ SEMfsr <- function(graph, data, group, type, HM, size = 3, verbose = FALSE, ...)
 		membership <- LY[[2]]
 		gLC <- LY[[3]]
 		LY <- V(gLM)$name[substr(V(gLM)$name, 1, 1) == "C"]
-		
+
 		# Composite Variables(CV) model
 		K <- as.numeric(names(table(membership)))
 		CV <- NULL
@@ -746,7 +758,7 @@ SEMfsr <- function(graph, data, group, type, HM, size = 3, verbose = FALSE, ...)
 	model <- paste0(colnames(CV), "~group")
 	}
 	#cat model
-	
+
 	# Hidden modules X -> UV -> Y
 	if (HM == "UV") {
 		if (!is.directed(graph)) {
@@ -761,7 +773,7 @@ SEMfsr <- function(graph, data, group, type, HM, size = 3, verbose = FALSE, ...)
 		membership <- LXY[[2]]
 		gLC <- LXY[[3]]
 		LXY <- paste0("HM", names(table(membership)))
-		
+
 		# Unmeasured Variables(UV) model
 		UV <- na <- NULL
 		for(k in 1:length(LXY)) { #k=1
@@ -796,7 +808,7 @@ SEMfsr <- function(graph, data, group, type, HM, size = 3, verbose = FALSE, ...)
 	 model <- paste0(colnames(UV), "~group")
 	}
 	#cat model
-	
+
 	if (length(group) > 0) {
 		fsr <- sem(model, data = dataLC, se = "standard", fixed.x = TRUE)
 		if (fsr@Fit@converged == TRUE) {
@@ -811,7 +823,7 @@ SEMfsr <- function(graph, data, group, type, HM, size = 3, verbose = FALSE, ...)
 		fsr <- NULL
 		dataLC <- cbind(group = rep(NA, nrow(dataY)), dataLC)
 	}
-	
+
 	return(list(fit = fsr, M = M, dataHM = dataLC))
 }
 

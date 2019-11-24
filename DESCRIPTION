@@ -1,11 +1,11 @@
 Package: SEMgraph
 Type: Package
-Title: Network Analysis Through Structural Equation Modeling (SEM)
+Title: Network Analysis and Causal Inference Through Structural Equation Modeling
 Version: 0.3.3
 Date: 2019-09-30
 Author: Mario Grassi [aut], Fernando Palluzzi [aut, cre], Daniele Pepe [ctb]
 Maintainer: Fernando Palluzzi <fernando.palluzzi@gmail.com>
-Description: This is the SEMgraph package for network analysis through SEM. It includes functions for weighting and testing biological networks using the SEM framework.
+Description: This is the SEMgraph package for network analysis and causal inference through Structural Equation Modeling (SEM). It includes functions to import, weight, manipulate, and fit biological network models using the SEM framework.
 License: GPL-3
 Encoding: UTF-8
 LazyData: TRUE

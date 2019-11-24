@@ -1,12 +1,24 @@
-# SEMgraph 0.3.3
-#
-# This is the SEMgraph package for statistical graph analysis using
-# Structural Equation Models
-# Typically, SEMgraph requires three input elements:
-# 1) Interactome (e.g. KEGG singaling pathways or STRING PPI)
-# 2) Quantitative data (e.g. GWAS, DNA-methylation arrays, RNA-seq)
-# 3) Case/Control identifiers
-#
+#  SEMgraph library
+#  Copyright (C) 2019 Fernando Palluzzi; Mario Grassi
+#  e-mail: <fernando.palluzzi@gmail.com>
+#  University of Pavia, Department of Brain and Behavioral Sciences
+#  Via Bassi 21, Pavia, 27100 Italy
+
+#  SEMgraph is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+
+#  SEMgraph is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# -------------------------------------------------------------------- #
+
 
 SEMmodel <- function(graph, nodes, group, B, ...)
 {
@@ -16,7 +28,7 @@ SEMmodel <- function(graph, nodes, group, B, ...)
 	ftm <- as_data_frame(ig)
 	#head(ftm)
 	if (nrow(ftm) == 0) return(list(model = NULL, graph = NULL))
-	
+
 	if(is.directed(ig) & sum(which_mutual(ig)) > 0) {
 		sel <- as.numeric(c(E(ig)[which_mutual(ig)]))
 		ftm <- as_data_frame(ig)[-sel,]
@@ -25,7 +37,7 @@ SEMmodel <- function(graph, nodes, group, B, ...)
 	} else {
 		ftb <- NULL
 	}
-	
+
 	# Estimated "common" beta (or psi) coefficients with MLE method:
 	if (length(B) == 0) {
 		modelY <- modelV <- vector()
@@ -44,7 +56,7 @@ SEMmodel <- function(graph, nodes, group, B, ...)
 			}
 		}
 	}
-	
+
 	# Fixed "common" beta (or psi) coefficients with KEGG attribute:
 	if (length(B) > 0) {
 		modelY <- modelV <- vector()
@@ -64,9 +76,9 @@ SEMmodel <- function(graph, nodes, group, B, ...)
 				modelY[j] <- paste0("z", ftm[j, 2], "~~", w[j]*B,
 				                    "*z", ftm[j, 1])
 			}
-		}   
+		}
 	}
-	
+
 	# group mean differences effect
 	modelC <- sort(paste0("z", nodes, "~", "group"))
 	# equal residual variance
@@ -78,64 +90,64 @@ SEMmodel <- function(graph, nodes, group, B, ...)
 	} else {
 		model <- paste0(c(modelC, sort(modelY), modelV))
 	}
-	
+
 	return(list(model = model, graph = ig))
 }
 
 #' @title Fit a network as a Structural Equation Model (SEM)
 #'
-#' @description SEMfit converts a network with directed (x -> y), 
-#' undirected (x -- y), or mixed (directed: x -> y and bidirected: 
-#' x <-> y) edges to a SEM, and fits it through the 
-#' \code{\link[lavaan]{lavaan}} function, via Maximum Likelihood 
-#' Estimation (estimator = "ML", default estimator in 
-#' \code{\link[lavaan]{lavOptions}}). If a binary group 
-#' (i.e., case/control) variable is present, a group effect is added to 
-#' the model as an exogenous variable. SEMfit can handle loops, 
-#' although double links are not allowed, such as: self-loops, direct 
-#' feedbacks, and bow (i.e., double directed/bidirected) links. If a 
-#' directed or mixed network is given as input, SEMfit outputs three main 
-#' sets of parameter estimates: (i) group effect estimations on network 
-#' nodes (gamma), and aggregted group effects: D = sum of group 
-#' effects, adjusted by the residual variance; A = sum of the tagret 
-#' nodes perturbation (i.e., group effect) accumulation from source 
-#' nodes; and E = sum of the source nodes perturbation (i.e., group 
-#' effect) emission towards target nodes; (ii) beta coefficients (network 
+#' @description SEMfit converts a network with directed (x -> y),
+#' undirected (x -- y), or mixed (directed: x -> y and bidirected:
+#' x <-> y) edges to a SEM, and fits it through the
+#' \code{\link[lavaan]{lavaan}} function, via Maximum Likelihood
+#' Estimation (estimator = "ML", default estimator in
+#' \code{\link[lavaan]{lavOptions}}). If a binary group
+#' (i.e., case/control) variable is present, a group effect is added to
+#' the model as an exogenous variable. SEMfit can handle loops,
+#' although double links are not allowed, such as: self-loops, direct
+#' feedbacks, and bow (i.e., double directed/bidirected) links. If a
+#' directed or mixed network is given as input, SEMfit outputs three main
+#' sets of parameter estimates: (i) group effect estimations on network
+#' nodes (gamma), and aggregted group effects: D = sum of group
+#' effects, adjusted by the residual variance; A = sum of the tagret
+#' nodes perturbation (i.e., group effect) accumulation from source
+#' nodes; and E = sum of the source nodes perturbation (i.e., group
+#' effect) emission towards target nodes; (ii) beta coefficients (network
 #' interaction effects), and (iii) residual (co)variances (psi).
-#' When the group variable is present, beta and psi coefficients, common 
-#' to both groups, will be estimated. If the input is an undirected 
-#' network, only psi coefficients will be estimated. In the latter case, 
-#' two sets of parameters will be estimated: (i) group effect estimations 
-#' on network nodes (gamma), and aggregted group effects: D = sum of group 
-#' effects, adjusted by residual variances and covariances; V = sum of 
-#' group effects, adjusted by the residual variances; and C = sum of 
-#' the between-node covariance perturbation (i.e., group effect); and 
+#' When the group variable is present, beta and psi coefficients, common
+#' to both groups, will be estimated. If the input is an undirected
+#' network, only psi coefficients will be estimated. In the latter case,
+#' two sets of parameters will be estimated: (i) group effect estimations
+#' on network nodes (gamma), and aggregted group effects: D = sum of group
+#' effects, adjusted by residual variances and covariances; V = sum of
+#' group effects, adjusted by the residual variances; and C = sum of
+#' the between-node covariance perturbation (i.e., group effect); and
 #' (ii) variance and covariance common to both groups.
 #' P-values for parameter sets are computed by conventional z-test
-#' (= estimate/SE), through \code{\link[lavaan]{lavaan}}. However, for 
-#' very large networks, permutation test P-values can be computed 
+#' (= estimate/SE), through \code{\link[lavaan]{lavaan}}. However, for
+#' very large networks, permutation test P-values can be computed
 #' (see \code{\link[flip]{flip}} for details).
 #'
 #' @param graph An igraph object.
-#' @param data A matrix whith rows corresponding to subjects, and 
+#' @param data A matrix whith rows corresponding to subjects, and
 #' columns to graph nodes.
-#' @param group A binary vector. This vector must be as long as the 
-#' number of subjects. Each vector element must be 1 for cases and 0 
-#' for control subjects. If NULL (default), group influence will not be 
+#' @param group A binary vector. This vector must be as long as the
+#' number of subjects. Each vector element must be 1 for cases and 0
+#' for control subjects. If NULL (default), group influence will not be
 #' considered.
-#' @param B Node-node interaction fixed weight. If B is NULL (default), 
-#' beta coefficients will be estimated by MLE. If B is numeric, it will 
-#' be used as a scaling factor for the edge weights in the graph object 
-#' (graph attribute E(graph)$weight). Since SEMgraph scales data before 
-#' model fitting, we suggest a grid search for the optimal B value in 
-#' the interval [0, 0.3]. As a rule of thumb, to our experience, 
+#' @param B Node-node interaction fixed weight. If B is NULL (default),
+#' beta coefficients will be estimated by MLE. If B is numeric, it will
+#' be used as a scaling factor for the edge weights in the graph object
+#' (graph attribute E(graph)$weight). Since SEMgraph scales data before
+#' model fitting, we suggest a grid search for the optimal B value in
+#' the interval [0, 0.3]. As a rule of thumb, to our experience,
 #' B = 0.1 performs well on any network.
-#' @param perm Number of permutations. By default, perm is set to 0 and 
-#' conventional standard errors will be computed. If perm > 1, P-values 
-#' will be computed from a moment-based chi-squared approximation 
-#' derived from the empirical distribution of permuted data (Larson and 
-#' Owen, 2015). To reduce computational time costs per permutation, we 
-#' suggest perm = 500 (this will leave P-values precision almost 
+#' @param perm Number of permutations. By default, perm is set to 0 and
+#' conventional standard errors will be computed. If perm > 1, P-values
+#' will be computed from a moment-based chi-squared approximation
+#' derived from the empirical distribution of permuted data (Larson and
+#' Owen, 2015). To reduce computational time costs per permutation, we
+#' suggest perm = 500 (this will leave P-values precision almost
 #' unaltered). In perm = 1, no P-values are calculated.
 #' @param ... arguments to be passed to or from other methods.
 #'
@@ -144,10 +156,10 @@ SEMmodel <- function(graph, nodes, group, B, ...)
 #' \item "fit", SEM fitted object of class lavaan;
 #' \item "gest", group effect estimates and P-values on subgraph nodes;
 #' \item "model", SEM model as a string;
-#' \item "graph", the induced subgraph of the input network mapped on 
+#' \item "graph", the induced subgraph of the input network mapped on
 #' data variables;
-#' \item "dataXY", input data subset mapping graph nodes, plus group at 
-#' the first column (if no group is specified, this column will take NA 
+#' \item "dataXY", input data subset mapping graph nodes, plus group at
+#' the first column (if no group is specified, this column will take NA
 #' values).
 #' }
 #'
@@ -158,47 +170,47 @@ SEMmodel <- function(graph, nodes, group, B, ...)
 #' @importFrom flip flip plot
 #' @export
 #'
-#' @references 
-#' 
-#' Yves Rosseel (2012). lavaan: An R Package for Structural Equation 
+#' @references
+#'
+#' Yves Rosseel (2012). lavaan: An R Package for Structural Equation
 #' Modeling. Journal of Statistical Software, 48(2): 1-36.
 #' URL http://www.jstatsoft.org/v48/i02/
-#' 
-#' Pepe D, Grassi M (2014). Investigating perturbed pathway modules 
-#' from gene expression data via Structural Equation Models. BMC 
+#'
+#' Pepe D, Grassi M (2014). Investigating perturbed pathway modules
+#' from gene expression data via Structural Equation Models. BMC
 #' Bioinformatics, 15: 132.
 #' URL https://doi.org/10.1186/1471-2105-15-132
-#' 
-#' Larson JL and Owen AB (2015). Moment based gene set tests. BMC 
+#'
+#' Larson JL and Owen AB (2015). Moment based gene set tests. BMC
 #' Bioinformatics, 16: 132. https://doi.org/10.1186/s12859-015-0571-7
 #'
-#' @seealso See \code{\link[lavaan]{lavaan}} for SEM fitting, and 
+#' @seealso See \code{\link[lavaan]{lavaan}} for SEM fitting, and
 #' \code{\link[flip]{flip}} for permutation.
 #'
 #' @examples
 #' group <- c(rep(0, 17), rep(1, 15))
-#' # Return graph properties, take the largest component, and convert 
+#' # Return graph properties, take the largest component, and convert
 #' # grapNEL to igraph
 #' graph <- properties(kegg.pathways$hsa04540_Gap_junction)[[1]]
 #' # Transpose data matrix: 32 subjectx (rows) x 19726 genes (columns)
 #' data <- t(FTLDu_GSE13162)
-#' 
+#'
 #' # Conventional standard errors computation
 #' start <- Sys.time()
 #' fit1 <- SEMfit(graph, data, group, B = NULL, perm = 0)
 #' end <- Sys.time()
 #' time1 <- end - start
-#' 
+#'
 #' # Moment-based chi-squared approximation (Larson and Owen, 2015)
 #' start <- Sys.time()
 #' fit2 <- SEMfit(graph, data, group, B = NULL, perm = 10000)
 #' end <- Sys.time()
 #' time2 <- end - start
-#' 
+#'
 #' # Execution time comparison
 #' time1
 #' time2
-#' 
+#'
 #' # if perm = 0 (i.e., canonical SE computation - no permutations):
 #' # SEM goodness of fit indices
 #' fitMeasures(fit1$fit, c("rmsea", "rmsea.pvalue", "srmr"))
@@ -211,7 +223,7 @@ SEMmodel <- function(graph, nodes, group, B, ...)
 #' pvalue <- fit1$gest$pvalue[-c(1:3)]
 #' # Multiple testing correction
 #' length(which(p.adjust(pvalue, method = "BH") < 0.05))
-#' 
+#'
 #' # if perm > 1 (i.e., moment-based chi-squared approximation):
 #' # SEM goodness of fit indices
 #' fitMeasures(fit2$fit, c("rmsea", "rmsea.pvalue", "srmr"))
@@ -245,7 +257,7 @@ SEMfit <- function(graph, data, group = NULL, B = NULL, perm = 0, ...)
 	} else {
 		covXY <- cor.shrink(dataXY, verbose = TRUE)[1:p, 1:p]
 	}
-	
+
 	# SEMmodel via from-to-matrix representation of node-node links:
 	model <- SEMmodel(graph, nodes, group, B)
 	#cat(model)
@@ -253,7 +265,7 @@ SEMfit <- function(graph, data, group = NULL, B = NULL, perm = 0, ...)
 		cat("NULL SEM fitting: No.edges = 0 !\n\n")
 		return(list(fit = NULL, model = NULL, graph = NULL))
 	}
-	
+
 	# SEM fitting
 	#fit <- sem(model[[1]], sample.cov = covXY, sample.nobs = n, se = "standard", fixed.x = TRUE)
 	#int.ov.free: If FALSE, the intercepts of the observed variables are fixed to zero
@@ -274,61 +286,61 @@ SEMfit <- function(graph, data, group = NULL, B = NULL, perm = 0, ...)
 		cat("Model converged:", fit@Fit@converged, "srmr:", NA, "\n\n")
 		return(list(fit = NULL, gest = NULL))
 	}
-	
+
 	gest <- SEMflip(fit = fit, data = dataXY, group = group, perm = perm)
 	if (!is.na(gest[[2]])) {
 		cat("P-value of overall node group differences:", gest[[2]], "\n\n")
 	}
 	if (length(group) == 0) dataXY <- cbind(group = rep(NA, n), dataXY)
 	colnames(dataXY) <- gsub("z", "", colnames(dataXY))
-	
+
 	return(list(fit = fit, gest = gest[[1]], model = model[[1]],
 	            graph = model[[2]], dataXY = dataXY))
 }
 
-#' @title Fit a network as a two-group SEM and test group influence on 
+#' @title Fit a network as a two-group SEM and test group influence on
 #' network edges
 #'
 #' @description SEMfit2 converts an input network to a SEM and fits it
 #' within each group (i.e., two-group SEM). SEMfit2 outputs two sets of
 #' parameter estimates for each group: beta coefficients (network
-#' interaction effects) and residual (co)variances if the input is a 
-#' directed or mixed graph (see \code{\link[SEMgraph]{SEMfit}} for 
-#' details), or variances and covariances if the input is an undirected 
+#' interaction effects) and residual (co)variances if the input is a
+#' directed or mixed graph (see \code{\link[SEMgraph]{SEMfit}} for
+#' details), or variances and covariances if the input is an undirected
 #' graph.
 #'
-#' Instead of modeling group effects as an exogenous variable, SEMfit2 
-#' estimates the differences of the beta and/or psi coefficients 
+#' Instead of modeling group effects as an exogenous variable, SEMfit2
+#' estimates the differences of the beta and/or psi coefficients
 #' (network edges) between groups.
 #'
 #' @param graph An igraph object.
-#' @param data A matrix or data.frame. Rows correspond to subjects, and 
+#' @param data A matrix or data.frame. Rows correspond to subjects, and
 #' columns to graph nodes.
-#' @param group A binary vector. This vector must be as long as the 
-#' number of subjects. Each vector element must be 1 for cases and 0 
+#' @param group A binary vector. This vector must be as long as the
+#' number of subjects. Each vector element must be 1 for cases and 0
 #' for control subjects.
-#' @param fit Optional argument. In place of the arguments graph, data 
-#' and group, a fitted model object returned by \code{\link{SEMfit}} or 
+#' @param fit Optional argument. In place of the arguments graph, data
+#' and group, a fitted model object returned by \code{\link{SEMfit}} or
 #' \code{\link{SEMbap}} functions, can be specified.
 #' @param ... arguments to be passed to or from other methods.
 #'
-#' @return A list of two objects: a fitted model object of class lavaan 
-#' ("fit"), and the estimate group differences ("dest") of the beta 
-#' coefficients, covariances, or both if the input model is a directed, 
+#' @return A list of two objects: a fitted model object of class lavaan
+#' ("fit"), and the estimate group differences ("dest") of the beta
+#' coefficients, covariances, or both if the input model is a directed,
 #' undirected, or mixed graph, respectively.
 #'
 #' @importFrom corpcor is.positive.definite cor.shrink
 #' @export
 #' @references
-#' Yves Rosseel (2012). lavaan: An R Package for Structural Equation 
-#' Modeling. Journal of Statistical Software, 48(2), 1-36. 
+#' Yves Rosseel (2012). lavaan: An R Package for Structural Equation
+#' Modeling. Journal of Statistical Software, 48(2), 1-36.
 #' URL http://www.jstatsoft.org/v48/i02/
-#' 
-#' Pepe D, Grassi M (2014). Investigating perturbed pathway modules 
-#' from gene expression data via Structural Equation Models. 
-#' BMC Bioinformatics, 15: 132. 
+#'
+#' Pepe D, Grassi M (2014). Investigating perturbed pathway modules
+#' from gene expression data via Structural Equation Models.
+#' BMC Bioinformatics, 15: 132.
 #' URL https://doi.org/10.1186/1471-2105-15-132
-#' 
+#'
 #' @seealso \code{\link[lavaan]{lavaan}}
 #'
 #' @import igraph
@@ -371,7 +383,7 @@ SEMfit2 <- function(graph, data, group, fit = list(), ...)
 		group <- fit$dataXY[, 1]
 		model <- fit$model[-c(1:p)]
 	}
-	
+
 	# covariances for cases (GROUP 1)
 	data1 <- dataY[group == 1,]
 	n1 <- nrow(data1)
@@ -380,7 +392,7 @@ SEMfit2 <- function(graph, data, group, fit = list(), ...)
 	} else {
 		cov1 <- cor.shrink(data1,verbose = TRUE)[1:p, 1:p]
 	}
-	
+
 	# covariances for controls (GROUP 0)
 	data0 <- dataY[group == 0,]
 	n0 <- nrow(data0)
@@ -389,7 +401,7 @@ SEMfit2 <- function(graph, data, group, fit = list(), ...)
 	} else {
 		cov0 <- cor.shrink(data0, verbose = TRUE)[1:p, 1:p]
 	}
-	
+
 	# SEM fitting:
 	fit <- lavaan(model, sample.cov = list(cov0, cov1),
 	              sample.nobs = list(n0, n1),
@@ -407,7 +419,7 @@ SEMfit2 <- function(graph, data, group, fit = list(), ...)
 		return(list(fit = NULL, dest = NULL))
 	}
 	#summary(fit)
-	
+
 	# z-test of the beta's (psi's) differences between groups
 	est <- parameterEstimates(fit)
 	est1 <- est[est$group == 1,][1:length(model),]
@@ -417,71 +429,71 @@ SEMfit2 <- function(graph, data, group, fit = list(), ...)
 	pvalue <- 2*(1 - pnorm(abs(d_est/d_se)))
 	d_lower <- d_est - 1.96*d_se
 	d_upper <- d_est + 1.96*d_se
-	
+
 	dest <- cbind(est1[, 1:3], d_est, d_se, d_z = d_est/d_se, pvalue,
 	              d_lower, d_upper)
 	dest <- data.frame(lapply(dest,
 	                   function(y) if(is.numeric(y)) round(y, 3) else y))
-	
+
 	pX2 <- 1 - pchisq(-2*sum(log(dest[, 7])), df = 2*length(dest[, 7]))
 	cat("Fisher's combined pvalue of edge group differences:", pX2, "\n\n")
-	
+
 	return(list(fit = fit, dest = dest))
 }
 
-#' @title Bow-free graphical lasso data-driven and knowledge-based 
+#' @title Bow-free graphical lasso data-driven and knowledge-based
 #' interaction search
 #'
-#' @description Fast estimation of sparse inverse covariance using Gaussian 
-#' Graphical Models (GGMs), with de-sparsified graphical lasso method 
-#' (D-S_GL; see \code{\link[SILGGM]{SILGGM}}). Significant bow-free covariaces 
-#' will be selected. Only covariances connecting nodes without direct links 
-#' in the input graph (i.e., bow-free covariances) and present in the 
-#' reference interactome (i.e., biologically validated) are added to the 
-#' input graph. Once new covariances has been added, the resulting mixed 
+#' @description Fast estimation of sparse inverse covariance using Gaussian
+#' Graphical Models (GGMs), with de-sparsified graphical lasso method
+#' (D-S_GL; see \code{\link[SILGGM]{SILGGM}}). Significant bow-free covariaces
+#' will be selected. Only covariances connecting nodes without direct links
+#' in the input graph (i.e., bow-free covariances) and present in the
+#' reference interactome (i.e., biologically validated) are added to the
+#' input graph. Once new covariances has been added, the resulting mixed
 #' network is fitted (see \code{\link[SEMgraph]{SEMfit}} for further details).
 #' @param graph An igraph object.
-#' @param data A matrix whith rows corresponding to subjects, and 
+#' @param data A matrix whith rows corresponding to subjects, and
 #' columns to graph nodes.
-#' @param group A binary vector. This vector must be as long as the 
-#' number of subjects. Each vector element must be 1 for cases and 0 
-#' for control subjects. If NULL (default), group influence will not be 
+#' @param group A binary vector. This vector must be as long as the
+#' number of subjects. Each vector element must be 1 for cases and 0
+#' for control subjects. If NULL (default), group influence will not be
 #' considered.
-#' @param gnet External interaction network as an igraph object. Interaction 
-#' data from this network will be used to integrate additional interaction 
-#' information inside the model. Two preset databases are available: 
-#' (i) kegg, for KEGG signaling pathways (directed), and (ii) string, for 
-#' STRING protein interactions (undirected). Direct and indirect interactions 
-#' will be added on the base of the selected interactome. Note that, if 
-#' the input graph is undirected, an undirected reference interactome 
+#' @param gnet External interaction network as an igraph object. Interaction
+#' data from this network will be used to integrate additional interaction
+#' information inside the model. Two preset databases are available:
+#' (i) kegg, for KEGG signaling pathways (directed), and (ii) string, for
+#' STRING protein interactions (undirected). Direct and indirect interactions
+#' will be added on the base of the selected interactome. Note that, if
+#' the input graph is undirected, an undirected reference interactome
 #' is expected.
-#' @param d An integer value indicating the maximum length of indirect 
-#' interactions between pairs of bow-free nodes. If d = 1, direct 
-#' interactions between bow-free nodes will be searched in the reference 
-#' interactome. If d > 1, indirect interactions of length d or shorter 
-#' (i.e., with at most d - 1 connectors) between bow-free nodes will be 
+#' @param d An integer value indicating the maximum length of indirect
+#' interactions between pairs of bow-free nodes. If d = 1, direct
+#' interactions between bow-free nodes will be searched in the reference
+#' interactome. If d > 1, indirect interactions of length d or shorter
+#' (i.e., with at most d - 1 connectors) between bow-free nodes will be
 #' searched.
-#' @param group A binary vector. This vector must be as long as the 
-#' number of subjects. Each vector element must be 1 for cases and 0 
-#' for control subjects. If NULL (default), group influence will not be 
+#' @param group A binary vector. This vector must be as long as the
+#' number of subjects. Each vector element must be 1 for cases and 0
+#' for control subjects. If NULL (default), group influence will not be
 #' considered.
-#' @param B Node-node interaction fixed weight. If B is NULL (default), 
-#' beta coefficients will be estimated by MLE. If B is numeric, it will 
-#' be used as a scaling factor for the edge weights in the graph object 
-#' (graph attribute E(graph)$weight). Since SEMgraph scales data before 
-#' model fitting, we suggest a grid search for the optimal B value in 
-#' the interval [0, 0.3]. As a rule of thumb, to our experience, B = 0.1 
+#' @param B Node-node interaction fixed weight. If B is NULL (default),
+#' beta coefficients will be estimated by MLE. If B is numeric, it will
+#' be used as a scaling factor for the edge weights in the graph object
+#' (graph attribute E(graph)$weight). Since SEMgraph scales data before
+#' model fitting, we suggest a grid search for the optimal B value in
+#' the interval [0, 0.3]. As a rule of thumb, to our experience, B = 0.1
 #' performs well on any network.
-#' @param perm Number of permutations. By default, perm is set to 0 and 
-#' conventional standard errors will be computed. If perm > 1, P-values 
-#' will be computed from a moment-based chi-squared approximation derived 
-#' from the empirical distribution of permuted data (Larson and Owen, 2015). 
-#' To reduce computational time costs per permutation, we suggest perm = 500 
-#' (this will leave P-values precision almost unaltered). In perm = 1, 
+#' @param perm Number of permutations. By default, perm is set to 0 and
+#' conventional standard errors will be computed. If perm > 1, P-values
+#' will be computed from a moment-based chi-squared approximation derived
+#' from the empirical distribution of permuted data (Larson and Owen, 2015).
+#' To reduce computational time costs per permutation, we suggest perm = 500
+#' (this will leave P-values precision almost unaltered). In perm = 1,
 #' no P-values are calculated.
-#' @param alpha Significance level used for GGM search. Alpha is set to 
+#' @param alpha Significance level used for GGM search. Alpha is set to
 #' 0.05 by default.
-#' @param verbose A logical value. If FALSE (default), the processed graphs 
+#' @param verbose A logical value. If FALSE (default), the processed graphs
 #' will not be plotted to screen, saving execution time.
 #' @param ... arguments to be passed to or from other methods.
 #'
@@ -497,8 +509,8 @@ SEMfit2 <- function(graph, data, group, fit = list(), ...)
 #' \item "gLV", the directed latent GGM graph,
 #' \item "Ug", union of graphs "ig" and "guu";
 #' }
-#' \item "dataXY", input data subset mapping graph nodes, plus group at 
-#' the first column (if no group is specified, this column will take NA 
+#' \item "dataXY", input data subset mapping graph nodes, plus group at
+#' the first column (if no group is specified, this column will take NA
 #' values).
 #' }
 #'
@@ -511,22 +523,22 @@ SEMfit2 <- function(graph, data, group, fit = list(), ...)
 #' @export
 #'
 #' @references
-#' 
-#' Zhang R, Ren Z, Chen W (2018). SILGGM: An extensive R package for 
-#' efficient statistical inference in large-scale gene networks. 
-#' PLoS Comput. Biol., 14(8): e1006369. 
-#' https://doi.org/10.1371/journal.pcbi.1006369 
-#' 
-#' Friedman J, Hastie T, Tibshirani R (2008). Sparse inverse covariance 
-#' estimation with the graphical lasso. Biostatistics, 9(3): 432-441. 
+#'
+#' Zhang R, Ren Z, Chen W (2018). SILGGM: An extensive R package for
+#' efficient statistical inference in large-scale gene networks.
+#' PLoS Comput. Biol., 14(8): e1006369.
+#' https://doi.org/10.1371/journal.pcbi.1006369
+#'
+#' Friedman J, Hastie T, Tibshirani R (2008). Sparse inverse covariance
+#' estimation with the graphical lasso. Biostatistics, 9(3): 432-441.
 #' https://doi.org/10.1093/biostatistics/kxm045
 #'
-#' @seealso \code{\link[lavaan]{lavaan}}, \code{\link{igraph}}, 
+#' @seealso \code{\link[lavaan]{lavaan}}, \code{\link{igraph}},
 #' \code{\link[SILGGM]{SILGGM}}
 #'
 #' @examples
 #' group <- c(rep(0, 17), rep(1, 15))
-#' # Return graph properties, take the largest component, and convert 
+#' # Return graph properties, take the largest component, and convert
 #' # grapNEL to igraph
 #' graph <- properties(kegg.pathways$hsa04540_Gap_junction)[[1]]
 #' # Transpose data matrix: 32 subjectx (rows) x 19726 genes (columns)
@@ -538,12 +550,12 @@ SEMfit2 <- function(graph, data, group, fit = list(), ...)
 #'               perm = 10000,
 #'               alpha = 1/ndf,
 #'               verbose = TRUE)
-#' 
+#'
 #' # Results summary
 #' summary(ggm$gest)
 #' pval <- ggm$gest@res$pchisq[-c(1:3)]
 #' length(which(p.adjust(pval, method = "BH") < 0.1))
-#' 
+#'
 #' # Plot output graphs
 #' par(mfrow = c(2, 2), mar = c(1, 1, 1, 1))
 #' ig <- ggm$graph$ig; E(ig)$weight <- 1
@@ -564,7 +576,7 @@ SEMbap<- function(graph, data, group=NULL, B=NULL, perm=0, type="dsep", alpha=0.
 	if( !is_dag(ig) ) cat("WARNING: input graph is not acyclic (DAG) !","\n\n")
 	ug<- as.undirected(ig, mode="collapse") #V(ug)$name
 	sem<- SEMfit(graph=graph, data=data, group=group, B=NULL, perm=1)
-	
+
 	# Covariance search :
 	if(type == "dsep") {
 	 SET<- SEMdsep(fit=sem$fit, psi=FALSE, alpha=alpha, method=method)
@@ -573,7 +585,7 @@ SEMbap<- function(graph, data, group=NULL, B=NULL, perm=0, type="dsep", alpha=0.
 	}else if (type == "pc") {
 	 SET<- pc.test(fit=sem, indepTest=pcalg::gaussCItest, alpha=alpha)
 	}
-	
+
 	# Covariance and latent variables graphs (guu, gLV)
 	guu<- graph_from_data_frame(SET[,1:2],directed=FALSE)
 	V(guu)$name<- gsub("z", "", V(guu)$name)
@@ -595,7 +607,7 @@ SEMbap<- function(graph, data, group=NULL, B=NULL, perm=0, type="dsep", alpha=0.
 	# SEM fitting with interactome bow-free covariances:
 	if( is.directed(ig) & !is.na(guu)[1] ) guu<- as.directed(guu, mode="mutual")
 	Ug<- graph.union(g=list(ig, guu)[!is.na(list(ig, guu))])
-	fit1<- SEMfit(graph=Ug, data=dataY, group=group, B=B, perm=perm)	 
+	fit1<- SEMfit(graph=Ug, data=dataY, group=group, B=B, perm=perm)
 	# summary(fit1$fit)
 	graph<- list(ig=ig, guu=guu, gLV=gLV, Ug=Ug)
 
@@ -615,7 +627,7 @@ ggm.test<- function(fit, method="D-S_GL", alpha=0.05, ...)
 	}else{
 	 Z<-  cbind(fit$dataXY[,-1],group) #colnames(Z)
 	 A0<- rbind(cbind(A0,rep(1,(p-1))),c(rep(1,(p-1)),0))
-	 rownames(A0)[p]<-colnames(A0)[p]<- "group" 
+	 rownames(A0)[p]<-colnames(A0)[p]<- "group"
 	 A0<- A0[colnames(Z), colnames(Z)] # colnames(A0)
 	}
 	E<- Z%*%(diag(p)- B) #colnames(E)
@@ -623,7 +635,7 @@ ggm.test<- function(fit, method="D-S_GL", alpha=0.05, ...)
 	wi<- SILGGM::SILGGM(E, method=method, global=TRUE, alpha=alpha)
 	A1<- wi$global_decision[[1]] #sum(A1/2)
 	rownames(A1)<- colnames(A1)<- colnames(E) #A1[1:10,1:10]
-	
+
 	#guu<- graph_from_adjacency_matrix(A1, mode="undirected");guu
 	#as.undirected(fit$graph) %s% guu
 	A1<- ifelse(A1 == A0, 0, A1) #sum(A1/2)
@@ -650,12 +662,12 @@ pc.test<- function(fit, indepTest=pcalg::gaussCItest, alpha=0.05, ...)
 	 A0<- ifelse(A0 == 1, TRUE, FALSE)[colnames(Z), colnames(Z)]
 	}
 	E<- Z%*%(diag(p)- B) #colnames(E)
-	
+
 	ske<- pcalg::skeleton(suffStat=list(C=cor(E), n=nrow(E)),
 		  indepTest=indepTest, alpha=alpha, labels=colnames(E),
 		  method="stable.fast", fixedGaps=A0, fixedEdges=NULL, numCores=8)
 	A1<- as(ske@graph, "matrix")
-	
+
 	del<- which(colSums(A1)==0)
 	if( length(del) >  0 ) A1<- A1[-del,-del] #A1[1:10,1:10]
 	SET<- as_data_frame(graph_from_adjacency_matrix(A1, mode="undirected"))
@@ -676,7 +688,7 @@ SEMflip <- function(fit, data, group, perm, ...)
 	#psi[1:10, 1:10]
 	Y <- data[, colnames(B)]
 	#Y[1:10, 1:10]
-	
+
 	if (sum(B) != 0) {
 		Q <- t(diag(p) - B)%*%diag(1/sqrt(diag(psi)))
 		D <- as.matrix(Y)%*%Q%*%rep(1/sqrt(p), p)
@@ -701,7 +713,7 @@ SEMflip <- function(fit, data, group, perm, ...)
 		#apply(df, 2, var)
 		model <- paste0("D~group;C~group;V~group")
 	}
-	
+
 	if (perm > 1) {
 		# permutation pvalues
 		Z <- as.matrix(Y)%*%t((diag(p) - B))
@@ -716,7 +728,7 @@ SEMflip <- function(fit, data, group, perm, ...)
 		ni <- 2*(aveT2^2/varT2)
 		T2 <- (ni*gest@permT[1,]^2)/aveT2
 		gest@res$pchisq <- 1 - stats::pchisq(T2, ni)
-		# Fisher's combined pvalue 
+		# Fisher's combined pvalue
 		#pval <- flip::npc(gest[-c(1:3)], "fisher")@res$p
 		pval <- gest@res$pchisq[1]
 	} else if (perm == 0) {
@@ -726,48 +738,48 @@ SEMflip <- function(fit, data, group, perm, ...)
 		res2 <- parameterEstimates(fit2)[1:3, 1:7]
 		#summary(fit2)
 		gest <- rbind(res2, res1)
-		# Fisher's combined pvalue 
+		# Fisher's combined pvalue
 		#pval <- 1 - pchisq(-2*sum(log(res1$pvalue)), 2*length(res1$pvalue))
 		pval <- gest$pvalue[1]
 	}
-	
+
 	return(list(gest = gest, pval = pval))
 }
 
 #' @title Shortest path and tree-based network reduction methods
 #'
-#' @description Uses different shortest path and tree-based strategies 
+#' @description Uses different shortest path and tree-based strategies
 #' for reducing a network to an optimal subset of nodes and edges.
 #' @param graph An igraph object.
-#' @param type Network reduction method. If subgraph = "mst", the input 
-#' network will be reduced to a MST, using the \code{\link[igraph]{mst}} 
-#' igraph implementation. This will produce a tree with the same node as 
-#' the input graph (N), and N-1 edges, such that the sum of edges is the 
-#' minimum among all the possible subgraphs. If subgraph = "core", an 
-#' induced subgraph of the input seed set will be generated (see 
-#' \code{\link[SEMgraph]{seedweight}} for seed list creation). 
-#' If subgraph = "kou", the fast Steiner tree algorithm from Kou et al. (1981) 
-#' will be applied starting from a set of seed nodes. If subgraph = "usp", 
-#' the resulting network will be the union of the shortest paths. 
-#' If subgraph = "isn" a subnetwork will be induced from the shortest 
+#' @param type Network reduction method. If subgraph = "mst", the input
+#' network will be reduced to a MST, using the \code{\link[igraph]{mst}}
+#' igraph implementation. This will produce a tree with the same node as
+#' the input graph (N), and N-1 edges, such that the sum of edges is the
+#' minimum among all the possible subgraphs. If subgraph = "core", an
+#' induced subgraph of the input seed set will be generated (see
+#' \code{\link[SEMgraph]{seedweight}} for seed list creation).
+#' If subgraph = "kou", the fast Steiner tree algorithm from Kou et al. (1981)
+#' will be applied starting from a set of seed nodes. If subgraph = "usp",
+#' the resulting network will be the union of the shortest paths.
+#' If subgraph = "isn" a subnetwork will be induced from the shortest
 #' path nodes.
-#' @param seed A vector containing seed node identifiers, either user-defined 
+#' @param seed A vector containing seed node identifiers, either user-defined
 #' or yielded by \code{\link[SEMgraph]{seedweight}}.
-#' @param eweight Edge weight type derived from 
-#' \code{\link[SEMgraph]{edgeweight.cfa}}, 
-#' \code{\link[SEMgraph]{edgeweight.r2z}}, 
-#' \code{\link[SEMgraph]{edgeweight.sem}}, 
-#' or from user-defined distances. This option determines the 
-#' weight-to-distance transform used to reduce the input graph. If set to 
-#' "none" (default), edge weights will be set to 1. If eweight = "kegg", 
-#' repressing interactions (-1) will be set to 1 (maximum distance), 
-#' neutral interactions (0) will be set to 0.5, and activating 
-#' interactions (+1) will be set to 0 (minimum distance). 
-#' If eweight = "zsign", all significant interactions will be set to 0 
-#' (minimum distance), while non-significant ones will be set to 1. 
-#' If eweight = "pvalue", weights (p-values) will be transformed to the 
-#' inverse of negative base-10 logarithm. If eweight = "custom", the 
-#' algorithm will use the distance measure specified by the user as "weight" 
+#' @param eweight Edge weight type derived from
+#' \code{\link[SEMgraph]{edgeweight.cfa}},
+#' \code{\link[SEMgraph]{edgeweight.r2z}},
+#' \code{\link[SEMgraph]{edgeweight.sem}},
+#' or from user-defined distances. This option determines the
+#' weight-to-distance transform used to reduce the input graph. If set to
+#' "none" (default), edge weights will be set to 1. If eweight = "kegg",
+#' repressing interactions (-1) will be set to 1 (maximum distance),
+#' neutral interactions (0) will be set to 0.5, and activating
+#' interactions (+1) will be set to 0 (minimum distance).
+#' If eweight = "zsign", all significant interactions will be set to 0
+#' (minimum distance), while non-significant ones will be set to 1.
+#' If eweight = "pvalue", weights (p-values) will be transformed to the
+#' inverse of negative base-10 logarithm. If eweight = "custom", the
+#' algorithm will use the distance measure specified by the user as "weight"
 #' edge attribute.
 #' @param ... arguments to be passed to or from other methods.
 #'
@@ -781,10 +793,10 @@ SEMflip <- function(fit, data, group, perm, ...)
 #' group <- c(rep(0, 17), rep(1, 15))
 #' graph <- properties(kegg.pathways$hsa04540_Gap_junction)[[1]]
 #' data <- t(FTLDu_GSE13162)
-#' 
+#'
 #' # Graph weighting
 #' graph1 <- edgeweight.sem(graph = graph, data = data, group = group)
-#' 
+#'
 #' # Graph reduction
 #' G1 <- reduceGraph(graph = graph1, type = "mst", seed = "none",
 #'                   eweight = "pvalue")
@@ -801,12 +813,12 @@ reduceGraph <- function(graph, type, seed = "none", eweight = "none", ...)
 	else if (eweight == "pvalue") edgew <- 1/(-log10(E(ig)$pv))
 	else if (eweight == "none") edgew <- rep(1, ecount(ig))
 	else if (eweight == "custom") edgew <- E(ig)$weight
-	
+
 	if (seed == "pvlm") seed <- V(ig)$name[V(ig)$spvlm == 1]
 	else if (seed == "mst") seed <- V(ig)$name[V(ig)$smst == 1]
 	else if (seed == "proto") seed <- V(ig)$name[V(ig)$sprot == 1]
 	else if (seed == "none") seed <- vector()
-	
+
 	if (type == "mst" & length(seed) == 0) {
 		return(minimum.spanning.tree(ig, weights = edgew, algorithm = "prim"))
 	}
@@ -833,26 +845,26 @@ reduceGraph <- function(graph, type, seed = "none", eweight = "none", ...)
 
 #' @title Steiner tree via Kou's algorithm
 #'
-#' @description Find the Steiner tree connecting a set of seed nodes, 
+#' @description Find the Steiner tree connecting a set of seed nodes,
 #' using the shortest path heuristic from Kou et al. (1981).
 #' @param graph An igraph object.
-#' @param seed A vector containing seed node identifiers, either user-defined 
+#' @param seed A vector containing seed node identifiers, either user-defined
 #' or yielded by \code{\link[SEMgraph]{seedweight}}.
-#' @param eweight Edge weight type derived from 
-#' \code{\link[SEMgraph]{edgeweight.cfa}}, 
-#' \code{\link[SEMgraph]{edgeweight.r2z}}, 
-#' \code{\link[SEMgraph]{edgeweight.sem}}, 
-#' or from user-defined distances. This option determines the 
-#' weight-to-distance transform used to reduce the input graph. If set 
-#' to "none" (default), edge weights will be set to 1. 
-#' If eweight = "kegg", repressing interactions (-1) will be set to 1 
-#' (maximum distance), neutral interactions (0) will be set to 0.5, and 
-#' activating interactions (+1) will be set to 0 (minimum distance). 
-#' If eweight = "zsign", all significant interactions will be set to 0 
-#' (minimum distance), while non-significant ones will be set to 1. 
-#' If eweight = "pvalue", weights (p-values) will be transformed to the 
-#' inverse of negative base-10 logarithm. If eweight = "custom", the 
-#' algorithm will use the distance measure specified by the user as "weight" 
+#' @param eweight Edge weight type derived from
+#' \code{\link[SEMgraph]{edgeweight.cfa}},
+#' \code{\link[SEMgraph]{edgeweight.r2z}},
+#' \code{\link[SEMgraph]{edgeweight.sem}},
+#' or from user-defined distances. This option determines the
+#' weight-to-distance transform used to reduce the input graph. If set
+#' to "none" (default), edge weights will be set to 1.
+#' If eweight = "kegg", repressing interactions (-1) will be set to 1
+#' (maximum distance), neutral interactions (0) will be set to 0.5, and
+#' activating interactions (+1) will be set to 0 (minimum distance).
+#' If eweight = "zsign", all significant interactions will be set to 0
+#' (minimum distance), while non-significant ones will be set to 1.
+#' If eweight = "pvalue", weights (p-values) will be transformed to the
+#' inverse of negative base-10 logarithm. If eweight = "custom", the
+#' algorithm will use the distance measure specified by the user as "weight"
 #' edge attribute.
 #' @param ... arguments to be passed to or from other methods.
 #'
@@ -861,45 +873,45 @@ reduceGraph <- function(graph, type, seed = "none", eweight = "none", ...)
 #' @import igraph
 #' @export
 #' @references
-#' Kou L, Markowsky G, Berman L (1981). A fast algorithm for Steiner trees. 
+#' Kou L, Markowsky G, Berman L (1981). A fast algorithm for Steiner trees.
 #' Acta Informatica, 15(2): 141-145. https://doi.org/10.1007/BF00288961
-#' 
-#' Palluzzi F, Ferrari R, Graziano F, Novelli V, Rossi G, Galimberti D, 
-#' Rainero I, Benussi L, Nacmias B, Bruni AC, Cusi D, Salvi E, Borroni B, 
-#' Grassi M. (2017). A novel network analysis approach reveals DNA damage, 
-#' oxidative stress and calcium/cAMP homeostasis-associated biomarkers 
-#' in frontotemporal dementia. PLoS ONE 12(10): e0185797. 
+#'
+#' Palluzzi F, Ferrari R, Graziano F, Novelli V, Rossi G, Galimberti D,
+#' Rainero I, Benussi L, Nacmias B, Bruni AC, Cusi D, Salvi E, Borroni B,
+#' Grassi M. (2017). A novel network analysis approach reveals DNA damage,
+#' oxidative stress and calcium/cAMP homeostasis-associated biomarkers
+#' in frontotemporal dementia. PLoS ONE 12(10): e0185797.
 #' https://doi.org/10.1371/journal.pone.0185797
-#' 
+#'
 #' @examples
 #' group <- c(rep(0, 17), rep(1, 15))
-#' # Return graph properties, take the largest component, and convert 
+#' # Return graph properties, take the largest component, and convert
 #' # grapNEL to igraph
 #' graph <- properties(kegg.pathways$hsa04540_Gap_junction)[[1]]
 #' # Transpose data matrix: 32 subjectx (rows) x 19726 genes (columns)
 #' data <- t(FTLDu_GSE13162)
-#' 
+#'
 #' # Generating edge weights for the KEGG interactome
 #' graph1 <- edgeweight.r2z(graph = kegg, data = data, group = group)
 #' graph1
-#' 
+#'
 #' # Generating seed weights
 #' graph2 <- seedweight(graph = graph1, data = data, group=group, alpha = 5E-05)
 #' graph2
 #' seed <- V(graph2)$name[V(graph2)$spvlm == 1]
 #' length(seed)
-#' 
+#'
 #' # Using -log10(P-values) as edge weights
 #' eweight <- 1/(-log10(E(graph2)$pv))
 #' graph3 <- SteinerTree(graph = graph2, seed = seed, eweight = eweight)
 #' graph3
 #' V(graph3)$color <- ifelse(V(graph3)$name %in% seed, "lightblue", "yellow")
 #' V(graph3)$seed <- ifelse(V(graph3)$name %in% seed, 1, 0)
-#' 
+#'
 #' # KEGG-derived Steiner tree
 #' gplot(graph3, main = "Extracted KEGG Steiner tree")
 #' iplot(graph3)    # interactive plot
-#' 
+#'
 SteinerTree <- function(graph, seed, eweight)
 {
 	# Define graph, edge weights, and distance matrix
@@ -971,35 +983,35 @@ SteinerTree <- function(graph, seed, eweight)
 
 #' @title Union of the Shortest Path Tree (USPT) algorithm
 #'
-#' @description Generate a subnetwork as the union of the most significant 
-#' shortest paths from an input network. Shortest paths are chosen on 
+#' @description Generate a subnetwork as the union of the most significant
+#' shortest paths from an input network. Shortest paths are chosen on
 #' the base of the perturbation (group difference) of their connections.
 #' @param graph An igraph object.
-#' @param seed A vector containing seed node identifiers, either user-defined 
+#' @param seed A vector containing seed node identifiers, either user-defined
 #' or yielded by \code{\link[SEMgraph]{seedweight}}.
-#' @param eweight Edge weight type derived from 
-#' \code{\link[SEMgraph]{edgeweight.cfa}}, 
-#' \code{\link[SEMgraph]{edgeweight.r2z}}, 
-#' \code{\link[SEMgraph]{edgeweight.sem}}, 
-#' or from user-defined distances. This option determines the 
-#' weight-to-distance transform used to reduce the input graph. If set 
-#' to "none" (default), edge weights will be set to 1. If eweight = "kegg", 
-#' repressing interactions (-1) will be set to 1 (maximum distance), neutral 
-#' interactions (0) will be set to 0.5, and activating interactions (+1) 
-#' will be set to 0 (minimum distance). 
-#' If eweight = "zsign", all significant interactions will be set to 0 
-#' (minimum distance), while non-significant ones will be set to 1. 
-#' If eweight = "pvalue", weights (p-values) will be transformed to the 
-#' inverse of negative base-10 logarithm. If eweight = "custom", the 
-#' algorithm will use the distance measure specified by the user as "weight" 
+#' @param eweight Edge weight type derived from
+#' \code{\link[SEMgraph]{edgeweight.cfa}},
+#' \code{\link[SEMgraph]{edgeweight.r2z}},
+#' \code{\link[SEMgraph]{edgeweight.sem}},
+#' or from user-defined distances. This option determines the
+#' weight-to-distance transform used to reduce the input graph. If set
+#' to "none" (default), edge weights will be set to 1. If eweight = "kegg",
+#' repressing interactions (-1) will be set to 1 (maximum distance), neutral
+#' interactions (0) will be set to 0.5, and activating interactions (+1)
+#' will be set to 0 (minimum distance).
+#' If eweight = "zsign", all significant interactions will be set to 0
+#' (minimum distance), while non-significant ones will be set to 1.
+#' If eweight = "pvalue", weights (p-values) will be transformed to the
+#' inverse of negative base-10 logarithm. If eweight = "custom", the
+#' algorithm will use the distance measure specified by the user as "weight"
 #' edge attribute.
-#' @param alpha Significance level to assess shortest paths significance. 
-#' By default, alpha is set to 1 (i.e., all the shortest paths will be 
+#' @param alpha Significance level to assess shortest paths significance.
+#' By default, alpha is set to 1 (i.e., all the shortest paths will be
 #' retained).
 #' @param ... arguments to be passed to or from other methods.
 #'
-#' @return A list of two igraph objects, namely "Gs" and "sG". 
-#' The former is the induced subnetwork of the shortest path nodes. 
+#' @return A list of two igraph objects, namely "Gs" and "sG".
+#' The former is the induced subnetwork of the shortest path nodes.
 #' The latter is the union of the shortest paths (i.e., the USPT).
 #'
 #' @import igraph
@@ -1007,22 +1019,22 @@ SteinerTree <- function(graph, seed, eweight)
 #' @export
 #'
 #' @references
-#' Meier J, Tewarie P, Van Mieghem P (2015). The Union of Shortest Path 
-#' Trees of Functional Brain Networks. Brain Connectivity 5(9); 575-581. 
+#' Meier J, Tewarie P, Van Mieghem P (2015). The Union of Shortest Path
+#' Trees of Functional Brain Networks. Brain Connectivity 5(9); 575-581.
 #' https://doi.org/10.1089/brain.2014.0330
 #'
 #' @examples
 #' group <- c(rep(0, 17), rep(1, 15))
 #' graph <- properties(kegg.pathways$hsa04540_Gap_junction)[[1]]
 #' data <- t(FTLDu_GSE13162)
-#' 
+#'
 #' # Generating edge weights
 #' graph1 <- edgeweight.sem(graph = graph, data = data, group = group)
-#' 
+#'
 #' # Generating seed weights
 #' graph2 <- seedweight(graph = graph1, data = data, group = group)
 #' seed <- V(graph2)$name[V(graph2)$spvlm == 1]  # select seed nodes
-#' 
+#'
 #' # Using -log10(P-values) as edge weights
 #' edgeweight <- 1/(-log10(E(graph2)$pv))
 #' U <- USPT(graph = graph2, seed = seed, eweight = edgeweight)
@@ -1043,24 +1055,24 @@ USPT <- function(graph, seed, eweight, alpha = 1, ...)
 	                       mode = "all",
 	                       weights = eweight)
 	#D[1:10,1:10]; dim(D)
-	
+
 	# Complete directed distance graph for terminal nodes:
 	Gd <- graph_from_adjacency_matrix(D, mode = "undirected",
 	                                  weighted = TRUE)
 	Gd <- Gd - igraph::edges(E(Gd)[which(E(Gd)$weight == Inf)])
-	
+
 	# For each edge in Gd, replace it with the shortest path:
 	edge_list <- as_edgelist(Gd)
 	N <- nrow(edge_list)
 	if (alpha == 1) alpha <- N
 	ftm <- NULL
 	subgraph <- vector()
-	
+
 	for (n in 1:N) { #n=1
 		#print(paste("i= ",n,"/",N, " shortest path", sep=""))
 		i <- edge_list[n, 1]
 		j <- edge_list[n, 2]
-		
+
 		# extract from ig all nodes of the shortest paths between edges of Gd
 		path <- shortest_paths(ig, from = V(ig)[i], to = V(ig)[j],
 		                       mode = "all",
@@ -1068,14 +1080,14 @@ USPT <- function(graph, seed, eweight, alpha = 1, ...)
 		                       output = "both")
 		vpath <- V(ig)$name[path$vpath[[1]]]
 		pvalue <- E(ig)$pv[path$epath[[1]]]
-		
+
 		# significance test of the shortest path
 		ppath <- 1 - pchisq(-2*sum(log(pvalue)), df = 2*length(pvalue))
 		#if(test == "fisher") ppath <- 1-pchisq(-2*sum(log(pvalue)), df = 2*length(pvalue))
 		#if(test == "brown") ppath <- Brown.test(y = data[, vpath], p = pvalue)
 		#if(test == "wald") ppath <- sp.test(vpath, data, group)[[3]]
 		ppath[is.na(ppath)] <- 0.5
-		
+
 		if(ppath < alpha/N) {
 			for (k in 1:(length(vpath)-1)) {
 				ftm <- rbind(ftm, c(vpath[k], vpath[k+1]))
@@ -1086,37 +1098,37 @@ USPT <- function(graph, seed, eweight, alpha = 1, ...)
 			subgraph <- subgraph
 		}
 	}
-	
+
 	# Merging the shortest paths
 	if(length(unique(subgraph)) > 0) {
 		sG <- induced_subgraph(ig, unique(subgraph)) #sG
 		del <- which(duplicated(ftm) == TRUE)
 		if(length(del) > 0) ftm <- ftm[-del,]
 		Gs <- simplify(graph_from_edgelist(ftm, directed = FALSE)) #Gs
-		
+
 		if(is.directed(ig)) Gs <- arrowDirection(ug = Gs, dg = ig) #Gs
 		# plot(as_graphnel(sG))
 		# plot(as_graphnel(Gs))
 	} else {
 		sG <- Gs <- make_empty_graph(0)
 	}
-	
+
 	return(list(sG, Gs))
 }
 
 #' @title Compute Average Causal Effect (ACE) for a given DAG
 #'
-#' @description Compute total effects as ACEs of source variables X on 
-#' target variables in a DAG (i.e., when paths connecting X to Y are 
-#' directed and acyclic). The ACE will be estimated as the path coefficient 
-#' of X (i.e., theta) in the linear equation Y ~ X + pa(X), where pa(X) 
+#' @description Compute total effects as ACEs of source variables X on
+#' target variables in a DAG (i.e., when paths connecting X to Y are
+#' directed and acyclic). The ACE will be estimated as the path coefficient
+#' of X (i.e., theta) in the linear equation Y ~ X + pa(X), where pa(X)
 #' is the set of parent variables of X (Pearl, 1998).
 #' @param model A directed acyclic graph as an igraph object.
-#' @param data A matrix or data.frame. Rows correspond to subjects, and 
+#' @param data A matrix or data.frame. Rows correspond to subjects, and
 #' columns to graph nodes.
-#' @param group A binary vector. This vector must be as long as the 
-#' number of subjects. Each vector element must be 1 for cases and 0 
-#' for control subjects. If NULL (default), group influence will not be 
+#' @param group A binary vector. This vector must be as long as the
+#' number of subjects. Each vector element must be 1 for cases and 0
+#' for control subjects. If NULL (default), group influence will not be
 #' considered.
 #' @param ... arguments to be passed to or from other methods.
 #'
@@ -1132,10 +1144,10 @@ USPT <- function(graph, seed, eweight, alpha = 1, ...)
 #' @export
 #'
 #' @references
-#' 
-#' Pearl J (1998). Graphs, Causality, and Structural Equation Models. 
+#'
+#' Pearl J (1998). Graphs, Causality, and Structural Equation Models.
 #' Sociological Methods & Research. https://doi.org/10.1177/0049124198027002004
-#' 
+#'
 #' @seealso \code{\link[SEMgraph]{SEMfit}}
 #'
 #' @examples
@@ -1152,7 +1164,7 @@ SEMace <- function(graph, data, group = NULL, ...)
 	ig <- induced_subgraph(graph, vids = which(V(graph)$name %in% nodes))
 	dag <- graph2dagitty(ig)
 	#cat(dag)
-	
+
 	# Set distance matrix and distance graph
 	D <- igraph::distances(ig, mode = "out", weights = NA)
 	D <- ifelse(D == Inf, 0, D)
@@ -1160,11 +1172,11 @@ SEMace <- function(graph, data, group = NULL, ...)
 	gD <- simplify(graph_from_adjacency_matrix(D, mode = "directed",
 	               weighted = TRUE))
 	# gD; table(E(gD)$weight
-	
+
 	# Compute total effect (theta = ACE) from DAG
 	theta <- NULL
 	ftm <- as_edgelist(gD)
-	
+
 	for (i in 1:nrow(ftm)) { #i=482
 		cat("\rACE =", i, "of", nrow(ftm), " ")
 		flush.console()
@@ -1176,7 +1188,7 @@ SEMace <- function(graph, data, group = NULL, ...)
 		#str(Z)
 		#Z <- gRbase::parents(x, as_graphnel(ig))
 		#Z <- igraph::neighbors(ig, x, mode = "in")
-		
+
 		ftz <- NULL
 		if (length(as.character(unlist(Z))) > 0) {
 			for(k in 1:length(Z[[1]])) {
@@ -1188,7 +1200,7 @@ SEMace <- function(graph, data, group = NULL, ...)
 			df <- data[, c(x, y)]
 		}
 		ig1 <- graph_from_data_frame(rbind(c(x, y), ftz))
-		
+
 		# SEM fitting
 		if (length(group) == 0) {
 			try(quiet(sem <- SEMfit(graph = ig1, data = df, group = NULL)$fit))
@@ -1203,30 +1215,30 @@ SEMace <- function(graph, data, group = NULL, ...)
 			theta <- rbind(theta, t)
 		}
 	}
-	
+
 	return(list(theta = theta, gD = gD))
 }
 
 #' @title Test (shortest) paths between two nodes of a network
 #'
-#' @description Find and fit all the (shortest) paths between two nodes 
+#' @description Find and fit all the (shortest) paths between two nodes
 #' of a network.
 #' @param graph An igraph object.
-#' @param data A matrix or data.frame. Rows correspond to subjects, and 
+#' @param data A matrix or data.frame. Rows correspond to subjects, and
 #' columns to graph nodes.
-#' @param group A binary vector. This vector must be as long as the 
-#' number of subjects. Each vector element must be 1 for cases and 0 
-#' for control subjects. If NULL (default), group influence will not be 
+#' @param group A binary vector. This vector must be as long as the
+#' number of subjects. Each vector element must be 1 for cases and 0
+#' for control subjects. If NULL (default), group influence will not be
 #' considered.
 #' @param from Starting node name.
 #' @param to Ending node name.
-#' @param path If path = "all", all the paths between the two nodes will 
-#' be included in the fitted model. If path = "short", only shortest paths 
+#' @param path If path = "all", all the paths between the two nodes will
+#' be included in the fitted model. If path = "short", only shortest paths
 #' will be considered.
 #' @param ... arguments to be passed to or from other methods.
 #'
-#' @return A list of two objects: a fitted model object of class 
-#' \code{\link[lavaan]{lavaan}} ("fit"), and the extracted subnetwork as 
+#' @return A list of two objects: a fitted model object of class
+#' \code{\link[lavaan]{lavaan}} ("fit"), and the extracted subnetwork as
 #' an igraph object ("graph").
 #'
 #' @import igraph
@@ -1253,7 +1265,7 @@ SEMpath <- function(graph, data, group, from, to, path, ...)
 		cat("Inf distance from =", from, "to =", to, "! \n\n")
 		return(NULL)
 	}
-	
+
 	if( path == "short" ) {
 		# Set shortest path graph
 		paths <- all_shortest_paths(ig, from, to, mode = "out", weights = NA)
@@ -1267,7 +1279,7 @@ SEMpath <- function(graph, data, group, from, to, path, ...)
 		paths <- dagitty::paths(dag, from, to, directed = TRUE)$paths
 		nodes <- unique(unlist(strsplit(gsub("->", "", paths), "  ")))
 	}
-	
+
 	# Plot selected paths
 	ig1 <- induced_subgraph(ig, vids = which(V(ig)$name %in% nodes))
 	gplot(x = ig1, main = "")
@@ -1279,7 +1291,7 @@ SEMpath <- function(graph, data, group, from, to, path, ...)
 	E(ig)$width <- 1
 	E(ig)$width[attr(E(ig), "vnames") %in% attr(E(ig1), "vnames")] <- 2.5
 	gplot(x = ig, main = "")
-	
+
 	# SEM fitting
 	if (length(group) == 0) {
 		sem <- SEMfit(graph = ig1, data = data, group = NULL)
@@ -1288,33 +1300,33 @@ SEMpath <- function(graph, data, group, from, to, path, ...)
 		sem <- SEMfit2(graph = ig1, data = data, group = group)
 		print(sem$dest)
 	}
-	
+
 	return(list(fit = sem$fit, graph = ig1))
 }
 
 #' @title Search and test for causal relationships in a graph model
 #'
-#' @description Test the presence of causal relationships in a graphical 
-#' model. The set of conditionally-independent variables are computed 
-#' according to either Shipley's (Shipley, ...) or Pearl's (Pearl, ...) 
-#' d-separation test, for directed acyclic graphs (DAGs) and non-DAGs, 
-#' respectively. SEM modification indices (MIs) can be used to assign 
-#' directions (i.e., causality) to the significantly interacting variables 
+#' @description Test the presence of causal relationships in a graphical
+#' model. The set of conditionally-independent variables are computed
+#' according to either Shipley's (Shipley, ...) or Pearl's (Pearl, ...)
+#' d-separation test, for directed acyclic graphs (DAGs) and non-DAGs,
+#' respectively. SEM modification indices (MIs) can be used to assign
+#' directions (i.e., causality) to the significantly interacting variables
 #' found in the first step.
 #' @param fit A SEM fitted model object of class \code{\link[lavaan]{lavaan}}.
-#' @param psi Logical value. If FALSE (default), covariances will be excluded 
-#' from the output graph. If TRUE, covariances will be converted into 
+#' @param psi Logical value. If FALSE (default), covariances will be excluded
+#' from the output graph. If TRUE, covariances will be converted into
 #' bidirected graph edges.
-#' @param k Numeric. Maximum number of conditioning variables in the 
-#' dependence set. By default, k is set to the degrees of freedom of the 
-#' graphical model. By default, k is set to 3. Increasing k may significantly 
+#' @param k Numeric. Maximum number of conditioning variables in the
+#' dependence set. By default, k is set to the degrees of freedom of the
+#' graphical model. By default, k is set to 3. Increasing k may significantly
 #' increase computational time.
-#' @param MI Logical value. If TRUE, new causal relationships are filtered 
-#' by significant modification indices. By default, MI = FALSE. Enabling MIs 
+#' @param MI Logical value. If TRUE, new causal relationships are filtered
+#' by significant modification indices. By default, MI = FALSE. Enabling MIs
 #' will sensibly increase computational time.
 #' @param alpha Numeric. Significance level for edge inclusion.
-#' @param method P-value correction method. It may take the p.adjust.methods 
-#' from \code{\link[stats]{p.adjust}} function. By default, it is set to 
+#' @param method P-value correction method. It may take the p.adjust.methods
+#' from \code{\link[stats]{p.adjust}} function. By default, it is set to
 #' "BH" ("Benjamini-Hochberg").
 #' @param ... arguments to be passed to or from other methods.
 #'
@@ -1327,9 +1339,9 @@ SEMpath <- function(graph, data, group, from, to, path, ...)
 #' @export
 #'
 #' @references
-#' 
+#'
 #' REF1
-#' 
+#'
 #' REF2
 #'
 #' @examples
@@ -1362,10 +1374,10 @@ SEMdsep <- function(fit, psi = FALSE, k = 3, MI = FALSE, alpha = 0.05, method = 
 	 cat("ALL adjusted pvalues >", alpha, "!", "\n\n")
 	 return( dsep=NULL )
 	}
-	
+
 	cat("n. significant local test =", nrow(d_sep), "of", nrow(dsep), "\n\n")
 	if( MI==TRUE ) return( dsep=MI.test(fit=fit, dsep=d_sep, alpha=alpha, method=method) )
-	
+
 	return( dsep=d_sep )
 }
 
@@ -1376,7 +1388,7 @@ dsep.test<- function(dag, S, n, ...)
 	#idx <- unlist(dagitty::topologicalOrdering(dag))
 	A <- as_adj(dag, sparse=FALSE)[idx,idx]
 	nodes <- colnames(A)
-	
+
 	B <- NULL
 	for (r in 1:length(nodes)) {
 	 for (s in r:length(nodes)) {
@@ -1395,7 +1407,7 @@ dsep.test<- function(dag, S, n, ...)
 
 	SET <- NULL
 	for (i in 1:length(B)) { #i=1
-	 cat("\r","BasiSet=", i, "of", length(B)) 
+	 cat("\r","BasiSet=", i, "of", length(B))
      flush.console()
 	 if (length(B[[i]]) > (n-3)) next
 	 X <- B[[i]][1]
@@ -1404,7 +1416,7 @@ dsep.test<- function(dag, S, n, ...)
 	 try(pvalue<- pcor.test(S, B[[i]], n, H0=0.05))
 	 SET <- rbind(SET, data.frame(X, Y, SET=Set, pvalue))
 	}
-	
+
 	cat("\n done! \n")
 	return( SET )
 }
@@ -1415,7 +1427,7 @@ MI.test<- function(fit, dsep, alpha=0.05, method="BH", ...)
 	pvalue<- sapply(MI$mi, function(x) pchisq(x, df=1, lower.tail=FALSE))
 	MI<- subset(MI, p.adjust(pvalue, method=method) < alpha )
 	mi<- paste0(MI$lhs,MI$op,MI$rhs) #mi
-	
+
 	dxy<- paste0(dsep$X,"~",dsep$Y) #dxy
 	dyx<- paste0(dsep$Y,"~",dsep$X) #dyx
 	arrowL<- rep("<->", nrow(dsep))
@@ -1445,16 +1457,16 @@ pcor.test<- function(S, B, n, H0=0, ...)
 
 #' @title SEM-based gene set analysis
 #'
-#' @description Test group effect on biological pathways as SEM, evaluating 
-#' overall pathway perturbation, perturbation emission from source nodes, 
+#' @description Test group effect on biological pathways as SEM, evaluating
+#' overall pathway perturbation, perturbation emission from source nodes,
 #' and perturbation accumulation on target nodes.
 #' @param g A list of pathways to be tested.
-#' @param data A matrix or data.frame. Rows correspond to subjects, and 
+#' @param data A matrix or data.frame. Rows correspond to subjects, and
 #' columns to graph nodes.
-#' @param group A binary vector. This vector must be as long as the number 
-#' of subjects. Each vector element must be 1 for cases and 0 for control 
+#' @param group A binary vector. This vector must be as long as the number
+#' of subjects. Each vector element must be 1 for cases and 0 for control
 #' subjects.
-#' @param alpha Gene set test significance level. Alpha is set to 0.05 
+#' @param alpha Gene set test significance level. Alpha is set to 0.05
 #' by default.
 #' @param ... arguments to be passed to or from other methods.
 #'
@@ -1465,9 +1477,9 @@ pcor.test<- function(S, B, n, H0=0, ...)
 #' @importFrom stats pchisq p.adjust na.omit
 #' @export
 #' @references
-#' 
-#' Grassi M, Pepe D, Palluzzi F (in preparation). Structural Equation 
-#' Models (SEM)-based assessment of signalling pathway topology and 
+#'
+#' Grassi M, Pepe D, Palluzzi F (in preparation). Structural Equation
+#' Models (SEM)-based assessment of signalling pathway topology and
 #' perturbation. Journal ---- (xxxx)
 #'
 #' @seealso \code{\link[SEMgraph]{SEMfit}}
@@ -1476,26 +1488,26 @@ pcor.test<- function(S, B, n, H0=0, ...)
 #' group <- c(rep(0, 17), rep(1, 15))
 #' graph <- properties(kegg.pathways$hsa04540_Gap_junction)[[1]]
 #' data <- t(FTLDu_GSE13162)
-#' 
+#'
 #' ids <- which(names(kegg.pathways) %in% c("hsa04010_MAPK_signaling_pathway",
 #'                                          "hsa04310_Wnt_signaling_pathway",
 #'                                          "hsa04330_Notch_signaling_pathway",
 #'                                          "hsa04722_Neurotrophin_signaling_pathway",
 #'                                          "hsa04141_Protein_processing_in_endoplasmic_reticulum",
 #'                                          "hsa04144_Endocytosis"))
-#' 
+#'
 #' gsa <- SEMgsa(kegg.pathways[ids], data, group, alpha = 0.05)
 #' gsa
 #'
 SEMgsa <- function(g = list(), data, group, alpha, ...)
 {
 	# Set SEM objects:
-	pX2 <- function(x) 1 - stats::pchisq(-2*sum(log(x)), 2*length(x)) 
+	pX2 <- function(x) 1 - stats::pchisq(-2*sum(log(x)), 2*length(x))
 	gs <- names(g)
 	K <- length(g)
 	res.tbl <- NULL
 	#DE <- NULL
-	
+
 	for (k in 1:K) {
 		cat( "k =", k, gs[k], "\n" )
 		if(!is_igraph(g[[k]])) {
@@ -1504,7 +1516,7 @@ SEMgsa <- function(g = list(), data, group, alpha, ...)
 			ig <- g[[k]]
 		}
 		#E(ig)$weight; plot(as_graphnel(ig))
-		
+
 		# SEM fitting
 		fit <- SEMfit(graph = ig, data, group, B = 0.1, perm = 500)
 		if(length(fit[[1]]) == 0) {
@@ -1519,7 +1531,7 @@ SEMgsa <- function(g = list(), data, group, alpha, ...)
 		}
 		pval<- fit$gest@res$pchisq[1:(p-1)]
 		#DE <- c(DE, list())
-		
+
 		# data.frame of combined SEM results :
 		df <- data.frame(No.nodes = vcount(ig),
 		                 #No.edges= ecount(ig),
@@ -1530,7 +1542,7 @@ SEMgsa <- function(g = list(), data, group, alpha, ...)
 		P.VALUE <- round(pX2(x = df[1, 3:5]), 6)
 		res.tbl <- rbind(res.tbl, cbind(df, P.VALUE))
 	}
-	
+
 	#colnames(res.tbl) <- c(...)
 	rownames(res.tbl) <- gs
 	return(na.omit(res.tbl))
