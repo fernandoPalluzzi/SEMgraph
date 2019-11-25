@@ -76,7 +76,6 @@
 edgeweight.sem <- function(graph, data, group, ...)
 {
 	genes <- colnames(data)
-	#head(genes)
 	graph <- induced_subgraph(graph, vids = which(V(graph)$name %in% genes))
 	ftm <- as_data_frame(graph)
 	est <- NULL
@@ -96,8 +95,6 @@ edgeweight.sem <- function(graph, data, group, ...)
 
 		try(fit <- sem(mod, data = YC, fixed.x = TRUE))
 		try(est <- c(est, list(parameterEstimates(fit))))
-		#summary(fit)
-		#inspect(fit,"est")
 	}
 
 	names(est) <- paste0(ftm[, 1], "->", ftm[, 2])
@@ -111,7 +108,6 @@ edgeweight.sem <- function(graph, data, group, ...)
 	pv[pv == 0] <- 1*10^-9
 	pv[pv == 1] <- 1 - 1*10^-9
 	ftm <- cbind(ftm, zsign, pv)
-	#head(ftm)
 	gdf <- graph_from_data_frame(ftm, directed = is.directed(graph))
 
 	#return(list(graph = gdf, est))
