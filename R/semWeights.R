@@ -22,12 +22,17 @@
 
 #' @title Graph weighting via moderated mediation trivariate model
 #'
-#' @description Weight connections of a directed graph using a trivariate
-#' model in which the group variable has a direct effect on both source
-#' and target node, and their interaction. Edge weights correspond to
-#' the sign and P-value of the z-test (= estimate/standardError) of the
-#' mean direct group effects plus group moderation effect on the relationship
-#' between source and target.
+#' @description Weight connections of a directed graph by using two-group
+#' SEM fittinng. For each directed edge j -> k, the SEM tests group effect 
+#' on the source node j, the target node k, and their directed 
+#' interaction. The weight parameter w is thus defined as the degree 
+#' centrality-scaled linear combination of the three effects. The actual 
+#' edge weight will be the negative natural logarithm of the z-test = w/SE(w) 
+#' P-value. Node (source and target) degree centrality scaling contrasts 
+#' the effect of weights inflation towards highly connected genes (i.e., hubs). 
+#' This comes from the evidence that perturbed systems often involve essential 
+#' nodes with low degree (e.g., community-bridging "bottleneck" connectors) or 
+#' peripheral nodes (e.g., effectors).
 #' @param graph An igraph object.
 #' @param data A matrix or data.frame. Rows correspond to subjects, and
 #' columns to graph nodes.
@@ -47,10 +52,6 @@
 #' @export
 #'
 #' @references
-#'
-#' Grassi M & Palluzzi F (in preparation). SEMgraph: An R Package for
-#' Pathway and Network Analysis of Genomics Data with Structural
-#' Equation Models (SEM). Journal of Statistical Software (xxxx)
 #'
 #' Palluzzi F, Ferrari R, Graziano F, Novelli V, Rossi G, Galimberti D,
 #' Rainero I, Benussi L, Nacmias B, Bruni AC, Cusi D, Salvi E, Borroni B,
@@ -73,44 +74,46 @@
 #' E(G)$pv
 #' E(G)$zsign
 #'
-edgeweight.sem <- function(graph, data, group, ...)
+edgeweight.cov <- function(graph, data, group, ...)
 {
+	# Set genes and from-to-matrix representation of gene-gene links
 	genes <- colnames(data)
 	graph <- induced_subgraph(graph, vids = which(V(graph)$name %in% genes))
+	degree <- igraph::degree(graph, v = V(graph), mode = "all")
 	ftm <- as_data_frame(graph)
+	Y <- scale(data)
 	est <- NULL
-
-	for (i in 1:nrow(ftm)){
-		Y <- scale(data[, c(ftm[i, 1], ftm[i, 2])])
-		YC <- data.frame(cbind(Y, group, group*Y[, 1]))
-		colnames(YC) <- c("x", "y", "C", "Cx")
-		#head(YC)
-
-		mod <- paste0('y~ b0*1+b1*C+b2*x+b3*Cx
-		               x~ a0*1+a1*C
-		               #TE:= b1+a1*b2+b3*(a0+a1)
-		               #w0:= (a1+TE)/2
-		               DE:= b1+b3*a0
-		               w1:= (a1+DE)/2 + b3')
-
-		try(fit <- sem(mod, data = YC, fixed.x = TRUE))
-		try(est <- c(est, list(parameterEstimates(fit))))
+	
+	for (i in 1:nrow(ftm)) {
+		cat("\r", "edge weight", i, "of", nrow(ftm))
+		flush.console()
+		YC <- data.frame(cbind(Y[, c(ftm[i, 1], ftm[i, 2])], group))
+		colnames(YC)[1:2] <- c("x", "y")
+		
+		dx<- degree[ftm[i,1]]
+		dy<- degree[ftm[i,2]]
+		model<- paste0(
+			'x ~ c(a1,a2)*1
+			y ~ c(b1,b2)*1
+			x ~~ c(c1,c2)*y 
+			#w:= (a1-a2)/2+(b1-b2)/2+(c1-c2)
+			w:= (a1-a2)/', dx, '+(b1-b2)/', dy, '+(c1-c2)')
+		try(fit<- sem(model, data=YC, group="group", fixed.x=FALSE))
+		try(est<- c(est, list(parameterEstimates(fit))))
 	}
-
-	names(est) <- paste0(ftm[, 1], "->", ftm[, 2])
-
-	zeta <- function(x) est[[x]]$z[est[[x]]$label == "b3"]
-	pvalue <- function(x) est[[x]]$pvalue[est[[x]]$label == "w1"]
+	cat("\n done.\n")
+	
+	zeta <- function(x) est[[x]]$z[est[[x]]$label == "w"]
+	pvalue <- function(x) est[[x]]$pvalue[est[[x]]$label == "w"]
 	B <- sapply(1:length(est), zeta)
 	zsign <- ifelse(abs(B) < 1.64, 0, sign(B))
 	pv <- sapply(1:length(est), pvalue)
 	pv[is.na(pv)] <- 0.5
 	pv[pv == 0] <- 1*10^-9
-	pv[pv == 1] <- 1 - 1*10^-9
+	pv[pv == 1] <- 1-1*10^-9
 	ftm <- cbind(ftm, zsign, pv)
 	gdf <- graph_from_data_frame(ftm, directed = is.directed(graph))
-
-	#return(list(graph = gdf, est))
+	
 	return(graph = gdf)
 }
 
@@ -145,10 +148,6 @@ edgeweight.sem <- function(graph, data, group, ...)
 #'
 #' @references
 #'
-#' Grassi M & Palluzzi F (in preparation). SEMgraph: An R Package for
-#' Pathway and Network Analysis of Genomics Data with Structural Equation
-#' Models (SEM). Journal of Statistical Software (xxxx)
-#'
 #' Palluzzi F, Ferrari R, Graziano F, Novelli V, Rossi G, Galimberti D,
 #' Rainero I, Benussi L, Nacmias B, Bruni AC, Cusi D, Salvi E, Borroni B,
 #' Grassi M. (2017). A novel network analysis approach reveals DNA damage,
@@ -172,44 +171,46 @@ edgeweight.sem <- function(graph, data, group, ...)
 #'
 edgeweight.cfa <- function(graph, data, group, ...)
 {
+	# Set genes and from-to-matrix representation of gene-gene links
 	genes <- colnames(data)
-	#head(genes)
 	graph <- induced_subgraph(graph, vids = which(V(graph)$name %in% genes))
 	ftm <- as_data_frame(graph)
-	est <- NULL
-
+	Y <- scale(data)
+	est <- NULL 
+	
 	for (i in 1:nrow(ftm)) {
-		YC <- data.frame(cbind(data[, c(ftm[i, 1], ftm[i, 2])], group))
+		cat("\r", "edge weight", i, "of", nrow(ftm))
+		flush.console()
+		YC <- data.frame(cbind(Y[, c(ftm[i, 1], ftm[i, 2])], group))
 		colnames(YC)[1:2] <- paste0("y", 1:2)
-		#head(YC)
-		if(cov(YC$y1, YC$y2) < 0) YC$y1<- -1*YC$y1
+		if(cov(YC$y1, YC$y2) < 0) YC$y1 <- -1*YC$y1
 		a <- sqrt(cov(YC$y1, YC$y2))
-
-		model<- paste0('f =~ ',a,'*y1+',a,'*y2
-		               f ~ group
-		               y1~~',1-a^2,'*y1
-		               y2~~',1-a^2,'*y2')
-
+		
+		model <- paste0(
+			'f =~ ',a,'*y1+',a,'*y2
+			f ~ group
+			y1~~',1-a^2,'*y1
+			y2~~',1-a^2,'*y2')
+		
 		try(fit <- cfa(model, data = YC, fixed.x = TRUE))
 		try(est <- c(est, list(parameterEstimates(fit))))
-		#summary(fit)
-		#inspect(fit, "est")
+		# summary(fit); inspect(fit,"est") 
 	}
-
+	cat("\n done.\n")
 	names(est) <- paste0(ftm[, 1], "<->", ftm[, 2])
+	
 	zeta <- function(x) est[[x]]$z[est[[x]]$op == "~"]
 	pvalue <- function(x) est[[x]]$pvalue[est[[x]]$op == "~"]
 	B <- sapply(1:length(est), zeta)
 	zsign <- ifelse(abs(B) < 1.64, 0, sign(B))
+	var <- sapply(1:length(est), function(x) est[[x]]$est[6])
 	pv <- sapply(1:length(est), pvalue)
-	pv[is.na(pv)] <- 0.5
+	pv[is.na(pv) | var < 0] <- 0.5
 	pv[pv == 0] <- 1*10^-9
-	pv[pv == 1] <- 1 - 1*10^-9
+	pv[pv == 1] <- 1-1*10^-9
 	ftm <- cbind(ftm, zsign, pv)
-	#head(ftm)
 	gdf <- graph_from_data_frame(ftm, directed = is.directed(graph))
-
-	#return(list(graph = gdf, est))
+	
 	return(graph = gdf)
 }
 
