@@ -39,7 +39,6 @@
 #' @param group Binary vector. This vector must be as long as the number
 #' of subjects. Each vector element must be 1 for cases and 0 for control
 #' subjects.
-#' @param ... arguments to be passed to or from other methods.
 #'
 #' @return A weighted graph, as an igraph object, with two edge attributes:
 #' zsign and pvalue. Attribute zsign may have values [-1, 0, +1], where 0
@@ -74,7 +73,7 @@
 #' E(G)$pv
 #' E(G)$zsign
 #'
-edgeweight.cov <- function(graph, data, group, ...)
+edgeweight.cov <- function(graph, data, group)
 {
 	# Set genes and from-to-matrix representation of gene-gene links
 	genes <- colnames(data)
@@ -133,7 +132,6 @@ edgeweight.cov <- function(graph, data, group, ...)
 #' @param group Binary vector. This vector must be as long as the number
 #' of subjects. Each vector element must be 1 for cases and 0 for control
 #' subjects.
-#' @param ... arguments to be passed to or from other methods.
 #'
 #' @return A weighted graph, as an igraph object, with two edge attributes:
 #' "zsign" and "pv". Attribute "zsign" may have values [-1, 0, +1],
@@ -169,7 +167,7 @@ edgeweight.cov <- function(graph, data, group, ...)
 #' E(G)$pv
 #' E(G)$zsign
 #'
-edgeweight.cfa <- function(graph, data, group, ...)
+edgeweight.cfa <- function(graph, data, group)
 {
 	# Set genes and from-to-matrix representation of gene-gene links
 	genes <- colnames(data)
@@ -227,7 +225,6 @@ edgeweight.cfa <- function(graph, data, group, ...)
 #' @param group Binary vector. This vector must be as long as the number
 #' of subjects. Each vector element must be 1 for cases and 0 for control
 #' subjects.
-#' @param ... arguments to be passed to or from other methods.
 #'
 #' @return A weighted graph, as an igraph object, with two edge attributes:
 #' "zsign" and "pv". Attribute "zsign" may have values [-1, 0, +1], where
@@ -259,7 +256,7 @@ edgeweight.cfa <- function(graph, data, group, ...)
 #' E(G)$pv
 #' E(G)$zsign
 #'
-edgeweight.r2z <- function(graph, data, group, ...)
+edgeweight.r2z <- function(graph, data, group)
 {
 	genes <- colnames(data)
 	#head(genes)
@@ -318,14 +315,13 @@ edgeweight.r2z <- function(graph, data, group, ...)
 #' (corresponding to an absolute correlation coefficient of 0.8).
 #' @param alpha Significance level of the group effect over graph nodes.
 #' By default, alpha = 0.05.
-#' @param ... arguments to be passed to or from other methods.
 #'
 #' @return The input graph endowed with three new binary (1: seed,
 #' 0: not-seed) vertex attibutes:
 #' \enumerate{
-#' \item "spvlm", P-value of the simple linear regression y ~ x (i.e.,
-#' node ~ group)
-#' \item "sprot", prototype seeds derived from
+#' \item "spvlm", seed based on P-value of the simple linear regression 
+#' model node ~ group
+#' \item "sprot", prototype seeds derived from R method
 #' \code{\link[protoclust]{protoclust}}
 #' \item "smst", non-leaf nodes of the MST derived from the input network
 #' }
@@ -354,7 +350,7 @@ edgeweight.r2z <- function(graph, data, group, ...)
 #' table(V(G)$sprot)
 #' table(V(G)$smst)
 #'
-seedweight <- function(graph, data, group, h = 0.2, alpha = 0.05, ...)
+seedweight <- function(graph, data, group, h = 0.2, alpha = 0.05)
 {
 	# Set genes, graph and data objects
 	genes <- colnames(data)
