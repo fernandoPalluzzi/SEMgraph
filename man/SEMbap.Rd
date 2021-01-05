@@ -2,134 +2,97 @@
 % Please edit documentation in R/semPaths.R
 \name{SEMbap}
 \alias{SEMbap}
-\title{Bow-free graphical lasso data-driven and knowledge-based 
-interaction search}
+\title{Bow-free covariance search}
 \usage{
-SEMbap(graph, data, group = NULL, B = NULL, perm = 0,
-  type = "dsep", alpha = 0.05, method = "BH", verbose = FALSE, ...)
+SEMbap(graph, data, gnet = NULL, d = 0, alpha = 0.05, verbose = FALSE, ...)
 }
 \arguments{
 \item{graph}{An igraph object.}
 
-\item{data}{A matrix whith rows corresponding to subjects, and 
-columns to graph nodes.}
+\item{data}{A matrix whith rows corresponding to subjects, and
+columns to graph nodes (variables).}
 
-\item{group}{A binary vector. This vector must be as long as the 
-number of subjects. Each vector element must be 1 for cases and 0 
-for control subjects. If NULL (default), group influence will not be 
-considered.}
+\item{gnet}{Reference "global" network as an igraph object.}
 
-\item{B}{Node-node interaction fixed weight. If B is NULL (default), 
-beta coefficients will be estimated by MLE. If B is numeric, it will 
-be used as a scaling factor for the edge weights in the graph object 
-(graph attribute E(graph)$weight). Since SEMgraph scales data before 
-model fitting, we suggest a grid search for the optimal B value in 
-the interval [0, 0.3]. As a rule of thumb, to our experience, B = 0.1 
-performs well on any network.}
+\item{d}{An integer value indicating the maximum length of indirect
+interactions between pairs of nodes. If d = 1, direct interactions 
+between nodes will be searched in the reference interactome (if given). 
+If d > 1, indirect interactions of length d or shorter (i.e., with at 
+most d - 1 connectors) between bow-free nodes will be searched. 
+Setting d = 0, is equivalent to gnet = NULL.}
 
-\item{perm}{Number of permutations. By default, perm is set to 0 and 
-conventional standard errors will be computed. If perm > 1, P-values 
-will be computed from a moment-based chi-squared approximation derived 
-from the empirical distribution of permuted data (Larson and Owen, 2015). 
-To reduce computational time costs per permutation, we suggest perm = 500 
-(this will leave P-values precision almost unaltered). In perm = 1, 
-no P-values are calculated.}
+\item{alpha}{Significance level for Bonferroni multiple testing correction 
+used for the independence tests (by default, alpha = 0.05), as suggested 
+by Shipley (2000).}
 
-\item{alpha}{Significance level used for GGM search. Alpha is set to 
-0.05 by default.}
-
-\item{verbose}{A logical value. If FALSE (default), the processed graphs 
+\item{verbose}{A logical value. If FALSE (default), the processed graphs
 will not be plotted to screen, saving execution time.}
 
-\item{...}{arguments to be passed to or from other methods.}
-
-\item{gnet}{External interaction network as an igraph object. Interaction 
-data from this network will be used to integrate additional interaction 
-information inside the model. Two preset databases are available: 
-(i) kegg, for KEGG signaling pathways (directed), and (ii) string, for 
-STRING protein interactions (undirected). Direct and indirect interactions 
-will be added on the base of the selected interactome. Note that, if 
-the input graph is undirected, an undirected reference interactome 
-is expected.}
-
-\item{d}{An integer value indicating the maximum length of indirect 
-interactions between pairs of bow-free nodes. If d = 1, direct 
-interactions between bow-free nodes will be searched in the reference 
-interactome. If d > 1, indirect interactions of length d or shorter 
-(i.e., with at most d - 1 connectors) between bow-free nodes will be 
-searched.}
+\item{...}{Currently ignored.}
 }
 \value{
-A list of 5 objects:
-\enumerate{
-\item "fit", SEM fitted object of class lavaan;
-\item "gest", group effect estimates and P-values on subgraph nodes;
-\item "model", SEM model as a string;
-\item "graph", list of four graphs:
+A list of 3 igraph objects:
 \itemize{
-\item "ig", the induced subgraph mapped on input data,
-\item "guu", the undirected GGM graph,
-\item "gLV", the directed latent GGM graph,
-\item "Ug", union of graphs "ig" and "guu";
-}
-\item "dataXY", input data subset mapping graph nodes, plus group at 
-the first column (if no group is specified, this column will take NA 
-values).
+\item "bap", the output bow-free acyclic path diagram,
+\item "guu", the bidirected graph of significant covariances,
+\item "gLV", the directed graph of latent variables (LV) underlying
+significant covariances (i.e., the canonical graph, where bidirected
+X <-> Y edges are substituted by directed edges X <- LV -> Y).
 }
 }
 \description{
-Fast estimation of sparse inverse covariance using Gaussian 
-Graphical Models (GGMs), with de-sparsified graphical lasso method 
-(D-S_GL; see \code{\link[SILGGM]{SILGGM}}). Significant bow-free covariaces 
-will be selected. Only covariances connecting nodes without direct links 
-in the input graph (i.e., bow-free covariances) and present in the 
-reference interactome (i.e., biologically validated) are added to the 
-input graph. Once new covariances has been added, the resulting mixed 
-network is fitted (see \code{\link[SEMgraph]{SEMfit}} for further details).
+Search for new bow-free interactions. SEMbap does an 
+exhaustive missing interaction search, using Shipley's d-separation test 
+(Shipley, 2000) to add a bidirected edge (i.e., a bow-free covariance) 
+between pairs of disconnected nodes (X, Y) if there is a significant 
+association between them, given a set Z of conditioning nodes. 
+Here, the "bow-free" condition states that there cannot be both 
+directed and bidirected connections between the same pair of nodes 
+(Nowzohour, 2017).
+}
+\details{
+Shipley's d-separation test (Shipley, 2000) evaluates if two 
+variables (X, Y) in a DAG are conditionally independent for a given 
+conditioning set Z, assuming that the underlying statistical model is 
+recursive (i.e., acyclic) and can be represented as a graph in which 
+nodes (i.e., variables) are connected through directed edges (i.e., 
+causal effects), with no self-loops. The conditioning set Z is 
+represented by the union of the parent sets of X and Y (i.e., the 
+"basis set"). SEMbap algorithm makes an exhaustive search of all possible 
+missing edges, corresponding to the number of degrees of freedom (df) 
+of the DAG. A new bow-free covariance is added if there is a significant 
+X-Y association, after Bonferroni multiple testing correction. In addition, 
+if a reference network is given, new interactions will be retained 
+only if present in the reference. 
+SEMbap function may work on any kind of directed network, by converting 
+mixed graphs into directed acyclic graphs. 
+See \code{\link[SEMgraph]{graph2dag}} for conversion method details.
 }
 \examples{
-group <- c(rep(0, 17), rep(1, 15))
-# Return graph properties, take the largest component, and convert 
-# grapNEL to igraph
-graph <- properties(kegg.pathways$hsa04540_Gap_junction)[[1]]
-# Transpose data matrix: 32 subjectx (rows) x 19726 genes (columns)
-data <- t(FTLDu_GSE13162)
-# Network degrees of freedom
-ndf <- vcount(graph)*(vcount(graph) - 1)/2 - ecount(graph)
-ggm <- SEMggm(graph = graph, data = data, gnet = kegg, group = group,
-              d = 2,
-              perm = 10000,
-              alpha = 1/ndf,
-              verbose = TRUE)
 
-# Results summary
-summary(ggm$gest)
-pval <- ggm$gest@res$pchisq[-c(1:3)]
-length(which(p.adjust(pval, method = "BH") < 0.1))
+# BAP estimation
+G <- SEMbap(graph = sachs$graph, data = log(sachs$pkc))
 
-# Plot output graphs
-par(mfrow = c(2, 2), mar = c(1, 1, 1, 1))
-ig <- ggm$graph$ig; E(ig)$weight <- 1
-guu <- ggm$graph$guu
-gLV <- ggm$graph$gLV
-Ug <- ggm$graph$Ug; E(Ug)$weight <- 1
-gplot(ig, main = "Input network")
-plot(guu, main = "Covariance network")
-plot(gLV, main = "Latent Variable network")
-gplot(Ug, main = "Input + Covariance network")
+# Model fitting
+sem <- SEMrun(graph = G$bap, data = log(sachs$pkc), group = sachs$group)
+
+# Graphs
+gplot(G$bap)
+plot(G$guu)
+plot(G$gLV)
 
 }
 \references{
-Zhang R, Ren Z, Chen W (2018). SILGGM: An extensive R package for 
-efficient statistical inference in large-scale gene networks. 
-PLoS Comput. Biol., 14(8): e1006369. 
-https://doi.org/10.1371/journal.pcbi.1006369 
+Shipley B (2000). A new inferential test for path models based on DAGs. 
+Struct. Equ. Modeling, 7(2): 206-218. 
+https://doi.org/10.1207/S15328007SEM0702_4
 
-Friedman J, Hastie T, Tibshirani R (2008). Sparse inverse covariance 
-estimation with the graphical lasso. Biostatistics, 9(3): 432-441. 
-https://doi.org/10.1093/biostatistics/kxm045
-}
-\seealso{
-\code{\link[lavaan]{lavaan}}, \code{\link{igraph}}, 
-\code{\link[SILGGM]{SILGGM}}
+Brito C and Pearl J (2002). A New Identification Condition for 
+Recursive Models With Correlated Errors. 
+Structural Equation Modeling, 9(4): 459-474.
+
+Nowzohour C, Maathuis MH, Evans RJ, Buhlmann P (2017). Distributional 
+equivalence and structure learning for bow-free acyclic path diagrams. 
+Electron. J. Stat., 11(2): 5342-5374.
+https://doi.org/10.1214/17-EJS1372
 }

@@ -1,16 +1,24 @@
 Package: SEMgraph
 Type: Package
-Title: Network Analysis and Causal Inference Through Structural Equation Modeling
+Title: Network Analysis and Causal Inference Through Structural
+        Equation Modeling
 Version: 0.3.3
-Date: 2019-09-30
+Date: 2020-10-08
 Author: Mario Grassi [aut], Fernando Palluzzi [aut, cre], Daniele Pepe [ctb]
 Maintainer: Fernando Palluzzi <fernando.palluzzi@gmail.com>
 Description: This is the SEMgraph package for network analysis and causal inference through Structural Equation Modeling (SEM). It includes functions to import, weight, manipulate, and fit biological network models using the SEM framework.
 License: GPL-3
 Encoding: UTF-8
 LazyData: TRUE
-Depends: igraph (>= 1.2.1), lavaan (>= 0.5-23), R (>= 3.4)
-Imports: cate (>= 1.0.4), corpcor (>= 1.6.9), dagitty (>= 0.2-2), flip (>= 2.5.0), graph (>= 1.56.0), gRbase (>= 1.8-3.4), pcalg (>= 2.6), protoclust (>= 1.6.3), Rgraphviz (>= 2.22.0), SILGGM (>= 1.0.0)
-Suggests: BiocStyle, knitr, rmarkdown
+Depends: igraph (>= 1.2.1), lavaan (>= 0.5-23), R (>= 4.0)
+Imports: cate (>= 1.0.4), corpcor (>= 1.6.9), dagitty (>= 0.2-2), 
+         diffusr (>= 0.1.4), doSNOW (>= 1.0.18), flip (>= 2.5.0), 
+         foreach (>= 1.5.0), gdata (>= 2.18.0), ggm (>= 2.3), GGMncv (>= 2.0.0), 
+         glmnet (>= 2.0-18), graph (>= 1.56.0), pcalg (>= 2.6-5), 
+         progress (>= 1.2.2), protoclust (>= 1.6.3), RcppEigen (>= 0.3.3.4.0), 
+         Rgraphviz (>= 2.22.0)
+Suggests: BiocStyle, knitr, rmarkdown, SEMdata, huge, graphite, org.Hs.eg.db
 VignetteBuilder: knitr
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1
+NeedsCompilation: no
+Packaged: 2020-08-01 07:36:30 UTC; fernando

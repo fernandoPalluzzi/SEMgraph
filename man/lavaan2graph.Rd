@@ -2,49 +2,64 @@
 % Please edit documentation in R/semUtils.R
 \name{lavaan2graph}
 \alias{lavaan2graph}
-\title{Path diagram to graph}
+\title{lavaan model to graph}
 \usage{
-lavaan2graph(model, directed = TRUE, psi = TRUE, verbose = TRUE, ...)
+lavaan2graph(model, directed = TRUE, psi = TRUE, verbose = FALSE, ...)
 }
 \arguments{
-\item{model}{Path diagram using lavaan syntax.}
+\item{model}{Model using lavaan syntax.}
 
-\item{directed}{Logical value. If TRUE (default), edge directions from 
-the path diagram will be preserved. If FALSE, the resulting graph will 
+\item{directed}{Logical value. If TRUE (default), edge directions from
+the model will be preserved. If FALSE, the resulting graph will
 be undirected.}
 
-\item{psi}{Logical value. If TRUE (default) covariances will be converted 
-into bidirected graph edges. If FALSE, covariances will be excluded from 
+\item{psi}{Logical value. If TRUE (default) covariances will be converted
+into bidirected graph edges. If FALSE, covariances will be excluded from
 the output graph.}
 
-\item{verbose}{Logical value. If TRUE (default), a plot of the output 
-graph will be generated. For large graphs, this could significantly 
-increase computation time. If FALSE, graph plotting will be disabled.}
+\item{verbose}{Logical value. If TRUE, a plot of the output graph will 
+be generated. For large graphs, this could significantly increase 
+computation time. If FALSE (default), graph plotting will be disabled.}
 
-\item{...}{arguments to be passed to or from other methods.}
+\item{...}{Currently ignored.}
 }
 \value{
 An igraph object.
 }
 \description{
-Convert a path diagram, specified using lavaan syntax, 
+Convert a model, specified using lavaan syntax,
 to an igraph object.
 }
 \examples{
 
 # Writing path diagram in lavaan syntax
 
-model <- '
-# path diagram
-y1 ~ x1
-y2 ~ x1
-y3 ~ y1 + y2
-y4 ~ x1 + y1 + y3
-# covariances
-y1 ~~ y2'
+model<-'
+#path model
+Jnk ~ PKA + PKC
+P38 ~ PKA + PKC
+Akt ~ PKA + PIP3
+Erk ~ PKA + Mek
+Mek ~ PKA + PKC + Raf
+Raf ~ PKA + PKC
+PKC ~ PIP2 + Plcg
+PIP2 ~ PIP3 + Plcg
+Plcg ~ PIP3
+#PKA ~ 1
+#PIP3 ~ 1
 
-# Converting path diagram into graph
-graph <- lavaan2graph(model)
-graph
+# (co)variances
+# PIP2 ~~ PIP3
+'
+
+# Graph with covariances
+G0 <- lavaan2graph(model, psi=TRUE)
+gplot(G0)
+plot(G0, layout=layout.circle)
+
+# Graph without covariances
+G1 <- lavaan2graph(model, psi=FALSE)
+gplot(G1)
+plot(G1, layout=layout.circle) 
 
 }

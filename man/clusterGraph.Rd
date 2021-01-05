@@ -2,69 +2,70 @@
 % Please edit documentation in R/semLatent.R
 \name{clusterGraph}
 \alias{clusterGraph}
-\title{Hidden modules building}
+\title{Topological graph clustering}
 \usage{
-clusterGraph(graph, type, HM = "none", size = 3, verbose = FALSE,
-  ...)
+clusterGraph(graph, type = "wtc", HM = "none", size = 5, verbose = FALSE, ...)
 }
 \arguments{
 \item{graph}{An igraph object.}
 
-\item{type}{Network clustering method. If type = "ebc" (default), network 
-modules are generated using edge betweenness clustering method (see 
-\code{\link[igraph]{cluster_edge_betweenness}}). Other clustering methods 
-include: "fgc" (fast greedy method), "lbc" (label propagation method), 
-"lec" (leading eigenvector method), "loc" (multi-level optimization), 
-"opc" (optimal communiy structure), "sgc" (spinglass statistical 
-mechanics), "wtc" (walktrap community structure with short random walks), 
-and "tahc" (tree agglomerative hierarchical clustering).}
+\item{type}{Topological clustering methods. If type = "tahc", network 
+modules are generated using the tree agglomerative hierarchical 
+clustering method (Yu et al., 2015).
+Other non-tree clustering methods from igraph package include: "wtc" 
+(default value; walktrap community structure with short random walks), 
+"ebc" (edge betweeness clustering), "fgc" (fast greedy method), "lbc" 
+(label propagation method), "lec" (leading eigenvector method), "loc" 
+(multi-level optimization), "opc" (optimal communiy structure), "sgc" 
+(spinglass statistical mechanics).}
 
-\item{HM}{Hidden model type. This parameter is only required by 
-\code{\link[SEMgraph]{SEMfsr}}), and it is automatically set to NULL 
-when clusterGraph is used as a stand alone function.
-For each defined hidden module: 
-(i) if HM = "LV", a latent variable (LV) will be defined as common 
-unknown cause acting on cluster nodes; (ii) if HM = "CV", cluster nodes 
-will be considered as regressors of a latent composite variable (CV); 
-(iii) if HM = "UV", an unmeasured variable (UV) is defined, where source 
-nodes of the module (i.e., in-degree = 0) act as common regressors 
-influencing the other nodes via an unmeasured variable (see also 
-\code{\link[SEMgraph]{SEMfsr}}).}
+\item{HM}{Hidden model type. Enables the visualization of the hidden 
+model. If set to "none" (default), no HM is visualized.
+For each defined hidden module:
+(i) if HM = "LV", a latent variable (LV) will be defined as common
+unknown cause acting on cluster nodes; (ii) if HM = "CV", cluster nodes
+will be considered as regressors of a latent composite variable (CV);
+(iii) if HM = "UV", an unmeasured variable (UV) is defined, where source
+nodes of the module (i.e., in-degree = 0) act as common regressors
+influencing the other nodes via an unmeasured variable (see also
+\code{\link[SEMgraph]{clusterScore}}).}
 
-\item{size}{Minimum number of nodes per hidden module. By default, a 
-minimum number of 3 nodes is required.}
+\item{size}{Minimum number of nodes per module. By default, a minimum 
+number of 5 nodes is required.}
 
 \item{verbose}{A logical value. If FALSE (default), the processed graphs 
 will not be plotted to screen, saving execution time (they will be 
-returned anyway).}
+returned in output anyway).}
 
-\item{...}{arguments to be passed to or from other methods.}
+\item{...}{Currently ignored.}
 }
 \value{
 If HM is not "none" a list of 3 objects is returned:
 \enumerate{
-\item "gHM", subgraphs containing latent variable or composite variable modules;
-\item "M", cluster membership vector for each node;
-\item "gHC", the list of modules produced by clusterGraph.
+\item "gHM", subgraph containing hidden modules as an igraph object;
+\item "membership", cluster membership vector for each node;
+\item "gHC", the list of modules as igraph objects.
 }
 If HM is "none", only the cluster membership vector is returned.
 }
 \description{
-Graph clustering utility.
+Topological graph clustering methods.
 }
 \examples{
-graph <- properties(kegg.pathways$hsa04540_Gap_junction)[[1]]
-membership <- clusterGraph(graph, type = "tahc", size = 10, verbose = TRUE)
+G <- kegg.pathways$"Amyotrophic lateral sclerosis (ALS)"
+# Largest connected component
+G <- properties(G)[[1]]
+membership <- clusterGraph(graph = G, type = "wtc", HM = "LV", verbose = TRUE)
 
 }
 \references{
-Fortunato S, Hric D. Community detection in networks: A user guide (2016). 
+Fortunato S, Hric D. Community detection in networks: A user guide (2016).
 Phys Rep; 659: 1-44. http://dx.doi.org/10.1016/j.physrep.2016.09.002
 
-Yu M, Hillebrand A, Tewarie P, Meier J, van Dijk B, Van Mieghem P, 
-Stam CJ (2015). Hierarchical clustering in minimum spanning trees. 
+Yu M, Hillebrand A, Tewarie P, Meier J, van Dijk B, Van Mieghem P,
+Stam CJ (2015). Hierarchical clustering in minimum spanning trees.
 Chaos 25(2): 023107.  https://doi.org/10.1063/1.4908014
 }
 \seealso{
-\code{\link[SEMgraph]{SEMfsr}}
+\code{\link[SEMgraph]{clusterScore}}, \code{\link[SEMgraph]{cplot}}
 }

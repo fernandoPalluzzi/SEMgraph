@@ -2,22 +2,27 @@
 % Please edit documentation in R/semUtils.R
 \name{graph2lavaan}
 \alias{graph2lavaan}
-\title{Graph to path diagram}
+\title{Graph to lavaan model}
 \usage{
 graph2lavaan(graph, nodes = V(graph)$name, ...)
 }
 \arguments{
 \item{graph}{An igraph object.}
 
-\item{nodes}{Subset of nodes to be included in the path diagram.
-By default, all the graph nodes will be included inside the path diagram.}
+\item{nodes}{Subset of nodes to be included in the model.
+By default, all the input graph nodes will be included in the output model.}
 
-\item{...}{arguments to be passed to or from other methods.}
+\item{...}{Currently ignored.}
 }
 \value{
-A path diagram in lavaan syntax.
+A model in lavaan syntax.
 }
 \description{
-Convert an igraph object to a path diagram, specified 
-using lavaan syntax.
+Convert an igraph object to a model, specified using 
+lavaan syntax.
+}
+\examples{
+model <- graph2lavaan(sachs$graph)
+cat(model)
+
 }

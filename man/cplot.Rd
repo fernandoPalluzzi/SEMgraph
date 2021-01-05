@@ -2,29 +2,46 @@
 % Please edit documentation in R/semLatent.R
 \name{cplot}
 \alias{cplot}
-\title{Network community plotting utility}
+\title{Subgraph mapping}
 \usage{
-cplot(g, membership, l = layout.auto, global = FALSE)
+cplot(graph, membership, l = layout.auto, map = FALSE, verbose = FALSE, ...)
 }
 \arguments{
-\item{g}{An igraph object.}
+\item{graph}{An igraph object.}
 
-\item{membership}{a vector of node memberships.}
+\item{membership}{Cluster membership vector for each node.}
 
-\item{l}{igraph layout option.}
+\item{l}{graph layout One of the \code{\link{igraph}} layouts. 
+If this argument is ignored, an automatic layout will be applied.}
 
-\item{global}{Logical value. If TRUE, the plot of the input graph 
-(coloured by cluster membership) will be generated alongwith independent 
-module plots. If the input graph is very large, plotting could be 
-computationally intensive (by default, global = FALSE).}
+\item{map}{A logical value. Visualize cluster mapping over the input 
+graph. If FALSE (default), visualization will be disabled. For large 
+graphs, visualization may take long.}
+
+\item{verbose}{A logical value. If FALSE (default), the processed 
+graphs will not be plotted to screen, saving execution time (they will 
+be returned in output anyway).}
+
+\item{...}{Currently ignored.}
+}
+\value{
+The list of clusters and cluster mapping as igraph objects.
 }
 \description{
-Merge and plot network communities of a graph as single 
-nodes.
+Map groups of nodes onto an input graph, based on a 
+membership vector.
 }
 \examples{
-graph <- properties(kegg.pathways$hsa04540_Gap_junction)[[1]]
-membership <- clusterGraph(graph, type = "tahc", size = 10)
-G <- cplot(graph, membership, global = TRUE)
+G <- kegg.pathways$"Amyotrophic lateral sclerosis (ALS)"
+# Largest connected component
+G <- properties(G)[[1]]
+membership <- clusterGraph(graph = G, type = "wtc")
+cplot(G, membership, map = TRUE)
 
+## NOT RUN ##
+cplot(G, membership, map = FALSE, verbose = TRUE)
+
+}
+\seealso{
+\code{\link[SEMgraph]{clusterGraph}}, \code{\link[SEMgraph]{clusterScore}}
 }

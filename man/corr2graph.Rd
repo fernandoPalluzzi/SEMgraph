@@ -4,24 +4,81 @@
 \alias{corr2graph}
 \title{Correlation matrix to graph}
 \usage{
-corr2graph(R, n, alpha = 0.05, type = "marg", ...)
+corr2graph(
+  R,
+  n,
+  graph = NULL,
+  type = "marg",
+  method = "none",
+  alpha = 0.05,
+  ...
+)
 }
 \arguments{
 \item{R}{Correlation matrix.}
 
+\item{n}{Sample size (i.e., the number of subjects).}
+
+\item{graph}{Reference graph used for filtering the correlation matrix. 
+By default, graph is set to NULL.}
+
+\item{type}{Graph building method. If type is either "marg" or "cond", 
+marginal or conditional correlation tests will be used, respectively. 
+If type = "mst", input correlations are converted to distances and a 
+minimum spanning tree is generated from the distance matrix, using 
+Prim's algorithm (Prim, 1957). If type = "tmfg", a triangulate maximally
+graph is generated from the given correlation matrix 
+(Massara et al., 2016).}
+
+\item{method}{Multiple testing correction method. One of the values 
+available in \code{\link[stats]{p.adjust}}. By default, method is set 
+to "none" (i.e., no multiple test correction). 
+See \code{\link[stats]{p.adjust}} for other correction methods.}
+
 \item{alpha}{Significance level used to compute the correlation threshold.
 By default, alpha = 0.05.}
 
-\item{...}{arguments to be passed to or from other methods.}
-
-\item{n.}{Sample size (i.e., the number of subjects).}
-
-\item{type.}{Correlation type: "marg" for marginal correlation, and 
-"cond" for conditional correlation.}
+\item{...}{Currently ignored.}
 }
 \value{
 An igraph object.
 }
 \description{
 Convert a correlation matrix to an igraph object.
+}
+\examples{
+
+# Graphs creation
+C1 <- corr2graph(R = cor(log(sachs$pkc)), n = nrow(sachs$pkc),
+                 type = "marg",
+                 method = "BH")
+C2 <- corr2graph(R = cor(log(sachs$pkc)), n = nrow(sachs$pkc),
+                 type = "cond",
+                 method = "BH")
+C3 <- corr2graph(R = cor(log(sachs$pkc)), n = nrow(sachs$pkc),
+                 type = "mst")
+C4 <- corr2graph(R = cor(log(sachs$pkc)), n = nrow(sachs$pkc),
+                 type = "tmfg")
+
+# Graphs plots
+par(mfrow=c(2,2), mar= rep(2, 4))
+plot(C1, layout=layout.circle, main= "marg"); box(col="gray")
+plot(C2, layout=layout.circle, main= "cond"); box(col="gray")
+plot(C3, layout=layout.circle, main= "mst"); box(col="gray")
+plot(C4, layout=layout.circle, main= "tmfg"); box(col="gray")
+
+}
+\references{
+Grassi M, Palluzzi F (2021). SEMgraph: An R Package for Causal Network 
+Analysis of High-Throughput Data with Structural Equation Models. 
+xxxxx x(x): xxxxx. https://doi.org/xxxxx
+
+Massara GP, Di Matteo T and Aste T (2009). Network Filtering for Big 
+Data: Triangulated Maximally Filtered Graph. 
+Journal of complex Networks, 5(2): 161--178. 
+https://doi.org/10.1093/comnet/cnw015
+
+Prim RC (1957). Shortest connection networks and some generalizations. 
+Bell System Technical Journal, 36(6):1389--1401.
+https://doi.org/10.1002/j.1538-7305.1957.tb01515.x
 }

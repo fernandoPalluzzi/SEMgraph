@@ -4,17 +4,68 @@
 \alias{gplot}
 \title{Graph plotting with renderGraph}
 \usage{
-gplot(x, psize = 80, main = "", ...)
+gplot(
+  graph,
+  main = "",
+  cex.main = 1,
+  font.main = 1,
+  color.txt = "black",
+  fontsize = 16,
+  cex = 0.6,
+  shape = "circle",
+  color = "gray70",
+  lty = 1,
+  lwd = 1,
+  w = "auto",
+  h = "auto",
+  psize = 80,
+  ...
+)
 }
 \arguments{
-\item{x}{An igraph object.}
+\item{graph}{An igraph or graphNEL object.}
 
-\item{psize}{Node size (by default, psize = 80).}
+\item{main}{Plot main title (by default, no title is added).}
 
-\item{main}{plot main title.}
+\item{cex.main}{Main title size (default = 1).}
 
-\item{...}{arguments to be passed to or from other methods.}
+\item{font.main}{Main title font (default = 1). Available options 
+are: 1 for plain text, 2 for bold, 3 for italics, 4 for bold italics, 
+and 5 for symbol.}
+
+\item{color.txt}{Node text color (default = "black").}
+
+\item{fontsize}{Node text size (default = 16).}
+
+\item{cex}{Another argument to control node text size (default = 0.6).}
+
+\item{shape}{Node shape (default = "circle").}
+
+\item{color}{Node border color (default = "gray70").}
+
+\item{lty}{Node border outline (default = 1). 
+Available options include: 0 for blank, 1 for solid line, 2 for dashed, 
+3 for dotted, 4 for dotdash, 5 for longdash, and 6 for twodash.}
+
+\item{lwd}{Node border thickness (default = 1).}
+
+\item{w}{Manual node width (default = "auto").}
+
+\item{h}{Manual node height (default = "auto").}
+
+\item{psize}{Automatic node size (default = 80).}
+
+\item{...}{Currently ignored.}
 }
 \description{
-Wrapper for \code{\link[Rgraphviz]{renderGraph}}.
+Wrapper for function renderGraph of the R package 
+Rgraphwiz.
+}
+\examples{
+
+gplot(sachs$graph, main = "input graph")
+
+sem <- SEMrun(sachs$graph, sachs$pkc)
+gplot(sem$graph, main = "output graph")
+
 }

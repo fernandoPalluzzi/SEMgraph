@@ -2,23 +2,29 @@
 % Please edit documentation in R/semUtils.R
 \name{properties}
 \alias{properties}
-\title{Graph properties summary and graph correction}
+\title{Graph properties summary and graph decomposition}
 \usage{
-properties(g)
+properties(graph, data = NULL)
 }
 \arguments{
-\item{g}{Input network as an igraph object.}
+\item{graph}{Input network as an igraph object.}
 
-\item{...}{arguments to be passed to or from other methods.}
+\item{data}{An optional data matrix whith rows corresponding to subjects, 
+and columns to graph nodes (variables). Nodes will be mapped onto 
+variable names.}
+
+\item{...}{Currently ignored.}
 }
 \value{
-Network largest component without self-loops.
+List of graph components, ordered by decreasing size (the first 
+component is the giant one), without self-loops.
 }
 \description{
-Produces a summary of network properties and returns 
-the largest network component without self-loops.
+Produces a summary of network properties and returns
+graph components (ordered by decreasing size), without self-loops.
 }
 \examples{
-graph <- properties(kegg.pathways$hsa04540_Gap_junction)[[1]]
+G <- kegg.pathways$"Amyotrophic lateral sclerosis (ALS)"
+properties(G)
 
 }

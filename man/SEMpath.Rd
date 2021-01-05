@@ -2,47 +2,60 @@
 % Please edit documentation in R/semPaths.R
 \name{SEMpath}
 \alias{SEMpath}
-\title{Test (shortest) paths between two nodes of a network}
+\title{Search for directed or shortest paths between pairs of source-sink nodes}
 \usage{
-SEMpath(graph, data, group, from, to, path, ...)
+SEMpath(graph, data, group, from, to, path, verbose = FALSE, ...)
 }
 \arguments{
 \item{graph}{An igraph object.}
 
-\item{data}{A matrix or data.frame. Rows correspond to subjects, and 
-columns to graph nodes.}
+\item{data}{A matrix or data.frame. Rows correspond to subjects, and
+columns to graph nodes (variables).}
 
-\item{group}{A binary vector. This vector must be as long as the 
-number of subjects. Each vector element must be 1 for cases and 0 
-for control subjects. If NULL (default), group influence will not be 
+\item{group}{A binary vector. This vector must be as long as the
+number of subjects. Each vector element must be 1 for cases and 0
+for control subjects. If NULL (default), group influence will not be
 considered.}
 
-\item{from}{Starting node name.}
+\item{from}{Starting node name (i.e., source node).}
 
-\item{to}{Ending node name.}
+\item{to}{Ending node name (i.e., sink node).}
 
-\item{path}{If path = "all", all the paths between the two nodes will 
-be included in the fitted model. If path = "short", only shortest paths 
-will be considered.}
+\item{path}{If path = "directed", all directed paths between the two 
+nodes will be included in the fitted model. If path = "shortest", only 
+shortest paths will be returned.}
 
-\item{...}{arguments to be passed to or from other methods.}
+\item{verbose}{Show the directed (or shortest) path between the 
+given source-sink pair inside the input graph.}
+
+\item{...}{Currently ignored.}
 }
 \value{
-A list of two objects: a fitted model object of class 
-\code{\link[lavaan]{lavaan}} ("fit"), and the extracted subnetwork as 
-an igraph object ("graph").
+A list of four objects: a fitted model object of class 
+\code{\link[lavaan]{lavaan}} ("fit"), aggregated and node-specific 
+group effect estimates and P-values ("gest"), the extracted subnetwork 
+as an igraph object ("graph"), and the input graph with a color 
+attribute mapping the chosen path ("map").
 }
 \description{
-Find and fit all the (shortest) paths between two nodes 
-of a network.
+Find and fit all directed or shortest paths between two 
+source-sink nodes of a graph.
 }
 \examples{
-graph <- properties(kegg.pathways$hsa04540_Gap_junction)[[1]]
-data <- t(FTLDu_GSE13162)
-group <- c(rep(0, 17), rep(1, 15))
-spt <- SEMpath(graph, data, group,
-               from = "5155",
-               to = "7082",
-               path = "short")
+
+# Directed path fitting
+path <- SEMpath(graph = sachs$graph, data = log(sachs$pkc),
+                group = sachs$group,
+                from = "PIP3",
+                to = "Erk",
+                path = "directed")
+
+# Summaries
+summary(path$fit)
+print(path$gest)
+
+# Graphs
+gplot(path$map, main="path from PiP2 to Erk")
+plot(path$map, layout=layout.circle, main="path from PiP2 to Erk")
 
 }

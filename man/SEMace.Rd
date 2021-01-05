@@ -2,49 +2,70 @@
 % Please edit documentation in R/semPaths.R
 \name{SEMace}
 \alias{SEMace}
-\title{Compute Average Causal Effect (ACE) for a given DAG}
+\title{Compute the Average Causal Effect (ACE) for a given source-sink pair}
 \usage{
-SEMace(graph, data, group = NULL, ...)
+SEMace(
+  graph,
+  data,
+  group = NULL,
+  method = "none",
+  alpha = 0.05,
+  boot = NULL,
+  ...
+)
 }
 \arguments{
-\item{data}{A matrix or data.frame. Rows correspond to subjects, and 
-columns to graph nodes.}
+\item{graph}{An igraph object.}
 
-\item{group}{A binary vector. This vector must be as long as the 
-number of subjects. Each vector element must be 1 for cases and 0 
-for control subjects. If NULL (default), group influence will not be 
+\item{data}{A matrix or data.frame. Rows correspond to subjects, and
+columns to graph nodes (variables).}
+
+\item{group}{A binary vector. This vector must be as long as the
+number of subjects. Each vector element must be 1 for cases and 0
+for control subjects. If NULL (default), group influence will not be
 considered.}
 
-\item{...}{arguments to be passed to or from other methods.}
+\item{method}{Multiple testing correction method. One of the values 
+available in \code{\link[stats]{p.adjust}}. By default, method is set 
+to "none" (i.e., no multiple test correction).}
 
-\item{model}{A directed acyclic graph as an igraph object.}
+\item{alpha}{Significance level for ACE selection (by default, alpha = 0.05).}
+
+\item{boot}{The number of bootstrap samplings enabling bootstrap 
+computation of ACE standard errors. If NULL (default), the bootstrap 
+is disabled.}
+
+\item{...}{Currently ignored.}
 }
 \value{
-A list of 5 objects:
-\enumerate{
-\item "theta", data.frame containing total effect estimates;
-\item "gD", graph representation of significant total effects.
-}
+A data.frame of ACE estimates between network sources and sinks.
 }
 \description{
-Compute total effects as ACEs of source variables X on 
-target variables in a DAG (i.e., when paths connecting X to Y are 
-directed and acyclic). The ACE will be estimated as the path coefficient 
-of X (i.e., theta) in the linear equation Y ~ X + pa(X), where pa(X) 
-is the set of parent variables of X (Pearl, 1998).
+Compute total effects as ACEs of source variables X 
+(i.e., incoming connectivity = 0) on sink variables Y (i.e., outgoing 
+connectivity = 0), in a directed graph. The ACE will be estimated as 
+the path coefficient of X (i.e., theta) in the linear equation 
+Y ~ X + Z. Z is defined as the adjustment (or conditioning) set of 
+Y over X, applying an "optimal" valid set (O-set), with the smallest 
+asymptotic variance. Standard errors (SE), for each ACE, are computed 
+following the \code{lavaan} standard procedure or a bootstrap-based 
+procedure (see \code{\link[boot]{boot}} for details).
 }
 \examples{
-graph <- properties(kegg.pathways$hsa04540_Gap_junction)[[1]]
-data <- t(FTLDu_GSE13162)
-group <- c(rep(0, 17), rep(1, 15))
-ace <- SEMace(graph, data, group)
-ace$theta
+
+# ACE estimation, without group (default)
+ace <- SEMace(graph = sachs$graph, data = log(sachs$pkc))
+print(ace)
+
+# ACE estimation, with group perturbation and multiple test correction
+ace2 <- SEMace(graph = sachs$graph, data = log(sachs$pkc),
+               group = sachs$group,
+               method = "BH", alpha = 0.05)
+print(ace2)
 
 }
 \references{
-Pearl J (1998). Graphs, Causality, and Structural Equation Models. 
-Sociological Methods & Research. https://doi.org/10.1177/0049124198027002004
-}
-\seealso{
-\code{\link[SEMgraph]{SEMfit}}
+Witte J, Henckel L, Maathuis MH, Didelez V (2020). On efficient 
+adjustment in causal graphs. arXiv:2002.06825 [math.ST].
+URL: https://arxiv.org/abs/2002.06825
 }
