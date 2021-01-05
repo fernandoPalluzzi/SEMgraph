@@ -1,7 +1,24 @@
 # SEMgraph
-Network Analysis and Causal Inference Through Structural Equation Modeling
+Network Analysis and Causal Learning with Structural Equation Modeling
 
-SEMgraph is an R package for network analysis and causal inference through Structural Equation Modeling (SEM). It includes functions to import, weight, manipulate, and fit biological network models using the SEM framework.
+**SEMgraph** is an **R** package for network analysis and causal inference and learning through Structural Equation Modeling (SEM).
+**SEMgraph** comes with the following functionalities:
+
+- Interchangeable model representation as either an \pkg{igraph} object 
+or the corresponding SEM in \pkg{lavaan} syntax. Model management functions 
+include graph-to-SEM conversion, automated covariance matrix regularization, 
+graph conversion to DAG, and graph creation from correlation matrices.
+
+- Heuristic filtering, node and edge weighting, resampling and 
+parallelization settings for fast fitting in case of very large models.
+
+- Automated data-driven model building and improvement, through causal 
+structure learning and bow-free interaction search and latent variable 
+confounding adjustment.
+
+- Perturbed paths finding, community searching and sample scoring, 
+together with graph plotting utilities, tracing model architecture 
+modifications and perturbation (i.e., activation or repression) routes.
 
 ## Installation
 
