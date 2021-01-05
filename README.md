@@ -13,7 +13,7 @@ graph conversion to DAG, and graph creation from correlation matrices.
 parallelization settings for fast fitting in case of very large models.
 
 - Automated data-driven model building and improvement, through causal 
-structure learning and bow-free interaction search and latent variable 
+structure learning, bow-free interaction search, and latent variable 
 confounding adjustment.
 
 - Perturbed paths finding, community searching and sample scoring, 
