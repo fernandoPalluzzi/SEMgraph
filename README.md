@@ -24,5 +24,6 @@ modifications and perturbation (i.e., activation or repression) routes.
 
 The development version of SEMgraph can be installed in R with the following line:
 
+```{r, echo = FALSE}
 devtools::install_github("fernandoPalluzzi/SEMgraph")
-
+```
