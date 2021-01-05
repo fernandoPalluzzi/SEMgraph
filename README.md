@@ -29,7 +29,7 @@ The development version of **SEMgraph** can be installed in **R** with the follo
 ```{r, echo = FALSE}
 devtools::install_github("fernandoPalluzzi/SEMgraph")
 ```
-Do not forget to install the **SEMdata** package too! It contains high-throughput 
+Do not forget to install the [**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata) package too! It contains high-throughput 
 sequencing data and reference networks and pathways, useful for **SEMgraph** training:
 
 ```{r, echo = FALSE}
