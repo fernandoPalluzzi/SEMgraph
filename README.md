@@ -1,5 +1,7 @@
 # SEMgraph
-Network Analysis and Causal Learning with Structural Equation Modeling
+**Network Analysis** and **Causal Learning** with **Structural Equation Modeling**.
+
+# Overview
 
 **SEMgraph** is an **R** package for network analysis and causal inference and learning through Structural Equation Modeling (SEM).
 **SEMgraph** comes with the following functionalities:
