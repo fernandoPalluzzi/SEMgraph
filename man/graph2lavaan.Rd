@@ -23,6 +23,9 @@ lavaan syntax.
 }
 \examples{
 model <- graph2lavaan(sachs$graph)
-cat(model)
+cat(model, "\n")
 
+}
+\author{
+Mario Grassi \email{mario.grassi@unipv.it}
 }

@@ -6,6 +6,7 @@
 \usage{
 gplot(
   graph,
+  l = "dot",
   main = "",
   cex.main = 1,
   font.main = 1,
@@ -24,6 +25,9 @@ gplot(
 }
 \arguments{
 \item{graph}{An igraph or graphNEL object.}
+
+\item{l}{any layout supported by \code{Rgraphviz}. It can be one among: 
+"dot" (default), "neato", "circo", "fdp", "osage", "twopi".}
 
 \item{main}{Plot main title (by default, no title is added).}
 
@@ -68,4 +72,7 @@ gplot(sachs$graph, main = "input graph")
 sem <- SEMrun(sachs$graph, sachs$pkc)
 gplot(sem$graph, main = "output graph")
 
+}
+\author{
+Mario Grassi \email{mario.grassi@unipv.it}
 }

@@ -56,9 +56,11 @@ C2 <- corr2graph(R = cor(log(sachs$pkc)), n = nrow(sachs$pkc),
                  type = "cond",
                  method = "BH")
 C3 <- corr2graph(R = cor(log(sachs$pkc)), n = nrow(sachs$pkc),
-                 type = "mst")
+                 type = "mst",
+                 method = "BH")
 C4 <- corr2graph(R = cor(log(sachs$pkc)), n = nrow(sachs$pkc),
-                 type = "tmfg")
+                 type = "tmfg",
+                 method = "BH")
 
 # Graphs plots
 par(mfrow=c(2,2), mar= rep(2, 4))
@@ -81,4 +83,7 @@ https://doi.org/10.1093/comnet/cnw015
 Prim RC (1957). Shortest connection networks and some generalizations. 
 Bell System Technical Journal, 36(6):1389--1401.
 https://doi.org/10.1002/j.1538-7305.1957.tb01515.x
+}
+\author{
+Mario Grassi \email{mario.grassi@unipv.it}
 }

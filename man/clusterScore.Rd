@@ -71,7 +71,9 @@ respectively, and fit them in a SEM with exogenous group effect.
 }
 \examples{
 
+library(SEMdata)
 library(huge)
+
 als.npn <- huge.npn(alsData$exprs)
 
 C <- clusterScore(graph = alsData$graph, data = als.npn,
@@ -93,4 +95,7 @@ xxxxx x(x): xxxxx. https://doi.org/xxxxx
 See \code{\link[SEMgraph]{clusterGraph}} and \code{\link[SEMgraph]{cplot}}
 for graph clustering, and \code{\link[cate]{factor.analysis}} for 
 factor analysis.
+}
+\author{
+Mario Grassi \email{mario.grassi@unipv.it}
 }

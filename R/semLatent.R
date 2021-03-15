@@ -20,160 +20,43 @@
 # -------------------------------------------------------------------- #
 
 
-#' @title Remove nuisance covariances (psi) from the observed data matrix
-#'
-#' @description Adjust the data matrix by iteratively removing possible 
-#' latent sources of confounding, encoded in the estimated covariance 
-#' matrix (psi).
-#'
-#' @param graph An igraph object.
-#' @param data A matrix whith rows corresponding to subjects, and
-#' columns to graph nodes (variables).
-#' @param algo Data adjustment method. The default correction method 
-#' is "d-sep" (Shipley's d-separation test), only feasible for DAGs. In 
-#' case of non-DAGs, the method is automatically changed to "ggm" 
-#' (Gaussian Graphical Modeling). The "ggm" method can also be manually 
-#' enabled for fast computation.
-#' @param method Multiple testing correction method. One of the values 
-#' available in \code{\link[stats]{p.adjust}}. By default, method is set 
-#' to "BH" (i.e., FDR correction).
-#' @param alpha Significance level for covariance selection 
-#' (by default, alpha = 0.05).
-#' @param showGraphs If TRUE, it shows intermediate graphs during the 
-#' execution (not recommended for large graphs).
-#' @param ... Currently ignored.
-#'
-#' @details The covariance matrix provides information about which 
-#' part of a DAG or a directed graph is not supported by the observed data. 
-#' This function captures the topology of missing edges in a DAG or a directed 
-#' graph by learning and fitting the covariance matrix with constrained 
-#' null elements, corresponding to non significant edges and input directed 
-#' graph edges, and adjusts the data matrix by removing the latent triggers 
-#' responsible for nuisance edges.
-#'
-#' @return The adjusted data matrix.
-#'
-#' @import igraph
-#' @import lavaan
-#' @import GGMncv
-#' @export
-#'
-#' @references
-#'
-#' Grassi M, Palluzzi F (2021). SEMgraph: An R Package for Causal Network 
-#' Analysis of High-Throughput Data with Structural Equation Models. 
-#' xxxxx x(x): xxxxx. https://doi.org/xxxxx
-#'
-#' @seealso \code{\link[GGMncv]{inference}}, \code{\link[GGMncv]{constrained}}
-#'
-#' @examples
-#' 
-#' # Data adjustment
-#' adjdata <- diagonalizePsi(graph = sachs$graph, data = log(sachs$pkc),
-#'                           method = "BH", alpha = 0.2)
-#' 
-#' # Fitting without adjustment
-#' sem0 <- SEMrun(graph = sachs$graph, data = log(sachs$pkc),
-#'                group = sachs$group,
-#'                fit = 1)
-#' 
-#' # Fitting with adjustment
-#' sem1 <- SEMrun(graph = sachs$graph, data = adjdata,
-#'                group = sachs$group,
-#'                fit = 1)
-#' 
-#' # Scatter matrix of non-adjusted data vs. adjusted data
-#' pairwiseMatrix(adjdata, log(sachs$pkc), size = 1000)
-#' 
-diagonalizePsi <- function(graph, data, algo = "d-sep", method = "BH",
-                           alpha = 0.05, showGraphs = FALSE,
-                           GUU = FALSE, ...)
+diagonalizePsi <- function(g = list(graph, guu), data, ...)
 {
 	# Set graph and data objects
-	if (!is_dag(graph) & algo == "d-sep") {
-		cat("\nWARNING: the input graph is not a DAG.\n")
-		cat("Method GGM enabled ...\n\n")
-		algo <- "ggm"
-	}
-	
-	if (showGraphs) gplot(graph)
+	graph <- g[[1]]
 	V <- colnames(data)[colnames(data) %in% V(graph)$name]
+	Y <- scale(data[, V])
 	graph <- induced_subgraph(graph, vids = which(V(graph)$name %in% V))
-	guu <- make_empty_graph(n = 0)
-	YR <- scale(data[, V])
 	A0 <- as_adj(as.undirected(graph), type = "both", sparse = FALSE)[V, V]
-	L0 <- ifelse(A0 == 1, TRUE, FALSE)
 	
-	cat("## Adjusting data for missing bow-free interactions ...\n")
-	k <- 1
-	r <- 0
-	Ug <- NULL
-	Yg <- NULL
-	while (k > 0) {
-		nE <- ecount(guu)
-		cat("i =", k, "Searching for missing covariances ...", nE, "\n")
-		if (algo == "d-sep") {
-			dsep <- dsep.test(dag = graph, S = cov(YR), n = nrow(YR))
-			d_sep <- subset(dsep, p.adjust(dsep$pvalue,
-			                method = method) < alpha)
-			guu <- graph_from_data_frame(d_sep[, 1:2], directed = FALSE)
-			if (nE - ecount(guu) == 0) r <- r + 1
-			if (r > 0 | ecount(guu) == 0) break
-			Ug <- c(Ug, list(guu))
-		
-		} else if (algo == "ggm") {
-			lambda <- sqrt(log(ncol(YR))/nrow(YR))
-			wi <- GGMncv::inference(GGMncv::ggmncv(cor(YR), nrow(YR),
-			                        lambda = lambda,
-			                        progress = FALSE))$uncorrect
-			rownames(wi) <- colnames(wi) <- colnames(YR)
-			gwi <- graph_from_adjacency_matrix(wi, mode = "undirected",
-			                                   weighted = TRUE,
-			                                   diag = FALSE)
-			df <- get.data.frame(gwi)
-			d_sep <- subset(df[1:2], p.adjust(abs(df$weight),
-			                method = method) < alpha)
-			guu <- graph_from_data_frame(d_sep[, 1:2], directed = FALSE)
-			if (ecount(guu) > 0) guu <- difference(guu, as.undirected(graph))
-			if (nE - ecount(guu) == 0) r <- r + 1
-			if (r > 0 | ecount(guu) == 0) break
-			Ug <- c(Ug, list(guu))
-		}
-		
-		# Precision fitting of guu -> wi
-		if (showGraphs) plot(guu)
-		adj <- as_adj(guu, sparse = FALSE)
-		idx <- which(rownames(A0) %in% rownames(adj) == FALSE)
-		if (length(idx) > 0) {
-			R <- matrix(0, length(idx), ncol(adj))
-			C <- matrix(0, nrow(adj), length(idx))
-			I <- diag(length(idx))
-			adj <- rbind(cbind(I, R), cbind(C, adj))
-			rownames(adj)[1:length(idx)] <- rownames(A0)[idx]
-			colnames(adj)[1:length(idx)] <- rownames(A0)[idx]
-		}
-		Sigma <- cor(YR[, colnames(adj)])
-		wi <- GGMncv::constrained(Sigma, adj)$Theta
-		colnames(wi) <- rownames(wi) <- colnames(adj)
-		if (!corpcor::is.positive.definite(wi)) {
-			wi <- corpcor::cor.shrink(wi, verbose = FALSE)
-			#wi <- corpcor::cov.shrink(wi, verbose = TRUE)
-			#wi <- corpcor::make.positive.definite(wi)
-		}
-		E <- eigen(wi)
-		R <- E$vectors%*%diag(sqrt(E$values))%*%t(E$vectors)
-		#sum(wi - R %*% R)
-		Y <- YR[,colnames(wi)]
-		YR <- as.matrix(Y)%*%R
-		colnames(YR) <- colnames(Y)
-		k <- k + 1
-		Yg <- c(Yg, list(YR))
+	# Precision fitting of guu -> wi
+	guu <- g[[2]]
+	adj <- as_adj(guu, sparse = FALSE)
+	idx <- which(rownames(A0) %in% rownames(adj) == FALSE)
+	if (length(idx) > 0) {
+		R <- matrix(0, length(idx), ncol(adj))
+		C <- matrix(0, nrow(adj), length(idx))
+		I <- diag(length(idx))
+		adj <- rbind(cbind(I, R), cbind(C, adj))
+		rownames(adj)[1:length(idx)] <- rownames(A0)[idx]
+		colnames(adj)[1:length(idx)] <- rownames(A0)[idx]
 	}
+	Sigma <- cor(Y[, colnames(adj)])
+	wi <- GGMncv::constrained(Sigma, adj)$Theta
+	colnames(wi) <- rownames(wi) <- colnames(adj)
+	if (!corpcor::is.positive.definite(wi)) {
+		wi <- corpcor::cor.shrink(wi, verbose = FALSE)
+		#wi <- corpcor::cov.shrink(wi, verbose = TRUE)
+		#wi <- corpcor::make.positive.definite(wi)
+	}
+	E <- eigen(wi) # Eigenvalues and eigenvectors of w
+	R <- E$vectors%*%diag(sqrt(E$values))%*%t(E$vectors)
+	#sum(wi - R %*% R)
+	Y <- Y[,colnames(wi)]
+	YR <- as.matrix(Y)%*%R
+	colnames(YR) <- colnames(Y)
 	
-	cat("Done.\n\n")
-	if (!GUU) return(data = YR[, V])
-	
-	return(list(data = YR[, V], Ug = Ug, Yg = Yg))
+	return(data = YR[, V])
 }
 
 psi2guv <- function(guu, ig, gnet, verbose, ...)
@@ -212,7 +95,7 @@ psi2guv <- function(guu, ig, gnet, verbose, ...)
 				pathk <- induced_subgraph(gnet, V(gnet)$name[path[[k]]])
 				fX2[k] <- -2*sum(log(E(pathk)$pv))
 			}
-			path <- path[[which(fX2 == max(fX2))]]
+			path <- path[[which(fX2 == max(fX2))[1]]]
 		} else {
 			path <- path[[1]]
 		}
@@ -231,9 +114,9 @@ psi2guv <- function(guu, ig, gnet, verbose, ...)
 		guv <- simplify(guv, remove.loops = TRUE)
 		vv <- V(guv)$name[-which(V(guv)$name %in% V(ig)$name)]
 		uv <- V(ig)$name[which(V(ig)$name %in% unique(vpath))]
-		V(guv)$color[V(guv)$name %in% V(guu)$name] <- "aquamarine"
-		V(guv)$color[V(guv)$name %in% vv] <- "yellow"
-		V(guv)$color[V(guv)$name %in% uv] <- "green"
+		V(guv)$color[V(guv)$name %in% V(guu)$name] <- "deepskyblue"
+		V(guv)$color[V(guv)$name %in% vv] <- "gold"
+		V(guv)$color[V(guv)$name %in% uv] <- "green2"
 		
 		if(verbose) {
 			plot(guv, main = "Extended connector graph (guv)")
@@ -253,7 +136,7 @@ psi2guv <- function(guu, ig, gnet, verbose, ...)
 #' membership vector.
 #' @param graph An igraph object.
 #' @param membership Cluster membership vector for each node.
-#' @param l graph layout One of the \code{\link{igraph}} layouts. 
+#' @param l graph layout. One of the \code{\link{igraph}} layouts. 
 #' If this argument is ignored, an automatic layout will be applied.
 #' @param map A logical value. Visualize cluster mapping over the input 
 #' graph. If FALSE (default), visualization will be disabled. For large 
@@ -270,17 +153,22 @@ psi2guv <- function(guu, ig, gnet, verbose, ...)
 #'
 #' @return The list of clusters and cluster mapping as igraph objects.
 #'
-#' @seealso \code{\link[SEMgraph]{clusterGraph}}, \code{\link[SEMgraph]{clusterScore}}
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
+#' @seealso \code{\link[SEMgraph]{clusterGraph}}, 
+#' \code{\link[SEMgraph]{clusterScore}}
 #'
 #' @examples
+#' library(SEMdata)
 #' G <- kegg.pathways$"Amyotrophic lateral sclerosis (ALS)"
 #' # Largest connected component
 #' G <- properties(G)[[1]]
 #' membership <- clusterGraph(graph = G, type = "wtc")
 #' cplot(G, membership, map = TRUE)
 #' 
-#' ## NOT RUN ##
+#' \dontrun{
 #' cplot(G, membership, map = FALSE, verbose = TRUE)
+#' }
 #'
 cplot <- function(graph, membership, l = layout.auto, map = FALSE,
                   verbose = FALSE, ...)
@@ -326,7 +214,8 @@ cplot <- function(graph, membership, l = layout.auto, map = FALSE,
 #' @param graph Network as an igraph object.
 #' @param membership Cluster membership. A vector of cluster membership
 #' identifiers, where vector names correspond to graph node names.
-#' Topological graph clustering can be done using \code{\link[SEMgraph]{clusterGraph}}.
+#' Topological graph clustering can be done using 
+#' \code{\link[SEMgraph]{clusterGraph}}.
 #' @param HM Hidden model label. If HM = "LV", a latent variable (LV) 
 #' will be defined as common unknown cause acting on cluster nodes.
 #' If HM = "CV", cluster nodes will be considered as regressors of a 
@@ -343,7 +232,10 @@ cplot <- function(graph, membership, l = layout.auto, map = FALSE,
 #' @return A network with merged nodes as an igraph object.
 #' @seealso \code{\link[SEMgraph]{clusterGraph}}
 #'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
 #' @examples
+#' library(SEMdata)
 #' G <- kegg.pathways$"Amyotrophic lateral sclerosis (ALS)"
 #' # Largest connected component
 #' G <- properties(G)[[1]]
@@ -420,6 +312,8 @@ mergeNodes <- function(graph, membership, HM, ...)
 #' @importFrom graphics abline
 #' @export
 #'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
 #' @references
 #'
 #' Fortunato S, Hric D. Community detection in networks: A user guide (2016).
@@ -440,6 +334,7 @@ mergeNodes <- function(graph, membership, HM, ...)
 #' @seealso \code{\link[SEMgraph]{clusterScore}}, \code{\link[SEMgraph]{cplot}}
 #'
 #' @examples
+#' library(SEMdata)
 #' G <- kegg.pathways$"Amyotrophic lateral sclerosis (ALS)"
 #' # Largest connected component
 #' G <- properties(G)[[1]]
@@ -493,7 +388,7 @@ clusterGraph <- function(graph, type = "wtc", HM = "none", size = 5,
 	}
 	
 	K <-  length(cnames)
-	if (K == 0) return(cat("WARNING: no communities with size >=", size,"\n"))
+	if (K == 0) return(cat("WARNING: no communities with size >=", size, "\n"))
 	if (HM == "UV") {
 		gHC <- cplot(graph, membership = membership, map = FALSE,
 		             verbose = FALSE)[-1]
@@ -522,7 +417,8 @@ clusterGraph <- function(graph, type = "wtc", HM = "none", size = 5,
 		gHC <- NULL
 	
 	} else if (HM == "CV") {
-		ftm <- data.frame(from = names(membership), to = c(paste0("CY",membership)))
+		ftm <- data.frame(from = names(membership),
+		                  to = c(paste0("CY", membership)))
 		gLM <- graph_from_data_frame(ftm, directed = TRUE)
 		V(gLM)$LV <- 0
 		V(gLM)$LV[(vcount(gLM) - K + 1):vcount(gLM)] <- 1
@@ -572,6 +468,8 @@ clusterGraph <- function(graph, type = "wtc", HM = "none", size = 5,
 #' @import lavaan
 #' @export
 #'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
 #' @references
 #' Grassi M, Palluzzi F (2021). SEMgraph: An R Package for Causal Network 
 #' Analysis of High-Throughput Data with Structural Equation Models. 
@@ -584,27 +482,25 @@ clusterGraph <- function(graph, type = "wtc", HM = "none", size = 5,
 #' }
 #'
 #' @examples
+#' library(SEMdata)
 #' G <- kegg.pathways$"Steroid biosynthesis"
 #' G <- properties(G)[[1]]
 #' 
 #' # Extend a graph using new inferred DAG edges
 #' 
+#' library(SEMdata)
 #' library(huge)
 #' als.npn <- huge.npn(alsData$exprs)
 #' 
 #' dag <- SEMdag(graph = G, data = als.npn, beta = 0.1)
 #' ext <- extendGraph(list(dag$dag, dag$dag.red), data = als.npn, gnet = kegg)
 #' gplot(ext$Ug)
-#' gplot(ext$guv)
 #' 
 #' # Extend a graph using the inferred bow-free path diagram
 #' 
 #' bap <- SEMbap(graph = G, data = als.npn, gnet = kegg, d = 1, alpha = 0.05)
 #' ext <- extendGraph(list(bap$bap, bap$guu), data = als.npn, gnet = kegg)
 #' gplot(ext$Ug)
-#' gplot(ext$guv)
-#'
-#' ## NOT RUN ## {
 #'  
 #' # Create a graph from correlation matrix, using KEGG as reference
 #' 
@@ -613,13 +509,12 @@ clusterGraph <- function(graph, type = "wtc", HM = "none", size = 5,
 #' G0 <- make_empty_graph(n = ncol(selectedData))
 #' V(G0)$name <- colnames(selectedData)
 #' 
-#' G1 <- corr2graph(R = cor(sbData), n = nrow(sbData), type = "tmfg")
+#' G1 <- corr2graph(R = cor(selectedData), n = nrow(selectedData),
+#'                  type = "tmfg")
 #' ext <- extendGraph(list(G0, G1), data = selectedData, gnet = kegg)
+#' par(mfrow=c(1,2), mar=rep(1,4))
 #' plot(G1, layout = layout.circle)
 #' plot(ext$Ug, layout = layout.circle)
-#' plot(ext$guv, layout = layout.circle)
-#' 
-#' ## }
 #'
 extendGraph <- function(g = list(), data, gnet, verbose = FALSE, ...)
 {
@@ -708,6 +603,13 @@ extendGraph <- function(g = list(), data, gnet, verbose = FALSE, ...)
 #' @importFrom cate factor.analysis
 #' @export
 #'
+#' @seealso 
+#' See \code{\link[SEMgraph]{clusterGraph}} and \code{\link[SEMgraph]{cplot}}
+#' for graph clustering, and \code{\link[cate]{factor.analysis}} for 
+#' factor analysis.
+#'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
 #' @references
 #' Grassi M, Palluzzi F (2021). SEMgraph: An R Package for Causal Network 
 #' Analysis of High-Throughput Data with Structural Equation Models. 
@@ -720,14 +622,12 @@ extendGraph <- function(g = list(), data, gnet, verbose = FALSE, ...)
 #' \code{\link[SEMgraph]{clusterGraph}} function;
 #' \item "dataHM", hidden module data matrix with cluster scores.
 #' }
-#' @seealso 
-#' See \code{\link[SEMgraph]{clusterGraph}} and \code{\link[SEMgraph]{cplot}}
-#' for graph clustering, and \code{\link[cate]{factor.analysis}} for 
-#' factor analysis.
 #'
 #' @examples
 #' 
+#' library(SEMdata)
 #' library(huge)
+#' 
 #' als.npn <- huge.npn(alsData$exprs)
 #' 
 #' C <- clusterScore(graph = alsData$graph, data = als.npn,
@@ -739,7 +639,8 @@ extendGraph <- function(g = list(), data, gnet, verbose = FALSE, ...)
 #' head(C$dataHM)
 #' table(C$membership)
 #'
-clusterScore <- function(graph, data, group, HM = "LV", type = "wtc", size = 5, verbose = FALSE, ...)
+clusterScore <- function(graph, data, group, HM = "LV", type = "wtc",
+                         size = 5, verbose = FALSE, ...)
 {
 	# Set SEM objects
 	nodes <- colnames(data)[colnames(data) %in% V(graph)$name]

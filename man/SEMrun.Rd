@@ -23,70 +23,73 @@ columns to graph nodes (variables).}
 
 \item{group}{A binary vector. This vector must be as long as the
 number of subjects. Each vector element must be 1 for cases and 0
-for control subjects. If NULL (default), group influence will not be
-considered.}
+for control subjects. If \code{NULL} (default), group influence will 
+not be considered.}
 
 \item{fit}{A numeric value indicating the SEM fitting mode. 
-If fit = 0 (default), no group effect is considered. If fit = 1, a 
-"common" model is used to evaluate group effects on graph nodes. 
-If fit = 2, a two-group model is used to evaluate group effects on 
-graph edges.}
+If \code{fit = 0} (default), no group effect is considered. 
+If \code{fit = 1}, a "common" model is used to evaluate group effects 
+on graph nodes. 
+If \code{fit = 2}, a two-group model is used to evaluate group effects 
+on graph edges.}
 
-\item{algo}{MLE method used for SEM fitting. If algo = "lavaan" (default), 
-the SEM will be fitted using the NLMINB solver from \code{lavaan} R 
-package, with standard errors derived from the expected Fisher information 
-matrix. If algo = "ricf", the model is fitted via residual iterative 
-conditional fitting (RICF; Drton et al. 2009). 
-If algo = "ggm", model fitting is based on constrained Gaussian Graphical 
-Modeling (GGM) and de-sparsified glasso estimator (Williams, 2020).}
+\item{algo}{MLE method used for SEM fitting. If \code{algo = "lavaan"} 
+(default), the SEM will be fitted using the NLMINB solver from 
+\code{lavaan} R package, with standard errors derived from the expected 
+Fisher information matrix. If \code{algo = "ricf"}, the model is fitted 
+via residual iterative conditional fitting (RICF; Drton et al. 2009). 
+If \code{algo = "cggm"}, model fitting is based on constrained Gaussian 
+Graphical Modeling (GGM) and de-sparsified glasso estimator 
+(Williams, 2020).}
 
-\item{start}{Starting value of SEM parameters for \code{algo} = "lavaan". 
-If start is NULL (default), the algorithm will determine the starting 
-values. If start is a numeric value, it will be used as a scaling factor 
-for the edge weights in the graph object (graph attribute E(graph)$weight). 
+\item{start}{Starting value of SEM parameters for \code{algo = "lavaan"}. 
+If start is \code{NULL} (default), the algorithm will determine the 
+starting values. If start is a numeric value, it will be used as a 
+scaling factor for the edge weights in the graph object (graph attribute 
+\code{E(graph)$weight}). 
 For instance, a scaling factor is useful when weights have fixed values 
 (e.g., 1 for activated, -1 for repressed, and 0 for unchanged interaction). 
 Fixed values may compromise model fitting, and scaling them is a safe 
 option to avoid this problem. As a rule of thumb, to our experience, 
-start = 0.1 generally performs well with {-1, 0, 1} weights.}
+\code{start = 0.1} generally performs well with {-1, 0, 1} weights.}
 
 \item{limit}{An integer value corresponding to the network size
 (i.e., number of nodes). Beyond this limit, the execution under 
-\code{algo} = "lavaan" will be ridirected to \code{algo} = "ricf", if 
-fit is either 0 or 1, or to algo = "ggm", if fit = 2. This redirection 
-is necessary to reduce the computational demand of standard error 
-estimation by lavaan. Increasing this number will enforce lavaan 
-execution when \code{algo} = "lavaan".}
+\code{algo = "lavaan"} will be ridirected to \code{algo = "ricf"}, if 
+fit is either 0 or 1, or to \code{algo = "ggm"}, if \code{fit = 2}. 
+This redirection is necessary to reduce the computational demand of 
+standard error estimation by lavaan. Increasing this number will 
+enforce lavaan execution when \code{algo = "lavaan"}.}
 
 \item{...}{Currently ignored.}
 }
 \value{
 A list of 5 objects:
 \enumerate{
-\item "fit", SEM fitted lavaan, ricf, or ggmncv object, depending 
-on the MLE method specified by the \code{algo} argument;
-\item "gest" or "dest", a data.frame of node-specific ("gest") 
-or edge-specific ("dest") group effect estimates and P-values;
-\item "model", SEM model as a string if \code{algo} is "lavaan", and 
-NULL otherwise;
-\item "graph", the induced subgraph of the input network mapped on
-data variables. Graph edges (i.e., direct effects) with P-value < 0.05 
+\item \code{"fit"}, SEM fitted lavaan, ricf, or ggmncv object, 
+depending on the MLE method specified by the \code{algo} argument;
+\item \code{"gest"} or \code{"dest"}, a data.frame of node-specific 
+("gest") or edge-specific ("dest") group effect estimates and P-values;
+\item \code{"model"}, SEM model as a string if \code{algo} is 
+\code{"lavaan"}, and \code{NULL} otherwise;
+\item \code{"graph"}, the induced subgraph of the input network mapped 
+on data variables. Graph edges (i.e., direct effects) with P-value < 0.05 
 will be highlighted in red (beta > 0) or blue (beta < 0). If a group 
 vector is given, nodes with significant group effect (P-value < 0.05) 
 will be red-shaded (beta > 0) or lightblue-shaded (beta < 0);
-\item "dataXY", input data subset mapping graph nodes, plus group at
-the first column (if no group is specified, this column will take NA
-values).
+\item \code{"dataXY"}, input data subset mapping graph nodes, plus 
+group at the first column (if no group is specified, this column will 
+take NA values).
 }
 }
 \description{
 SEMrun converts a (directed, undirected, or mixed) graph 
 to a SEM and fits it. If a binary group variable (i.e., case/control) 
-is present, node-level or edge-level perturbation is evaluated. SEMrun 
-can handle loop-containing models, although multiple links between 
-the same two nodes (including self-loops and mutual interactions) and 
-bows (i.e., a directed and a bidirected link between two nodes) are 
-not allowed.
+is present, node-level or edge-level perturbation is evaluated. 
+\code{SEMrun} can handle loop-containing models, although multiple 
+links between the same two nodes (including self-loops and mutual 
+interactions) and bows (i.e., a directed and a bidirected link between 
+two nodes) are not allowed.
 }
 \details{
 SEMrun maps data onto the input graph and converts it into a 
@@ -98,7 +101,7 @@ estimated from directed interactions and residual covariances (psi
 coefficients) from bidirected, undirected, or mutual interactions.
 If a group variable is given, exogenous group effects on nodes (gamma 
 coefficients) will be estimated. This will also lead to the estimation 
-of a set of aggregated group effects, if \code{algo} = "ricf" (see 
+of a set of aggregated group effects, if \code{algo = "ricf"} (see 
 \code{\link[SEMgraph]{SEMgsa}}).
 By default, maximum likelihood parameter estimates and P-values for 
 parameter sets are computed by conventional z-test (= estimate/SE), 
@@ -111,10 +114,10 @@ could not be done. If this happens, covariance matrix regularization
 is enabled using the James-Stein-type shrinkage estimator implemented 
 in the function \code{\link[corpcor]{pcor.shrink}} of corpcor R package.
 Argument \code{fit} determines how group influence is evaluated in the 
-model, as absent (\code{fit} = 0), node perturbation (\code{fit} = 1), 
-or edge perturbation (\code{fit} = 2). When \code{fit} = 1, the group 
+model, as absent (\code{fit = 0}), node perturbation (\code{fit = 1}), 
+or edge perturbation (\code{fit = 2}). When \code{fit = 1}, the group 
 is modeled as an exogenous variable, influencing all the other graph 
-nodes. When \code{fit} = 2, SEMrun estimates the differences 
+nodes. When \code{fit = 2}, SEMrun estimates the differences 
 of the beta and/or psi coefficients (network edges) between groups. 
 This is equivalent to fit a separate model for cases and controls, 
 as opposed to one common model perturbed by the exogenous group effect. 
@@ -130,30 +133,36 @@ than \code{\link[lavaan]{lavaan}} in case of large input graphs.
 
 #### Model fitting (no group effect)
 
-sem <- SEMrun(graph = sachs$graph, data = log(sachs$pkc))
+sem0 <- SEMrun(graph = sachs$graph, data = log(sachs$pkc), algo = "lavaan")
+summary(sem0$fit)
+head(parameterEstimates(sem0$fit))
 
-# Fitting summaries
-summary(sem$fit)
-print(sem$gest)
-head(parameterEstimates(sem$fit))
+sem0 <- SEMrun(graph = sachs$graph, data = log(sachs$pkc), algo = "ricf")
+summary(sem0$fit)
+head(sem0$fit$parameterEstimates)
+
+sem0 <- SEMrun(graph = sachs$graph, data = log(sachs$pkc), algo = "cggm")
+summary(sem0$fit)
+head(sem0$fit$parameterEstimates)
 
 # Graphs
-gplot(sem$graph, main="node differences")
-plot(sem$graph, layout=layout.circle, main="node differences")
+gplot(sem0$graph, main = "node differences")
+plot(sem0$graph, layout = layout.circle, main = "node differences")
 
 
 #### Model fitting (common model, group effect on nodes)
 
-sem <- SEMrun(graph = sachs$graph, data = log(sachs$pkc), group = sachs$group)
+sem1 <- SEMrun(graph = sachs$graph, data = log(sachs$pkc),
+               group = sachs$group)
 
 # Fitting summaries
-summary(sem$fit)
-print(sem$gest)
-head(parameterEstimates(sem$fit))
+summary(sem1$fit)
+print(sem1$gest)
+head(parameterEstimates(sem1$fit))
 
 # Graphs
-gplot(sem$graph, main="node differences")
-plot(sem$graph, layout=layout.circle, main="node differences")
+gplot(sem1$graph, main = "node differences")
+plot(sem1$graph, layout = layout.circle, main = "node differences")
 
 
 #### Two-group model fitting (group effect on edges)
@@ -171,32 +180,29 @@ head(parameterEstimates(sem2$fit))
 gplot(sem2$graph, main = "Edge differences")
 plot(sem2$graph, layout = layout.circle, main = "Edge differences")
 
-## NOT run ## {
+\dontrun{
 
+# Fitting and visualization of a large graph
+
+library(SEMdata)
 library(huge)
+library(org.Hs.eg.db)
+
 als.npn <- huge.npn(alsData$exprs)
+i <- which(names(kegg.pathways) == "MAPK signaling pathway")
+graph <- properties(kegg.pathways[[i]])[[1]]
 
-# Multicore computation
+sem2 <- SEMrun(graph, als.npn, alsData$group, fit = 2, algo = "cggm")
 
-j <- which(names(kegg.pathways) == "Wnt signaling pathway")
+g2 <- sem2$graph
+g2 <- g2 - E(g2)[-which(E(g2)$color != "gray50")]
+g <- properties(g2)[[1]]
 
-sem2 <- SEMrun(graph = kegg.pathways[j], data = als.npn,
-               group = alsData$group,
-               fit = 2,
-               algo = "ricf")
+E(g)$color<- E(g2)$color[E(g2) \%in\% E(g)]
+V(g)$label <- mapIds(org.Hs.eg.db, V(g)$name, 'SYMBOL', 'ENTREZID')
+gplot(g, l = "fdp")
 
-head(parameterEstimates(sem2$fit))
-head(sem2$dest)
-# gplot(sem2$graph, main = "Edge differences")
-# plot(sem2$graph, layout = layout.circle, main = "Edge differences")
-
-# Edges null randomization distribution
-r_dest <- t(na.omit(sem2$r_dest[,-c(1:3)]))
-beta <- scale(r_dest)
-colnames(beta) <- paste0(sem2$r_dest$lhs, " <- ", sem2$r_dest$rhs)
-pairwiseMatrix(beta)
-
-## }
+}
 
 }
 \references{
@@ -234,4 +240,7 @@ See \code{\link[ggm]{fitAncestralGraph}} for RICF algorithm
 details, \code{\link[flip]{flip}} for randomization P-values, and 
 \code{\link[GGMncv]{constrained}} for constrained GGM, and 
 \code{\link[GGMncv]{inference}} for de-sparsified P-values.
+}
+\author{
+Mario Grassi \email{mario.grassi@unipv.it}
 }

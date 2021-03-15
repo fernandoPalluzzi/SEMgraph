@@ -11,7 +11,7 @@ activeModule(
   eweight = "none",
   alpha = 0.05,
   q = 0.5,
-  n_cores = NULL,
+  limit = NULL,
   ...
 )
 }
@@ -51,9 +51,10 @@ the q, the closer the nodes to the input seeds, the smaller the output
 graph induced by the q-top ranking nodes. By default, q = 0.5 (i.e., the 
 top 50\% of nodes are selected).}
 
-\item{n_cores}{Number of cores to be used if type = "usp". 
-If NULL (default), all the available cores will be used. For small graphs, 
-we suggest using n_cores = 1 (i.e., multicore disabled).}
+\item{limit}{An integer value corresponding to the number of graph 
+edges. If \code{type = "usp"}, beyond this limit, multicore computation 
+is enabled to reduce the computational burden. 
+By default, \code{limit = NULL} (i.e., multicore disabled).}
 
 \item{...}{Currently ignored.}
 }
@@ -71,9 +72,9 @@ entire interactome scales.
 Graph filtering algorithms include:
 \enumerate{
 \item "kou", the Steiner tree connecting a set of seed nodes, using 
-the shortest path heuristic from Kou et al. (1981);
+the algorithm from Kou et al. (1981);
 \item "usp", generates a subnetwork as the union of the significant 
-shortest paths between the seeds set;
+(P-value < alpha) shortest paths between the seeds set;
 \item "rwr", Random Walk with Restart; wrapper for random.walk of the 
 R package diffusr;
 \item "hdi", Heat Diffusion algorithm; wrapper for heat.diffusion of 
@@ -84,7 +85,8 @@ the R package diffusr.
 
 # Graph weighting
 G <- weightGraph(graph = sachs$graph, data = sachs$pkc, group = sachs$group,
-                 method = "r2z")
+                 method = "r2z",
+                 seed = c(0.05, 0.5, 0.5))
 
 # RWR algorithm, seeds and edge P-values as weights
 R1 <- activeModule(graph = G, type = "kou", seed = "pvlm", eweight = "pvalue")
@@ -92,27 +94,31 @@ R2 <- activeModule(graph = G, type = "kou", seed = "proto", eweight = "pvalue")
 R3 <- activeModule(graph = G, type = "kou", seed = "qi", eweight = "pvalue")
 
 # Graphs
-par(mfrow=c(2,2), mar= rep(2, 4))
-plot(G, layout=layout.circle, main= "input graph")
-box(col="gray")
-plot(R1, layout=layout.circle, main= "p-value(lm)")
-box(col="gray")
-plot(R2, layout=layout.circle, main= "prototype")
-box(col="gray")
-plot(R3, layout=layout.circle, main= "closeness quantile=0.5")
-box(col="gray")
+par(mfrow=c(2,2), mar=rep(2, 4))
+plot(G, layout = layout.circle, main = "input graph")
+box(col = "gray")
+plot(R1, layout = layout.circle, main = "lm P-value (alpha = 0.05)")
+box(col = "gray")
+plot(R2, layout = layout.circle, main = "prototype (h = 0.5)")
+box(col = "gray")
+plot(R3, layout = layout.circle, main = "closeness (q = 0.5)")
+box(col = "gray")
 
-## NOT RUN ## {
+\dontrun{
 
 # Weight and reduce the whole KEGG interactome, using RWR
 
-kegg1 <- weightGraph(kegg, alsData$exprs, alsData$group, method="r2z", seed=c(5E-8, 0.5, 0.5))
+kegg1 <- weightGraph(kegg, alsData$exprs, alsData$group,
+                     method = "r2z",
+                     seed = c(5E-8, 0.5, 0.5))
 
 # Set quantile value, based on the top k nodes
 k <- sum(V(kegg1)$pvlm)
 q <- 1 - k/vcount(kegg1)
 
-ig1 <- activeModule(graph=kegg1, type="rwr", seed="pvlm", eweight="pvalue", q=q)
+ig1 <- activeModule(graph = kegg1, type = "rwr", seed = "pvlm",
+                    eweight = "pvalue",
+                    q = q)
 ig1 <- graph2dag(ig1, alsData$exprs)
 ig1 <- properties(ig1)[[1]]
 
@@ -121,7 +127,7 @@ sem1 <- SEMrun(ig1, alsData$exprs, alsData$group, fit = 1, algo = "ricf")
 summary(sem1$gest)
 gplot(sem1$graph)
 
-## }
+}
 
 }
 \references{
@@ -135,4 +141,7 @@ Acta Informatica, 15(2): 141-145. https://doi.org/10.1007/BF00288961
 Simon Dirmeier (2018). diffusr: Network Diffusion Algorithms. R
 package version 0.1.4.
 https://CRAN.R-project.org/package=diffusr
+}
+\author{
+Mario Grassi \email{mario.grassi@unipv.it}
 }

@@ -50,7 +50,7 @@ A list of 3 objects:
 \itemize{
 \item "paths", list of paths as igraph objects;
 \item "fit", fitting results for each path as a lavaan object;
-\item "dfp", a data.frame containing global path fitting statistics.
+\item "dfp", a data.frame containing SEM global fitting statistics.
 }
 }
 \description{
@@ -61,15 +61,19 @@ perturbation.
 }
 \examples{
 
-## NOT RUN ## {
+\dontrun{
 
+# Find and evaluate significantly perturbed paths
+
+library(SEMdata)
 library(huge)
+
 als.npn <- huge.npn(alsData$exprs)
 
-adjData <- diagonalizePsi(graph = alsData$graph, data = als.npn,
-                          algo = "ggm", method = "BH", alpha = 0.2)
+adjData <- SEMbap(graph = alsData$graph, data = als.npn)$data
 
-ace <- SEMace(graph = alsData$graph, data = adjData, group = alsData$group)
+ace <- SEMace(graph = alsData$graph, data = adjData,
+              group = alsData$group)
 ace <- ace[order(ace$pvalue),]
 print(ace)
 
@@ -77,16 +81,19 @@ paths <- pathFinder(graph = alsData$graph, data = adjData,
                     group = alsData$group,
                     ace = ace)
 
-head(parameterEstimates(paths$fit$P12))
-gplot(paths$paths$P12)
+head(parameterEstimates(paths$fit$P19))
+gplot(paths$paths$P19)
 
-path12 <- SEMpath(graph = alsData$graph, data = adjData,
+path19 <- SEMpath(graph = alsData$graph, data = adjData,
                   group = alsData$group,
-                  from = "572",
-                  to = "836",
+                  from = "7133",
+                  to = "4747",
                   path = "directed",
                   verbose = TRUE)
 
-## }
+}
 
+}
+\author{
+Fernando Palluzzi \email{fernando.palluzzi@gmail.com}
 }

@@ -40,10 +40,14 @@ G2 <- orientEdges(ug = R, dg = sachs$graph, data = NULL)
 
 # Graphs plotting
 par(mfrow=c(2,2), mar=rep(2,4))
-plot(R, layout=layout.circle, main = "Input undirected graph (TMFG)")
-plot(G1, layout=layout.circle, main = "Output directed graph GES")
-plot(G0, layout=layout.circle, main = "reference graph")
-plot(G2, layout=layout.circle, main = "Output directed graph dg")
+plot(R, layout=layout.circle,
+     main = "Input undirected graph (TMFG)")
+plot(G1, layout=layout.circle,
+     main = "Output directed graph (data-driven)")
+plot(G0, layout=layout.circle,
+     main = "Reference graph")
+plot(G2, layout=layout.circle,
+     main = "Output directed graph (reference-based)")
 
 }
 \references{
@@ -56,4 +60,7 @@ Nandy P, Hauser A, and Maathuis MH (2018). High-dimensional
 consistency in score-based and hybrid structure learning. 
 The Annals of Statistics, 46(6A), 3151-3183.
 https://doi.org/10.1214/17-AOS1654.
+}
+\author{
+Mario Grassi \email{mario.grassi@unipv.it}
 }

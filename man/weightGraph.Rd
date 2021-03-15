@@ -10,7 +10,7 @@ weightGraph(
   group = NULL,
   method = "r2z",
   seed = "none",
-  n_cores = NULL,
+  limit = NULL,
   ...
 )
 }
@@ -68,9 +68,10 @@ node ~ group);
 \item "qi", nodes with closeness greater than the q-th percentile.
 }}
 
-\item{n_cores}{Number of cores to be used. If NULL (default) all 
-the available cores will be used. For small graphs, we suggest using 
-n_cores = 1 (i.e., multicore disabled).}
+\item{limit}{An integer value corresponding to the number of graph 
+edges. Beyond this limit, multicore computation is enabled to reduce 
+the computational burden. 
+By default, \code{limit = NULL} (i.e., multicore disabled).}
 
 \item{...}{Currently ignored.}
 }
@@ -79,15 +80,6 @@ A weighted graph, as an igraph object.
 }
 \description{
 Add data-driven edge and node weights to the input graph.
-}
-\details{
-This function generates new edge weights on a continuous positive 
-scale and categorical node weights as {1: "seed", 0: "non-seed"}.
-Edge weights are stored in two new graph attributes: "zsign" and "pv". 
-Attribute "zsign" may have values [-1, 0, +1], where 0 is assigned if 
-Pr(|z|) > 0.05, while the sign of the z-test (either positive or negative) 
-is assigned when Pr(|z|) <= 0.05. Attribute "pv" correspond to the z-test 
-P-value. All other input graph vertex and edge attributes are maintained.
 }
 \examples{
 
@@ -116,4 +108,7 @@ R <- properties(R)[[1]]
 Grassi M, Palluzzi F (2021). SEMgraph: An R Package for Causal Network 
 Analysis of High-Throughput Data with Structural Equation Models. 
 xxxxx x(x): xxxxx. https://doi.org/xxxxx
+}
+\author{
+Mario Grassi \email{mario.grassi@unipv.it}
 }

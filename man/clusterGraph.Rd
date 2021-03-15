@@ -52,6 +52,7 @@ If HM is "none", only the cluster membership vector is returned.
 Topological graph clustering methods.
 }
 \examples{
+library(SEMdata)
 G <- kegg.pathways$"Amyotrophic lateral sclerosis (ALS)"
 # Largest connected component
 G <- properties(G)[[1]]
@@ -68,4 +69,7 @@ Chaos 25(2): 023107.  https://doi.org/10.1063/1.4908014
 }
 \seealso{
 \code{\link[SEMgraph]{clusterScore}}, \code{\link[SEMgraph]{cplot}}
+}
+\author{
+Mario Grassi \email{mario.grassi@unipv.it}
 }

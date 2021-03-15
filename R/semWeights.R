@@ -71,25 +71,21 @@
 #' \code{\link[protoclust]{protoclust}};
 #' \item "qi", nodes with closeness greater than the q-th percentile.
 #' }
-#' @param n_cores Number of cores to be used. If NULL (default) all 
-#' the available cores will be used. For small graphs, we suggest using 
-#' n_cores = 1 (i.e., multicore disabled).
+#' @param limit An integer value corresponding to the number of graph 
+#' edges. Beyond this limit, multicore computation is enabled to reduce 
+#' the computational burden. 
+#' By default, \code{limit = NULL} (i.e., multicore disabled).
 #' @param ... Currently ignored.
-#'
-#' @details This function generates new edge weights on a continuous positive 
-#' scale and categorical node weights as {1: "seed", 0: "non-seed"}.
-#' Edge weights are stored in two new graph attributes: "zsign" and "pv". 
-#' Attribute "zsign" may have values [-1, 0, +1], where 0 is assigned if 
-#' Pr(|z|) > 0.05, while the sign of the z-test (either positive or negative) 
-#' is assigned when Pr(|z|) <= 0.05. Attribute "pv" correspond to the z-test 
-#' P-value. All other input graph vertex and edge attributes are maintained.
 #'
 #' @return A weighted graph, as an igraph object.
 #'
 #' @import igraph
 #' @import lavaan
-#' @importFrom stats cor pnorm
+#' @importFrom stats cov cor pnorm quantile lm runif
+#' @importFrom Matrix sparseMatrix
 #' @export
+#'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
 #'
 #' @references
 #' Grassi M, Palluzzi F (2021). SEMgraph: An R Package for Causal Network 
@@ -119,7 +115,7 @@
 #' R <- properties(R)[[1]]
 #'
 weightGraph <- function(graph, data, group = NULL, method = "r2z",
-                        seed = "none", n_cores = NULL, ...)
+                        seed = "none", limit = NULL, ...)
 {
 	# Set genes, from-to-matrix (ftm), vertex degree and data
 	genes <- colnames(data)
@@ -129,11 +125,11 @@ weightGraph <- function(graph, data, group = NULL, method = "r2z",
 	ftm <- as_data_frame(ig)
 	Y <- scale(data)
 
-	if( method == "none" ) return(graph=ig) 
-	if( method == "sem" ) ew<- ew.sem(ftm, Y, group, degree, n_cores = NULL)
-	if( method == "cov" ) ew<- ew.cov(ftm, Y, group, degree, n_cores = NULL)
-	if( method == "cfa" ) ew<- ew.cfa(ftm, Y, group, n_cores = NULL)
-	if( method == "r2z" ) ew<- ew.r2z(ftm, Y, group)
+	if (method == "none") return(graph = ig) 
+	if (method == "sem") ew <- ew.sem(ftm, Y, group, degree, limit = limit)
+	if (method == "cov") ew <- ew.cov(ftm, Y, group, degree, limit = limit)
+	if (method == "cfa") ew <- ew.cfa(ftm, Y, group, limit = limit)
+	if (method == "r2z") ew <- ew.r2z(ftm, Y, group)
 
 	zsign <- ew[[1]]
 	pv <- ew[[2]]
@@ -158,101 +154,117 @@ weightGraph <- function(graph, data, group = NULL, method = "r2z",
 	return(graph = gdf)
 }
 
-ew.sem <- function(ftm, Y, group, degree, n_cores = NULL, ...)
-{
-	require(foreach)
-	if (is.null(n_cores)) n_cores <- parallel::detectCores()
-	n_rep <- nrow(ftm)
-	opts <- list(progress = pb(n_rep))
-	
-	message("Edge weigthing via SEM model ...")	
-	cl <- parallel::makeCluster(n_cores)
-	doSNOW::registerDoSNOW(cl)
-	#doParallel::registerDoParallel(cl)
-	est <- foreach::foreach(i = 1:n_rep, .options.snow = opts) %dopar% {
-		df <- cbind(Y[, c(ftm[i, 1], ftm[i, 2])], group)
-		dx <- degree[colnames(df)[1]]
-		dy <- degree[colnames(df)[2]]
+ew.sem <- function(ftm, Y, group, degree, limit = NULL, ...)
+{	
+	local <- function(x) {
+		df <- data.frame(cbind(Y[, c(x[[1]], x[[2]])], group))
+		dx <- degree[x[[1]]]
+		dy <- degree[x[[2]]]
 		colnames(df)[1:2] <- c("x", "y")
 		model <- paste0(
-		'y~ b0*1+b1*group
-		x~ a0*1+a1*group
-		w:=a1/', dx, ' + b1/', dy)
+		 'y~ b0*1+b1*group
+		 x~ a0*1+a1*group
+		 w:=a1/',dx,' + b1/',dy)
+		#cat(model)
 		try(fit <- lavaan::sem(model, data = df, fixed.x = TRUE))
 		try(res <- lavaan::parameterEstimates(fit))
 		try(res[res$label == "w", -c(1:4)])
 	}
-	parallel::stopCluster(cl)
+	
+	x <- split(ftm, f = seq(nrow(ftm)))
+	message("Edge weigthing via SEM of ", length(x), " edges ...")
+	op <- pbapply::pboptions(type = "timer", style = 2)
+	if (!is.null(limit)) {
+		n_cores <- parallel::detectCores()
+		cl <- parallel::makeCluster(n_cores)
+		parallel::clusterExport(cl, c("local", "Y", "degree", "group"),
+		                        envir = environment())
+		est <- pbapply::pblapply(x, local, cl = cl)
+		parallel::stopCluster(cl)
+	} else {
+		est <- pbapply::pblapply(x, local, cl = NULL)
+	}
 	
 	B <- sapply(1:length(est), function(x) est[[x]]$z)
 	zsign <- ifelse(abs(B) < 1.96, 0, sign(B))
 	pv <- sapply(1:length(est), function(x) est[[x]]$pvalue)
-	
 	cat("\n")
 	return (list(zsign, pv))
 }
 
-ew.cov <- function(ftm, Y, group, degree, n_cores = NULL, ...)
+ew.cov <- function(ftm, Y, group, degree, limit = NULL, ...)
 {
-	require(foreach)
-	if (is.null(n_cores)) n_cores <- parallel::detectCores()
-	n_rep <- nrow(ftm)
-	opts <- list(progress = pb(n_rep))
-	
-	message("Edge weigthing via covariance model ...")
-	cl <- parallel::makeCluster(n_cores)
-	doSNOW::registerDoSNOW(cl)
-	#doParallel::registerDoParallel(cl)
-	est <- foreach::foreach(i=1:n_rep, .options.snow = opts) %dopar% {
-		df <- cbind(Y[, c(ftm[i, 1], ftm[i, 2])], group)
-		dx <- degree[colnames(df)[1]]
-		dy <- degree[colnames(df)[2]]
-		colnames(df)[1:2]<- c("x", "y")
-		model<- paste0(
-		'x ~ c(a1,a2)*1
-		y ~ c(b1,b2)*1
-		x ~~ c(c1,c2)*y
-		w:= (a2-a1)/',dx,'+(b2-b1)/',dy,'+(c2-c1)') #cat(model)
+	local <- function(x) {
+		df <- data.frame(cbind(Y[, c(x[[1]], x[[2]])], group))
+		dx <- degree[x[[1]]]
+		dy <- degree[x[[2]]]
+		colnames(df)[1:2] <- c("x", "y")
+		model <- paste0(
+		 'x ~ c(a1,a2)*1
+		 y ~ c(b1,b2)*1
+		 x ~~ c(c1,c2)*y
+		 w:= (a2-a1)/', dx, '+(b2-b1)/', dy, '+(c2-c1)')
+		#cat(model)
 		try(fit <- lavaan::sem(model, data = df, group = "group",
-		                       fixed.x = TRUE))
-		try(res <- lavaan::parameterEstimates(fit))
+		    fixed.x = TRUE))
+		try(res<- lavaan::parameterEstimates(fit))
 		try(res[res$label == "w", -c(1:5)])
 	}
-	parallel::stopCluster(cl)
-		
+	
+	x <- split(ftm, f = seq(nrow(ftm)))
+	message("Edge weigthing via COV of ", length(x), " edges ...")
+	op <- pbapply::pboptions(type = "timer", style = 2)
+	
+	if (!is.null(limit)) {
+		n_cores <- parallel::detectCores()
+		cl <- parallel::makeCluster(n_cores)
+		parallel::clusterExport(cl, c("local", "Y", "degree", "group"),
+		                        envir = environment())
+		est<- pbapply::pblapply(x, local, cl = cl)
+		parallel::stopCluster(cl)
+	} else {
+		est <- pbapply::pblapply(x, local, cl = NULL)
+	}
+	
 	B <- sapply(1:length(est), function(x) est[[x]]$z)
 	zsign <- ifelse(abs(B) < 1.96, 0, sign(B))
 	pv <- sapply(1:length(est), function(x) est[[x]]$pvalue)
-	
 	cat("\n")
 	return (list(zsign, pv))
 }
 
-ew.cfa <- function(ftm, Y, group, n_cores = NULL, ...)
+ew.cfa <- function(ftm, Y, group, limit = NULL, ...)
 {
-	require(foreach)
-	if (is.null(n_cores)) n_cores <- parallel::detectCores()
-	n_rep <- nrow(ftm)
-	opts <- list(progress = pb(n_rep))
-	
-	message("Edge weigthing via CFA model ...")
-	cl <- parallel::makeCluster(n_cores)
-	doSNOW::registerDoSNOW(cl)
-	#doParallel::registerDoParallel(cl)
-	est <- foreach::foreach(i = 1:n_rep, .options.snow = opts) %dopar% {
-		df <- data.frame(cbind(Y[,c(ftm[i,1],ftm[i,2])],group))
-		colnames(df)[1:2]<- c("y1", "y2")
-		if(cov(df$y1,df$y2)<0) df$y1<- -1*df$y1
-		a<- sqrt(cov(df$y1,df$y2))
-		model<- paste0(
-		'f =~ ', a, '*y1+', a, '*y2
-		f ~ group
-		y1~~', 1-a^2, '*y1
-		y2~~', 1-a^2, '*y2')
+	local <- function(x) {
+		df <- data.frame(cbind(Y[, c(x[[1]], x[[2]])], group))
+		colnames(df)[1:2] <- c("y1", "y2")
+		if(cov(df$y1, df$y2) <0) df$y1 <- -1*df$y1
+		a <- sqrt(cov(df$y1, df$y2))
+		model <- paste0(
+		 'f =~ ',a,'*y1+',a,'*y2
+		 f ~ group
+		 y1~~',1-a^2,'*y1
+		 y2~~',1-a^2,'*y2')
+		#cat(model)
 		suppressWarnings(try(fit <- lavaan::cfa(model, data = df,
-		                                        fixed.x = TRUE)))
-		try(res <- lavaan::parameterEstimates(fit))
+		                     fixed.x = TRUE)))
+		try(res<- lavaan::parameterEstimates(fit))
 		try(res[c(3, 6),])
+	}
+	
+	x <- split(ftm, f = seq(nrow(ftm)))
+	message("Edge weigthing via 1CFA of ", length(x), " edges ...")
+	op <- pbapply::pboptions(type = "timer", style = 2)
+	
+	if (!is.null(limit)) {
+		n_cores <- parallel::detectCores()
+		cl <- parallel::makeCluster(n_cores)
+		parallel::clusterExport(cl, c("local", "Y", "degree", "group"),
+		                        envir = environment())
+		est <- pbapply::pblapply(x, local, cl = cl)
+		parallel::stopCluster(cl)
+	} else {
+		est <- pbapply::pblapply(x, local, cl = NULL)
 	}
 	
 	var <- sapply(1:length(est), function(x) est[[x]]$est[2])
@@ -373,17 +385,18 @@ seedweight <- function(ig, data, group, alpha = 0.05, h = 0.2, q = 0.5, ...)
 #' the q, the closer the nodes to the input seeds, the smaller the output 
 #' graph induced by the q-top ranking nodes. By default, q = 0.5 (i.e., the 
 #' top 50\% of nodes are selected).
-#' @param n_cores Number of cores to be used if type = "usp". 
-#' If NULL (default), all the available cores will be used. For small graphs, 
-#' we suggest using n_cores = 1 (i.e., multicore disabled).
+#' @param limit An integer value corresponding to the number of graph 
+#' edges. If \code{type = "usp"}, beyond this limit, multicore computation 
+#' is enabled to reduce the computational burden. 
+#' By default, \code{limit = NULL} (i.e., multicore disabled).
 #' @param ... Currently ignored.
 #'
 #' @details Graph filtering algorithms include:
 #' \enumerate{
 #' \item "kou", the Steiner tree connecting a set of seed nodes, using 
-#' the shortest path heuristic from Kou et al. (1981);
+#' the algorithm from Kou et al. (1981);
 #' \item "usp", generates a subnetwork as the union of the significant 
-#' shortest paths between the seeds set;
+#' (P-value < alpha) shortest paths between the seeds set;
 #' \item "rwr", Random Walk with Restart; wrapper for random.walk of the 
 #' R package diffusr;
 #' \item "hdi", Heat Diffusion algorithm; wrapper for heat.diffusion of 
@@ -394,7 +407,10 @@ seedweight <- function(ig, data, group, alpha = 0.05, h = 0.2, q = 0.5, ...)
 #'
 #' @import igraph
 #' @importFrom diffusr random.walk heat.diffusion
+#' @importFrom Matrix sparseMatrix
 #' @export
+#'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
 #'
 #' @references
 #' 
@@ -413,7 +429,8 @@ seedweight <- function(ig, data, group, alpha = 0.05, h = 0.2, q = 0.5, ...)
 #' 
 #' # Graph weighting
 #' G <- weightGraph(graph = sachs$graph, data = sachs$pkc, group = sachs$group,
-#'                  method = "r2z")
+#'                  method = "r2z",
+#'                  seed = c(0.05, 0.5, 0.5))
 #' 
 #' # RWR algorithm, seeds and edge P-values as weights
 #' R1 <- activeModule(graph = G, type = "kou", seed = "pvlm", eweight = "pvalue")
@@ -421,27 +438,31 @@ seedweight <- function(ig, data, group, alpha = 0.05, h = 0.2, q = 0.5, ...)
 #' R3 <- activeModule(graph = G, type = "kou", seed = "qi", eweight = "pvalue")
 #' 
 #' # Graphs
-#' par(mfrow=c(2,2), mar= rep(2, 4))
-#' plot(G, layout=layout.circle, main= "input graph")
-#' box(col="gray")
-#' plot(R1, layout=layout.circle, main= "p-value(lm)")
-#' box(col="gray")
-#' plot(R2, layout=layout.circle, main= "prototype")
-#' box(col="gray")
-#' plot(R3, layout=layout.circle, main= "closeness quantile=0.5")
-#' box(col="gray")
-#'
-#' ## NOT RUN ## {
+#' par(mfrow=c(2,2), mar=rep(2, 4))
+#' plot(G, layout = layout.circle, main = "input graph")
+#' box(col = "gray")
+#' plot(R1, layout = layout.circle, main = "lm P-value (alpha = 0.05)")
+#' box(col = "gray")
+#' plot(R2, layout = layout.circle, main = "prototype (h = 0.5)")
+#' box(col = "gray")
+#' plot(R3, layout = layout.circle, main = "closeness (q = 0.5)")
+#' box(col = "gray")
+#' 
+#' \dontrun{
 #' 
 #' # Weight and reduce the whole KEGG interactome, using RWR
 #' 
-#' kegg1 <- weightGraph(kegg, alsData$exprs, alsData$group, method="r2z", seed=c(5E-8, 0.5, 0.5))
+#' kegg1 <- weightGraph(kegg, alsData$exprs, alsData$group,
+#'                      method = "r2z",
+#'                      seed = c(5E-8, 0.5, 0.5))
 #' 
 #' # Set quantile value, based on the top k nodes
 #' k <- sum(V(kegg1)$pvlm)
 #' q <- 1 - k/vcount(kegg1)
 #' 
-#' ig1 <- activeModule(graph=kegg1, type="rwr", seed="pvlm", eweight="pvalue", q=q)
+#' ig1 <- activeModule(graph = kegg1, type = "rwr", seed = "pvlm",
+#'                     eweight = "pvalue",
+#'                     q = q)
 #' ig1 <- graph2dag(ig1, alsData$exprs)
 #' ig1 <- properties(ig1)[[1]]
 #' 
@@ -450,10 +471,10 @@ seedweight <- function(ig, data, group, alpha = 0.05, h = 0.2, q = 0.5, ...)
 #' summary(sem1$gest)
 #' gplot(sem1$graph)
 #' 
-#' ## }
+#' }
 #'
 activeModule <- function(graph, type, seed, eweight = "none", alpha = 0.05,
-                         q = 0.5, n_cores = NULL, ...)
+                         q = 0.5, limit = NULL, ...)
 {
 	if (length(eweight) == 1) {
 		if (eweight == "kegg") eweight <- (1 - E(graph)$weight)/2
@@ -476,7 +497,7 @@ activeModule <- function(graph, type, seed, eweight = "none", alpha = 0.05,
 	
 	} else if (type == "usp" & length(seed) != 0) {
 		return(USPG(graph, seed = seed, eweight = eweight, alpha = alpha,
-		            n_cores = n_cores))
+		            limit = limit))
 	
 	} else if (type == "rwr" & length(seed) != 0) {
 		return(RWR(graph, seed = seed, eweight = eweight, algo = "rwr",
@@ -682,59 +703,70 @@ SteinerTree <- function(graph, seed, eweight)
 	return(St)
 }
 
-USPG <- function(graph, seed, eweight, alpha, n_cores, ...)
+USPG <- function(graph, seed, eweight, alpha = 0.05, limit = NULL, ...)
 {
-	require(foreach)
-	
-	# Define graph, edge weights, and distance matrix:
+	# Define graph, edge weights, and distance matrix
 	E(graph)$weight <- eweight
 	if (is.null(E(graph)$pv)) E(graph)$pv <- rep(0, ecount(graph))
 	D <- igraph::distances(graph, v = seed, to = seed, mode = "all",
 	                       weights = eweight)
 	
-	# Complete directed distance graph for terminal nodes:
+	# Complete directed distance graph for terminal nodes
 	Gd <- graph_from_adjacency_matrix(D, mode = "undirected", weighted = TRUE)
-	Gd <- Gd - igraph::edges(E(Gd)[which(E(Gd)$weight == Inf)])
+	Gd <- Gd-igraph::edges(E(Gd)[which(E(Gd)$weight == Inf)])
+	#plot(as_graphnel(Gd)); Gd; E(Gd)$weight
 	
-	# For each edge in Gd, replace it with the shortest path:
-	if (is.null(n_cores)) n_cores <- parallel::detectCores()
-	edge_list <- as_edgelist(Gd)
-	N <- nrow(edge_list)
+	# For each edge in Gd, replace it with the shortest path
+	ftm <- as_edgelist(Gd)
+	N <- nrow(ftm)
 	if (alpha == 1) alpha <- N
 	
-	message("Edge weighting ...")
-	opts <- list(progress = pb(N))
-	cl <- parallel::makeCluster(n_cores)
-	doSNOW::registerDoSNOW(cl)
-	#doParallel::registerDoParallel(cl)
-	ftm <- foreach::foreach(n = 1:N, .combine = rbind,
-	                        .packages = c("foreach", "igraph"),
-	                        .options.snow = opts) %dopar% {
-		i <- edge_list[n, 1]
-		j <- edge_list[n, 2]
+	local <- function(x) {
+		i <- x[[1]]
+		j <- x[[2]]
 		
-		# extract from ig all nodes of the shortest paths between edges of Gd:
+		# Extract nodes from the shortest paths between edges of Gd
 		path <- shortest_paths(graph, from = V(graph)[i], to = V(graph)[j],
-		                       mode = "all",
-		                       weights = eweight,
+		                       mode = "all", weights = E(graph)$weight,
 		                       output = "both")
-		
 		vpath <- V(graph)$name[path$vpath[[1]]]
+		r <- length(vpath) - 1
 		pvalue <- E(graph)$pv[path$epath[[1]]]
 		
 		# Fisher's combined significance test of the shortest path
-		ppath<- 1 - pchisq(-2*sum(log(pvalue)),df = 2*length(pvalue))
+		ppath <- 1 - pchisq(-2*sum(log(pvalue)), df = 2*length(pvalue))
 		ppath[is.na(ppath)] <- 0.5
-		foreach(k = 1:(length(vpath) - 1), .combine = rbind) %:%
-		when(ppath < alpha/N) %do% c(vpath[k], vpath[k + 1])
+		if (ppath < alpha/N) {
+			ftm <- lapply(1:r, function(x) {
+						data.frame(from = vpath[x], to = vpath[x + 1])
+					})
+		} else {
+			ftm <- NULL
+		}
+		do.call(rbind, lapply(ftm, as.data.frame))
 	}
-	parallel::stopCluster(cl)
-
+	
+	x <- split(ftm, f = seq(nrow(ftm)))
+	message("Edge weigthing of ", length(x), " edges ...")
+	op <- pbapply::pboptions(type = "timer", style = 2)
+	
+	if (!is.null(limit)) {
+		n_cores <- parallel::detectCores()
+		cl <- parallel::makeCluster(n_cores)
+		parallel::clusterExport(cl, c("local", "graph", "alpha", "N"),
+		                        envir = environment())
+		ftm <- pbapply::pblapply(x, local, cl = cl)
+		parallel::stopCluster(cl)
+	} else {
+		est <- pbapply::pblapply(x, local, cl = NULL)
+	}
+	ftm <- do.call(rbind, lapply(est, as.data.frame))
+	
 	# Merging the shortest paths
-	if (!is.null(ftm)) {
+	if( !is.null(ftm) ) {
 		del <- which(duplicated(ftm) == TRUE)
-		if (length(del) > 0) ftm <- ftm[-del,]
-		Gs <- simplify(graph_from_edgelist(ftm, directed = FALSE))
+		if(length(del) > 0) ftm <- ftm[-del,]
+		Gs <- simplify(graph_from_data_frame(ftm, directed = FALSE))
 		if(is.directed(graph)) Gs <- orientEdges(ug = Gs, dg = graph)
 	} else {
 		Gs <- make_empty_graph(0)

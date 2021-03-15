@@ -59,3 +59,6 @@ gplot(path$map, main="path from PiP2 to Erk")
 plot(path$map, layout=layout.circle, main="path from PiP2 to Erk")
 
 }
+\author{
+Mario Grassi \email{mario.grassi@unipv.it}
+}

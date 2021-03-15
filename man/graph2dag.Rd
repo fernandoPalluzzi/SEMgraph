@@ -36,15 +36,19 @@ a BAP is generated merging the output DAG and the bidirected edges
 from the input graph.
 }
 \examples{
+
 dag <- graph2dag(graph = sachs$graph, data = log(sachs$pkc))
 par(mfrow=c(1,2), mar=rep(1, 4))
 gplot(sachs$graph, main = "Input graph")
 gplot(dag, main = "Output DAG")
 
-## NOT RUN ## {
+\dontrun{
+
+# Convert every KEGG pathway into a DAG
 
 # Node count for each pathway
-ngs <- unlist(lapply(1:length(kegg.pathways), function(x) vcount(kegg.pathways[[x]])))
+ngs <- unlist(lapply(1:length(kegg.pathways),
+              function(x) vcount(kegg.pathways[[x]])))
 head(ngs)
 
 # Remove pathways with less than 5 nodes and more than 500 nodes
@@ -53,12 +57,16 @@ length(Blacklist)
 KEGG <- kegg.pathways[-Blacklist]
 
 # DAG conversion
+library(SEMdata)
 library(huge)
 als.npn <- huge.npn(alsData$exprs)
 dag <- lapply(KEGG, function(x) graph2dag(x, data = als.npn))
 length(dag)
 head(dag)
 
-## }
+}
 
+}
+\author{
+Mario Grassi \email{mario.grassi@unipv.it}
 }

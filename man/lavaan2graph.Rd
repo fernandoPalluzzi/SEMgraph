@@ -63,3 +63,6 @@ gplot(G1)
 plot(G1, layout=layout.circle) 
 
 }
+\author{
+Mario Grassi \email{mario.grassi@unipv.it}
+}
