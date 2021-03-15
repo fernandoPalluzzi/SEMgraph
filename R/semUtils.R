@@ -2,7 +2,7 @@
 #  Copyright (C) 2019-2021 Fernando Palluzzi; Mario Grassi
 #  e-mail: <fernando.palluzzi@gmail.com>
 #  University of Pavia, Department of Brain and Behavioral Sciences
-#  Via Bassi 21, Pavia 27100, Italy
+#  Via Bassi 21, 27100 Pavia, Italy
 
 #  SEMgraph is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # -------------------------------------------------------------------- #
+
 
 #' @title Graph properties summary and graph decomposition
 #'
@@ -35,11 +36,14 @@
 #' @return List of graph components, ordered by decreasing size (the first 
 #' component is the giant one), without self-loops.
 #'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
 #' @examples
+#' library(SEMdata)
 #' G <- kegg.pathways$"Amyotrophic lateral sclerosis (ALS)"
 #' properties(G)
 #'
-properties <- function(graph, data = NULL)
+properties <- function(graph, data = NULL, ...)
 {
     if (!is_igraph(graph)) ig <- graph_from_graphnel(graph) else ig <- graph
     if (!is.null(data)) {
@@ -112,6 +116,8 @@ mergeGraph <- function(g = list(), gref = NULL, gnet = NULL, verbose = FALSE,
 #' Rgraphwiz.
 #'
 #' @param graph An igraph or graphNEL object.
+#' @param l any layout supported by \code{Rgraphviz}. It can be one among: 
+#' "dot" (default), "neato", "circo", "fdp", "osage", "twopi".
 #' @param main Plot main title (by default, no title is added).
 #' @param cex.main Main title size (default = 1).
 #' @param font.main Main title font (default = 1). Available options 
@@ -136,6 +142,8 @@ mergeGraph <- function(g = list(), gref = NULL, gnet = NULL, verbose = FALSE,
 #' @importFrom Rgraphviz layoutGraph renderGraph
 #' @export
 #'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
 #' @examples
 #' 
 #' gplot(sachs$graph, main = "input graph")
@@ -143,7 +151,7 @@ mergeGraph <- function(g = list(), gref = NULL, gnet = NULL, verbose = FALSE,
 #' sem <- SEMrun(sachs$graph, sachs$pkc)
 #' gplot(sem$graph, main = "output graph")
 #'
-gplot <- function(graph, main = "", cex.main = 1, font.main = 1,
+gplot <- function(graph, l = "dot", main = "", cex.main = 1, font.main = 1,
                   color.txt = "black", fontsize = 16, cex = 0.6,
                   shape = "circle", color = "gray70", lty = 1, lwd = 1,
                   w = "auto", h = "auto", psize = 80, ...)
@@ -190,7 +198,7 @@ gplot <- function(graph, main = "", cex.main = 1, font.main = 1,
 	}
 	
 	if (graph::isDirected(g)) {
-		g <- Rgraphviz::layoutGraph(g, layoutType = "dot",
+		g <- Rgraphviz::layoutGraph(g, layoutType = l,
 		                            edgeAttrs = list(label = elab))
 	} else {
 		g <- Rgraphviz::layoutGraph(g, layoutType = "fdp",
@@ -254,6 +262,8 @@ gplot <- function(graph, main = "", cex.main = 1, font.main = 1,
 #'
 #' @return An igraph object.
 #'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
 #' @examples
 #' 
 #' # Graphs creation
@@ -264,9 +274,11 @@ gplot <- function(graph, main = "", cex.main = 1, font.main = 1,
 #'                  type = "cond",
 #'                  method = "BH")
 #' C3 <- corr2graph(R = cor(log(sachs$pkc)), n = nrow(sachs$pkc),
-#'                  type = "mst")
+#'                  type = "mst",
+#'                  method = "BH")
 #' C4 <- corr2graph(R = cor(log(sachs$pkc)), n = nrow(sachs$pkc),
-#'                  type = "tmfg")
+#'                  type = "tmfg",
+#'                  method = "BH")
 #' 
 #' # Graphs plots
 #' par(mfrow=c(2,2), mar= rep(2, 4))
@@ -351,6 +363,8 @@ corr2graph <- function(R, n, graph = NULL, type = "marg", method = "none",
 #'
 #' @return An igraph object.
 #'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
 #' @examples
 #'
 #' # Writing path diagram in lavaan syntax
@@ -403,20 +417,28 @@ lavaan2graph <- function(model, directed = TRUE, psi = TRUE, verbose = FALSE,
 	return(graph)
 }
 
-graph2dagitty <- function(graph, verbose = TRUE, ...)
+graph2dagitty<- function (graph, canonical = FALSE, verbose = FALSE, ...) 
 {
-	ed <- attr(E(graph), "vnames")[which_mutual(graph) == FALSE]
-	eb <- attr(E(graph), "vnames")[which_mutual(graph) == TRUE]
-	de <- paste(gsub("\\|", "->", ed), collapse = "\n")
-	if (length(eb) == 0) {
-		dag <- paste0("dag {\n", de, "\n}")
-	} else {
-		eb <- eb[1:(length(eb)/2)]
+    dg <- graph-E(graph)[which_mutual(graph)]
+	ug <- as.undirected(graph-E(graph)[!which_mutual(graph)])
+	ed <- attr(E(dg), "vnames")
+    eb <- attr(E(ug), "vnames")
+    de <- paste(gsub("\\|", "->", ed), collapse = "\n")
+    
+    if (length(eb) == 0) {
+		dagi <- paste0("dag {\n", de, "\n}")
+    } else {
 		be <- paste(gsub("\\|", "<->", eb), collapse = "\n")
-		dag <- paste0("dag {\n", de, "\n", be, "\n}")
+		dagi <- paste0("dag {\n", de, "\n", be, "\n}") 
+    }
+	
+	if (verbose) plot(dagitty::graphLayout(dagi))
+	if (canonical) {
+		dagi <- dagitty::canonicalize(dagi)
+		if (verbose) plot(dagitty::graphLayout(dagi$g))
+		return(dagi$g)
 	}
-	if (verbose) plot(dagitty::graphLayout(dag))
-	return(dag)
+    return(dagi)
 }
 
 #' @title Graph to lavaan model
@@ -434,9 +456,11 @@ graph2dagitty <- function(graph, verbose = TRUE, ...)
 #'
 #' @return A model in lavaan syntax.
 #'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
 #' @examples
 #' model <- graph2lavaan(sachs$graph)
-#' cat(model)
+#' cat(model, "\n")
 #'
 graph2lavaan <- function(graph, nodes = V(graph)$name, ...)
 {
@@ -496,16 +520,22 @@ graph2lavaan <- function(graph, nodes = V(graph)$name, ...)
 #'
 #' @return A DAG as an igraph object.
 #'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
 #' @examples
+#' 
 #' dag <- graph2dag(graph = sachs$graph, data = log(sachs$pkc))
 #' par(mfrow=c(1,2), mar=rep(1, 4))
 #' gplot(sachs$graph, main = "Input graph")
 #' gplot(dag, main = "Output DAG")
 #' 
-#' ## NOT RUN ## {
+#' \dontrun{
+#' 
+#' # Convert every KEGG pathway into a DAG
 #' 
 #' # Node count for each pathway
-#' ngs <- unlist(lapply(1:length(kegg.pathways), function(x) vcount(kegg.pathways[[x]])))
+#' ngs <- unlist(lapply(1:length(kegg.pathways),
+#'               function(x) vcount(kegg.pathways[[x]])))
 #' head(ngs)
 #' 
 #' # Remove pathways with less than 5 nodes and more than 500 nodes
@@ -514,13 +544,14 @@ graph2lavaan <- function(graph, nodes = V(graph)$name, ...)
 #' KEGG <- kegg.pathways[-Blacklist]
 #' 
 #' # DAG conversion
+#' library(SEMdata)
 #' library(huge)
 #' als.npn <- huge.npn(alsData$exprs)
 #' dag <- lapply(KEGG, function(x) graph2dag(x, data = als.npn))
 #' length(dag)
 #' head(dag)
 #' 
-#' ## }
+#' }
 #'
 graph2dag <- function(graph, data, bap = FALSE, time.limit = Inf, ...)
 {
@@ -605,6 +636,7 @@ graph2dag <- function(graph, data, bap = FALSE, time.limit = Inf, ...)
 #' @param ... Currently ignored.
 #'
 #' @import igraph
+#' @importFrom pcalg ges getGraph
 #' @export
 #'
 #' @references
@@ -621,6 +653,8 @@ graph2dag <- function(graph, data, bap = FALSE, time.limit = Inf, ...)
 #'
 #' @return A directed graph as an igraph object.
 #'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
 #' @examples
 #' 
 #' # Graphs definition
@@ -635,10 +669,14 @@ graph2dag <- function(graph, data, bap = FALSE, time.limit = Inf, ...)
 #' 
 #' # Graphs plotting
 #' par(mfrow=c(2,2), mar=rep(2,4))
-#' plot(R, layout=layout.circle, main = "Input undirected graph (TMFG)")
-#' plot(G1, layout=layout.circle, main = "Output directed graph GES")
-#' plot(G0, layout=layout.circle, main = "reference graph")
-#' plot(G2, layout=layout.circle, main = "Output directed graph dg")
+#' plot(R, layout=layout.circle,
+#'      main = "Input undirected graph (TMFG)")
+#' plot(G1, layout=layout.circle,
+#'      main = "Output directed graph (data-driven)")
+#' plot(G0, layout=layout.circle,
+#'      main = "Reference graph")
+#' plot(G2, layout=layout.circle,
+#'      main = "Output directed graph (reference-based)")
 #'
 orientEdges<- function(ug, dg = NULL, data = NULL, ...)
 {
@@ -649,15 +687,14 @@ orientEdges<- function(ug, dg = NULL, data = NULL, ...)
 	}
 	
 	if (is.null(dg) & !is.null(data)) {
-		require(pcalg)
 		V <- colnames(data)[colnames(data) %in% V(ug)$name]
 		Z <- scale(data[, V])
 		score <- new("GaussL0penObsScore", Z)
 		cig <- as_adj(ug, sparse = FALSE)
-		ges <- ges(score, fixedGaps = !cig, adaptive = "vstructures")
-		#ges <- ges(score, fixedGaps = !cig, adaptive = "triples")
-		#ges <- ges(score, fixedGaps = !cig, adaptive = "none")
-		g <- graph_from_graphnel(getGraph(ges$essgraph))
+		ges <- pcalg::ges(score, fixedGaps = !cig, adaptive = "vstructures")
+		#ges <- pcalg::ges(score, fixedGaps = !cig, adaptive = "triples")
+		#ges <- pcalg::ges(score, fixedGaps = !cig, adaptive = "none")
+		g <- graph_from_graphnel(pcalg::getGraph(ges$essgraph))
 	
 	} else if (!is.null(dg) & is.null(data)) {
 		ug <- as.directed(ug, mode = "mutual")
@@ -669,7 +706,7 @@ orientEdges<- function(ug, dg = NULL, data = NULL, ...)
 		YES1 <- paste0(ftm0[YES1, 1], "|", ftm0[YES1, 2])
 		ftm1 <- ftm0[which(exy0 %in% YES1),]
 		ftm1 <- matrix(ftm1, ncol = 2)
-		g <- graph_from_edgelist(ftm1, direct = TRUE)
+		g <- graph_from_edgelist(ftm1, directed = TRUE)
 	}
 	V(g)$color <- colorMatch(ug, g)[[1]]
 	E(g)$color <- colorMatch(ug, g)[[2]]
@@ -698,7 +735,7 @@ orientEdges<- function(ug, dg = NULL, data = NULL, ...)
 #' subjects.
 #' @param method Multiple testing correction method. One of the values 
 #' available in \code{\link[stats]{p.adjust}}. By default, method is set 
-#' to "none" (i.e., no multiple test correction).
+#' to "BH" (i.e., Benjamini-Hochberg correction).
 #' @param alpha Gene set test significance level. Alpha is set to 0.05
 #' by default.
 #' @param n_rep Number of randomization replicates (default = 1000).
@@ -710,7 +747,8 @@ orientEdges<- function(ug, dg = NULL, data = NULL, ...)
 #' \item "N.nodes", pathway size (number of nodes);
 #' \item "N.DRNs", number of differential expressed genes within the pathway, 
 #' after multiple test correction with Benjamini-Hochberg method;
-#' \item "pD", significance of the sum of group effects, adjusted by the residual variance;
+#' \item "pD", significance of the sum of group effects, adjusted by the 
+#' residual variance;
 #' \item "pA", significance of the sum of tagret nodes perturbation 
 #' (i.e., group effect) accumulation from source nodes;
 #' \item "pE", significance of the sum of source nodes perturbation 
@@ -723,9 +761,13 @@ orientEdges<- function(ug, dg = NULL, data = NULL, ...)
 #' @importFrom stats pchisq p.adjust na.omit
 #' @export
 #'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
 #' @examples
 #' 
+#' library(SEMdata)
 #' library(huge)
+#' 
 #' als.npn <- huge.npn(alsData$exprs)
 #' 
 #' pathway.names <- c("Amyotrophic lateral sclerosis (ALS)",
@@ -735,10 +777,13 @@ orientEdges<- function(ug, dg = NULL, data = NULL, ...)
 #' GSA <- SEMgsa(pathways, als.npn, alsData$group, method = "BH", n_rep = 5000)
 #' head(GSA$gsa)
 #'
-#' ## NOT RUN ## {
+#' \dontrun{
+#' 
+#' # GSA over the entire KEGG database
 #' 
 #' # Node count for each pathway
-#' ngs <- unlist(lapply(1:length(kegg.pathways), function(x) vcount(kegg.pathways[[x]])))
+#' ngs <- unlist(lapply(1:length(kegg.pathways),
+#'               function(x) vcount(kegg.pathways[[x]])))
 #' 
 #' # Remove pathways with less than 5 nodes and more than 500 nodes
 #' Blacklist <- which(ngs < 5 | ngs > 500)
@@ -754,9 +799,9 @@ orientEdges<- function(ug, dg = NULL, data = NULL, ...)
 #' head(res$DRN)
 #' length(res$DRN)
 #' 
-#' ## }
+#' }
 #'
-SEMgsa <- function(g = list(), data, group, method = "none", alpha = 0.05,
+SEMgsa <- function(g = list(), data, group, method = "BH", alpha = 0.05,
                    n_rep = 1000, ...)
 {
 	# Set SEM objects
@@ -858,8 +903,12 @@ SEMgsa <- function(g = list(), data, group, method = "none", alpha = 0.05,
 #'
 #' @return An igraph object with vertex and edge color and width attributes.
 #'
-#' @examples
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
 #'
+#' @examples
+#' 
+#' library(SEMdata)
+#' 
 #' # Model fitting: node perturbation
 #' sem1 <- SEMrun(graph = alsData$graph, data = alsData$exprs,
 #'                group = alsData$group,
@@ -877,10 +926,14 @@ SEMgsa <- function(g = list(), data, group, method = "none", alpha = 0.05,
 #' par(mfrow=c(2,2), mar=rep(1,4))
 #' g <- alsData$graph
 #' x <- alsData$group
-#' gplot(colorGraph(est=est1, g, group=x, method = "BH"), main="vertex differences")
-#' gplot(colorGraph(est=sem2$dest, g, group=NULL), main="edge differences")
-#' gplot(colorGraph(est=est20, g, group=NULL), main="edges for group=0")
-#' gplot(colorGraph(est=est21, g, group=NULL), main="edges for group=1")
+#' gplot(colorGraph(est = est1, g, group = x, method = "BH"),
+#'       main = "vertex differences")
+#' gplot(colorGraph(est = sem2$dest, g, group = NULL),
+#'       main = "edge differences")
+#' gplot(colorGraph(est = est20, g, group = NULL),
+#'       main = "edges for group = 0")
+#' gplot(colorGraph(est = est21, g, group = NULL),
+#'       main = "edges for group = 1")
 #'
 colorGraph<- function (est, graph, group, method = "none", alpha = 0.05,
                        vcolor = c("lightblue","white", "pink"),
@@ -989,7 +1042,7 @@ Brown.test <- function(x, p, theta = NULL, tail = "both", ...)
 	         1.421, 1.812, 2.219, 2.641, 3.079, 3.531, 4)
 	
 	s2X2 <- 4*ncol(x) + 2*sum(approx(seq(-1, 1, .1), tmp,
-	                          xout = cor(x)[which(as.vector(lower.tri(cor(x))))])$x)
+	                      xout = cor(x)[which(as.vector(lower.tri(cor(x))))])$x)
 	EX2 <- 2*ncol(x)
 	
 	fX2 <- -2*sum(log(p))
@@ -1000,41 +1053,39 @@ Brown.test <- function(x, p, theta = NULL, tail = "both", ...)
 
 #' @title Optimal model search strategies
 #'
-#' @description This function implements different knowledge-based and 
-#' data-driven search strategies for automatic model finding.
+#' @description Four model search strategies are implemented combining 
+#' \code{SEMdag()}, \code{SEMbap()}, and \code{extendGraph()} functions. 
+#' All strategies estimate a DAG through the adjusted (de-correlate) 
+#' data matrix Z by iteratively update DAG and Z.
 #' @param graph Input network as an igraph object.
 #' @param data A matrix or data.frame. Rows correspond to subjects, and
 #' columns to graph nodes (variables).
-#' @param gnet Reference interaction network used to validate and import 
+#' @param gnet Reference directed network used to validate and import 
 #' nodes and interactions.
 #' @param search Search strategy. Four model search strategies are available:
 #' \itemize{
-#' \item "outer". The input graph and data  are used to estimate the DAG 
-#' providing the initial causal model backbone (see function 
-#' \code{\link[SEMgraph]{SEMdag}}). The backbone is then processed with 
+#' \item "outer". The estimated DAG is extended using 
 #' \code{\link[SEMgraph]{extendGraph}} to find new indirect paths (i.e., 
 #' inferred directed connections that may hide new mediators). New 
 #' interactions and mediators will be searched and imported from the 
-#' reference network (argument gnet, see above). Both DAG and extended graph 
-#' complexity can be controlled with beta > 0 and d > 1 arguments, 
+#' reference network (argument gnet, see above). Both DAG and extended 
+#' graph complexity can be controlled with beta > 0 and d > 1 arguments, 
 #' respectively (see below). The term "outer" means that new model mediator 
 #' variables are imported from an external resource (i.e., the reference 
 #' network).
-#' \item "inner" (default). This strategy is analogous to the "outer" one, 
+#' \item "inner". This strategy is analogous to the "outer" one, 
 #' but disables external mediator search. In other words, new indirect 
 #' paths are generated by adding new interactions of the input model, so 
 #' that mediators will be nodes already present in the input graph. The 
 #' reference network is still used to validate new model paths. Also in 
 #' this case, beta > 0 and d > 1 are used.
-#' \item "bap". The input graph structure is improved through bow-free 
-#' interaction search, followed by interaction validation and import from 
-#' the reference network, with no mediators (i.e., d = 1). In this case, 
-#' argument beta is not used, and model complexity can be controlled by 
-#' decreasing the fdr threshold.
-#' \item "basic". While the previous strategies rely on the input graph 
-#' and the reference network to integrate knowledge to the final model, 
-#' the "basic" strategy is data-driven. The input graph is needed 
-#' to identify define the topological order. The argument gnet is set 
+#' \item "direct". The input graph structure is improved through direct 
+#' (i.e., adjacent) link search, followed by interaction validation and 
+#' import from the reference network, with no mediators (i.e., d = 1). 
+#' \item "basic" (default). While the previous strategies rely on the 
+#' input graph and the reference network to integrate knowledge to the 
+#' final model, the "basic" strategy is data-driven. The input graph is 
+#' needed to define the topological order. The argument gnet is set 
 #' to NULL (i.e., no reference network is needed) and argument d = 0. 
 #' Model complexity can be still controlled by setting beta > 0.
 #' }
@@ -1044,7 +1095,7 @@ Brown.test <- function(x, p, theta = NULL, tail = "both", ...)
 #' is set to 0 (i.e., maximum complexity).
 #' @param d Maximum allowed geodesic distance for directed or undirected 
 #' shortest path search. A distance d = 0 disables shortest path search 
-#' (fixed in search = "basic"), while d = 1 (fixed in search = "bap") 
+#' (fixed in search = "basic"), while d = 1 (fixed in search = "direct") 
 #' only search for directed links (i.e., no mediators are allowed).
 #' A distance d > 1 (defaults d = 2 for "outer" and "inner" strategies), 
 #' will search for shortest paths with at most d - 1 mediators between 
@@ -1052,175 +1103,191 @@ Brown.test <- function(x, p, theta = NULL, tail = "both", ...)
 #' Connectors are imported from the reference interactome, as specified 
 #' by the argument gnet. If the edges of the reference interactome are 
 #' weighted by P-value, as defined by the E(graph)$pv attribute, the 
-#' shortest path with the smallest weight will be chosen (e.g., see 
-#' \code{\link[SEMgraph]{weightGraph}} for graph weighting options).
-#' @param algo Data adjustment method. The default correction method 
-#' is "d-sep" (Shipley's d-separation test), only feasible for DAGs. In 
-#' case of non-DAGs, the method is automatically changed to "ggm" 
-#' (Gaussian Graphical Modeling). The "ggm" method can also be manually 
-#' enabled for fast computation.
-#' @param fdr Significance level for false discovery rate (FDR) used for 
-#' the independence tests (by default, fdr = 0.05).
-#' @param showGraphs If TRUE, it shows intermediate graphs during the 
+#' shortest path with the smallest sum of weights will be chosen (e.g., 
+#' see \code{\link[SEMgraph]{weightGraph}} for graph weighting options).
+#' @param alpha Significance level for false discovery rate (FDR) used 
+#' for either local d-separation tests (below \code{limit}) or conditional 
+#' independence (CI) test (above \code{limit}). This argument is used to 
+#' control data de-correlation. A higher \code{alpha} level includes more 
+#' hidden covariances, thus considering more sources of confounding. 
+#' If \code{alpha} = 0, data de-correlation is disabled.
+#' By default, \code{alpha} = 0.05.
+#' @param pstop A logical value. With the argument \code{pstop} = TRUE
+#' (default), the algorithm can be halted when the Shipley's global model 
+#' test P-value > 0.05. If \code{pstop} = FALSE, the model search 
+#' algorithm stops when no additional edges can be added to the estimated 
+#' DAG.
+#' @param limit An integer value corresponding to the number of missing 
+#' edges of the extracted acyclic graph. Beyond this limit, multicore
+#' computation is enabled to reduce the computational burden. 
+#' @param verbose If TRUE, it shows intermediate graphs during the 
 #' execution (not recommended for large graphs).
 #' @param ... Currently ignored.
 #'
 #' @details Search strategies can be ordered by decreasing conservativeness 
-#' respect to the input graph, as: "bap", "inner", "outer", and "eqvar". 
+#' respect to the input graph, as: "direct", "inner", "outer", and "basic". 
 #' The first three strategies are knowledge-based, since they require an 
 #' input graph and a reference network, together with data, for 
-#' knowledge-assisted model improvement. 
-#' The last one does not require any reference and the output model 
-#' structure will be completely determined by data. Output model complexity 
-#' can be limited using arguments beta and d. For knowledge-based strategies, 
-#' we suggest to to start with beta = 0.1. Then, beta can be relaxed 
-#' (0 to < 0.1) to improve model fitting, if needed. Since data-driven 
-#' models can be extremely complex, we suggest starting from beta = 0.2 
-#' when using the "eqvar" strategy. The beta value can be relaxed until 
-#' a good model fit is obtained (i.e., SRMR < 0.08 and deviance/df < 5).
-#' Data adjustment is done for all strategies. The variability that cannot 
-#' be explained by either data-driven or knowledge-based modifications is 
-#' corrected using covariance matrix diagonalization, to adjust for possible 
-#' confounding factors (see \code{\link[SEMgraph]{diagonalizePsi}}). 
-#' The output model as well as the adjusted dataset are returned.
-#' Argument fdr determines the extent of data adjustment: lower fdr values 
-#' correspond to a smaller number of significant confounding factors, 
-#' hence a weaker correction (default fdr = 0.2).
+#' knowledge-assisted model improvement. The last one does not require 
+#' any reference and the output model structure will be completely 
+#' determined by data. 
+#' Output model complexity can be limited using arguments d and beta. 
+#' While d is fixed to 0 or 1 in \code{"basic"} or \code{"direct"}, 
+#' respectively; we suggest starting with d = 2 (only one mediator) 
+#' for the other two strategies.
+#' For knowledge-based strategies, we suggest to to start with 
+#' beta = 0.1. Then, beta can be relaxed (0 to < 0.1) to improve model 
+#' fitting, if needed. Since data-driven models can be complex, we suggest 
+#' starting from beta = 0.1 when using the "basic" strategy. 
+#' The beta value can be relaxed until a good model fit is obtained.
+#' Argument alpha determines the extent of data adjustment: lower alpha 
+#' values for FDR correction correspond to a smaller number of significant 
+#' confounding factors, hence a weaker correction (default alpha = 0.05).
 #'
 #' @import lavaan
 #' @import igraph
+#' @import GGMncv
 #' @importFrom glmnet glmnet
 #' @importFrom RcppEigen fastLm
-#' @importFrom dagitty lavaanToGraph impliedConditionalIndependencies localTests
-#' @importFrom stats na.omit var qchisq pchisq p.adjust
+#' @importFrom stats na.omit var cov qchisq pchisq p.adjust
 #' @importFrom corpcor is.positive.definite cor.shrink
 #' @importFrom flip flip plot
 #' @export
 #'
-#' @return A list of 3 objects:
+#' @return The output model as well as the adjusted dataset are returned 
+#' as a list of 3 objects:
 #' \itemize{
 #' \item "fit", the fitted output model (lavaan object);
 #' \item "graph", the output model as an igraph object;
 #' \item "data", the adjusted dataset.
 #' }
 #'
+#' @author Fernando Palluzzi \email{fernando.palluzzi@gmail.com}
+#'
 #' @examples
 #' 
-#' ## NOT RUN ## {
+#' \dontrun{
 #' 
+#' # Comparison among different model estimation strategies
+#' 
+#' library(SEMdata)
 #' library(huge)
+#' 
 #' als.npn <- huge.npn(alsData$exprs)
 #' 
 #' # Models estimation
 #' m1 <- modelSearch(graph = alsData$graph, data = als.npn, gnet = kegg,
-#' 		search = "bap", method = "ggm", beta = 0, fdr = 0.2)
+#'       search = "direct", beta = 0, alpha = 0.05)
 #' m2 <- modelSearch(graph = alsData$graph, data = als.npn, gnet = kegg,
-#' 		search = "inner", method = "ggm", beta = 0.1, fdr = 0.2)
+#'       d = 2, search = "inner", beta = 0.05, alpha = 0.05)
 #' m3 <- modelSearch(graph = alsData$graph, data = als.npn, gnet = kegg,
-#' 		search = "outer", method = "ggm", beta = 0.1, fdr = 0.2)
+#'       d = 2, search = "outer", beta = 0.05, alpha = 0.05)
 #' m4 <- modelSearch(graph = alsData$graph, data = als.npn, gnet = NULL,
-#' 		search = "basic", method = "ggm", beta = 0.2, fdr = 0.2)
+#'       search = "basic", beta = 0.05, alpha = 0.05)
 #' 
 #' # Graphs
 #' par(mfrow=c(2,2), mar= rep(1,4))
-#' gplot(m1$graph, main = "bap graph")
+#' gplot(m1$graph, main = "direct graph")
 #' gplot(m2$graph, main = "inner graph")
 #' gplot(m3$graph, main = "outer graph")
 #' gplot(m4$graph, main = "basic graph")
 #' 
-#' ## }
+#' }
 #'
-modelSearch <- function(graph, data, gnet, d = 2, search = "inner",
-                        beta = 0, algo = "d-sep", fdr = 0.2,
-                        showGraphs = FALSE, ...)
+modelSearch <- function(graph, data, gnet = NULL, d = 2, search = "basic",
+                        beta = 0, alpha = 0.05, pstop = TRUE, limit = NULL,
+                        verbose = FALSE, ...)
 {
-	if (is.null(gnet)) d <- 0
-	if (search == "bap") {
-		if (!is.null(gnet)) d <- 1
-		cat("## BAP backbone extraction ...\n")
-		bap <- SEMbap(graph, data, gnet, d = d, alpha = 0.05, verbose = showGraphs)
-		if (ecount(bap$guu) == 0) {
-			return(cat("WARNING: no new edges found!",
-			           "Try increasing the FDR threshold.\n\n"))
-		}
-		cat("Done.\n\n")
-		cat("## Searching for missing outer connectors ...\n")
-		if (d > 0) {
-			ext <- extendGraph(g = list(bap$bap, bap$guu), data, gnet,
-			                   verbose = showGraphs)
-			ig <- ext$Ug
-		} else {
-			ig <- bap$bap
-		}
-		data <- diagonalizePsi(ig, data, algo, method = "BH", alpha = fdr,
-		                       showGraphs = showGraphs)
-	}
-	else if (search == "inner") {
-		cat("## DAG backbone extraction ...\n")
-		dag <- SEMdag(graph, data, gnet, d = d, beta = beta, lambdas = NA,
-		              LO = "topo")
-		if (ecount(dag$dag.red) == 0) {
-			return(cat("WARNING: no new edges found!",
-			           "Try increasing the FDR threshold.\n\n"))
-		}
-		cat("Done.\n\n")
-		#cat("## Adjusted data for missing covariances ...\n")
-		data <- diagonalizePsi(dag$dag, data, algo, method = "BH", alpha = fdr, showGraphs = showGraphs)
-		#cat("Done.\n\n")
-		cat("## Searching for missing inner connectors ...\n")
-		if (d > 0) {
-			ext <- extendGraph(g = list(dag$dag, dag$dag.red), data, gnet, verbose = showGraphs)
-			ig <- ext$Ug
-		} else {
-			ig <- dag$dag
-		}
-		cat("Done.\n\n")
-	}
-	else if (search == "outer"){
-		cat("## DAG backbone extraction ...\n")
-		dag <- SEMdag(graph, data, gnet, d = d, beta = beta, lambdas = NA, LO = "topo")
-		if(ecount(dag$dag.red) == 0){
-			return(cat("WARNING: no new edges found!",
-			           "Try decreasing the beta threshold.\n\n"))
-		}
-		cat("Done.\n\n")
-		cat("## Searching for missing outer connectors ...\n")
-		if (d > 0) {
-			ext <- extendGraph(g = list(dag$dag, dag$dag.red), data, gnet,
-			                   verbose = showGraphs)
-			cat("Done.\n\n")
-			ig <- ext$Ug
-		} else {
-			ig <- dag$dag
-		}
-		#cat("## adjusted data for missing covariances ...\n")
-		data <- diagonalizePsi(ig, data, algo, method = "BH", alpha = fdr,
-		                       showGraphs = showGraphs)
-	}
-	else if (search == "basic") {
-		cat("## DAG backbone extraction ...\n")
-		dag <- SEMdag(graph, data, gnet = NULL, d = 0, beta = beta,
-		              LO = "topo",
-		              lambdas = NA)
-		if (ecount(dag$dag) == 0) {
-			return(cat("WARNING: no new edges found!",
-		 		       "Try decreasing the beta threshold.\n\n"))
-		}
-		cat("Done.\n\n")
-		data <- diagonalizePsi(dag$dag, data, algo, method = "BH",
-		                       alpha = fdr,
-		                       showGraphs = showGraphs)
-		ig <- dag$dag
-	}
-	cat("## Model fitting ...\n")
-	E1 <- attr(E(ig), "vnames")
-	E0 <- attr(E(graph), "vnames")
-	E(ig)$color <- ifelse(E1 %in% E0, "blue", "red")
-	fit <- SEMricf(ig, data, group = NULL, random.x = FALSE)
-	cat("Done.\n")
 	
-	return(list(fit = fit$fit, graph = ig, data = data))
-	#return(list(fit = fit, graph = ig, data = data))
+	# Set graph and data objects
+	nodes <- colnames(data)[colnames(data) %in% V(graph)$name]
+	ig <- induced_subgraph(graph, vids = which(V(graph)$name %in% nodes))
+	dataY <- as.matrix(data[, nodes])
+	
+	# Stepwise search
+	if (search == "basic") d <- 0
+	if (search == "direct") d <- 1
+	Gt <- ig
+	Zt <- dataY
+	k <- 1
+	
+	while (k > 0) {
+		Zt1 <- quiet(SEMbap(Gt, Zt, method = "BH", alpha = alpha,
+		                    limit = limit))
+		
+		if (is.null(Zt1)) {
+			cat("k =", k, "Searching for missing covariances ... 0\n")
+			Zt1$data <- Zt
+			Gt1 <- quiet(SEMdag(Gt, Zt1$data, gnet = gnet, d = d,
+			                    beta = beta)$dag)
+			break
+		}
+		
+		nE <- ecount(Zt1$guu)
+		cat("k =", k, "Searching for missing covariances ...", nE, "\n")
+		Gt1 <- quiet(SEMdag(Gt, Zt1$data, gnet = gnet, d = d, beta = beta)$dag)
+		if (pstop) {
+			ctest <- Shipley.test(Gt1, Zt1$data, limit = limit, verbose = FALSE)
+			pv <- ctest$ctest[3]
+		} else {
+			pv <- 0
+		}
+		
+		if (pv > 0.05 | ecount(Gt1) - ecount(Gt) == 0) break
+		Gt <- Gt1
+		Zt <- Zt1$data
+		k <- k + 1
+	}
+	cat("Done.\n\n")
+	
+	E1 <- attr(E(Gt1), "vnames")
+	E0 <- attr(E(ig), "vnames")
+	E(Gt1)$color <- ifelse(E1 %in% E0, "blue", "red")
+	Gt1.red <- Gt1 - E(Gt1)[which(E(Gt1)$color == "blue")]
+	if(ecount(Gt1.red) == 0) {
+		return(cat("Error: no new edges inferred.",
+		           "Try decreasing the beta threshold.\n"))
+	}
+	
+	
+	# Extended graph
+	
+	if (search == "basic") {
+		dataZ <- Zt1$data
+		ig <- Gt1
+	
+	} else if (search != "basic") {
+		
+		if (search == "direct" | search == "inner") {
+			ext <- extendGraph(g = list(Gt1,Gt1.red), Zt1$data,
+			                   gnet = gnet,
+			                   verbose = verbose)
+		
+		} else if (search == "outer") {
+			ext <- extendGraph(g = list(Gt1, Gt1.red), data, gnet = gnet,
+							   verbose = verbose)
+		}
+		
+		sel <- which(V(ext$Ug)$color == "yellow")
+		yellow <- names(V(ext$Ug)[sel])
+		new <- setdiff(yellow, V(ig)$name)
+		V(ext$Ug)$color[sel] <- ifelse(yellow %in% new, "yellow", "green")
+		dataZ <- cbind(Zt1$data, data[, new])
+		ig <- ext$Ug
+	}
+	
+	if (verbose) gplot(ig, main = "Estimated Extended Graph")
+	if (!pstop) {
+		C_test <- Shipley.test(ig, dataZ, limit = limit, verbose = TRUE)
+	} else {
+		print(data.frame(C_test = ctest$ctest[1],
+		                 df = ctest$ctest[2],
+		                 pvalue = round(ctest$ctest[3], 6)))
+	}
+	cat("\n")
+	fit <- SEMrun(ig, dataZ, algo = "ricf")
+	
+	return(list(fit = fit$fit, graph = ig, data = dataZ))
 }
 
 #' @title Perturbed path search utility
@@ -1251,27 +1318,35 @@ modelSearch <- function(graph, data, gnet, d = 2, search = "inner",
 #'
 #' @import lavaan
 #' @import igraph
+#' @importFrom stats approx
 #' @importFrom dagitty paths
+#' @importFrom utils head
 #' @export
 #'
 #' @return A list of 3 objects:
 #' \itemize{
 #' \item "paths", list of paths as igraph objects;
 #' \item "fit", fitting results for each path as a lavaan object;
-#' \item "dfp", a data.frame containing global path fitting statistics.
+#' \item "dfp", a data.frame containing SEM global fitting statistics.
 #' }
+#'
+#' @author Fernando Palluzzi \email{fernando.palluzzi@gmail.com}
 #'
 #' @examples
 #' 
-#' ## NOT RUN ## {
-#'
+#' \dontrun{
+#' 
+#' # Find and evaluate significantly perturbed paths
+#' 
+#' library(SEMdata)
 #' library(huge)
+#' 
 #' als.npn <- huge.npn(alsData$exprs)
 #' 
-#' adjData <- diagonalizePsi(graph = alsData$graph, data = als.npn,
-#'                           algo = "ggm", method = "BH", alpha = 0.2)
+#' adjData <- SEMbap(graph = alsData$graph, data = als.npn)$data
 #' 
-#' ace <- SEMace(graph = alsData$graph, data = adjData, group = alsData$group)
+#' ace <- SEMace(graph = alsData$graph, data = adjData,
+#'               group = alsData$group)
 #' ace <- ace[order(ace$pvalue),]
 #' print(ace)
 #' 
@@ -1279,17 +1354,17 @@ modelSearch <- function(graph, data, gnet, d = 2, search = "inner",
 #'                     group = alsData$group,
 #'                     ace = ace)
 #' 
-#' head(parameterEstimates(paths$fit$P12))
-#' gplot(paths$paths$P12)
+#' head(parameterEstimates(paths$fit$P19))
+#' gplot(paths$paths$P19)
 #' 
-#' path12 <- SEMpath(graph = alsData$graph, data = adjData,
+#' path19 <- SEMpath(graph = alsData$graph, data = adjData,
 #'                   group = alsData$group,
-#'                   from = "572",
-#'                   to = "836",
+#'                   from = "7133",
+#'                   to = "4747",
 #'                   path = "directed",
 #'                   verbose = TRUE)
 #' 
-#' ## }
+#' }
 #'
 pathFinder <- function(graph, data, group=NULL, ace = NULL, path = "directed",
                        method = "none", alpha = 0.05, verbose = FALSE, ...)
@@ -1379,7 +1454,7 @@ pathFinder <- function(graph, data, group=NULL, ace = NULL, path = "directed",
 #'
 #' @import igraph
 #' @import lavaan
-#' @importFrom stats cor
+#' @importFrom stats cor approx
 #' @importFrom corpcor is.positive.definite cor.shrink
 #' @importFrom ggm fitAncestralGraph
 #' @importFrom flip flip plot
@@ -1388,16 +1463,18 @@ pathFinder <- function(graph, data, group=NULL, ace = NULL, path = "directed",
 #' @return List of clusters as igraph objects and fitting results for 
 #' each cluster as a lavaan object.
 #'
+#' @author Fernando Palluzzi \email{fernando.palluzzi@gmail.com}
+#'
 #' @examples
 #' 
+#' library(SEMdata)
 #' library(huge)
+#' 
 #' als.npn <- huge.npn(alsData$exprs)
 #' 
+#' adjdata <- SEMbap(alsData$graph, als.npn)$data
+#' 
 #' # Clusters creation
-#' adjdata <- diagonalizePsi(graph = alsData$graph, data = als.npn,
-#'                           algo = "ggm",
-#'                           method = "BH",
-#'                           alpha = 0.05)
 #' clusters <- extractClusters(graph = alsData$graph, data = adjdata)
 #' head(parameterEstimates(clusters$fit$HM1))
 #' head(parameterEstimates(clusters$fit$HM2))
@@ -1405,9 +1482,9 @@ pathFinder <- function(graph, data, group=NULL, ace = NULL, path = "directed",
 #' gplot(clusters$clusters$HM2)
 #' 
 #' # Map cluster on the input graph
-#' g<- alsData$graph
-#' c<- clusters$clusters$HM2
-#' V(g)$color<- ifelse(V(g)$name %in% V(c)$name, "yellow", "white")
+#' g <- alsData$graph
+#' c <- clusters$clusters$HM2
+#' V(g)$color <- ifelse(V(g)$name %in% V(c)$name, "gold", "white")
 #' gplot(g)
 #'
 extractClusters <- function(graph, data, group = NULL, membership = NULL,
@@ -1419,7 +1496,7 @@ extractClusters <- function(graph, data, group = NULL, membership = NULL,
 		                           verbose = FALSE)
 	}
 	clusters <- cplot(graph, membership, l=layout.auto, map, verbose)[-1]
-	clusters <- clusters[-length(clusters)]
+	#clusters <- clusters[-length(clusters)]
 	#if ("HM9999" %in% names(clusters)) N <- length(clusters) - 1
 	N <- length(clusters)
 	res <- NULL
@@ -1470,52 +1547,54 @@ extractClusters <- function(graph, data, group = NULL, membership = NULL,
 #' random selection of variables. If the second dataset is not given, 
 #' the function displays a histogram with normal curve superposition.
 #'
-#' @param z A matrix or data.frame (n x p) of continuous data.
-#' @param x A matrix or data.frame (n x q) of continuous data.
+#' @param x A matrix or data.frame (n x p) of continuous data.
+#' @param y A matrix or data.frame (n x q) of continuous data.
 #' @param size number of rows to be sampled (default s = nrow(z)).
 #' @param r number of rows of the plot layout (default r = 4).
 #' @param c number of columns of the plot layout (default r = 4).
 #' @param ... Currently ignored.
 #'
+#' @importFrom graphics par hist curve legend
+#' @importFrom stats dnorm
 #' @export
 #'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
 #' @examples
-#' adjdata <- diagonalizePsi(graph = sachs$graph, data = log(sachs$pkc),
-#'                           method = "BH",
-#'                           alpha = 0.2)
+#' adjdata <- SEMbap(sachs$graph, log(sachs$pkc))$data
 #' rawdata <- log(sachs$pkc)
 #' pairwiseMatrix(adjdata, rawdata, size = 1000)
 #'
-pairwiseMatrix <- function(z, x = NULL, size = nrow(z), r = 4, c = 4, ...)
+pairwiseMatrix<- function (x, y = NULL, size = nrow(x), r = 4, c = 4, ...) 
 {
-	while (r*c > ncol(z)) {
-		r <- r - 1
-		c <- c - 1
+    if (r * c > ncol(x)) {
+  	 r <- r - 1
+	 c <- c - 1
+	 p <- 1:(r * c)
+    }else{
+	 p <- sample(1:ncol(x), size = r * c)
 	}
-	n <- sample(1:nrow(z), size = size)
-	p <- sample(1:ncol(z), size = r*c)
-	vnames <- colnames(z)
-	
-	if (is.null(x)) {
+    n <- sample(1:nrow(x), size = size)
+    vnames <- colnames(x)
+    if (is.null(y)) {
+        xx <- x[, vnames]
 		par(mfrow = c(r, c), mar = rep(3, 4))
 		for (j in p) {
-			h <- hist(z[n, j], breaks = 30, freq = FALSE, col = "lightblue",
-			          main = vnames[j])
-			x <- seq(-4, +4, by = 0.02)
-			curve(dnorm(x), add = TRUE, col = "blue", lwd = 2)
-		}
-	} else {
-		rawdata <- x[, vnames]
-		par(mfrow = c(r, c), mar = rep(2, 4))
-		for (j in p) {
-			x <- rawdata[n, j]
-			y <- z[n, j]
-			r <- round(cor(x, y), 2)
-			plot(x, y, main = vnames[j])
-			legend("topleft", paste0("r = ", r), bty = "n", cex = 1,
-			       text.col = "blue")
-		}
-	}
+            h <- hist(xx[n, j], breaks = 30, freq = FALSE, col = "lightblue", main = vnames[j])
+            x <- seq(-4, +4, by = 0.02)
+            curve(dnorm(x), add = TRUE, col = "blue", lwd = 2)
+        }
+    }
+    else {
+        xx <- x[, vnames]
+		yy <- y[, vnames]
+        par(mfrow = c(r, c), mar = rep(2, 4))
+        for (j in p) {
+            r <- round(cor(xx[n, j], yy[n, j]), 2)
+            plot(xx[n, j], yy[n, j], main = vnames[j])
+            legend("topleft", paste0("r = ", r), bty = "n", cex = 1, text.col = "blue")
+        }
+    }
 }
 
 #' @title Node ancestry utilities
@@ -1534,19 +1613,19 @@ pairwiseMatrix <- function(z, x = NULL, size = nrow(z), r = 4, c = 4, ...)
 #' @examples
 #'
 #' # Get all ancestors
-#' an <- V(sachs$graph)[ancestors(sachs$graph), "Erk"]
+#' an <- V(sachs$graph)[ancestors(sachs$graph, "Erk")]
 #'
 #' # Get parents
-#' pa <- V(sachs$graph)[parents(sachs$graph), "PKC"]
+#' pa <- V(sachs$graph)[parents(sachs$graph, "PKC")]
 #'
 #' # Get descendants
-#' de <- V(sachs$graph)[descendants(sachs$graph), "PKA"]
+#' de <- V(sachs$graph)[descendants(sachs$graph, "PKA")]
 #'
 #' # Get siblings
-#' sib <- V(sachs$graph)[siblings(sachs$graph), "PIP3"]
+#' sib <- V(sachs$graph)[siblings(sachs$graph, "PIP3")]
 #'
 #' @return a sorted vector of nodes.
-#'
+#' @name ancestry
 
 #' @rdname ancestry
 #' @export

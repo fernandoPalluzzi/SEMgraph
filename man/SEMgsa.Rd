@@ -4,15 +4,7 @@
 \alias{SEMgsa}
 \title{SEM-based gene set analysis}
 \usage{
-SEMgsa(
-  g = list(),
-  data,
-  group,
-  method = "none",
-  alpha = 0.05,
-  n_rep = 1000,
-  ...
-)
+SEMgsa(g = list(), data, group, method = "BH", alpha = 0.05, n_rep = 1000, ...)
 }
 \arguments{
 \item{g}{A list of pathways to be tested.}
@@ -26,7 +18,7 @@ subjects.}
 
 \item{method}{Multiple testing correction method. One of the values 
 available in \code{\link[stats]{p.adjust}}. By default, method is set 
-to "none" (i.e., no multiple test correction).}
+to "BH" (i.e., Benjamini-Hochberg correction).}
 
 \item{alpha}{Gene set test significance level. Alpha is set to 0.05
 by default.}
@@ -42,7 +34,8 @@ pathway in the input list:
 \item "N.nodes", pathway size (number of nodes);
 \item "N.DRNs", number of differential expressed genes within the pathway, 
 after multiple test correction with Benjamini-Hochberg method;
-\item "pD", significance of the sum of group effects, adjusted by the residual variance;
+\item "pD", significance of the sum of group effects, adjusted by the 
+residual variance;
 \item "pA", significance of the sum of tagret nodes perturbation 
 (i.e., group effect) accumulation from source nodes;
 \item "pE", significance of the sum of source nodes perturbation 
@@ -65,7 +58,9 @@ by residual variances (D), will be estimated.
 }
 \examples{
 
+library(SEMdata)
 library(huge)
+
 als.npn <- huge.npn(alsData$exprs)
 
 pathway.names <- c("Amyotrophic lateral sclerosis (ALS)",
@@ -75,10 +70,13 @@ pathways <- kegg.pathways[j]
 GSA <- SEMgsa(pathways, als.npn, alsData$group, method = "BH", n_rep = 5000)
 head(GSA$gsa)
 
-## NOT RUN ## {
+\dontrun{
+
+# GSA over the entire KEGG database
 
 # Node count for each pathway
-ngs <- unlist(lapply(1:length(kegg.pathways), function(x) vcount(kegg.pathways[[x]])))
+ngs <- unlist(lapply(1:length(kegg.pathways),
+              function(x) vcount(kegg.pathways[[x]])))
 
 # Remove pathways with less than 5 nodes and more than 500 nodes
 Blacklist <- which(ngs < 5 | ngs > 500)
@@ -94,6 +92,9 @@ dim(res$gsa)
 head(res$DRN)
 length(res$DRN)
 
-## }
+}
 
+}
+\author{
+Mario Grassi \email{mario.grassi@unipv.it}
 }

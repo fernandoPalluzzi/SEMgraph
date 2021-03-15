@@ -2,9 +2,17 @@
 % Please edit documentation in R/semPaths.R
 \name{SEMbap}
 \alias{SEMbap}
-\title{Bow-free covariance search}
+\title{Bow-free covariance search and data de-correlation}
 \usage{
-SEMbap(graph, data, gnet = NULL, d = 0, alpha = 0.05, verbose = FALSE, ...)
+SEMbap(
+  graph,
+  data,
+  method = "BH",
+  alpha = 0.05,
+  limit = NULL,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{graph}{An igraph object.}
@@ -12,21 +20,25 @@ SEMbap(graph, data, gnet = NULL, d = 0, alpha = 0.05, verbose = FALSE, ...)
 \item{data}{A matrix whith rows corresponding to subjects, and
 columns to graph nodes (variables).}
 
-\item{gnet}{Reference "global" network as an igraph object.}
+\item{method}{Multiple testing correction method. One of the values 
+available in \code{\link[stats]{p.adjust}}. By default, method is set 
+to "BH" (i.e., Benjamini-Hochberg multiple test correction).}
 
-\item{d}{An integer value indicating the maximum length of indirect
-interactions between pairs of nodes. If d = 1, direct interactions 
-between nodes will be searched in the reference interactome (if given). 
-If d > 1, indirect interactions of length d or shorter (i.e., with at 
-most d - 1 connectors) between bow-free nodes will be searched. 
-Setting d = 0, is equivalent to gnet = NULL.}
+\item{alpha}{Significance level for false discovery rate (FDR) used 
+for either local d-separation tests (below \code{limit}) or conditional 
+independence (CI) test (above \code{limit}). This argument is used to 
+control data de-correlation. A higher \code{alpha} level includes more 
+hidden covariances, thus considering more sources of confounding. 
+If \code{alpha} = 0, data de-correlation is disabled.
+By default, \code{alpha} = 0.05.}
 
-\item{alpha}{Significance level for Bonferroni multiple testing correction 
-used for the independence tests (by default, alpha = 0.05), as suggested 
-by Shipley (2000).}
+\item{limit}{An integer value corresponding to the number of missing 
+edges of the extracted acyclic graph. Beyond this limit, multicore
+computation is enabled to reduce the computational burden. 
+By default, \code{limit = NULL} (i.e., multicore disabled).}
 
 \item{verbose}{A logical value. If FALSE (default), the processed graphs
-will not be plotted to screen, saving execution time.}
+will not be plotted to screen.}
 
 \item{...}{Currently ignored.}
 }
@@ -37,49 +49,40 @@ A list of 3 igraph objects:
 \item "guu", the bidirected graph of significant covariances,
 \item "gLV", the directed graph of latent variables (LV) underlying
 significant covariances (i.e., the canonical graph, where bidirected
-X <-> Y edges are substituted by directed edges X <- LV -> Y).
+X <-> Y edges are substituted by directed edges X <- LV -> Y),
+\item "data", the adjusted (de-correlated) data matrix.
 }
 }
 \description{
-Search for new bow-free interactions. SEMbap does an 
-exhaustive missing interaction search, using Shipley's d-separation test 
-(Shipley, 2000) to add a bidirected edge (i.e., a bow-free covariance) 
-between pairs of disconnected nodes (X, Y) if there is a significant 
-association between them, given a set Z of conditioning nodes. 
-Here, the "bow-free" condition states that there cannot be both 
-directed and bidirected connections between the same pair of nodes 
-(Nowzohour, 2017).
+Search for new bow-free covariances and adjust the data 
+matrix by removing latent sources of confounding encoded in them.
 }
 \details{
-Shipley's d-separation test (Shipley, 2000) evaluates if two 
-variables (X, Y) in a DAG are conditionally independent for a given 
-conditioning set Z, assuming that the underlying statistical model is 
-recursive (i.e., acyclic) and can be represented as a graph in which 
-nodes (i.e., variables) are connected through directed edges (i.e., 
-causal effects), with no self-loops. The conditioning set Z is 
-represented by the union of the parent sets of X and Y (i.e., the 
-"basis set"). SEMbap algorithm makes an exhaustive search of all possible 
-missing edges, corresponding to the number of degrees of freedom (df) 
-of the DAG. A new bow-free covariance is added if there is a significant 
-X-Y association, after Bonferroni multiple testing correction. In addition, 
-if a reference network is given, new interactions will be retained 
-only if present in the reference. 
-SEMbap function may work on any kind of directed network, by converting 
-mixed graphs into directed acyclic graphs. 
-See \code{\link[SEMgraph]{graph2dag}} for conversion method details.
+SEMbap algorithm makes an exhaustive search of all possible 
+missing edges of the mixed acyclic graph (BAP or DAG) via d-separation 
+P-value screening. 
+The d-separation test evaluates if two variables (X, Y) in an acyclic 
+graph are conditionally independent for a given conditioning set Z, 
+The conditioning set Z is represented in a DAG by the union of the 
+parent sets of X and Y (Shipley, 2000) or the minimal set consisting 
+in the smallest conditioning set Z that makes these two variables 
+independent. A new bow-free covariance is added if there is a 
+significant (X, Y) association, after multiple testing correction. 
+The selected covariance between pairs of nodes (X, Y) is 
+interpreted as the effect of a latent variable (LV) acting on both X 
+and Y; i.e., the LV is an unobserved confounder. These LVs are then 
+removed by conditioning them out from the observed data.
 }
 \examples{
 
-# BAP estimation
-G <- SEMbap(graph = sachs$graph, data = log(sachs$pkc))
-
 # Model fitting
-sem <- SEMrun(graph = G$bap, data = log(sachs$pkc), group = sachs$group)
+sem0 <- SEMrun(graph = sachs$graph, data = log(sachs$pkc))
 
-# Graphs
-gplot(G$bap)
-plot(G$guu)
-plot(G$gLV)
+# BAP estimation
+BAP <- SEMbap(graph = sachs$graph, data = log(sachs$pkc), verbose = TRUE)
+
+# Model fitting (node perturbation) with adjusted data
+sem1 <- SEMrun(graph = sachs$graph, data = BAP$data, group = sachs$group)
 
 }
 \references{
@@ -91,8 +94,9 @@ Brito C and Pearl J (2002). A New Identification Condition for
 Recursive Models With Correlated Errors. 
 Structural Equation Modeling, 9(4): 459-474.
 
-Nowzohour C, Maathuis MH, Evans RJ, Buhlmann P (2017). Distributional 
-equivalence and structure learning for bow-free acyclic path diagrams. 
-Electron. J. Stat., 11(2): 5342-5374.
-https://doi.org/10.1214/17-EJS1372
+Whittaker J (2009). Graphical Models in Applied Multivariate Statistics. 
+ISBN:978-0-470-74366-9; Wiley Publishing.
+}
+\author{
+Mario Grassi \email{mario.grassi@unipv.it}
 }

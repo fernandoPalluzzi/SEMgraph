@@ -4,7 +4,7 @@
 \alias{Shipley.test}
 \title{Missing edge testing implied by a graph}
 \usage{
-Shipley.test(graph, data, verbose = TRUE, ...)
+Shipley.test(graph, data, limit = NULL, verbose = TRUE, ...)
 }
 \arguments{
 \item{graph}{A directed graph as an igraph object.}
@@ -12,35 +12,57 @@ Shipley.test(graph, data, verbose = TRUE, ...)
 \item{data}{A data matrix with subjects as rows and variables as 
 columns.}
 
+\item{limit}{An integer value corresponding to the number of missing 
+edges of the extracted acyclic graph. Beyond this limit, multicore
+computation is enabled to reduce the computational burden. 
+By default, \code{limit = NULL} (i.e., multicore disabled).}
+
 \item{verbose}{If TRUE, Shipley's test results will be showed to 
 screen (default = TRUE).}
 
 \item{...}{Currently ignored.}
 }
 \value{
-A list of two objects: (i) the list of all d-separation tests 
-over missing edges in the input DAG or BAP, and (ii) the DAG or BAP 
-used to perform the Shipley test.
+A list of three objects: (i) the list of all d-separation tests 
+over missing edges in the input DAG or BAP, (ii) the DAG or BAP 
+used to perform the Shipley test, and (iii) the overall Shipley's 
+P-value.
 }
 \description{
 Compute all the P-values of the d-separation tests 
-implied by the missing edges of a given graph. The results of every 
-test is then combined using the Fisher’s statistic in an overall test 
-(Shipley's test) of the fitted model C = -2*sum(log(P-value(k))), where 
-C is distributed as a chi-squared variate with df = 2k, as suggested 
-by Shipley (2000).
+implied by the missing edges of a given acyclic graph (DAG or BAP). 
+The conditioning set Z is represented, in a DAG, by the union of the 
+parent sets of X and Y (Shipley, 2000). In a BAP, Z is the minimal set 
+consisting in the smallest conditioning set Z that makes these two 
+variables independent. 
+The results of every test, in a DAG, is then combined using the 
+Fisher’s statistic in an overall test of the fitted model 
+C = -2*sum(log(P-value(k))), where C is distributed as a chi-squared 
+variate with df = 2k, as suggested by Shipley (2000).
+In a BAP, the P-values resulting from every test are corrected by 
+multiple testing multiplying by the number of missing edges. The 
+smallest one is then considered as the overall test P-value 
+(Shipley, 2002).
 }
 \examples{
 
+library(SEMdata)
 library(huge)
 als.npn <- huge.npn(alsData$exprs)
 
 sem <- SEMrun(alsData$graph, als.npn)
 C.test0 <- Shipley.test(sem$graph, als.npn)
 
-adjData <- diagonalizePsi(alsData$graph, als.npn, algo = "d-sep",
-                          method = "BH",
-                          alpha = 0.05)
-C.test1 <- Shipley.test(sem$graph, adjData)
+}
+\references{
+Shipley B (2000). A new inferential test for path models based on DAGs. 
+Struct. Equ. Modeling, 7(2): 206-218. 
+https://doi.org/10.1207/S15328007SEM0702_4
 
+Shipley B (2002). Start and Stop Rules for Exploratory Path Analysis. 
+Structural Equation Modeling A Multidisciplinary Journal, 9(4): 554-561. 
+https://doi.org/10.1207/S15328007SEM0904_5
+}
+\author{
+Mario Grassi \email{mario.grassi@unipv.it}
 }

@@ -48,14 +48,14 @@ Extract and fit clusters from an input graph.
 }
 \examples{
 
+library(SEMdata)
 library(huge)
+
 als.npn <- huge.npn(alsData$exprs)
 
+adjdata <- SEMbap(alsData$graph, als.npn)$data
+
 # Clusters creation
-adjdata <- diagonalizePsi(graph = alsData$graph, data = als.npn,
-                          algo = "ggm",
-                          method = "BH",
-                          alpha = 0.05)
 clusters <- extractClusters(graph = alsData$graph, data = adjdata)
 head(parameterEstimates(clusters$fit$HM1))
 head(parameterEstimates(clusters$fit$HM2))
@@ -63,9 +63,12 @@ head(parameterEstimates(clusters$fit$HM4))
 gplot(clusters$clusters$HM2)
 
 # Map cluster on the input graph
-g<- alsData$graph
-c<- clusters$clusters$HM2
-V(g)$color<- ifelse(V(g)$name \%in\% V(c)$name, "yellow", "white")
+g <- alsData$graph
+c <- clusters$clusters$HM2
+V(g)$color <- ifelse(V(g)$name \%in\% V(c)$name, "gold", "white")
 gplot(g)
 
+}
+\author{
+Fernando Palluzzi \email{fernando.palluzzi@gmail.com}
 }

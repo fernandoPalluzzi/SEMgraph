@@ -47,27 +47,25 @@ structure stored in the \code{guu} object. In both cases, new hidden
 directed paths and new nodes (i.e., new mediators) can be revealed.
 }
 \examples{
+library(SEMdata)
 G <- kegg.pathways$"Steroid biosynthesis"
 G <- properties(G)[[1]]
 
 # Extend a graph using new inferred DAG edges
 
+library(SEMdata)
 library(huge)
 als.npn <- huge.npn(alsData$exprs)
 
 dag <- SEMdag(graph = G, data = als.npn, beta = 0.1)
 ext <- extendGraph(list(dag$dag, dag$dag.red), data = als.npn, gnet = kegg)
 gplot(ext$Ug)
-gplot(ext$guv)
 
 # Extend a graph using the inferred bow-free path diagram
 
 bap <- SEMbap(graph = G, data = als.npn, gnet = kegg, d = 1, alpha = 0.05)
 ext <- extendGraph(list(bap$bap, bap$guu), data = als.npn, gnet = kegg)
 gplot(ext$Ug)
-gplot(ext$guv)
-
-## NOT RUN ## {
  
 # Create a graph from correlation matrix, using KEGG as reference
 
@@ -76,17 +74,19 @@ selectedData <- als.npn[, v]
 G0 <- make_empty_graph(n = ncol(selectedData))
 V(G0)$name <- colnames(selectedData)
 
-G1 <- corr2graph(R = cor(sbData), n = nrow(sbData), type = "tmfg")
+G1 <- corr2graph(R = cor(selectedData), n = nrow(selectedData),
+                 type = "tmfg")
 ext <- extendGraph(list(G0, G1), data = selectedData, gnet = kegg)
+par(mfrow=c(1,2), mar=rep(1,4))
 plot(G1, layout = layout.circle)
 plot(ext$Ug, layout = layout.circle)
-plot(ext$guv, layout = layout.circle)
-
-## }
 
 }
 \references{
 Grassi M, Palluzzi F (2021). SEMgraph: An R Package for Causal Network 
 Analysis of High-Throughput Data with Structural Equation Models. 
 xxxxx x(x): xxxxx. https://doi.org/xxxxx
+}
+\author{
+Mario Grassi \email{mario.grassi@unipv.it}
 }

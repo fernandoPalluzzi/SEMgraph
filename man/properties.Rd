@@ -4,7 +4,7 @@
 \alias{properties}
 \title{Graph properties summary and graph decomposition}
 \usage{
-properties(graph, data = NULL)
+properties(graph, data = NULL, ...)
 }
 \arguments{
 \item{graph}{Input network as an igraph object.}
@@ -24,7 +24,11 @@ Produces a summary of network properties and returns
 graph components (ordered by decreasing size), without self-loops.
 }
 \examples{
+library(SEMdata)
 G <- kegg.pathways$"Amyotrophic lateral sclerosis (ALS)"
 properties(G)
 
+}
+\author{
+Mario Grassi \email{mario.grassi@unipv.it}
 }

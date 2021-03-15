@@ -4,12 +4,12 @@
 \alias{pairwiseMatrix}
 \title{Pairwise plotting of multivariate data}
 \usage{
-pairwiseMatrix(z, x = NULL, size = nrow(z), r = 4, c = 4, ...)
+pairwiseMatrix(x, y = NULL, size = nrow(x), r = 4, c = 4, ...)
 }
 \arguments{
-\item{z}{A matrix or data.frame (n x p) of continuous data.}
+\item{x}{A matrix or data.frame (n x p) of continuous data.}
 
-\item{x}{A matrix or data.frame (n x q) of continuous data.}
+\item{y}{A matrix or data.frame (n x q) of continuous data.}
 
 \item{size}{number of rows to be sampled (default s = nrow(z)).}
 
@@ -25,10 +25,11 @@ random selection of variables. If the second dataset is not given,
 the function displays a histogram with normal curve superposition.
 }
 \examples{
-adjdata <- diagonalizePsi(graph = sachs$graph, data = log(sachs$pkc),
-                          method = "BH",
-                          alpha = 0.2)
+adjdata <- SEMbap(sachs$graph, log(sachs$pkc))$data
 rawdata <- log(sachs$pkc)
 pairwiseMatrix(adjdata, rawdata, size = 1000)
 
+}
+\author{
+Mario Grassi \email{mario.grassi@unipv.it}
 }

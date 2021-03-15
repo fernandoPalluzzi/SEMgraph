@@ -11,7 +11,7 @@ cplot(graph, membership, l = layout.auto, map = FALSE, verbose = FALSE, ...)
 
 \item{membership}{Cluster membership vector for each node.}
 
-\item{l}{graph layout One of the \code{\link{igraph}} layouts. 
+\item{l}{graph layout. One of the \code{\link{igraph}} layouts. 
 If this argument is ignored, an automatic layout will be applied.}
 
 \item{map}{A logical value. Visualize cluster mapping over the input 
@@ -32,16 +32,22 @@ Map groups of nodes onto an input graph, based on a
 membership vector.
 }
 \examples{
+library(SEMdata)
 G <- kegg.pathways$"Amyotrophic lateral sclerosis (ALS)"
 # Largest connected component
 G <- properties(G)[[1]]
 membership <- clusterGraph(graph = G, type = "wtc")
 cplot(G, membership, map = TRUE)
 
-## NOT RUN ##
+\dontrun{
 cplot(G, membership, map = FALSE, verbose = TRUE)
+}
 
 }
 \seealso{
-\code{\link[SEMgraph]{clusterGraph}}, \code{\link[SEMgraph]{clusterScore}}
+\code{\link[SEMgraph]{clusterGraph}}, 
+\code{\link[SEMgraph]{clusterScore}}
+}
+\author{
+Mario Grassi \email{mario.grassi@unipv.it}
 }

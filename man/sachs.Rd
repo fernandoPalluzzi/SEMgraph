@@ -40,5 +40,4 @@ gplot(sachs$graph)
 Sachs K, Perez O, Pe'er D, Lauffenburger DA, Nolan GP (2019). 
 Causal Protein-Signaling Networks Derived from Multiparameter 
 Single-Cell Data. Science, 308(5721): 523-529.
-https://doi.org/10.1126/science.1105809
 }

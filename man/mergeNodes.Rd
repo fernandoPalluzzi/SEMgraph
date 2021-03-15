@@ -11,7 +11,8 @@ mergeNodes(graph, membership, HM, ...)
 
 \item{membership}{Cluster membership. A vector of cluster membership
 identifiers, where vector names correspond to graph node names.
-Topological graph clustering can be done using \code{\link[SEMgraph]{clusterGraph}}.}
+Topological graph clustering can be done using 
+\code{\link[SEMgraph]{clusterGraph}}.}
 
 \item{HM}{Hidden model label. If HM = "LV", a latent variable (LV) 
 will be defined as common unknown cause acting on cluster nodes.
@@ -31,6 +32,7 @@ Merge groups of graph nodes using a custom membership
 attribute (e.g., cluster membership).
 }
 \examples{
+library(SEMdata)
 G <- kegg.pathways$"Amyotrophic lateral sclerosis (ALS)"
 # Largest connected component
 G <- properties(G)[[1]]
@@ -41,4 +43,7 @@ gplot(M)
 }
 \seealso{
 \code{\link[SEMgraph]{clusterGraph}}
+}
+\author{
+Mario Grassi \email{mario.grassi@unipv.it}
 }
