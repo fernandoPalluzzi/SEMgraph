@@ -35,3 +35,7 @@ sequencing data, reference networks, and pathways for **SEMgraph** training:
 ```{r, echo = FALSE}
 devtools::install_github("fernandoPalluzzi/SEMdata")
 ```
+
+## References
+
+Palluzzi F, Grassi M. **SEMgraph: An R Package for Causal Network Analysis of High-Throughput Data with Structural Equation Models**. 2021 Mar; arXiv:2103.08332.
