@@ -229,7 +229,7 @@ dev.off()
 # Direct strategy.
 # - Knowledge-based estimation (gnet should be a directed reference network).
 # - Only direct interactions are inferred (d is fixed to 1).
-# - New inferred interactions.
+# - New interactions are inferred from data, during the execution.
 # - A smaller starting beta value is suggested (beta = 0.05).
 model <- modelSearch(graph = alsData$graph, data = data.npn,
                      gnet = kegg,
