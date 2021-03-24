@@ -22,6 +22,8 @@ confounding adjustment.
 together with graph plotting utilities, tracing model architecture 
 modifications and perturbation (i.e., activation or repression) routes.
 
+The SEMgraph-replicationCode.R file offers a quick-start guide to explore general SEMgraph functionalities.
+
 ## Installation
 
 The development version of **SEMgraph** can be installed in **R** with the following line:
