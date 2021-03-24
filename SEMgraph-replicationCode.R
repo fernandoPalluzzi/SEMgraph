@@ -243,7 +243,7 @@ model <- modelSearch(graph = alsData$graph, data = data.npn,
 # Outer strategy.
 # - Knowledge-based estimation (gnet should be a directed reference network).
 # - Up to d - 1 mediators can be imported from the reference network.
-# - Larger d increase model complexity (suggested: d = 2).
+# - Larger d values increase model complexity (suggested: d = 2).
 model <- modelSearch(graph = alsData$graph, data = data.npn,
                      gnet = kegg,
                      d = 2,
@@ -256,7 +256,7 @@ model <- modelSearch(graph = alsData$graph, data = data.npn,
 # Inner strategy.
 # - The reference network is used to validate new interactions and mediators.
 # - Inferred mediators must already belong to the input graph.
-# - Larger d increase model complexity (suggested: d = 2).
+# - Larger d values increase model complexity (suggested: d = 2).
 model <- modelSearch(graph = alsData$graph, data = data.npn,
                      gnet = kegg,
                      d = 2,
