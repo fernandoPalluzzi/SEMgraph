@@ -1,5 +1,5 @@
 # SEMgraph
-**Network Analysis** and **Causal Structure Learning** with **Structural Equation Modeling**.
+**Causal Structure Learning** and **Network Analysis** with **Structural Equation Modeling**.
 
 # Overview
 
