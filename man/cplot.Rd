@@ -11,15 +11,15 @@ cplot(graph, membership, l = layout.auto, map = FALSE, verbose = FALSE, ...)
 
 \item{membership}{Cluster membership vector for each node.}
 
-\item{l}{graph layout. One of the \code{\link{igraph}} layouts. 
+\item{l}{graph layout. One of the \code{\link{igraph}} layouts.
 If this argument is ignored, an automatic layout will be applied.}
 
-\item{map}{A logical value. Visualize cluster mapping over the input 
-graph. If FALSE (default), visualization will be disabled. For large 
+\item{map}{A logical value. Visualize cluster mapping over the input
+graph. If FALSE (default), visualization will be disabled. For large
 graphs, visualization may take long.}
 
-\item{verbose}{A logical value. If FALSE (default), the processed 
-graphs will not be plotted to screen, saving execution time (they will 
+\item{verbose}{A logical value. If FALSE (default), the processed
+graphs will not be plotted to screen, saving execution time (they will
 be returned in output anyway).}
 
 \item{...}{Currently ignored.}
@@ -28,24 +28,30 @@ be returned in output anyway).}
 The list of clusters and cluster mapping as igraph objects.
 }
 \description{
-Map groups of nodes onto an input graph, based on a 
+Map groups of nodes onto an input graph, based on a
 membership vector.
 }
 \examples{
+
+\dontrun{
+
+# Install data examples, reference networks, and pathways
+#devtools::install_github("fernandoPalluzzi/SEMdata")
 library(SEMdata)
+
 G <- kegg.pathways$"Amyotrophic lateral sclerosis (ALS)"
 # Largest connected component
 G <- properties(G)[[1]]
 membership <- clusterGraph(graph = G, type = "wtc")
 cplot(G, membership, map = TRUE)
 
-\dontrun{
 cplot(G, membership, map = FALSE, verbose = TRUE)
+
 }
 
 }
 \seealso{
-\code{\link[SEMgraph]{clusterGraph}}, 
+\code{\link[SEMgraph]{clusterGraph}},
 \code{\link[SEMgraph]{clusterScore}}
 }
 \author{

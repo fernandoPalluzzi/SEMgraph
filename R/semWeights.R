@@ -28,7 +28,7 @@
 #' columns to graph nodes.
 #' @param group Binary vector. This vector must be as long as the number
 #' of subjects. Each vector element must be 1 for cases and 0 for control
-#' subjects. By default, group = NULL.
+#' subjects. By default, \code{group = NULL}.
 #' @param method Edge weighting method. It can be one of the following:
 #' \enumerate{
 #' \item "r2z", Weight edges of a graph using Fisher's r-to-z transform 
@@ -50,19 +50,19 @@
 #' group over source node, sink node, and their connection. 
 #' Not available if \code{group == NULL}.
 #' }
-#' @param seed A vector of three cutoffs. By default, seed = "none" and 
-#' seed calculation is disabled. Suggested cutoff values are 
-#' seed = c(0.05, 0.5, 0.5). If these cutoffs are defined, seed search 
-#' is enabled. Nodes can be labeled as either seeds (node weight = 1) 
-#' or non-seeds (node weight = 0), according to three alternative 
-#' importance criteria: perturbed group effect, prototype clustering, 
-#' and closeness node index. The first cutoff is the significance level 
-#' of the group effect over graph nodes. The second is a threshold 
+#' @param seed A vector of three cutoffs. By default, \code{seed = "none"} 
+#' and seed calculation is disabled. Suggested cutoff values are 
+#' \code{seed = c(0.05, 0.5, 0.5)}. If these cutoffs are defined, seed 
+#' search is enabled. Nodes can be labeled as either seeds (node 
+#' weight = 1) or non-seeds (node weight = 0), according to three 
+#' alternative importance criteria: perturbed group effect, prototype 
+#' clustering, and closeness node index. The first cutoff is the significance 
+#' level of the group effect over graph nodes. The second is a threshold 
 #' corresponding to the prototype clustering distance measure 
 #' (= 1 - abs(correlation)) cutoff. The third one is the closeness 
 #' percentile. Nodes having closeness greater than the q-th percentile 
 #' are labeled as seeds. If the seed argument is enabled, the output 
-#' graph will have three new binary (1: seed, 0: not-seed) vertex 
+#' graph will have three new binary (1: seed, 0: non-seed) vertex 
 #' attibutes:
 #' \enumerate{
 #' \item "pvlm", P-value of the simple linear regression y ~ x (i.e.,
@@ -74,7 +74,7 @@
 #' @param limit An integer value corresponding to the number of graph 
 #' edges. Beyond this limit, multicore computation is enabled to reduce 
 #' the computational burden. 
-#' By default, \code{limit = NULL} (i.e., multicore disabled).
+#' By default, \code{limit = 3000}.
 #' @param ... Currently ignored.
 #'
 #' @return A weighted graph, as an igraph object.
@@ -88,9 +88,9 @@
 #' @author Mario Grassi \email{mario.grassi@unipv.it}
 #'
 #' @references
-#' Grassi M, Palluzzi F (2021). SEMgraph: An R Package for Causal Network 
+#' Palluzzi F, Grassi M (2021). SEMgraph: An R Package for Causal Network 
 #' Analysis of High-Throughput Data with Structural Equation Models. 
-#' xxxxx x(x): xxxxx. https://doi.org/xxxxx
+#' <arXiv:2103.08332>
 #' 
 #' @examples
 #' 
@@ -115,7 +115,7 @@
 #' R <- properties(R)[[1]]
 #'
 weightGraph <- function(graph, data, group = NULL, method = "r2z",
-                        seed = "none", limit = NULL, ...)
+                        seed = "none", limit = 3000, ...)
 {
 	# Set genes, from-to-matrix (ftm), vertex degree and data
 	genes <- colnames(data)
@@ -154,7 +154,7 @@ weightGraph <- function(graph, data, group = NULL, method = "r2z",
 	return(graph = gdf)
 }
 
-ew.sem <- function(ftm, Y, group, degree, limit = NULL, ...)
+ew.sem <- function(ftm, Y, group, degree, limit = 3000, ...)
 {	
 	local <- function(x) {
 		df <- data.frame(cbind(Y[, c(x[[1]], x[[2]])], group))
@@ -174,8 +174,8 @@ ew.sem <- function(ftm, Y, group, degree, limit = NULL, ...)
 	x <- split(ftm, f = seq(nrow(ftm)))
 	message("Edge weigthing via SEM of ", length(x), " edges ...")
 	op <- pbapply::pboptions(type = "timer", style = 2)
-	if (!is.null(limit)) {
-		n_cores <- parallel::detectCores()
+	if (length(x) > limit) {
+		n_cores <- parallel::detectCores()/2
 		cl <- parallel::makeCluster(n_cores)
 		parallel::clusterExport(cl, c("local", "Y", "degree", "group"),
 		                        envir = environment())
@@ -192,7 +192,7 @@ ew.sem <- function(ftm, Y, group, degree, limit = NULL, ...)
 	return (list(zsign, pv))
 }
 
-ew.cov <- function(ftm, Y, group, degree, limit = NULL, ...)
+ew.cov <- function(ftm, Y, group, degree, limit = 3000, ...)
 {
 	local <- function(x) {
 		df <- data.frame(cbind(Y[, c(x[[1]], x[[2]])], group))
@@ -215,8 +215,8 @@ ew.cov <- function(ftm, Y, group, degree, limit = NULL, ...)
 	message("Edge weigthing via COV of ", length(x), " edges ...")
 	op <- pbapply::pboptions(type = "timer", style = 2)
 	
-	if (!is.null(limit)) {
-		n_cores <- parallel::detectCores()
+	if (length(x) > limit) {
+		n_cores <- parallel::detectCores()/2
 		cl <- parallel::makeCluster(n_cores)
 		parallel::clusterExport(cl, c("local", "Y", "degree", "group"),
 		                        envir = environment())
@@ -233,7 +233,7 @@ ew.cov <- function(ftm, Y, group, degree, limit = NULL, ...)
 	return (list(zsign, pv))
 }
 
-ew.cfa <- function(ftm, Y, group, limit = NULL, ...)
+ew.cfa <- function(ftm, Y, group, limit = 3000, ...)
 {
 	local <- function(x) {
 		df <- data.frame(cbind(Y[, c(x[[1]], x[[2]])], group))
@@ -256,8 +256,8 @@ ew.cfa <- function(ftm, Y, group, limit = NULL, ...)
 	message("Edge weigthing via 1CFA of ", length(x), " edges ...")
 	op <- pbapply::pboptions(type = "timer", style = 2)
 	
-	if (!is.null(limit)) {
-		n_cores <- parallel::detectCores()
+	if (length(x) > limit) {
+		n_cores <- parallel::detectCores()/2
 		cl <- parallel::makeCluster(n_cores)
 		parallel::clusterExport(cl, c("local", "Y", "degree", "group"),
 		                        envir = environment())
@@ -357,38 +357,38 @@ seedweight <- function(ig, data, group, alpha = 0.05, h = 0.2, q = 0.5, ...)
 #' Function scalability enables graph reduction at both pathway and 
 #' entire interactome scales.
 #' @param graph An igraph object.
-#' @param type Module identification method. If type = "kou", the Steiner 
-#' tree algorithm will be applied. 
-#' If type = "usp", the resulting graph will be the union of all significant 
-#' shortest paths. If type = "rwr", the random walk with restart algorithm 
-#' will be enabled. Finally, if type = "hdi", the heat diffusion algorithm 
-#' is used.
+#' @param type Module identification method. If \code{type = "kou"}, 
+#' the Steiner tree algorithm will be applied. 
+#' If \code{type = "usp"}, the resulting graph will be the union of all 
+#' significant shortest paths. If \code{type = "rwr"}, the random walk 
+#' with restart algorithm will be enabled. Finally, if \code{type = "hdi"}, 
+#' the heat diffusion algorithm is used.
 #' @param seed Either a user-defined vector containing seed node names 
 #' or one among: "pvlm", "proto", or "qi", corresponding to the seed 
 #' name attribute yielded by \code{\link[SEMgraph]{weightGraph}}.
 #' @param eweight Edge weight type derived from
 #' \code{\link[SEMgraph]{weightGraph}} or from user-defined distances. 
 #' This option determines the weight-to-distance transform. If set to 
-#' "none" (default), edge weights will be set to 1. If eweight = "kegg", 
-#' repressing interactions (-1) will be set to 1 (maximum distance), 
-#' neutral interactions (0) will be set to 0.5, and activating interactions 
-#' (+1) will be set to 0 (minimum distance).
-#' If eweight = "zsign", all significant interactions will be set to 0
-#' (minimum distance), while non-significant ones will be set to 1.
-#' If eweight = "pvalue", weights (p-values) will be transformed to the
-#' inverse of negative base-10 logarithm. If eweight = "custom", the
-#' algorithm will use the distance measure specified by the user as "weight"
-#' edge attribute.
+#' "none" (default), edge weights will be set to 1. 
+#' If \code{eweight = "kegg"}, repressing interactions (-1) will be set 
+#' to 1 (maximum distance), neutral interactions (0) will be set to 0.5, 
+#' and activating interactions (+1) will be set to 0 (minimum distance).
+#' If \code{eweight = "zsign"}, all significant interactions will be set 
+#' to 0 (minimum distance), while non-significant ones will be set to 1.
+#' If \code{eweight = "pvalue"}, weights (p-values) will be transformed 
+#' to the inverse of negative base-10 logarithm. 
+#' If \code{eweight = "custom"}, the algorithm will use the distance 
+#' measure specified by the user as "weight" edge attribute.
 #' @param alpha Significance level to assess shortest paths significance, 
-#' when type is "usp". By default, alpha is set to 0.05.
+#' when type is "usp". By default, \code{alpha = 0.05}.
 #' @param q Inclusion quantile for the "rwr" and "hdi" algorithms. The higher 
 #' the q, the closer the nodes to the input seeds, the smaller the output 
-#' graph induced by the q-top ranking nodes. By default, q = 0.5 (i.e., the 
-#' top 50\% of nodes are selected).
+#' graph induced by the q-top ranking nodes. 
+#' By default, \code{q = 0.5} (i.e., the top 50\% of nodes are selected).
 #' @param limit An integer value corresponding to the number of graph 
 #' edges. If \code{type = "usp"}, beyond this limit, multicore computation 
 #' is enabled to reduce the computational burden. 
-#' By default, \code{limit = NULL} (i.e., multicore disabled).
+#' By default, \code{limit = 30000}.
 #' @param ... Currently ignored.
 #'
 #' @details Graph filtering algorithms include:
@@ -414,16 +414,16 @@ seedweight <- function(ig, data, group, alpha = 0.05, h = 0.2, q = 0.5, ...)
 #'
 #' @references
 #' 
-#' Grassi M, Palluzzi F (2021). SEMgraph: An R Package for Causal Network 
+#' Palluzzi F, Grassi M (2021). SEMgraph: An R Package for Causal Network 
 #' Analysis of High-Throughput Data with Structural Equation Models. 
-#' xxxxx x(x): xxxxx. https://doi.org/xxxxx
+#' <arXiv:2103.08332>
 #' 
 #' Kou L, Markowsky G, Berman L (1981). A fast algorithm for Steiner trees.
-#' Acta Informatica, 15(2): 141-145. https://doi.org/10.1007/BF00288961
+#' Acta Informatica, 15(2): 141-145. <https://doi.org/10.1007/BF00288961>
 #'
 #' Simon Dirmeier (2018). diffusr: Network Diffusion Algorithms. R
 #' package version 0.1.4.
-#' https://CRAN.R-project.org/package=diffusr
+#' <https://CRAN.R-project.org/package=diffusr>
 #'
 #' @examples
 #' 
@@ -449,6 +449,10 @@ seedweight <- function(ig, data, group, alpha = 0.05, h = 0.2, q = 0.5, ...)
 #' box(col = "gray")
 #' 
 #' \dontrun{
+#'
+#' # Install data examples, reference networks, and pathways
+#' # devtools::install_github("fernandoPalluzzi/SEMdata")
+#' library(SEMdata)
 #' 
 #' # Weight and reduce the whole KEGG interactome, using RWR
 #' 
@@ -467,14 +471,16 @@ seedweight <- function(ig, data, group, alpha = 0.05, h = 0.2, q = 0.5, ...)
 #' ig1 <- properties(ig1)[[1]]
 #' 
 #' # Fitting
-#' sem1 <- SEMrun(ig1, alsData$exprs, alsData$group, fit = 1, algo = "ricf")
-#' summary(sem1$gest)
-#' gplot(sem1$graph)
+#' sem1 <- SEMrun(ig1, alsData$exprs, alsData$group, algo = "ricf")
+#' head(sem1$gest)
+#'
+#' par(mfrow=c(1,1), mar=rep(2, 4))
+#' gplot(sem1$graph, main= "active module via RWR")
 #' 
 #' }
 #'
 activeModule <- function(graph, type, seed, eweight = "none", alpha = 0.05,
-                         q = 0.5, limit = NULL, ...)
+                         q = 0.5, limit = 30000, ...)
 {
 	if (length(eweight) == 1) {
 		if (eweight == "kegg") eweight <- (1 - E(graph)$weight)/2
@@ -703,7 +709,7 @@ SteinerTree <- function(graph, seed, eweight)
 	return(St)
 }
 
-USPG <- function(graph, seed, eweight, alpha = 0.05, limit = NULL, ...)
+USPG <- function(graph, seed, eweight, alpha = 0.05, limit = 30000, ...)
 {
 	# Define graph, edge weights, and distance matrix
 	E(graph)$weight <- eweight
@@ -713,7 +719,7 @@ USPG <- function(graph, seed, eweight, alpha = 0.05, limit = NULL, ...)
 	
 	# Complete directed distance graph for terminal nodes
 	Gd <- graph_from_adjacency_matrix(D, mode = "undirected", weighted = TRUE)
-	Gd <- Gd-igraph::edges(E(Gd)[which(E(Gd)$weight == Inf)])
+	Gd <- Gd - igraph::edges(E(Gd)[which(E(Gd)$weight == Inf)])
 	#plot(as_graphnel(Gd)); Gd; E(Gd)$weight
 	
 	# For each edge in Gd, replace it with the shortest path
@@ -750,8 +756,8 @@ USPG <- function(graph, seed, eweight, alpha = 0.05, limit = NULL, ...)
 	message("Edge weigthing of ", length(x), " edges ...")
 	op <- pbapply::pboptions(type = "timer", style = 2)
 	
-	if (!is.null(limit)) {
-		n_cores <- parallel::detectCores()
+	if (length(x) > limit) {
+		n_cores <- parallel::detectCores()/2
 		cl <- parallel::makeCluster(n_cores)
 		parallel::clusterExport(cl, c("local", "graph", "alpha", "N"),
 		                        envir = environment())

@@ -1,24 +1,25 @@
 Package: SEMgraph
-Type: Package
-Title: Network Analysis and Causal Inference Through Structural
-        Equation Modeling
-Version: 1.0.2
-Date: 2020-10-08
-Author: Mario Grassi [aut], Fernando Palluzzi [aut, cre], Daniele Pepe [ctb]
+Title: Network Analysis and Causal Inference Through Structural Equation Modeling
+Version: 1.0.3
+Date: 2021-05-31
+Authors@R: c(
+    person("Mario", "Grassi", role = "aut", email="mario.grassi@unipv.it"), 
+    person("Fernando", "Palluzzi", role = c("aut","cre"), email="fernando.palluzzi@gmail.com"),
+    person("Daniele", "Pepe", role = "ctb", email="danielepepe84@gmail.com"))
 Maintainer: Fernando Palluzzi <fernando.palluzzi@gmail.com>
-Description: This is the SEMgraph package for network analysis and causal inference through Structural Equation Modeling (SEM). It includes functions to import, weight, manipulate, and fit biological network models using the SEM framework.
-License: GPL-3
-Encoding: UTF-8
-LazyData: TRUE
+Description: Estimate networks and causal relations in complex systems through Structural Equation Modeling. It includes functions to import, weight, manipulate, and fit biological network models using the Structural Equation Modeling framework (Palluzzi and Grassi (2021) <arXiv:2103.08332>).
+URL: https://github.com/fernandoPalluzzi/SEMgraph
 Depends: igraph (>= 1.2.1), lavaan (>= 0.5-23), R (>= 4.0)
-Imports: boot (>= 1.3-25), cate (>= 1.0.4), corpcor (>= 1.6.9), dagitty (>= 0.3-0), 
-         diffusr (>= 0.1.4), flip (>= 2.5.0), gdata (>= 2.18.0), ggm (>= 2.3), 
-         GGMncv (>= 2.0.0), glmnet (>= 2.0-18), graph (>= 1.56.0), 
-         Matrix (>= 1.3-2), pbapply (>= 1.4-3), pcalg (>= 2.6-5), 
-         protoclust (>= 1.6.3), RcppEigen (>= 0.3.3.4.0), Rgraphviz (>= 2.22.0)
-Suggests: BiocStyle, knitr, rmarkdown, SEMdata, huge, graphite,
-        org.Hs.eg.db
-VignetteBuilder: knitr
-RoxygenNote: 7.1.1
+Imports: boot (>= 1.3-25), cate (>= 1.0.4), corpcor (>= 1.6.9), dagitty
+        (>= 0.3-0), diffusr (>= 0.1.4), flip (>= 2.5.0), gdata (>=
+        2.18.0), ggm (>= 2.3), GGMncv (>= 2.0.0), glmnet (>= 2.0-18),
+        graph (>= 1.56.0), Matrix (>= 1.3-0), pbapply (>= 1.4-3),
+        protoclust (>= 1.6.3), RcppEigen (>= 0.3.3.4.0), Rgraphviz (>=
+        2.22.0)
+Suggests: huge, pcalg, graphite, org.Hs.eg.db
+License: GPL-3
+LazyData: true
+Encoding: UTF-8
 NeedsCompilation: no
-Packaged: 2021-02-08 15:42:08 UTC; fernando
+RoxygenNote: 7.1.1
+Packaged: 2021-06-14 15:50:26 UTC

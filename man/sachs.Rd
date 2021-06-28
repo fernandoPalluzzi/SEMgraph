@@ -19,7 +19,7 @@ cd3cd28 (baseline) and pma (PKC activation) data;
 }
 }
 \source{
-\url{https://doi.org/10.1126/science.1105809}
+\doi{10.1126/science.1105809}
 }
 \usage{
 sachs

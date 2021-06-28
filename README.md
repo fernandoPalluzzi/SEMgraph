@@ -1,8 +1,8 @@
 # SEMgraph
 Network Analysis and Causal Learning with Structural Equation Modeling
 
-**SEMgraph** is an **R** package for network analysis and causal inference and learning through Structural Equation Modeling (SEM).
-**SEMgraph** comes with the following functionalities:
+**SEMgraph**  Estimate networks and causal relations in complex systems through
+Structural Equation Modeling (SEM). **SEMgraph** comes with the following functionalities:
 
 - Interchangeable model representation as either an **igraph** object 
 or the corresponding SEM in **lavaan** syntax. Model management functions 
@@ -22,8 +22,16 @@ modifications and perturbation (i.e., activation or repression) routes.
 
 ## Installation
 
-The development version of **SEMgraph** can be installed in **R** with the following line:
+The latest stable version can be installed from CRAN:
 
-```{r, echo = FALSE}
+``` r
+install.packages("SEMgraph")
+```
+
+The latest development version can be installed from github:
+
+``` r
+# install.packages("devtools")
 devtools::install_github("fernandoPalluzzi/SEMgraph")
 ```
+

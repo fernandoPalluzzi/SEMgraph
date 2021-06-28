@@ -12,12 +12,12 @@
 \item{...}{Currently ignored.}
 }
 \description{
-Generate a summary for a constrained Gaussian Graphical 
+Generate a summary for a constrained Gaussian Graphical
 Model (GGM) and show it to standard output.
 }
 \examples{
-sem1 <- SEMrun(sachs$graph, log(sachs$pkc), sachs$group, algo = "cggm")
-summary(sem1$fit)
+sem0 <- SEMrun(sachs$graph, log(sachs$pkc), algo = "cggm")
+summary(sem0$fit)
 
 }
 \seealso{

@@ -4,10 +4,17 @@
 \alias{lavaan2graph}
 \title{lavaan model to graph}
 \usage{
-lavaan2graph(model, directed = TRUE, psi = TRUE, verbose = FALSE, ...)
+lavaan2graph(
+  model,
+  directed = TRUE,
+  psi = TRUE,
+  format = "igraph",
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
-\item{model}{Model using lavaan syntax.}
+\item{model}{Model specified using lavaan syntax.}
 
 \item{directed}{Logical value. If TRUE (default), edge directions from
 the model will be preserved. If FALSE, the resulting graph will
@@ -17,8 +24,11 @@ be undirected.}
 into bidirected graph edges. If FALSE, covariances will be excluded from
 the output graph.}
 
-\item{verbose}{Logical value. If TRUE, a plot of the output graph will 
-be generated. For large graphs, this could significantly increase 
+\item{format}{Output graph format. It can be either "igraph" (default)
+or "dagitty".}
+
+\item{verbose}{Logical value. If TRUE, a plot of the output graph will
+be generated. For large graphs, this could significantly increase
 computation time. If FALSE (default), graph plotting will be disabled.}
 
 \item{...}{Currently ignored.}
@@ -28,7 +38,7 @@ An igraph object.
 }
 \description{
 Convert a model, specified using lavaan syntax,
-to an igraph object.
+to a graph object in either igraph or dagitty format.
 }
 \examples{
 
@@ -53,14 +63,12 @@ Plcg ~ PIP3
 '
 
 # Graph with covariances
-G0 <- lavaan2graph(model, psi=TRUE)
-gplot(G0)
-plot(G0, layout=layout.circle)
+G0 <- lavaan2graph(model, psi = TRUE)
+plot(G0, layout = layout.circle)
 
 # Graph without covariances
-G1 <- lavaan2graph(model, psi=FALSE)
-gplot(G1)
-plot(G1, layout=layout.circle) 
+G1 <- lavaan2graph(model, psi = FALSE)
+plot(G1, layout = layout.circle)
 
 }
 \author{

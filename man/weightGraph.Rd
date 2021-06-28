@@ -10,7 +10,7 @@ weightGraph(
   group = NULL,
   method = "r2z",
   seed = "none",
-  limit = NULL,
+  limit = 3000,
   ...
 )
 }
@@ -22,7 +22,7 @@ columns to graph nodes.}
 
 \item{group}{Binary vector. This vector must be as long as the number
 of subjects. Each vector element must be 1 for cases and 0 for control
-subjects. By default, group = NULL.}
+subjects. By default, \code{group = NULL}.}
 
 \item{method}{Edge weighting method. It can be one of the following:
 \enumerate{
@@ -46,19 +46,19 @@ group over source node, sink node, and their connection.
 Not available if \code{group == NULL}.
 }}
 
-\item{seed}{A vector of three cutoffs. By default, seed = "none" and 
-seed calculation is disabled. Suggested cutoff values are 
-seed = c(0.05, 0.5, 0.5). If these cutoffs are defined, seed search 
-is enabled. Nodes can be labeled as either seeds (node weight = 1) 
-or non-seeds (node weight = 0), according to three alternative 
-importance criteria: perturbed group effect, prototype clustering, 
-and closeness node index. The first cutoff is the significance level 
-of the group effect over graph nodes. The second is a threshold 
+\item{seed}{A vector of three cutoffs. By default, \code{seed = "none"} 
+and seed calculation is disabled. Suggested cutoff values are 
+\code{seed = c(0.05, 0.5, 0.5)}. If these cutoffs are defined, seed 
+search is enabled. Nodes can be labeled as either seeds (node 
+weight = 1) or non-seeds (node weight = 0), according to three 
+alternative importance criteria: perturbed group effect, prototype 
+clustering, and closeness node index. The first cutoff is the significance 
+level of the group effect over graph nodes. The second is a threshold 
 corresponding to the prototype clustering distance measure 
 (= 1 - abs(correlation)) cutoff. The third one is the closeness 
 percentile. Nodes having closeness greater than the q-th percentile 
 are labeled as seeds. If the seed argument is enabled, the output 
-graph will have three new binary (1: seed, 0: not-seed) vertex 
+graph will have three new binary (1: seed, 0: non-seed) vertex 
 attibutes:
 \enumerate{
 \item "pvlm", P-value of the simple linear regression y ~ x (i.e.,
@@ -71,7 +71,7 @@ node ~ group);
 \item{limit}{An integer value corresponding to the number of graph 
 edges. Beyond this limit, multicore computation is enabled to reduce 
 the computational burden. 
-By default, \code{limit = NULL} (i.e., multicore disabled).}
+By default, \code{limit = 3000}.}
 
 \item{...}{Currently ignored.}
 }
@@ -105,9 +105,9 @@ R <- properties(R)[[1]]
 
 }
 \references{
-Grassi M, Palluzzi F (2021). SEMgraph: An R Package for Causal Network 
+Palluzzi F, Grassi M (2021). SEMgraph: An R Package for Causal Network 
 Analysis of High-Throughput Data with Structural Equation Models. 
-xxxxx x(x): xxxxx. https://doi.org/xxxxx
+<arXiv:2103.08332>
 }
 \author{
 Mario Grassi \email{mario.grassi@unipv.it}

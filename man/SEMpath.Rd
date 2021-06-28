@@ -14,31 +14,31 @@ columns to graph nodes (variables).}
 
 \item{group}{A binary vector. This vector must be as long as the
 number of subjects. Each vector element must be 1 for cases and 0
-for control subjects. If NULL (default), group influence will not be
-considered.}
+for control subjects. If \code{NULL} (default), group influence will
+not be considered.}
 
 \item{from}{Starting node name (i.e., source node).}
 
 \item{to}{Ending node name (i.e., sink node).}
 
-\item{path}{If path = "directed", all directed paths between the two 
-nodes will be included in the fitted model. If path = "shortest", only 
-shortest paths will be returned.}
+\item{path}{If \code{path = "directed"}, all directed paths between
+the two nodes will be included in the fitted model.
+If \code{path = "shortest"}, only shortest paths will be returned.}
 
-\item{verbose}{Show the directed (or shortest) path between the 
+\item{verbose}{Show the directed (or shortest) path between the
 given source-sink pair inside the input graph.}
 
 \item{...}{Currently ignored.}
 }
 \value{
-A list of four objects: a fitted model object of class 
-\code{\link[lavaan]{lavaan}} ("fit"), aggregated and node-specific 
-group effect estimates and P-values ("gest"), the extracted subnetwork 
-as an igraph object ("graph"), and the input graph with a color 
+A list of four objects: a fitted model object of class
+\code{\link[lavaan]{lavaan}} ("fit"), aggregated and node-specific
+group effect estimates and P-values ("gest"), the extracted subnetwork
+as an igraph object ("graph"), and the input graph with a color
 attribute mapping the chosen path ("map").
 }
 \description{
-Find and fit all directed or shortest paths between two 
+Find and fit all directed or shortest paths between two
 source-sink nodes of a graph.
 }
 \examples{

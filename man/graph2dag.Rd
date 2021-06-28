@@ -9,14 +9,14 @@ graph2dag(graph, data, bap = FALSE, time.limit = Inf, ...)
 \arguments{
 \item{graph}{A directed graph as an igraph object.}
 
-\item{data}{A data matrix with subjects as rows and variables as 
+\item{data}{A data matrix with subjects as rows and variables as
 columns.}
 
-\item{bap}{If TRUE, a bow-free acyclic path (BAP) is returned 
+\item{bap}{If TRUE, a bow-free acyclic path (BAP) is returned
 (default = FALSE).}
 
-\item{time.limit}{CPU time for the computation, in seconds 
-(defaults = Inf).}
+\item{time.limit}{CPU time for the computation, in seconds
+(default = Inf).}
 
 \item{...}{Currently ignored.}
 }
@@ -27,12 +27,12 @@ A DAG as an igraph object.
 Remove cycles and bidirected edges from a directed graph.
 }
 \details{
-The conversion is performed firstly by removing bidirected 
-edges and then the data matrix is used to compute edge P-values, through 
-marginal correlation testing (see \code{\link[SEMgraph]{weightGraph}}, 
-r-to-z method). When a cycle is detected, the edge with highest 
+The conversion is performed firstly by removing bidirected
+edges and then the data matrix is used to compute edge P-values, through
+marginal correlation testing (see \code{\link[SEMgraph]{weightGraph}},
+r-to-z method). When a cycle is detected, the edge with highest
 P-value is removed, breaking the cycle. If the bap argument is TRUE,
-a BAP is generated merging the output DAG and the bidirected edges 
+a BAP is generated merging the output DAG and the bidirected edges
 from the input graph.
 }
 \examples{
@@ -41,30 +41,6 @@ dag <- graph2dag(graph = sachs$graph, data = log(sachs$pkc))
 par(mfrow=c(1,2), mar=rep(1, 4))
 gplot(sachs$graph, main = "Input graph")
 gplot(dag, main = "Output DAG")
-
-\dontrun{
-
-# Convert every KEGG pathway into a DAG
-
-# Node count for each pathway
-ngs <- unlist(lapply(1:length(kegg.pathways),
-              function(x) vcount(kegg.pathways[[x]])))
-head(ngs)
-
-# Remove pathways with less than 5 nodes and more than 500 nodes
-Blacklist <- which(ngs < 5 | ngs > 500)
-length(Blacklist)
-KEGG <- kegg.pathways[-Blacklist]
-
-# DAG conversion
-library(SEMdata)
-library(huge)
-als.npn <- huge.npn(alsData$exprs)
-dag <- lapply(KEGG, function(x) graph2dag(x, data = als.npn))
-length(dag)
-head(dag)
-
-}
 
 }
 \author{

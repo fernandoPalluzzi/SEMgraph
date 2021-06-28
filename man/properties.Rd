@@ -9,14 +9,14 @@ properties(graph, data = NULL, ...)
 \arguments{
 \item{graph}{Input network as an igraph object.}
 
-\item{data}{An optional data matrix whith rows corresponding to subjects, 
-and columns to graph nodes (variables). Nodes will be mapped onto 
+\item{data}{An optional data matrix whith rows corresponding to subjects,
+and columns to graph nodes (variables). Nodes will be mapped onto
 variable names.}
 
 \item{...}{Currently ignored.}
 }
 \value{
-List of graph components, ordered by decreasing size (the first 
+List of graph components, ordered by decreasing size (the first
 component is the giant one), without self-loops.
 }
 \description{
@@ -24,9 +24,17 @@ Produces a summary of network properties and returns
 graph components (ordered by decreasing size), without self-loops.
 }
 \examples{
+
+\dontrun{
+
+# Install data examples, reference networks, and pathways
+#devtools::install_github("fernandoPalluzzi/SEMdata")
 library(SEMdata)
+
 G <- kegg.pathways$"Amyotrophic lateral sclerosis (ALS)"
 properties(G)
+
+}
 
 }
 \author{

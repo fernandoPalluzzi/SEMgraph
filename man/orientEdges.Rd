@@ -4,15 +4,12 @@
 \alias{orientEdges}
 \title{Assign edge orientation of an undirected graph}
 \usage{
-orientEdges(ug, dg = NULL, data = NULL, ...)
+orientEdges(ug, dg, ...)
 }
 \arguments{
 \item{ug}{An undirected graph as an igraph object.}
 
 \item{dg}{A directed reference graph.}
-
-\item{data}{A matrix whith rows corresponding to subjects, and
-columns to graph nodes (variables).}
 
 \item{...}{Currently ignored.}
 }
@@ -20,47 +17,20 @@ columns to graph nodes (variables).}
 A directed graph as an igraph object.
 }
 \description{
-Assign edge orientation of an undirected graph either 
-through a given reference directed interactome or using 
-the adaptively restricted greedy equivalence search (ARGES) method, 
-implemented in the \code{\link[pcalg]{ges}} function of the R 
-package \code{pcalg}.
+Assign edge orientation of an undirected graph
+through a given reference directed graph.
 }
 \examples{
 
 # Graphs definition
-R <- corr2graph(R = cor(log(sachs$pkc)), n = nrow(sachs$pkc), type = "tmfg")
-G0 <- sachs$graph
-E(G0)$color <- "gray"
+G0 <- corr2graph(R = cor(log(sachs$pkc)), n = nrow(sachs$pkc), type = "marg")
 
-# Data-driven orientation
-G1 <- orientEdges(ug = R, dg = NULL, data = log(sachs$pkc))
 # Reference graph-based orientation
-G2 <- orientEdges(ug = R, dg = sachs$graph, data = NULL)
+G1 <- orientEdges(ug = G0, dg = sachs$graph)
 
 # Graphs plotting
-par(mfrow=c(2,2), mar=rep(2,4))
-plot(R, layout=layout.circle,
-     main = "Input undirected graph (TMFG)")
-plot(G1, layout=layout.circle,
-     main = "Output directed graph (data-driven)")
-plot(G0, layout=layout.circle,
-     main = "Reference graph")
-plot(G2, layout=layout.circle,
-     main = "Output directed graph (reference-based)")
+par(mfrow=c(1,2), mar=rep(2,4))
+plot(G0, layout=layout.circle, main = "Input undirected graph")
+plot(G1, layout=layout.circle, main = "Output directed graph")
 
-}
-\references{
-Kalisch M, Maechler M, Colombo D, Maathuis MH, Buehlmann P (2012). 
-Causal Inference Using Graphical Models with the R Package pcalg. 
-Journal of Statistical Software, 47(11), 1-26. 
-http://www.jstatsoft.org/v47/i11/.
-
-Nandy P, Hauser A, and Maathuis MH (2018). High-dimensional 
-consistency in score-based and hybrid structure learning. 
-The Annals of Statistics, 46(6A), 3151-3183.
-https://doi.org/10.1214/17-AOS1654.
-}
-\author{
-Mario Grassi \email{mario.grassi@unipv.it}
 }

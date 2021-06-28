@@ -11,19 +11,19 @@ activeModule(
   eweight = "none",
   alpha = 0.05,
   q = 0.5,
-  limit = NULL,
+  limit = 30000,
   ...
 )
 }
 \arguments{
 \item{graph}{An igraph object.}
 
-\item{type}{Module identification method. If type = "kou", the Steiner 
-tree algorithm will be applied. 
-If type = "usp", the resulting graph will be the union of all significant 
-shortest paths. If type = "rwr", the random walk with restart algorithm 
-will be enabled. Finally, if type = "hdi", the heat diffusion algorithm 
-is used.}
+\item{type}{Module identification method. If \code{type = "kou"}, 
+the Steiner tree algorithm will be applied. 
+If \code{type = "usp"}, the resulting graph will be the union of all 
+significant shortest paths. If \code{type = "rwr"}, the random walk 
+with restart algorithm will be enabled. Finally, if \code{type = "hdi"}, 
+the heat diffusion algorithm is used.}
 
 \item{seed}{Either a user-defined vector containing seed node names 
 or one among: "pvlm", "proto", or "qi", corresponding to the seed 
@@ -32,29 +32,29 @@ name attribute yielded by \code{\link[SEMgraph]{weightGraph}}.}
 \item{eweight}{Edge weight type derived from
 \code{\link[SEMgraph]{weightGraph}} or from user-defined distances. 
 This option determines the weight-to-distance transform. If set to 
-"none" (default), edge weights will be set to 1. If eweight = "kegg", 
-repressing interactions (-1) will be set to 1 (maximum distance), 
-neutral interactions (0) will be set to 0.5, and activating interactions 
-(+1) will be set to 0 (minimum distance).
-If eweight = "zsign", all significant interactions will be set to 0
-(minimum distance), while non-significant ones will be set to 1.
-If eweight = "pvalue", weights (p-values) will be transformed to the
-inverse of negative base-10 logarithm. If eweight = "custom", the
-algorithm will use the distance measure specified by the user as "weight"
-edge attribute.}
+"none" (default), edge weights will be set to 1. 
+If \code{eweight = "kegg"}, repressing interactions (-1) will be set 
+to 1 (maximum distance), neutral interactions (0) will be set to 0.5, 
+and activating interactions (+1) will be set to 0 (minimum distance).
+If \code{eweight = "zsign"}, all significant interactions will be set 
+to 0 (minimum distance), while non-significant ones will be set to 1.
+If \code{eweight = "pvalue"}, weights (p-values) will be transformed 
+to the inverse of negative base-10 logarithm. 
+If \code{eweight = "custom"}, the algorithm will use the distance 
+measure specified by the user as "weight" edge attribute.}
 
 \item{alpha}{Significance level to assess shortest paths significance, 
-when type is "usp". By default, alpha is set to 0.05.}
+when type is "usp". By default, \code{alpha = 0.05}.}
 
 \item{q}{Inclusion quantile for the "rwr" and "hdi" algorithms. The higher 
 the q, the closer the nodes to the input seeds, the smaller the output 
-graph induced by the q-top ranking nodes. By default, q = 0.5 (i.e., the 
-top 50\% of nodes are selected).}
+graph induced by the q-top ranking nodes. 
+By default, \code{q = 0.5} (i.e., the top 50\% of nodes are selected).}
 
 \item{limit}{An integer value corresponding to the number of graph 
 edges. If \code{type = "usp"}, beyond this limit, multicore computation 
 is enabled to reduce the computational burden. 
-By default, \code{limit = NULL} (i.e., multicore disabled).}
+By default, \code{limit = 30000}.}
 
 \item{...}{Currently ignored.}
 }
@@ -106,6 +106,10 @@ box(col = "gray")
 
 \dontrun{
 
+# Install data examples, reference networks, and pathways
+# devtools::install_github("fernandoPalluzzi/SEMdata")
+library(SEMdata)
+
 # Weight and reduce the whole KEGG interactome, using RWR
 
 kegg1 <- weightGraph(kegg, alsData$exprs, alsData$group,
@@ -123,24 +127,26 @@ ig1 <- graph2dag(ig1, alsData$exprs)
 ig1 <- properties(ig1)[[1]]
 
 # Fitting
-sem1 <- SEMrun(ig1, alsData$exprs, alsData$group, fit = 1, algo = "ricf")
-summary(sem1$gest)
-gplot(sem1$graph)
+sem1 <- SEMrun(ig1, alsData$exprs, alsData$group, algo = "ricf")
+head(sem1$gest)
+
+par(mfrow=c(1,1), mar=rep(2, 4))
+gplot(sem1$graph, main= "active module via RWR")
 
 }
 
 }
 \references{
-Grassi M, Palluzzi F (2021). SEMgraph: An R Package for Causal Network 
+Palluzzi F, Grassi M (2021). SEMgraph: An R Package for Causal Network 
 Analysis of High-Throughput Data with Structural Equation Models. 
-xxxxx x(x): xxxxx. https://doi.org/xxxxx
+<arXiv:2103.08332>
 
 Kou L, Markowsky G, Berman L (1981). A fast algorithm for Steiner trees.
-Acta Informatica, 15(2): 141-145. https://doi.org/10.1007/BF00288961
+Acta Informatica, 15(2): 141-145. <https://doi.org/10.1007/BF00288961>
 
 Simon Dirmeier (2018). diffusr: Network Diffusion Algorithms. R
 package version 0.1.4.
-https://CRAN.R-project.org/package=diffusr
+<https://CRAN.R-project.org/package=diffusr>
 }
 \author{
 Mario Grassi \email{mario.grassi@unipv.it}
