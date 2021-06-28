@@ -9,32 +9,32 @@ clusterGraph(graph, type = "wtc", HM = "none", size = 5, verbose = FALSE, ...)
 \arguments{
 \item{graph}{An igraph object.}
 
-\item{type}{Topological clustering methods. If type = "tahc", network 
-modules are generated using the tree agglomerative hierarchical 
+\item{type}{Topological clustering methods. If type = "tahc", network
+modules are generated using the tree agglomerative hierarchical
 clustering method (Yu et al., 2015).
-Other non-tree clustering methods from igraph package include: "wtc" 
-(default value; walktrap community structure with short random walks), 
-"ebc" (edge betweeness clustering), "fgc" (fast greedy method), "lbc" 
-(label propagation method), "lec" (leading eigenvector method), "loc" 
-(multi-level optimization), "opc" (optimal communiy structure), "sgc" 
+Other non-tree clustering methods from igraph package include: "wtc"
+(default value; walktrap community structure with short random walks),
+"ebc" (edge betweeness clustering), "fgc" (fast greedy method), "lbc"
+(label propagation method), "lec" (leading eigenvector method), "loc"
+(multi-level optimization), "opc" (optimal communiy structure), "sgc"
 (spinglass statistical mechanics).}
 
-\item{HM}{Hidden model type. Enables the visualization of the hidden 
+\item{HM}{Hidden model type. Enables the visualization of the hidden
 model. If set to "none" (default), no HM is visualized.
 For each defined hidden module:
-(i) if HM = "LV", a latent variable (LV) will be defined as common
-unknown cause acting on cluster nodes; (ii) if HM = "CV", cluster nodes
-will be considered as regressors of a latent composite variable (CV);
-(iii) if HM = "UV", an unmeasured variable (UV) is defined, where source
-nodes of the module (i.e., in-degree = 0) act as common regressors
-influencing the other nodes via an unmeasured variable (see also
-\code{\link[SEMgraph]{clusterScore}}).}
+(i) if \code{HM = "LV"}, a latent variable (LV) will be defined as
+common unknown cause acting on cluster nodes; (ii) if \code{HM = "CV"},
+cluster nodes will be considered as regressors of a latent composite
+variable (CV); (iii) if \code{HM = "UV"}, an unmeasured variable (UV)
+is defined, where source nodes of the module (i.e., in-degree = 0)
+act as common regressors influencing the other nodes via an unmeasured
+variable (see also \code{\link[SEMgraph]{clusterScore}}).}
 
-\item{size}{Minimum number of nodes per module. By default, a minimum 
+\item{size}{Minimum number of nodes per module. By default, a minimum
 number of 5 nodes is required.}
 
-\item{verbose}{A logical value. If FALSE (default), the processed graphs 
-will not be plotted to screen, saving execution time (they will be 
+\item{verbose}{A logical value. If FALSE (default), the processed graphs
+will not be plotted to screen, saving execution time (they will be
 returned in output anyway).}
 
 \item{...}{Currently ignored.}
@@ -52,20 +52,28 @@ If HM is "none", only the cluster membership vector is returned.
 Topological graph clustering methods.
 }
 \examples{
+
+\dontrun{
+
+# Install data examples, reference networks, and pathways
+#devtools::install_github("fernandoPalluzzi/SEMdata")
 library(SEMdata)
+
 G <- kegg.pathways$"Amyotrophic lateral sclerosis (ALS)"
 # Largest connected component
 G <- properties(G)[[1]]
 membership <- clusterGraph(graph = G, type = "wtc", HM = "LV", verbose = TRUE)
 
 }
+
+}
 \references{
 Fortunato S, Hric D. Community detection in networks: A user guide (2016).
-Phys Rep; 659: 1-44. http://dx.doi.org/10.1016/j.physrep.2016.09.002
+Phys Rep; 659: 1-44. <https://dx.doi.org/10.1016/j.physrep.2016.09.002>
 
 Yu M, Hillebrand A, Tewarie P, Meier J, van Dijk B, Van Mieghem P,
 Stam CJ (2015). Hierarchical clustering in minimum spanning trees.
-Chaos 25(2): 023107.  https://doi.org/10.1063/1.4908014
+Chaos 25(2): 023107. <https://doi.org/10.1063/1.4908014>
 }
 \seealso{
 \code{\link[SEMgraph]{clusterScore}}, \code{\link[SEMgraph]{cplot}}

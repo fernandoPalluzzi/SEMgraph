@@ -22,25 +22,25 @@ columns to graph nodes (variables).}
 
 \item{group}{A binary vector. This vector must be as long as the
 number of subjects. Each vector element must be 1 for cases and 0
-for control subjects. Group specification enables node perturbation 
-testing. By default, group = NULL.}
+for control subjects. Group specification enables node perturbation
+testing. By default, \code{group = NULL}.}
 
-\item{membership}{A vector of cluster membership IDs. If NULL, clusters 
-will be automatically generated with \code{\link[SEMgraph]{clusterGraph}} 
+\item{membership}{A vector of cluster membership IDs. If NULL, clusters
+will be automatically generated with \code{\link[SEMgraph]{clusterGraph}}
 using the edge betweenness clustering ("ebc") algorithm.}
 
 \item{map}{Logical value. If TRUE, the plot of the input graph
-(coloured by cluster membership) will be generated along with independent 
-module plots. If the input graph is very large, plotting could be 
-computationally intensive (by default, map = FALSE).}
+(coloured by cluster membership) will be generated along with independent
+module plots. If the input graph is very large, plotting could be
+computationally intensive (by default, \code{map = FALSE}).}
 
-\item{verbose}{Logical value. If TRUE, a plot will be showed for each 
+\item{verbose}{Logical value. If TRUE, a plot will be showed for each
 cluster.}
 
 \item{...}{Currently ignored.}
 }
 \value{
-List of clusters as igraph objects and fitting results for 
+List of clusters as igraph objects and fitting results for
 each cluster as a lavaan object.
 }
 \description{
@@ -48,6 +48,10 @@ Extract and fit clusters from an input graph.
 }
 \examples{
 
+\dontrun{
+
+# Install data examples, reference networks, and pathways
+#devtools::install_github("fernandoPalluzzi/SEMdata")
 library(SEMdata)
 library(huge)
 
@@ -67,6 +71,8 @@ g <- alsData$graph
 c <- clusters$clusters$HM2
 V(g)$color <- ifelse(V(g)$name \%in\% V(c)$name, "gold", "white")
 gplot(g)
+
+}
 
 }
 \author{

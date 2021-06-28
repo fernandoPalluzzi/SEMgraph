@@ -39,7 +39,7 @@
 #' (n = 853) and 1 is for pma samples (n = 913).
 #' \item "details", a data.frame containing dataset information.
 #' }
-#' @source \url{https://doi.org/10.1126/science.1105809}
+#' @source \doi{10.1126/science.1105809}
 #'
 #' @references
 #'

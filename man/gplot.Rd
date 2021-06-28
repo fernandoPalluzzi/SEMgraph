@@ -26,15 +26,15 @@ gplot(
 \arguments{
 \item{graph}{An igraph or graphNEL object.}
 
-\item{l}{any layout supported by \code{Rgraphviz}. It can be one among: 
+\item{l}{any layout supported by \code{Rgraphviz}. It can be one among:
 "dot" (default), "neato", "circo", "fdp", "osage", "twopi".}
 
 \item{main}{Plot main title (by default, no title is added).}
 
 \item{cex.main}{Main title size (default = 1).}
 
-\item{font.main}{Main title font (default = 1). Available options 
-are: 1 for plain text, 2 for bold, 3 for italics, 4 for bold italics, 
+\item{font.main}{Main title font (default = 1). Available options
+are: 1 for plain text, 2 for bold, 3 for italics, 4 for bold italics,
 and 5 for symbol.}
 
 \item{color.txt}{Node text color (default = "black").}
@@ -47,8 +47,8 @@ and 5 for symbol.}
 
 \item{color}{Node border color (default = "gray70").}
 
-\item{lty}{Node border outline (default = 1). 
-Available options include: 0 for blank, 1 for solid line, 2 for dashed, 
+\item{lty}{Node border outline (default = 1).
+Available options include: 0 for blank, 1 for solid line, 2 for dashed,
 3 for dotted, 4 for dotdash, 5 for longdash, and 6 for twodash.}
 
 \item{lwd}{Node border thickness (default = 1).}
@@ -62,7 +62,7 @@ Available options include: 0 for blank, 1 for solid line, 2 for dashed,
 \item{...}{Currently ignored.}
 }
 \description{
-Wrapper for function renderGraph of the R package 
+Wrapper for function renderGraph of the R package
 Rgraphwiz.
 }
 \examples{

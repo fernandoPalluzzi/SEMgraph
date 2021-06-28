@@ -7,10 +7,10 @@
 graph2lavaan(graph, nodes = V(graph)$name, ...)
 }
 \arguments{
-\item{graph}{An igraph object.}
+\item{graph}{A graph as an igraph object.}
 
-\item{nodes}{Subset of nodes to be included in the model.
-By default, all the input graph nodes will be included in the output model.}
+\item{nodes}{Subset of nodes to be included in the model. By default,
+all the input graph nodes will be included in the output model.}
 
 \item{...}{Currently ignored.}
 }
@@ -18,10 +18,11 @@ By default, all the input graph nodes will be included in the output model.}
 A model in lavaan syntax.
 }
 \description{
-Convert an igraph object to a model, specified using 
-lavaan syntax.
+Convert an igraph object to a model (lavaan syntax).
 }
 \examples{
+
+# Graph (igraph object) to structural model in lavaan syntax
 model <- graph2lavaan(sachs$graph)
 cat(model, "\n")
 

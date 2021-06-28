@@ -11,15 +11,15 @@ mergeNodes(graph, membership, HM, ...)
 
 \item{membership}{Cluster membership. A vector of cluster membership
 identifiers, where vector names correspond to graph node names.
-Topological graph clustering can be done using 
+Topological graph clustering can be done using
 \code{\link[SEMgraph]{clusterGraph}}.}
 
-\item{HM}{Hidden model label. If HM = "LV", a latent variable (LV) 
+\item{HM}{Hidden model label. If HM = "LV", a latent variable (LV)
 will be defined as common unknown cause acting on cluster nodes.
-If HM = "CV", cluster nodes will be considered as regressors of a 
-latent composite variable (CV). Finally, if HM = "UV", an unmeasured 
-variable (UV) is defined, where source nodes of the module (i.e., 
-in-degree = 0) act as common regressors influencing the other nodes 
+If HM = "CV", cluster nodes will be considered as regressors of a
+latent composite variable (CV). Finally, if HM = "UV", an unmeasured
+variable (UV) is defined, where source nodes of the module (i.e.,
+in-degree = 0) act as common regressors influencing the other nodes
 via an unmeasured variable.}
 
 \item{...}{Currently ignored.}
@@ -32,13 +32,20 @@ Merge groups of graph nodes using a custom membership
 attribute (e.g., cluster membership).
 }
 \examples{
+
+\dontrun{
+
+# Install data examples, reference networks, and pathways
+#devtools::install_github("fernandoPalluzzi/SEMdata")
 library(SEMdata)
+
 G <- kegg.pathways$"Amyotrophic lateral sclerosis (ALS)"
 # Largest connected component
 G <- properties(G)[[1]]
 membership <- clusterGraph(graph = G, type = "wtc")
 M <- mergeNodes(G, membership, HM = "LV")
-gplot(M)
+
+}
 
 }
 \seealso{

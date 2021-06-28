@@ -25,26 +25,26 @@ siblings(g, nodes)
 a sorted vector of nodes.
 }
 \description{
-Get ancestry for a collection of nodes in a graph. 
+Get ancestry for a collection of nodes in a graph.
 These functions are wrappers for the original \code{SEMID} R package.
 }
 \examples{
 
 # Get all ancestors
-an <- V(sachs$graph)[ancestors(sachs$graph, "Erk")]
+an <- V(sachs$graph)[ancestors(sachs$graph, "Erk")]; an
 
 # Get parents
-pa <- V(sachs$graph)[parents(sachs$graph, "PKC")]
+pa <- V(sachs$graph)[parents(sachs$graph, "PKC")]; pa
 
 # Get descendants
-de <- V(sachs$graph)[descendants(sachs$graph, "PKA")]
+de <- V(sachs$graph)[descendants(sachs$graph, "PKA")]; de
 
 # Get siblings
-sib <- V(sachs$graph)[siblings(sachs$graph, "PIP3")]
+sib <- V(sachs$graph)[siblings(sachs$graph, "PIP3")]; sib
 
 }
 \references{
-Rina Foygel Barber, Mathias Drton and Luca Weihs (2019). SEMID: 
-Identifiability of Linear Structural Equation Models. R package 
-version 0.3.2. https://CRAN.R-project.org/package=SEMID
+Rina Foygel Barber, Mathias Drton and Luca Weihs (2019). SEMID:
+Identifiability of Linear Structural Equation Models. R package
+version 0.3.2. <https://CRAN.R-project.org/package=SEMID>
 }

@@ -12,12 +12,12 @@
 \item{...}{Currently ignored.}
 }
 \description{
-Generate a summary for a RICF model and show it to 
+Generate a summary for a RICF model and show it to
 standard output.
 }
 \examples{
-sem1 <- SEMrun(sachs$graph, log(sachs$pkc), sachs$group, algo = "ricf")
-summary(sem1$fit)
+sem0 <- SEMrun(sachs$graph, log(sachs$pkc), algo = "ricf")
+summary(sem0$fit)
 
 }
 \seealso{
