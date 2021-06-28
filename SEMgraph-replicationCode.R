@@ -297,6 +297,15 @@ G <- extractClusters(model$graph, model$data, alsData$group,
                      membership = U$membership)
 
 
+## Figure 4. Edge betweenness clusters (EBC) mapped over the improved model. --##
+
+# Graph plot
+pdf("E1_ALS_clusters.pdf", width = 16, height = 8)
+gplot(G$graph, fontsize = 30)
+dev.off()
+
+##-----------------------------------------------------------------------------##
+
 
 ### Section 6. Network weighting and filtering. ###
 
@@ -386,9 +395,9 @@ V(R)$label <- mapIds(org.Hs.eg.db, V(R)$name, 'SYMBOL', 'ENTREZID')
 pert <- SEMrun(graph = R, data = pc1.npn, group = ftdDNAme$group)
 
 
-## Figure 4. FTD perturbed backbone. ---------------------------------##
+## Figure 5. FTD perturbed backbone. ---------------------------------##
 
-pdf("Figure4.pdf", width = 16, height = 12)
+pdf("Figure5.pdf", width = 16, height = 12)
 gplot(pert$graph, fontsize = 30)
 dev.off()
 
