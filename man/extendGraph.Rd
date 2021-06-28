@@ -30,24 +30,30 @@ A list of 2 objects:
 }
 }
 \description{
-Extend an input directed graph, importing new interactions 
-from a second graph. Added interactions will be chosen among those 
+Extend an input directed graph, importing new interactions
+from a second graph. Added interactions will be chosen among those
 available in a given reference interactome.
 }
 \details{
-This function takes two input graphs: the first is the input 
-causal model (i.e., a directed graph), and the second can be either 
-a directed or undirected graph, providing a set of connections to be 
-checked against the reference network and imported to the first graph. 
-Typically, the second graph is the output of either 
-\code{\link[SEMgraph]{SEMdag}} or \code{\link[SEMgraph]{SEMbap}}. 
-In the former we use the new inferred causal structure stored in the 
-\code{dag.red} object. In the latter, we use the new inferred covariance 
-structure stored in the \code{guu} object. In both cases, new hidden 
+This function takes two input graphs: the first is the input
+causal model (i.e., a directed graph), and the second can be either
+a directed or undirected graph, providing a set of connections to be
+checked against the reference network and imported to the first graph.
+Typically, the second graph is the output of either
+\code{\link[SEMgraph]{SEMdag}} or \code{\link[SEMgraph]{SEMbap}}.
+In the former we use the new inferred causal structure stored in the
+\code{dag.red} object. In the latter, we use the new inferred covariance
+structure stored in the \code{guu} object. In both cases, new hidden
 directed paths and new nodes (i.e., new mediators) can be revealed.
 }
 \examples{
+
+\dontrun{
+
+# Install data examples, reference networks, and pathways
+#devtools::install_github("fernandoPalluzzi/SEMdata")
 library(SEMdata)
+
 G <- kegg.pathways$"Steroid biosynthesis"
 G <- properties(G)[[1]]
 
@@ -66,7 +72,7 @@ gplot(ext$Ug)
 bap <- SEMbap(graph = G, data = als.npn, gnet = kegg, d = 1, alpha = 0.05)
 ext <- extendGraph(list(bap$bap, bap$guu), data = als.npn, gnet = kegg)
 gplot(ext$Ug)
- 
+
 # Create a graph from correlation matrix, using KEGG as reference
 
 v <- which(colnames(als.npn) \%in\% V(G)$name)
@@ -82,10 +88,12 @@ plot(G1, layout = layout.circle)
 plot(ext$Ug, layout = layout.circle)
 
 }
+
+}
 \references{
-Grassi M, Palluzzi F (2021). SEMgraph: An R Package for Causal Network 
-Analysis of High-Throughput Data with Structural Equation Models. 
-xxxxx x(x): xxxxx. https://doi.org/xxxxx
+Palluzzi F, Grassi M (2021). SEMgraph: An R Package for Causal Network
+Analysis of High-Throughput Data with Structural Equation Models.
+<arXiv:2103.08332>
 }
 \author{
 Mario Grassi \email{mario.grassi@unipv.it}

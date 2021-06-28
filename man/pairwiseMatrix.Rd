@@ -11,17 +11,17 @@ pairwiseMatrix(x, y = NULL, size = nrow(x), r = 4, c = 4, ...)
 
 \item{y}{A matrix or data.frame (n x q) of continuous data.}
 
-\item{size}{number of rows to be sampled (default s = nrow(z)).}
+\item{size}{number of rows to be sampled (default \code{s = nrow(z)}).}
 
-\item{r}{number of rows of the plot layout (default r = 4).}
+\item{r}{number of rows of the plot layout (default \code{r = 4}).}
 
-\item{c}{number of columns of the plot layout (default r = 4).}
+\item{c}{number of columns of the plot layout (default \code{r = 4}).}
 
 \item{...}{Currently ignored.}
 }
 \description{
-Display a pairwise scatter plot of two datasets for a 
-random selection of variables. If the second dataset is not given, 
+Display a pairwise scatter plot of two datasets for a
+random selection of variables. If the second dataset is not given,
 the function displays a histogram with normal curve superposition.
 }
 \examples{

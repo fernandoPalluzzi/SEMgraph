@@ -16,8 +16,8 @@ columns to graph nodes (variables).}
 of subjects. Each vector element must be 1 for cases and 0 for control
 subjects.}
 
-\item{method}{Multiple testing correction method. One of the values 
-available in \code{\link[stats]{p.adjust}}. By default, method is set 
+\item{method}{Multiple testing correction method. One of the values
+available in \code{\link[stats]{p.adjust}}. By default, method is set
 to "BH" (i.e., Benjamini-Hochberg correction).}
 
 \item{alpha}{Gene set test significance level. Alpha is set to 0.05
@@ -28,69 +28,67 @@ by default.}
 \item{...}{Currently ignored.}
 }
 \value{
-A data.frame reporting the following information for each 
+A list of 2 objects:
+\enumerate{
+\item "gsa", A data.frame reporting the following information for each
 pathway in the input list:
 \itemize{
 \item "N.nodes", pathway size (number of nodes);
-\item "N.DRNs", number of differential expressed genes within the pathway, 
+\item "N.DRNs", number of differential regulated genes (DRNs) within the pathway,
 after multiple test correction with Benjamini-Hochberg method;
-\item "pD", significance of the sum of group effects, adjusted by the 
+\item "pD", significance of the sum of group effects, adjusted by the
 residual variance;
-\item "pA", significance of the sum of tagret nodes perturbation 
+\item "pA", significance of the sum of tagret nodes perturbation
 (i.e., group effect) accumulation from source nodes;
-\item "pE", significance of the sum of source nodes perturbation 
+\item "pE", significance of the sum of source nodes perturbation
 (i.e., group effect) emission towards target nodes;
 \item "pvalue", Fisher's combined P-value of pD, pA, and pE.
 }
+\item "DRN", a list with DRNs names per pathways.
+}
 }
 \description{
-Gene Set Analysis (GSA) via self-contained test for group 
-effect on signaling (directed) pathways as SEM, evaluating overall pathway 
-perturbation, perturbation emission from source nodes, and perturbation 
-accumulation on target nodes. Approximate randomization test P-values 
-of specific node and aggregated group effects will be computed. 
-For directed graphs, they include: the sum of group effects adjusted 
-by residual variances (D), the sum of the tagret nodes perturbation 
-(i.e., group effect) accumulation from source nodes (A), and the sum 
-of the source nodes perturbation emission towards target nodes (E). 
-For undirected graphs, the sum of group effects, adjusted 
+Gene Set Analysis (GSA) via self-contained test for group
+effect on signaling (directed) pathways as SEM, evaluating overall pathway
+perturbation, perturbation emission from source nodes, and perturbation
+accumulation on target nodes. Approximate randomization test P-values
+of specific node and aggregated group effects will be computed.
+For directed graphs, they include: the sum of group effects adjusted
+by residual variances (D), the sum of the tagret nodes perturbation
+(i.e., group effect) accumulation from source nodes (A), and the sum
+of the source nodes perturbation emission towards target nodes (E).
+For undirected graphs, the sum of group effects, adjusted
 by residual variances (D), will be estimated.
 }
 \examples{
 
+\dontrun{
+
+# Install data examples, reference networks, and pathways
+#devtools::install_github("fernandoPalluzzi/SEMdata")
 library(SEMdata)
 library(huge)
 
 als.npn <- huge.npn(alsData$exprs)
 
-pathway.names <- c("Amyotrophic lateral sclerosis (ALS)",
-                   "Notch signaling pathway")
-j <- which(names(kegg.pathways) \%in\% pathway.names)
-pathways <- kegg.pathways[j]
-GSA <- SEMgsa(pathways, als.npn, alsData$group, method = "BH", n_rep = 5000)
-head(GSA$gsa)
+#selection of FTD pathways from KEGG site:
+# https://www.genome.jp/dbget-bin/www_bget?ds:H00078
 
-\dontrun{
+paths.name<- c(
+ "MAPK signaling pathway",
+ "Protein processing in endoplasmic reticulum",
+ "Endocytosis",
+ "Wnt signaling pathway",
+ "Notch signaling pathway",
+ "Neurotrophin signaling pathway",
+ "Amyotrophic lateral sclerosis (ALS)")
 
-# GSA over the entire KEGG database
-
-# Node count for each pathway
-ngs <- unlist(lapply(1:length(kegg.pathways),
-              function(x) vcount(kegg.pathways[[x]])))
-
-# Remove pathways with less than 5 nodes and more than 500 nodes
-Blacklist <- which(ngs < 5 | ngs > 500)
-KEGG <- kegg.pathways[-Blacklist]
-
-# DAG conversion
-dag <- lapply(KEGG, function(x) graph2dag(x, data = als.npn))
-
-# Gene Set Analysis
-res <- SEMgsa(KEGG, als.npn, alsData$group, method = "BH", n_rep = 5000)
-head(res$gsa)
-dim(res$gsa)
-head(res$DRN)
-length(res$DRN)
+I <- which(names(kegg.pathways) \%in\% paths.name)
+GSA <- SEMgsa(kegg.pathways[I], als.npn, alsData$group,
+              method = "bonferroni", alpha = 0.05,
+              n_rep = 1000)
+GSA$gsa
+GSA$DRN
 
 }
 

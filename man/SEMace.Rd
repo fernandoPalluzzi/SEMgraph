@@ -22,17 +22,18 @@ columns to graph nodes (variables).}
 
 \item{group}{A binary vector. This vector must be as long as the
 number of subjects. Each vector element must be 1 for cases and 0
-for control subjects. If NULL (default), group influence will not be
-considered.}
+for control subjects. If \code{group = NULL} (default), group influence
+will not be considered.}
 
-\item{method}{Multiple testing correction method. One of the values 
-available in \code{\link[stats]{p.adjust}}. By default, method is set 
-to "none" (i.e., no multiple test correction).}
+\item{method}{Multiple testing correction method. One of the values
+available in \code{\link[stats]{p.adjust}}.
+By default, \code{method = "none"} (i.e., no multiple test correction).}
 
-\item{alpha}{Significance level for ACE selection (by default, alpha = 0.05).}
+\item{alpha}{Significance level for ACE selection (by default,
+\code{alpha = 0.05}).}
 
-\item{boot}{The number of bootstrap samplings enabling bootstrap 
-computation of ACE standard errors. If NULL (default), the bootstrap 
+\item{boot}{The number of bootstrap samplings enabling bootstrap
+computation of ACE standard errors. If \code{NULL} (default), bootstrap
 is disabled.}
 
 \item{...}{Currently ignored.}
@@ -41,14 +42,14 @@ is disabled.}
 A data.frame of ACE estimates between network sources and sinks.
 }
 \description{
-Compute total effects as ACEs of source variables X 
-(i.e., incoming connectivity = 0) on sink variables Y (i.e., outgoing 
-connectivity = 0), in a directed graph. The ACE will be estimated as 
-the path coefficient of X (i.e., theta) in the linear equation 
-Y ~ X + Z. Z is defined as the adjustment (or conditioning) set of 
-Y over X, applying an "optimal" valid set (O-set), with the smallest 
-asymptotic variance. Standard errors (SE), for each ACE, are computed 
-following the \code{lavaan} standard procedure or a bootstrap-based 
+Compute total effects as ACEs of source variables X
+(i.e., incoming connectivity = 0) on sink variables Y (i.e., outgoing
+connectivity = 0), in a directed graph. The ACE will be estimated as
+the path coefficient of X (i.e., theta) in the linear equation
+Y ~ X + Z. Z is defined as the adjustment (or conditioning) set of
+Y over X, applying an "optimal" valid set (O-set), with the smallest
+asymptotic variance. Standard errors (SE), for each ACE, are computed
+following the \code{lavaan} standard procedure or a bootstrap-based
 procedure (see \code{\link[boot]{boot}} for details).
 }
 \examples{
@@ -65,9 +66,9 @@ print(ace2)
 
 }
 \references{
-Witte J, Henckel L, Maathuis MH, Didelez V (2020). On efficient 
+Witte J, Henckel L, Maathuis MH, Didelez V (2020). On efficient
 adjustment in causal graphs. arXiv:2002.06825 [math.ST].
-URL: https://arxiv.org/abs/2002.06825
+<https://arxiv.org/abs/2002.06825>
 }
 \author{
 Mario Grassi \email{mario.grassi@unipv.it}

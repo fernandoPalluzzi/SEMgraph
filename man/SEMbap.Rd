@@ -9,7 +9,7 @@ SEMbap(
   data,
   method = "BH",
   alpha = 0.05,
-  limit = NULL,
+  limit = 30000,
   verbose = FALSE,
   ...
 )
@@ -20,22 +20,22 @@ SEMbap(
 \item{data}{A matrix whith rows corresponding to subjects, and
 columns to graph nodes (variables).}
 
-\item{method}{Multiple testing correction method. One of the values 
-available in \code{\link[stats]{p.adjust}}. By default, method is set 
-to "BH" (i.e., Benjamini-Hochberg multiple test correction).}
+\item{method}{Multiple testing correction method. One of the values
+available in \code{\link[stats]{p.adjust}}. By default, \code{method}
+is set to "BH" (i.e., Benjamini-Hochberg multiple test correction).}
 
-\item{alpha}{Significance level for false discovery rate (FDR) used 
-for either local d-separation tests (below \code{limit}) or conditional 
-independence (CI) test (above \code{limit}). This argument is used to 
-control data de-correlation. A higher \code{alpha} level includes more 
-hidden covariances, thus considering more sources of confounding. 
-If \code{alpha} = 0, data de-correlation is disabled.
-By default, \code{alpha} = 0.05.}
+\item{alpha}{Significance level for false discovery rate (FDR) used
+for either local d-separation tests (below \code{limit}) or conditional
+independence (CI) test (above \code{limit}). This argument is used to
+control data de-correlation. A higher \code{alpha} level includes more
+hidden covariances, thus considering more sources of confounding.
+If \code{alpha = 0}, data de-correlation is disabled.
+By default, \code{alpha = 0.05}.}
 
-\item{limit}{An integer value corresponding to the number of missing 
+\item{limit}{An integer value corresponding to the number of missing
 edges of the extracted acyclic graph. Beyond this limit, multicore
-computation is enabled to reduce the computational burden. 
-By default, \code{limit = NULL} (i.e., multicore disabled).}
+computation is enabled to reduce the computational burden.
+By default, \code{limit = 30000}.}
 
 \item{verbose}{A logical value. If FALSE (default), the processed graphs
 will not be plotted to screen.}
@@ -54,23 +54,23 @@ X <-> Y edges are substituted by directed edges X <- LV -> Y),
 }
 }
 \description{
-Search for new bow-free covariances and adjust the data 
+Search for new bow-free covariances and adjust the data
 matrix by removing latent sources of confounding encoded in them.
 }
 \details{
-SEMbap algorithm makes an exhaustive search of all possible 
-missing edges of the mixed acyclic graph (BAP or DAG) via d-separation 
-P-value screening. 
-The d-separation test evaluates if two variables (X, Y) in an acyclic 
-graph are conditionally independent for a given conditioning set Z, 
-The conditioning set Z is represented in a DAG by the union of the 
-parent sets of X and Y (Shipley, 2000) or the minimal set consisting 
-in the smallest conditioning set Z that makes these two variables 
-independent. A new bow-free covariance is added if there is a 
-significant (X, Y) association, after multiple testing correction. 
-The selected covariance between pairs of nodes (X, Y) is 
-interpreted as the effect of a latent variable (LV) acting on both X 
-and Y; i.e., the LV is an unobserved confounder. These LVs are then 
+SEMbap algorithm makes an exhaustive search of all possible
+missing edges of the mixed acyclic graph (BAP or DAG) via d-separation
+P-value screening.
+The d-separation test evaluates if two variables (X, Y) in an acyclic
+graph are conditionally independent for a given conditioning set Z,
+The conditioning set Z is represented in a DAG by the union of the
+parent sets of X and Y (Shipley, 2000) or the minimal set consisting
+in the smallest conditioning set Z that makes these two variables
+independent. A new bow-free covariance is added if there is a
+significant (X, Y) association, after multiple testing correction.
+The selected covariance between pairs of nodes (X, Y) is
+interpreted as the effect of a latent variable (LV) acting on both X
+and Y; i.e., the LV is an unobserved confounder. These LVs are then
 removed by conditioning them out from the observed data.
 }
 \examples{
@@ -86,16 +86,16 @@ sem1 <- SEMrun(graph = sachs$graph, data = BAP$data, group = sachs$group)
 
 }
 \references{
-Shipley B (2000). A new inferential test for path models based on DAGs. 
-Struct. Equ. Modeling, 7(2): 206-218. 
-https://doi.org/10.1207/S15328007SEM0702_4
+Shipley B (2000). A new inferential test for path models based on DAGs.
+Struct. Equ. Modeling, 7(2): 206-218.
+<https://doi.org/10.1207/S15328007SEM0702_4>
 
-Brito C and Pearl J (2002). A New Identification Condition for 
-Recursive Models With Correlated Errors. 
+Brito C and Pearl J (2002). A New Identification Condition for
+Recursive Models With Correlated Errors.
 Structural Equation Modeling, 9(4): 459-474.
 
-Whittaker J (2009). Graphical Models in Applied Multivariate Statistics. 
-ISBN:978-0-470-74366-9; Wiley Publishing.
+Whittaker J (2009). Graphical Models in Applied Multivariate Statistics.
+Wiley Publishing; <ISBN:978-0-470-74366-9>
 }
 \author{
 Mario Grassi \email{mario.grassi@unipv.it}

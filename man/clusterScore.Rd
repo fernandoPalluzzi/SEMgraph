@@ -26,21 +26,22 @@ of subjects. Each vector element must be 1 for cases and 0 for control
 subjects.}
 
 \item{HM}{Hidden model type. For each defined hidden module:
-(i) if HM = "LV", a latent variable (LV) will be defined as common
-unknown cause acting on cluster nodes; (ii) if HM = "CV", cluster nodes
-will be considered as regressors of a latent composite variable (CV);
-(iii) if HM = "UV", an unmeasured variable (UV) model will be generated
-for each module, where source nodes (i.e., in-degree = 0) act as common 
-regressors influencing the other nodes via an unmeasured variable.}
+(i) if \code{HM = "LV"}, a latent variable (LV) will be defined as
+common unknown cause acting on cluster nodes; (ii) if \code{HM = "CV"},
+cluster nodes will be considered as regressors of a latent composite
+variable (CV); (iii) if \code{HM = "UV"}, an unmeasured variable (UV)
+model will be generated for each module, where source nodes (i.e.,
+in-degree = 0) act as common regressors influencing the other nodes
+via an unmeasured variable.}
 
-\item{type}{Graph clustering method. If type = "tahc", network 
-modules are generated using the tree agglomerative hierarchical 
+\item{type}{Graph clustering method. If \code{type = "tahc"}, network
+modules are generated using the tree agglomerative hierarchical
 clustering method (Yu et al., 2015).
-Other non-tree clustering methods from igraph package include: "wtc" 
-(default value; walktrap community structure with short random walks), 
-"ebc" (edge betweeness clustering), "fgc" (fast greedy method), "lbc" 
-(label propagation method), "lec" (leading eigenvector method), "loc" 
-(multi-level optimization), "opc" (optimal communiy structure), "sgc" 
+Other non-tree clustering methods from igraph package include: "wtc"
+(default value; walktrap community structure with short random walks),
+"ebc" (edge betweeness clustering), "fgc" (fast greedy method), "lbc"
+(label propagation method), "lec" (leading eigenvector method), "loc"
+(multi-level optimization), "opc" (optimal communiy structure), "sgc"
 (spinglass statistical mechanics).
 By default, the "wtc" method is used.}
 
@@ -48,10 +49,10 @@ By default, the "wtc" method is used.}
 minimum number of 5 nodes is required.
 By default, HM is set to "LV" (i.e., the latent variable model).}
 
-\item{verbose}{A logical value. If TRUE, intermediate graphs will be 
-displayed during the execution. In addition, a condensed graph with 
-clusters as nodes will be fitted and showed to screen (see also 
-\code{\link[SEMgraph]{mergeNodes}}). By default, verbode = FALSE.}
+\item{verbose}{A logical value. If TRUE, intermediate graphs will be
+displayed during the execution. In addition, a condensed graph with
+clusters as nodes will be fitted and showed to screen (see also
+\code{\link[SEMgraph]{mergeNodes}}). By default, \code{verbode = FALSE}.}
 
 \item{...}{Currently ignored.}
 }
@@ -71,6 +72,10 @@ respectively, and fit them in a SEM with exogenous group effect.
 }
 \examples{
 
+\dontrun{
+
+# Install data examples, reference networks, and pathways
+#devtools::install_github("fernandoPalluzzi/SEMdata")
 library(SEMdata)
 library(huge)
 
@@ -86,14 +91,16 @@ head(C$dataHM)
 table(C$membership)
 
 }
+
+}
 \references{
-Grassi M, Palluzzi F (2021). SEMgraph: An R Package for Causal Network 
-Analysis of High-Throughput Data with Structural Equation Models. 
-xxxxx x(x): xxxxx. https://doi.org/xxxxx
+Palluzzi F, Grassi M (2021). SEMgraph: An R Package for Causal Network
+Analysis of High-Throughput Data with Structural Equation Models.
+<arXiv:2103.08332>
 }
 \seealso{
 See \code{\link[SEMgraph]{clusterGraph}} and \code{\link[SEMgraph]{cplot}}
-for graph clustering, and \code{\link[cate]{factor.analysis}} for 
+for graph clustering, and \code{\link[cate]{factor.analysis}} for
 factor analysis.
 }
 \author{
