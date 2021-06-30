@@ -26,19 +26,17 @@ The *SEMgraph-replicationCode.R* file offers a quick-start guide to explore gene
 
 ## Installation
 
-The latest stable version can be installed from CRAN:
-
-``` r
-install.packages("SEMgraph")
-```
-The development version of **SEMgraph** can be installed in **R** with the following line:
-
+%The latest stable version of **SEMgraph** can be installed in **R** from CRAN:
+%``` r
+%install.packages("SEMgraph")
+%```
+The development version of **SEMgraph** can be installed in **R** through:
 ```{r, echo = FALSE}
 devtools::install_github("fernandoPalluzzi/SEMgraph")
 ```
+
 Do not forget to install the [**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata) package too! It contains useful high-throughput 
 sequencing data, reference networks, and pathways for **SEMgraph** training:
-
 ```{r, echo = FALSE}
 devtools::install_github("fernandoPalluzzi/SEMdata")
 ```
