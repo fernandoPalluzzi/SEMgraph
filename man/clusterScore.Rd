@@ -72,13 +72,7 @@ respectively, and fit them in a SEM with exogenous group effect.
 }
 \examples{
 
-\dontrun{
-
-# Install data examples, reference networks, and pathways
-#devtools::install_github("fernandoPalluzzi/SEMdata")
-library(SEMdata)
 library(huge)
-
 als.npn <- huge.npn(alsData$exprs)
 
 C <- clusterScore(graph = alsData$graph, data = als.npn,
@@ -89,8 +83,6 @@ C <- clusterScore(graph = alsData$graph, data = als.npn,
 summary(C$fit)
 head(C$dataHM)
 table(C$membership)
-
-}
 
 }
 \references{

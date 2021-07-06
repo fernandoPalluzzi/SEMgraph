@@ -61,6 +61,9 @@ Available options include: 0 for blank, 1 for solid line, 2 for dashed,
 
 \item{...}{Currently ignored.}
 }
+\value{
+gplot returns invisibly the graph object produced by Rgraphviz
+}
 \description{
 Wrapper for function renderGraph of the R package
 Rgraphwiz.

@@ -91,6 +91,9 @@ entire interactome scales." />
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -242,6 +245,7 @@ package version 0.1.4.
 <span class='va'>R3</span> <span class='op'>&lt;-</span> <span class='fu'>activeModule</span><span class='op'>(</span>graph <span class='op'>=</span> <span class='va'>G</span>, type <span class='op'>=</span> <span class='st'>"kou"</span>, seed <span class='op'>=</span> <span class='st'>"qi"</span>, eweight <span class='op'>=</span> <span class='st'>"pvalue"</span><span class='op'>)</span>
 
 <span class='co'># Graphs</span>
+<span class='va'>old.par</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/graphics/par.html'>par</a></span><span class='op'>(</span>no.readonly <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/graphics/par.html'>par</a></span><span class='op'>(</span>mfrow<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>2</span>,<span class='fl'>2</span><span class='op'>)</span>, mar<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>2</span>, <span class='fl'>4</span><span class='op'>)</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>G</span>, layout <span class='op'>=</span> <span class='va'>layout.circle</span>, main <span class='op'>=</span> <span class='st'>"input graph"</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/graphics/box.html'>box</a></span><span class='op'>(</span>col <span class='op'>=</span> <span class='st'>"gray"</span><span class='op'>)</span>
@@ -251,63 +255,7 @@ package version 0.1.4.
 <span class='fu'><a href='https://rdrr.io/r/graphics/box.html'>box</a></span><span class='op'>(</span>col <span class='op'>=</span> <span class='st'>"gray"</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>R3</span>, layout <span class='op'>=</span> <span class='va'>layout.circle</span>, main <span class='op'>=</span> <span class='st'>"closeness (q = 0.5)"</span><span class='op'>)</span>
 </div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/box.html'>box</a></span><span class='op'>(</span>col <span class='op'>=</span> <span class='st'>"gray"</span><span class='op'>)</span>
-</div><div class='img'><img src='activeModule-1.png' alt='' width='700' height='433' /></div><div class='input'>
-<span class='co'># \dontrun{</span>
-
-<span class='co'># Install data examples, reference networks, and pathways</span>
-<span class='co'># devtools::install_github("fernandoPalluzzi/SEMdata")</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'>SEMdata</span><span class='op'>)</span>
-
-<span class='co'># Weight and reduce the whole KEGG interactome, using RWR</span>
-
-<span class='va'>kegg1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='weightGraph.html'>weightGraph</a></span><span class='op'>(</span><span class='va'>kegg</span>, <span class='va'>alsData</span><span class='op'>$</span><span class='va'>exprs</span>, <span class='va'>alsData</span><span class='op'>$</span><span class='va'>group</span>,
-                     method <span class='op'>=</span> <span class='st'>"r2z"</span>,
-                     seed <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>5E-8</span>, <span class='fl'>0.5</span>, <span class='fl'>0.5</span><span class='op'>)</span><span class='op'>)</span>
-
-<span class='co'># Set quantile value, based on the top k nodes</span>
-<span class='va'>k</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='fu'>V</span><span class='op'>(</span><span class='va'>kegg1</span><span class='op'>)</span><span class='op'>$</span><span class='va'>pvlm</span><span class='op'>)</span>
-<span class='va'>q</span> <span class='op'>&lt;-</span> <span class='fl'>1</span> <span class='op'>-</span> <span class='va'>k</span><span class='op'>/</span><span class='fu'>vcount</span><span class='op'>(</span><span class='va'>kegg1</span><span class='op'>)</span>
-
-<span class='va'>ig1</span> <span class='op'>&lt;-</span> <span class='fu'>activeModule</span><span class='op'>(</span>graph <span class='op'>=</span> <span class='va'>kegg1</span>, type <span class='op'>=</span> <span class='st'>"rwr"</span>, seed <span class='op'>=</span> <span class='st'>"pvlm"</span>,
-                    eweight <span class='op'>=</span> <span class='st'>"pvalue"</span>,
-                    q <span class='op'>=</span> <span class='va'>q</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>normalizing column vectors!</span></div><div class='output co'>#&gt; <span class='message'>normalizing column vectors!</span></div><div class='input'><span class='va'>ig1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='graph2dag.html'>graph2dag</a></span><span class='op'>(</span><span class='va'>ig1</span>, <span class='va'>alsData</span><span class='op'>$</span><span class='va'>exprs</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; DAG conversion : TRUE </div><div class='input'><span class='va'>ig1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='properties.html'>properties</a></span><span class='op'>(</span><span class='va'>ig1</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span>
-</div><div class='output co'>#&gt; Frequency distribution of graph components
-#&gt; 
-#&gt;   n.nodes n.graphs
-#&gt; 1       1       22
-#&gt; 2       2        5
-#&gt; 3      84        1
-#&gt; 
-#&gt; Percent of vertices in the giant component: 72.4 %
-#&gt; 
-#&gt;   is.simple      is.dag is.directed is.weighted 
-#&gt;        TRUE        TRUE        TRUE        TRUE 
-#&gt; 
-#&gt; which.mutual.FALSE 
-#&gt;                157 </div><div class='input'>
-<span class='co'># Fitting</span>
-<span class='va'>sem1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='SEMrun.html'>SEMrun</a></span><span class='op'>(</span><span class='va'>ig1</span>, <span class='va'>alsData</span><span class='op'>$</span><span class='va'>exprs</span>, <span class='va'>alsData</span><span class='op'>$</span><span class='va'>group</span>, algo <span class='op'>=</span> <span class='st'>"ricf"</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; RICF solver ended normally after 2 iterations 
-#&gt; 
-#&gt; deviance/df: 6.424352  srmr: 0.303184 
-#&gt; 
-#&gt;       Brown's combined P-value of node activation: 0 
-#&gt; 
-#&gt; Brown's combined P-value of node inhibition: 0 
-#&gt; </div><div class='input'><span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>sem1</span><span class='op'>$</span><span class='va'>gest</span><span class='op'>)</span>
-</div><div class='output co'>#&gt;       Test   Stat tail       pvalue
-#&gt; D        t 0.7747   &gt;&lt; 4.424512e-01
-#&gt; A        t 0.4527   &gt;&lt; 6.339077e-01
-#&gt; E        t 1.0148   &gt;&lt; 2.980953e-01
-#&gt; 10152    t 6.0412   &gt;&lt; 1.145262e-09
-#&gt; 51529    t 1.9714   &gt;&lt; 5.280305e-02
-#&gt; 51433    t 0.7318   &gt;&lt; 4.830873e-01</div><div class='input'>
-<span class='fu'><a href='https://rdrr.io/r/graphics/par.html'>par</a></span><span class='op'>(</span>mfrow<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>,<span class='fl'>1</span><span class='op'>)</span>, mar<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>2</span>, <span class='fl'>4</span><span class='op'>)</span><span class='op'>)</span>
-<span class='fu'><a href='gplot.html'>gplot</a></span><span class='op'>(</span><span class='va'>sem1</span><span class='op'>$</span><span class='va'>graph</span>, main<span class='op'>=</span> <span class='st'>"active module via RWR"</span><span class='op'>)</span>
-</div><div class='img'><img src='activeModule-2.png' alt='' width='700' height='433' /></div><div class='input'>
-<span class='co'># }</span>
+</div><div class='img'><img src='activeModule-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/par.html'>par</a></span><span class='op'>(</span><span class='va'>old.par</span><span class='op'>)</span>
 
 </div></pre>
   </div>

@@ -188,16 +188,15 @@ SEMgsa <- function(g = list(), data, group, method = "BH", alpha = 0.05,
 #'
 #' @examples
 #'
-#' \dontrun{
+#' # Extract from graphite the "Steroid biosynthesis" pathway:
 #'
-#' # Install data examples, reference networks, and pathways
-#' #devtools::install_github("fernandoPalluzzi/SEMdata")
-#' library(SEMdata)
+#' library(graphite)
+#' humanKegg <- pathways("hsapiens", "kegg")
+#' p <- humanKegg[["Steroid biosynthesis"]]
+#' g <- pathwayGraph(p)
+#' graph::nodes(g) <- gsub("ENTREZID:","",graph::nodes(g))
 #'
-#' G <- kegg.pathways$"Amyotrophic lateral sclerosis (ALS)"
-#' properties(G)
-#'
-#' }
+#' properties(graph_from_graphnel(g))
 #'
 properties <- function(graph, data = NULL, ...)
 {
@@ -298,6 +297,8 @@ mergeGraph <- function(g = list(), gref = NULL, gnet = NULL, verbose = FALSE,
 #' @importFrom Rgraphviz layoutGraph renderGraph
 #' @export
 #'
+#' @return gplot returns invisibly the graph object produced by Rgraphviz
+#'
 #' @author Mario Grassi \email{mario.grassi@unipv.it}
 #'
 #' @examples
@@ -373,6 +374,8 @@ gplot <- function(graph, l = "dot", main = "", cex.main = 1, font.main = 1,
 	graph::graphRenderInfo(g) <- list(main = main, cex.main = cex.main,
 	                                  font.main = font.main)
 	Rgraphviz::renderGraph(g)
+	
+	return(invisible(g))
 }
 
 #' @title Correlation matrix to graph
@@ -436,12 +439,14 @@ gplot <- function(graph, l = "dot", main = "", cex.main = 1, font.main = 1,
 #'                  method = "BH")
 #'
 #' # Graphs plots
+#' old.par <- par(no.readonly = TRUE)
 #' par(mfrow=c(2,2), mar= rep(2, 4))
 #' plot(C1, layout=layout.circle, main= "marg"); box(col="gray")
 #' plot(C2, layout=layout.circle, main= "cond"); box(col="gray")
 #' plot(C3, layout=layout.circle, main= "mst"); box(col="gray")
 #' plot(C4, layout=layout.circle, main= "tmfg"); box(col="gray")
-#'
+#' par(old.par)
+#' 
 corr2graph <- function(R, n, type = "marg", method = "none",
                        alpha = 0.05, ...)
 {
@@ -697,9 +702,11 @@ graph2dagitty <- function (graph, canonical = FALSE, verbose = FALSE, ...)
 #' @examples
 #'
 #' dag <- graph2dag(graph = sachs$graph, data = log(sachs$pkc))
+#' old.par <- par(no.readonly = TRUE)
 #' par(mfrow=c(1,2), mar=rep(1, 4))
 #' gplot(sachs$graph, main = "Input graph")
 #' gplot(dag, main = "Output DAG")
+#' par(old.par)
 #'
 graph2dag <- function(graph, data, bap = FALSE, time.limit = Inf, ...)
 {
@@ -792,17 +799,19 @@ graph2dag <- function(graph, data, bap = FALSE, time.limit = Inf, ...)
 #' G1 <- orientEdges(ug = G0, dg = sachs$graph)
 #'
 #' # Graphs plotting
+#' old.par <- par(no.readonly = TRUE)
 #' par(mfrow=c(1,2), mar=rep(2,4))
 #' plot(G0, layout=layout.circle, main = "Input undirected graph")
 #' plot(G1, layout=layout.circle, main = "Output directed graph")
+#' par(old.par)
 #'
 orientEdges<- function(ug, dg, ...)
 {
 	if (is_directed(ug)){
-	 return(cat(" ERROR: the input graph is a Directed graph !\n"))
+	 return(message("ERROR: the input graph is a Directed graph !"))
 	}
 	if (!is_directed(dg)){
-	 return(cat(" ERROR: the reference graph is an Undirected graph !\n"))
+	 return(message("ERROR: the reference graph is an Undirected graph !"))
 	}
 	mg <- as.directed(ug, mode = "mutual")
 	exy0 <- attr(E(mg), "vnames")
@@ -864,11 +873,7 @@ orientEdges<- function(ug, dg, ...)
 #'
 #' @examples
 #'
-#' \dontrun{
-#'
-#' # Install data examples, reference networks, and pathways
-#' #devtools::install_github("fernandoPalluzzi/SEMdata")
-#' library(SEMdata)
+#' \donttest{
 #'
 #' # Model fitting: node perturbation
 #' sem1 <- SEMrun(graph = alsData$graph, data = alsData$exprs,
@@ -884,9 +889,11 @@ orientEdges<- function(ug, dg, ...)
 #' est21 <- subset(parameterEstimates(sem2$fit), group = 2)[, -c(4, 5)]
 #'
 #' # Graphs
-#' par(mfrow=c(2,2), mar=rep(1,4))
 #' g <- alsData$graph
 #' x <- alsData$group
+#'
+#' old.par <- par(no.readonly = TRUE)
+#' par(mfrow=c(2,2), mar=rep(1,4))
 #' gplot(colorGraph(est = est1, g, group = x, method = "BH"),
 #'       main = "vertex differences")
 #' gplot(colorGraph(est = sem2$dest, g, group = NULL),
@@ -895,6 +902,7 @@ orientEdges<- function(ug, dg, ...)
 #'       main = "edges for group = 0")
 #' gplot(colorGraph(est = est21, g, group = NULL),
 #'       main = "edges for group = 1")
+#' par(old.par)
 #'
 #' }
 #'
@@ -1131,15 +1139,11 @@ Brown.test <- function(x, p, theta = NULL, tail = "both", ...)
 #'
 #' @examples
 #'
-#' \dontrun{
+#' \donttest{
 #'
 #' # Comparison among different model estimation strategies
 #'
-#' # Install data examples, reference networks, and pathways
-#' #devtools::install_github("fernandoPalluzzi/SEMdata")
-#' library(SEMdata)
 #' library(huge)
-#'
 #' als.npn <- huge.npn(alsData$exprs)
 #'
 #' # Models estimation
@@ -1153,11 +1157,13 @@ Brown.test <- function(x, p, theta = NULL, tail = "both", ...)
 #'       search = "basic", beta = 0.1, alpha = 0.05)
 #'
 #' # Graphs
-#' par(mfrow=c(2,2), mar= rep(1,4))
+#' #old.par <- par(no.readonly = TRUE)
+#' #par(mfrow=c(2,2), mar= rep(1,4))
 #' gplot(m1$graph, main = "direct graph")
 #' gplot(m2$graph, main = "inner graph")
 #' gplot(m3$graph, main = "outer graph")
 #' gplot(m4$graph, main = "basic graph")
+#' #par(old.par)
 #'
 #' }
 #'
@@ -1212,8 +1218,8 @@ modelSearch <- function(graph, data, gnet = NULL, d = 2, search = "basic",
 	E(Gt1)$color <- ifelse(E1 %in% E0, "blue", "red")
 	Gt1.red <- Gt1 - E(Gt1)[which(E(Gt1)$color == "blue")]
 	if(ecount(Gt1.red) == 0) {
-		return(cat("Error: no new edges inferred.",
-		           "Try decreasing the beta threshold.\n"))
+		return(message("ERROR: no new edges inferred.
+		 Try decreasing the beta threshold !"))
 	}
 
 
@@ -1302,15 +1308,11 @@ modelSearch <- function(graph, data, gnet = NULL, d = 2, search = "basic",
 #'
 #' @examples
 #'
-#' \dontrun{
+#' \donttest{
 #'
 #' # Find and evaluate significantly perturbed paths
 #'
-#' # Install data examples, reference networks, and pathways
-#' #devtools::install_github("fernandoPalluzzi/SEMdata")
-#' library(SEMdata)
 #' library(huge)
-#'
 #' als.npn <- huge.npn(alsData$exprs)
 #'
 #' adjData <- SEMbap(graph = alsData$graph, data = als.npn)$data
@@ -1437,13 +1439,9 @@ pathFinder <- function(graph, data, group=NULL, ace = NULL, path = "directed",
 #'
 #' @examples
 #'
-#' \dontrun{
+#' \donttest{
 #'
-#' # Install data examples, reference networks, and pathways
-#' #devtools::install_github("fernandoPalluzzi/SEMdata")
-#' library(SEMdata)
 #' library(huge)
-#'
 #' als.npn <- huge.npn(alsData$exprs)
 #'
 #' adjdata <- SEMbap(alsData$graph, als.npn)$data
@@ -1472,8 +1470,7 @@ extractClusters <- function(graph, data, group = NULL, membership = NULL,
 		                           verbose = FALSE)
 	}
 	clusters <- cplot(graph, membership, l=layout.auto, map, verbose)[-1]
-	clusters <- clusters[-length(clusters)]
-	#if ("HM9999" %in% names(clusters)) N <- length(clusters) - 1
+	if ("HM9999" %in% names(clusters)) N <- length(clusters) - 1
 	N <- length(clusters)
 	res <- NULL
 	lav <- list()
@@ -1534,6 +1531,8 @@ extractClusters <- function(graph, data, group = NULL, membership = NULL,
 #' @importFrom stats dnorm
 #' @export
 #'
+#' @return No return value
+#'
 #' @author Mario Grassi \email{mario.grassi@unipv.it}
 #'
 #' @examples
@@ -1554,22 +1553,26 @@ pairwiseMatrix<- function (x, y = NULL, size = nrow(x), r = 4, c = 4, ...)
     vnames <- colnames(x)
     if (is.null(y)) {
         xx <- x[, vnames]
+		old.par <- par(no.readonly = TRUE)
 		par(mfrow = c(r, c), mar = rep(3, 4))
 		for (j in p) {
             h <- hist(xx[n, j], breaks = 30, freq = FALSE, col = "lightblue", main = vnames[j])
             x <- seq(-4, +4, by = 0.02)
             curve(dnorm(x), add = TRUE, col = "blue", lwd = 2)
         }
+		on.exit(par(old.par))
     }
     else {
         xx <- x[, vnames]
 		yy <- y[, vnames]
+		old.par <- par(no.readonly = TRUE)
         par(mfrow = c(r, c), mar = rep(2, 4))
         for (j in p) {
             r <- round(cor(xx[n, j], yy[n, j]), 2)
             plot(xx[n, j], yy[n, j], main = vnames[j])
             legend("topleft", paste0("r = ", r), bty = "n", cex = 1, text.col = "blue")
         }
+		on.exit(par(old.par))
     }
 }
 

@@ -33,18 +33,12 @@ membership vector.
 }
 \examples{
 
-\dontrun{
+\donttest{
 
-# Install data examples, reference networks, and pathways
-#devtools::install_github("fernandoPalluzzi/SEMdata")
-library(SEMdata)
-
-G <- kegg.pathways$"Amyotrophic lateral sclerosis (ALS)"
-# Largest connected component
-G <- properties(G)[[1]]
+# Clustering ALS graph with WTC method
+G <- alsData$graph
 membership <- clusterGraph(graph = G, type = "wtc")
-cplot(G, membership, map = TRUE)
-
+cplot(G, membership, map = TRUE, verbose = FALSE)
 cplot(G, membership, map = FALSE, verbose = TRUE)
 
 }

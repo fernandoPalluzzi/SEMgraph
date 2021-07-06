@@ -88,6 +88,9 @@ LASSO-based algorithm, implememted in glmnet." />
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -227,10 +230,8 @@ of Statistics, 9(1): 1205-1229.
     <pre class="examples"><div class='input'>
 <span class='co'># DAG estimation</span>
 <span class='va'>G</span> <span class='op'>&lt;-</span> <span class='fu'>SEMdag</span><span class='op'>(</span>graph <span class='op'>=</span> <span class='va'>sachs</span><span class='op'>$</span><span class='va'>graph</span>, data <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>sachs</span><span class='op'>$</span><span class='va'>pkc</span><span class='op'>)</span>, beta <span class='op'>=</span> <span class='fl'>0.05</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; 
-#&gt; WARNING: the input graph is not acyclic !
-#&gt;  Applying graph -&gt; DAG conversion ...
-#&gt; DAG conversion: TRUE</div><div class='input'>
+</div><div class='output co'>#&gt; <span class='message'>WARNING: the input graph is not acyclic !</span>
+#&gt; <span class='message'>		 Applying graph -&gt; DAG conversion ...</span></div><div class='output co'>#&gt; DAG conversion: TRUE</div><div class='input'>
 <span class='co'># Model fitting</span>
 <span class='va'>sem</span> <span class='op'>&lt;-</span> <span class='fu'><a href='SEMrun.html'>SEMrun</a></span><span class='op'>(</span>graph <span class='op'>=</span> <span class='va'>G</span><span class='op'>$</span><span class='va'>dag</span>, data <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>sachs</span><span class='op'>$</span><span class='va'>pkc</span><span class='op'>)</span>, group <span class='op'>=</span> <span class='va'>sachs</span><span class='op'>$</span><span class='va'>group</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; NLMINB solver ended normally after 22 iterations 
@@ -242,12 +243,14 @@ of Statistics, 9(1): 1205-1229.
 #&gt; Brown's combined P-value of node inhibition: 0 
 #&gt; </div><div class='input'>
 <span class='co'># Graphs</span>
+<span class='va'>old.par</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/graphics/par.html'>par</a></span><span class='op'>(</span>no.readonly <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/graphics/par.html'>par</a></span><span class='op'>(</span>mfrow<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>2</span>,<span class='fl'>2</span><span class='op'>)</span>, mar<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>1</span>,<span class='fl'>4</span><span class='op'>)</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>sachs</span><span class='op'>$</span><span class='va'>graph</span>, layout<span class='op'>=</span><span class='va'>layout.circle</span>, main<span class='op'>=</span><span class='st'>"input graph"</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>G</span><span class='op'>$</span><span class='va'>dag</span>, layout<span class='op'>=</span><span class='va'>layout.circle</span>, main <span class='op'>=</span> <span class='st'>"Output DAG"</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>G</span><span class='op'>$</span><span class='va'>dag.blue</span>, layout<span class='op'>=</span><span class='va'>layout.circle</span>, main <span class='op'>=</span> <span class='st'>"Inferred old edges"</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>G</span><span class='op'>$</span><span class='va'>dag.red</span>, layout<span class='op'>=</span><span class='va'>layout.circle</span>, main <span class='op'>=</span> <span class='st'>"Inferred new edges"</span><span class='op'>)</span>
-</div><div class='img'><img src='SEMdag-1.png' alt='' width='700' height='433' /></div><div class='input'>
+</div><div class='img'><img src='SEMdag-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/par.html'>par</a></span><span class='op'>(</span><span class='va'>old.par</span><span class='op'>)</span>
+
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

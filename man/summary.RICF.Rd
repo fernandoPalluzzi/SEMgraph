@@ -11,9 +11,12 @@
 
 \item{...}{Currently ignored.}
 }
+\value{
+Shown the lavaan-formatted summary to console
+}
 \description{
-Generate a summary for a RICF model and show it to
-standard output.
+Generate a summary for a RICF solver similar to
+lavaan-formatted summary
 }
 \examples{
 sem0 <- SEMrun(sachs$graph, log(sachs$pkc), algo = "ricf")

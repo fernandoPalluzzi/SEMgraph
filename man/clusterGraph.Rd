@@ -53,18 +53,9 @@ Topological graph clustering methods.
 }
 \examples{
 
-\dontrun{
-
-# Install data examples, reference networks, and pathways
-#devtools::install_github("fernandoPalluzzi/SEMdata")
-library(SEMdata)
-
-G <- kegg.pathways$"Amyotrophic lateral sclerosis (ALS)"
-# Largest connected component
-G <- properties(G)[[1]]
+# Clustering ALS graph with WTC method and LV model
+G <- properties(alsData$graph)[[1]]
 membership <- clusterGraph(graph = G, type = "wtc", HM = "LV", verbose = TRUE)
-
-}
 
 }
 \references{

@@ -80,11 +80,13 @@ G <- SEMdag(graph = sachs$graph, data = log(sachs$pkc), beta = 0.05)
 sem <- SEMrun(graph = G$dag, data = log(sachs$pkc), group = sachs$group)
 
 # Graphs
+old.par <- par(no.readonly = TRUE)
 par(mfrow=c(2,2), mar=rep(1,4))
 plot(sachs$graph, layout=layout.circle, main="input graph")
 plot(G$dag, layout=layout.circle, main = "Output DAG")
 plot(G$dag.blue, layout=layout.circle, main = "Inferred old edges")
 plot(G$dag.red, layout=layout.circle, main = "Inferred new edges")
+par(old.par)
 
 }
 \references{

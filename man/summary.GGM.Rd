@@ -11,9 +11,12 @@
 
 \item{...}{Currently ignored.}
 }
+\value{
+Shown the lavaan-formatted summary to console
+}
 \description{
 Generate a summary for a constrained Gaussian Graphical
-Model (GGM) and show it to standard output.
+Model (GGM) similar to lavaan-formated summary
 }
 \examples{
 sem0 <- SEMrun(sachs$graph, log(sachs$pkc), algo = "cggm")

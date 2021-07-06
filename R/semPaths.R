@@ -331,21 +331,21 @@ SEMstart <- function(ig, data, group, a, ...)
 #' gplot(sem2$graph, main = "Between group edge differences")
 #' plot(sem2$graph, layout = layout.circle, main = "Between group edge differences")
 #'
-#' \dontrun{
+#' \donttest{
 #'
-#' # Fitting and visualization of a large graph
+#' # Fitting and visualization of a large pathway:
 #'
-#' # Install data examples, reference networks, and pathways
-#' #devtools::install_github("fernandoPalluzzi/SEMdata")
-#' library(SEMdata)
+#' library(graphite)
+#' humanKegg <- pathways("hsapiens", "kegg")
+#' p <- humanKegg[["MAPK signaling pathway"]]
+#' g <- pathwayGraph(p)
+#' graph::nodes(g) <- gsub("ENTREZID:","",graph::nodes(g))
+#' G <- properties(graph_from_graphnel(g))[[1]]
+#' 
 #' library(huge)
-#' library(org.Hs.eg.db)
-#'
 #' als.npn <- huge.npn(alsData$exprs)
-#' i <- which(names(kegg.pathways) == "MAPK signaling pathway")
-#' graph <- properties(kegg.pathways[[i]])[[1]]
 #'
-#' g1 <- SEMrun(graph, als.npn, alsData$group, algo = "cggm")$graph
+#' g1 <- SEMrun(G, als.npn, alsData$group, algo = "cggm")$graph
 #' g2 <- SEMrun(g1, als.npn, alsData$group, fit = 2, algo = "cggm")$graph
 #'
 #' # extract the subgraph with between group node and edge differences
@@ -353,8 +353,9 @@ SEMstart <- function(ig, data, group, a, ...)
 #' g <- properties(g2)[[1]]
 #'
 #' # plot graph
-#' E(g)$color<- E(g2)$color[E(g2) %in% E(g)]
+#' library(org.Hs.eg.db)
 #' V(g)$label <- mapIds(org.Hs.eg.db, V(g)$name, 'SYMBOL', 'ENTREZID')
+#' E(g)$color<- E(g2)$color[E(g2) %in% E(g)]
 #' gplot(g, l = "fdp", main="node and edge group differences")
 #'
 #' }
@@ -409,8 +410,8 @@ SEMfit <- function(graph, data, group = NULL, start = NULL, limit = 100,
 {
 	# Model fitting with GGM algo if n.nodes > limit
 	if (vcount(graph) > limit) {
-		cat("WARNING: very large input graph (>", limit, "nodes) !\n")
-		cat(" RICF solver activated...\n\n")
+		message("WARNING: very large input graph (>", limit, " nodes) !
+		 RICF solver activated...\n")
 		return(fit = SEMricf(graph = graph, data = data, group = group))
 	}
 
@@ -488,8 +489,8 @@ SEMfit2 <- function(graph, data, group, start = NULL, limit = 100,
 {
 	# Model fitting with GGM algo if n.nodes > limit
 	if (vcount(graph) > limit) {
-		cat("WARNING: input graph is very large ( >", limit, "nodes ) !\n")
-		cat(" GGM (constrained) solver activated...\n\n")
+		message("WARNING: input graph is very large ( >", limit, " nodes ) !
+		 GGM (constrained) solver activated...\n")
 		return(fit = SEMggm2(graph = graph, data = data, group = group))
 	}
 
@@ -764,8 +765,8 @@ parameterEstimates.RICF <- function(object, ...)
 
 #' @title RICF model summary
 #'
-#' @description Generate a summary for a RICF model and show it to
-#' standard output.
+#' @description Generate a summary for a RICF solver similar to
+#' lavaan-formatted summary
 #'
 #' @param object A RICF fitted model object.
 #' @param ... Currently ignored.
@@ -775,6 +776,7 @@ parameterEstimates.RICF <- function(object, ...)
 #' @export
 #'
 #' @method summary RICF
+#' @return Shown the lavaan-formatted summary to console
 #'
 #' @author Mario Grassi \email{mario.grassi@unipv.it}
 #'
@@ -1043,7 +1045,7 @@ parameterEstimates.GGM <- function(object, dest = FALSE, ...)
 #' @title GGM model summary
 #'
 #' @description Generate a summary for a constrained Gaussian Graphical
-#' Model (GGM) and show it to standard output.
+#' Model (GGM) similar to lavaan-formated summary
 #'
 #' @param object A constrained GGM fitted model object.
 #' @param ... Currently ignored.
@@ -1053,6 +1055,7 @@ parameterEstimates.GGM <- function(object, dest = FALSE, ...)
 #' @export
 #'
 #' @method summary GGM
+#' @return Shown the lavaan-formatted summary to console
 #'
 #' @author Mario Grassi \email{mario.grassi@unipv.it}
 #'
@@ -1252,8 +1255,8 @@ SEMbap <- function(graph, data, method = "BH", alpha = 0.05, limit = 30000,
 		cat("Number of significant local tests:", nrow(d_sep), "/",
 		    nrow(dsep), "\n\n")
 	} else {
-		return(cat("NULL covariance graph: ALL adjusted pvalues >",
-		           alpha, "!", "\n\n"))
+		return(message("NULL covariance graph: ALL adjusted pvalues >",
+		           alpha, "!\n"))
 	}
 
 	# BAP, covariance, and latent variables graphs (Ug, guu, gLV)
@@ -1337,18 +1340,15 @@ SEMbap <- function(graph, data, method = "BH", alpha = 0.05, limit = 30000,
 #'
 #' @examples
 #'
-#' \dontrun{
+#' #\donttest{
 #'
-#' # Install data examples, reference networks, and pathways
-#' #devtools::install_github("fernandoPalluzzi/SEMdata")
-#' library(SEMdata)
 #' library(huge)
-#'
 #' als.npn <- huge.npn(alsData$exprs)
+#' 
 #' sem <- SEMrun(alsData$graph, als.npn)
 #' C.test <- Shipley.test(sem$graph, als.npn)
 #'
-#' }
+#' #}
 #'
 Shipley.test <- function(graph, data, limit = 30000, verbose = TRUE, ...)
 {
@@ -1359,8 +1359,8 @@ Shipley.test <- function(graph, data, limit = 30000, verbose = TRUE, ...)
 	dataY <- as.matrix(data[, nodes])
 
 	if (!is_dag(graph)) {
-		cat("WARNING: the input graph is not acyclic!\n")
-		cat(" Applying graph -> DAG conversion ...\n")
+		message("WARNING: the input graph is not acyclic!
+		 Applying graph -> DAG conversion ...\n")
 
 		if (df1 > 10000) {
 			bap <- graph2dag(graph, dataY, bap = FALSE)  # del cycles & all <->
@@ -1551,18 +1551,20 @@ diagonalizePsi <- function(g = list(graph, guu), data, ...)
 #' sem <- SEMrun(graph = G$dag, data = log(sachs$pkc), group = sachs$group)
 #'
 #' # Graphs
+#' old.par <- par(no.readonly = TRUE)
 #' par(mfrow=c(2,2), mar=rep(1,4))
 #' plot(sachs$graph, layout=layout.circle, main="input graph")
 #' plot(G$dag, layout=layout.circle, main = "Output DAG")
 #' plot(G$dag.blue, layout=layout.circle, main = "Inferred old edges")
 #' plot(G$dag.red, layout=layout.circle, main = "Inferred new edges")
+#' par(old.par)
 #'
 SEMdag <- function(graph, data, gnet = NULL, d = 0, beta = 0, lambdas = NA,
                    verbose = FALSE, ...)
 {
 	if (!is.null(gnet)) {
 		if (!is_directed(gnet)) {
-			return(cat(" ERROR: Reference graph is NOT a directed graph !\n"))
+			return(message(" ERROR: Reference graph is NOT a directed graph !"))
 		}
 	}
 
@@ -1570,8 +1572,8 @@ SEMdag <- function(graph, data, gnet = NULL, d = 0, beta = 0, lambdas = NA,
 	nodes <- colnames(data)[colnames(data) %in% V(graph)$name]
 	ig <- induced_subgraph(graph, vids = which(V(graph)$name %in% nodes))
 	if (!is_dag(ig)) {
-		cat("\nWARNING: the input graph is not acyclic !\n")
-		cat(" Applying graph -> DAG conversion ...\n")
+		message("WARNING: the input graph is not acyclic !
+		 Applying graph -> DAG conversion ...\n")
 		dag <- graph2dag(ig, data)
 	} else {
 		dag <- ig
@@ -1654,7 +1656,7 @@ EXT_SET <- function(graph, gnet, d = 2, dag = TRUE, ...)
 {
 	SET1 <- as_edgelist(graph)
 	if( nrow(SET1) == 0 ) {
-		cat("\nWARNING: n.interactions = 0 !\n\n")
+		message("WARNING: n.interactions = 0 !\n")
 		return(guu = NULL)
 	}
 
@@ -1759,8 +1761,8 @@ SEMace <- function(graph, data, group = NULL, method = "none", alpha = 0.05,
 	ig <- induced_subgraph(graph, vids = which(V(graph)$name %in% nodes))
 
 	if (!is_dag(ig)) {
-		cat("\nWARNING: input graph is not acyclic!\n")
-		cat(" Applying graph -> DAG conversion.\n")
+		message("WARNING: input graph is not acyclic!
+		 Applying graph -> DAG conversion.\n")
 		dag <- graph2dag(ig, data) # delete cycles & all <->
 		if (!is_dag(dag)) return(theta = NULL)
 	} else {
@@ -1965,7 +1967,7 @@ SEMpath <- function(graph, data, group, from, to, path, verbose = FALSE, ...)
 	nodes <- colnames(data)
 	ig <- induced_subgraph(graph, vids = which(V(graph)$name %in% nodes))
 	if (distances(ig, from, to, mode = "out", weights = NA) == Inf) {
-		cat("ValueError: infinite distance from", from, "to", to, ".\n\n")
+		message("ERROR: infinite distance from", from, "to", to, ".")
 		return(NULL)
 	}
 

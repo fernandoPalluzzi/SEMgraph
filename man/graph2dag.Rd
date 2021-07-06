@@ -38,9 +38,11 @@ from the input graph.
 \examples{
 
 dag <- graph2dag(graph = sachs$graph, data = log(sachs$pkc))
+old.par <- par(no.readonly = TRUE)
 par(mfrow=c(1,2), mar=rep(1, 4))
 gplot(sachs$graph, main = "Input graph")
 gplot(dag, main = "Output DAG")
+par(old.par)
 
 }
 \author{

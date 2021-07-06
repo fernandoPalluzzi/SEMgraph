@@ -25,16 +25,15 @@ graph components (ordered by decreasing size), without self-loops.
 }
 \examples{
 
-\dontrun{
+# Extract from graphite the "Steroid biosynthesis" pathway:
 
-# Install data examples, reference networks, and pathways
-#devtools::install_github("fernandoPalluzzi/SEMdata")
-library(SEMdata)
+library(graphite)
+humanKegg <- pathways("hsapiens", "kegg")
+p <- humanKegg[["Steroid biosynthesis"]]
+g <- pathwayGraph(p)
+graph::nodes(g) <- gsub("ENTREZID:","",graph::nodes(g))
 
-G <- kegg.pathways$"Amyotrophic lateral sclerosis (ALS)"
-properties(G)
-
-}
+properties(graph_from_graphnel(g))
 
 }
 \author{

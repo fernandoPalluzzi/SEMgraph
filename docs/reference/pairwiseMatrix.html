@@ -89,6 +89,9 @@ the function displays a histogram with normal curve superposition." />
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -152,15 +155,17 @@ the function displays a histogram with normal curve superposition.</p>
     </tr>
     </table>
 
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>No return value</p>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
     <p>Mario Grassi <a href='mailto:mario.grassi@unipv.it'>mario.grassi@unipv.it</a></p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='va'>adjdata</span> <span class='op'>&lt;-</span> <span class='fu'><a href='SEMbap.html'>SEMbap</a></span><span class='op'>(</span><span class='va'>sachs</span><span class='op'>$</span><span class='va'>graph</span>, <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>sachs</span><span class='op'>$</span><span class='va'>pkc</span><span class='op'>)</span><span class='op'>)</span><span class='op'>$</span><span class='va'>data</span>
-</div><div class='output co'>#&gt; WARNING: the input graph is not acyclic!
-#&gt;  Applying graph -&gt; DAG conversion ...
-#&gt; DAG conversion: TRUE
+</div><div class='output co'>#&gt; <span class='message'>WARNING: the input graph is not acyclic!</span>
+#&gt; <span class='message'>		 Applying graph -&gt; DAG conversion ...</span></div><div class='output co'>#&gt; DAG conversion: TRUE
 #&gt;  
 #&gt; Degrees of freedom:
 #&gt;  Input graph  = 36 

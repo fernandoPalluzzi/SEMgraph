@@ -97,6 +97,9 @@ by residual variances (D), will be estimated." />
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -208,7 +211,10 @@ residual variance;</p></li>
 <span class='co'># Install data examples, reference networks, and pathways</span>
 <span class='co'>#devtools::install_github("fernandoPalluzzi/SEMdata")</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'>SEMdata</span><span class='op'>)</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'>huge</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>Attaching package: 'SEMdata'</span></div><div class='output co'>#&gt; <span class='message'>The following objects are masked from 'package:SEMgraph':</span>
+#&gt; <span class='message'></span>
+#&gt; <span class='message'>    alsData, kegg</span></div><div class='input'><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'>huge</span><span class='op'>)</span>
 
 <span class='va'>als.npn</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/huge/man/huge.npn.html'>huge.npn</a></span><span class='op'>(</span><span class='va'>alsData</span><span class='op'>$</span><span class='va'>exprs</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; Conducting the nonparanormal (npn) transformation via shrunkun ECDF....done.</div><div class='input'>

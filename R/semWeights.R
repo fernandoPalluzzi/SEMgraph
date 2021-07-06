@@ -273,8 +273,8 @@ ew.cfa <- function(ftm, Y, group, limit = 3000, ...)
 	pv <- sapply(1:length(est), function(x) est[[x]]$pvalue[1])
 	if (sum(var < 0) > 0) {
 		pv[var < 0] <- NA
-		cat("WARNING", sum(var < 0), "of", nrow(ftm),
-		"estimated residual var(LV) are negatives\n")
+		message("WARNING", sum(var < 0), "of", nrow(ftm),
+		"estimated residual var(LV) are negatives")
 	}
 	return (list(zsign, pv))
 }
@@ -438,6 +438,7 @@ seedweight <- function(ig, data, group, alpha = 0.05, h = 0.2, q = 0.5, ...)
 #' R3 <- activeModule(graph = G, type = "kou", seed = "qi", eweight = "pvalue")
 #' 
 #' # Graphs
+#' old.par <- par(no.readonly = TRUE)
 #' par(mfrow=c(2,2), mar=rep(2, 4))
 #' plot(G, layout = layout.circle, main = "input graph")
 #' box(col = "gray")
@@ -447,38 +448,8 @@ seedweight <- function(ig, data, group, alpha = 0.05, h = 0.2, q = 0.5, ...)
 #' box(col = "gray")
 #' plot(R3, layout = layout.circle, main = "closeness (q = 0.5)")
 #' box(col = "gray")
+#' par(old.par)
 #' 
-#' \dontrun{
-#'
-#' # Install data examples, reference networks, and pathways
-#' # devtools::install_github("fernandoPalluzzi/SEMdata")
-#' library(SEMdata)
-#' 
-#' # Weight and reduce the whole KEGG interactome, using RWR
-#' 
-#' kegg1 <- weightGraph(kegg, alsData$exprs, alsData$group,
-#'                      method = "r2z",
-#'                      seed = c(5E-8, 0.5, 0.5))
-#' 
-#' # Set quantile value, based on the top k nodes
-#' k <- sum(V(kegg1)$pvlm)
-#' q <- 1 - k/vcount(kegg1)
-#' 
-#' ig1 <- activeModule(graph = kegg1, type = "rwr", seed = "pvlm",
-#'                     eweight = "pvalue",
-#'                     q = q)
-#' ig1 <- graph2dag(ig1, alsData$exprs)
-#' ig1 <- properties(ig1)[[1]]
-#' 
-#' # Fitting
-#' sem1 <- SEMrun(ig1, alsData$exprs, alsData$group, algo = "ricf")
-#' head(sem1$gest)
-#'
-#' par(mfrow=c(1,1), mar=rep(2, 4))
-#' gplot(sem1$graph, main= "active module via RWR")
-#' 
-#' }
-#'
 activeModule <- function(graph, type, seed, eweight = "none", alpha = 0.05,
                          q = 0.5, limit = 30000, ...)
 {

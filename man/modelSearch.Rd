@@ -136,15 +136,11 @@ confounding factors, hence a weaker correction (default alpha = 0.05).
 }
 \examples{
 
-\dontrun{
+\donttest{
 
 # Comparison among different model estimation strategies
 
-# Install data examples, reference networks, and pathways
-#devtools::install_github("fernandoPalluzzi/SEMdata")
-library(SEMdata)
 library(huge)
-
 als.npn <- huge.npn(alsData$exprs)
 
 # Models estimation
@@ -158,11 +154,13 @@ m4 <- modelSearch(graph = alsData$graph, data = als.npn, gnet = NULL,
       search = "basic", beta = 0.1, alpha = 0.05)
 
 # Graphs
-par(mfrow=c(2,2), mar= rep(1,4))
+#old.par <- par(no.readonly = TRUE)
+#par(mfrow=c(2,2), mar= rep(1,4))
 gplot(m1$graph, main = "direct graph")
 gplot(m2$graph, main = "inner graph")
 gplot(m3$graph, main = "outer graph")
 gplot(m4$graph, main = "basic graph")
+#par(old.par)
 
 }
 

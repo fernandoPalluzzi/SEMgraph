@@ -50,18 +50,12 @@
 #'
 #' @examples
 #'
-#' \dontrun{
+#' \donttest{
 #'
-#' # Install data examples, reference networks, and pathways
-#' #devtools::install_github("fernandoPalluzzi/SEMdata")
-#' library(SEMdata)
-#'
-#' G <- kegg.pathways$"Amyotrophic lateral sclerosis (ALS)"
-#' # Largest connected component
-#' G <- properties(G)[[1]]
+#' # Clustering ALS graph with WTC method
+#' G <- alsData$graph
 #' membership <- clusterGraph(graph = G, type = "wtc")
-#' cplot(G, membership, map = TRUE)
-#'
+#' cplot(G, membership, map = TRUE, verbose = FALSE)
 #' cplot(G, membership, map = FALSE, verbose = TRUE)
 #'
 #' }
@@ -132,19 +126,10 @@ cplot <- function(graph, membership, l = layout.auto, map = FALSE,
 #'
 #' @examples
 #'
-#' \dontrun{
-#'
-#' # Install data examples, reference networks, and pathways
-#' #devtools::install_github("fernandoPalluzzi/SEMdata")
-#' library(SEMdata)
-#'
-#' G <- kegg.pathways$"Amyotrophic lateral sclerosis (ALS)"
-#' # Largest connected component
-#' G <- properties(G)[[1]]
+#' # Clustering ALS graph with WTC method
+#' G <- properties(alsData$graph)[[1]]
 #' membership <- clusterGraph(graph = G, type = "wtc")
 #' M <- mergeNodes(G, membership, HM = "LV")
-#'
-#' }
 #'
 mergeNodes <- function(graph, membership, HM, ...)
 {
@@ -238,18 +223,9 @@ mergeNodes <- function(graph, membership, HM, ...)
 #'
 #' @examples
 #'
-#' \dontrun{
-#'
-#' # Install data examples, reference networks, and pathways
-#' #devtools::install_github("fernandoPalluzzi/SEMdata")
-#' library(SEMdata)
-#'
-#' G <- kegg.pathways$"Amyotrophic lateral sclerosis (ALS)"
-#' # Largest connected component
-#' G <- properties(G)[[1]]
+#' # Clustering ALS graph with WTC method and LV model
+#' G <- properties(alsData$graph)[[1]]
 #' membership <- clusterGraph(graph = G, type = "wtc", HM = "LV", verbose = TRUE)
-#'
-#' }
 #'
 clusterGraph <- function(graph, type = "wtc", HM = "none", size = 5,
                          verbose = FALSE, ...)
@@ -299,7 +275,7 @@ clusterGraph <- function(graph, type = "wtc", HM = "none", size = 5,
 	}
 
 	K <-  length(cnames)
-	if (K == 0) return(cat("WARNING: no communities with size >=", size, "\n"))
+	if (K == 0) return(message("WARNING: no communities with size >=", size, "."))
 	if (HM == "UV") {
 		gHC <- cplot(graph, membership = membership, map = FALSE,
 		             verbose = FALSE)[-1]
@@ -345,6 +321,217 @@ clusterGraph <- function(graph, type = "wtc", HM = "none", size = 5,
 	}
 
 	return(list(gHM = gLM, membership = membership, gHC = gHC))
+}
+
+#' @title Module scoring
+#'
+#' @description Generate factor scores, principal component scores, or
+#' projection scores of latent, composite, and unmeasured variable modules,
+#' respectively, and fit them in a SEM with exogenous group effect.
+#' @param graph An igraph object.
+#' @param data A matrix or data.frame. Rows correspond to subjects, and
+#' columns to graph nodes.
+#' @param group A binary vector. This vector must be as long as the number
+#' of subjects. Each vector element must be 1 for cases and 0 for control
+#' subjects.
+#' @param HM Hidden model type. For each defined hidden module:
+#' (i) if \code{HM = "LV"}, a latent variable (LV) will be defined as
+#' common unknown cause acting on cluster nodes; (ii) if \code{HM = "CV"},
+#' cluster nodes will be considered as regressors of a latent composite
+#' variable (CV); (iii) if \code{HM = "UV"}, an unmeasured variable (UV)
+#' model will be generated for each module, where source nodes (i.e.,
+#' in-degree = 0) act as common regressors influencing the other nodes
+#' via an unmeasured variable.
+#' @param size Minimum number of nodes per hidden module. By default, a
+#' minimum number of 5 nodes is required.
+#' By default, HM is set to "LV" (i.e., the latent variable model).
+#' @param type Graph clustering method. If \code{type = "tahc"}, network
+#' modules are generated using the tree agglomerative hierarchical
+#' clustering method (Yu et al., 2015).
+#' Other non-tree clustering methods from igraph package include: "wtc"
+#' (default value; walktrap community structure with short random walks),
+#' "ebc" (edge betweeness clustering), "fgc" (fast greedy method), "lbc"
+#' (label propagation method), "lec" (leading eigenvector method), "loc"
+#' (multi-level optimization), "opc" (optimal communiy structure), "sgc"
+#' (spinglass statistical mechanics).
+#' By default, the "wtc" method is used.
+#' @param verbose A logical value. If TRUE, intermediate graphs will be
+#' displayed during the execution. In addition, a condensed graph with
+#' clusters as nodes will be fitted and showed to screen (see also
+#' \code{\link[SEMgraph]{mergeNodes}}). By default, \code{verbode = FALSE}.
+#' @param ... Currently ignored.
+#'
+#' @import igraph
+#' @import lavaan
+#' @importFrom cate factor.analysis
+#' @export
+#'
+#' @seealso
+#' See \code{\link[SEMgraph]{clusterGraph}} and \code{\link[SEMgraph]{cplot}}
+#' for graph clustering, and \code{\link[cate]{factor.analysis}} for
+#' factor analysis.
+#'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
+#' @references
+#' Palluzzi F, Grassi M (2021). SEMgraph: An R Package for Causal Network
+#' Analysis of High-Throughput Data with Structural Equation Models.
+#' <arXiv:2103.08332>
+#'
+#' @return A list of 3 objects:
+#' \enumerate{
+#' \item "fit", hidden module fitting as a lavaan object;
+#' \item "membership", hidden module nodes membership;
+#' \code{\link[SEMgraph]{clusterGraph}} function;
+#' \item "dataHM", hidden module data matrix with cluster scores.
+#' }
+#'
+#' @examples
+#'
+#' library(huge)
+#' als.npn <- huge.npn(alsData$exprs)
+#'
+#' C <- clusterScore(graph = alsData$graph, data = als.npn,
+#'                   group = alsData$group,
+#'                   HM = "LV",
+#'                   type = "wtc",
+#'                   verbose = TRUE)
+#' summary(C$fit)
+#' head(C$dataHM)
+#' table(C$membership)
+#'
+clusterScore <- function(graph, data, group, HM = "LV", type = "wtc",
+                         size = 5, verbose = FALSE, ...)
+{
+	# Set SEM objects
+	nodes <- colnames(data)[colnames(data) %in% V(graph)$name]
+	dataY <- data[, nodes]
+	ig <- induced_subgraph(graph, vids = which(V(graph)$name %in% nodes))
+	ig <- simplify(ig, remove.loops = TRUE)
+
+	# Hidden modules LX -> Y
+	if (HM == "LV") {
+		LX <- clusterGraph(graph = ig, type = type,
+		               HM = "LV",
+		               size = size,
+		               verbose = verbose)
+		if (length(LX) == 0) return(list(fit = NA, M = NA, dataHM = NA))
+		gLM <- LX[[1]]
+		membership <- LX[[2]]
+		LX <- V(gLM)$name[substr(V(gLM)$name, 1, 1) == "L"]
+
+		# Latent Variables(LV) model
+		K <- as.numeric(names(table(membership)))
+		LV <- NULL
+		for(k in 1:length(LX)) {
+			Xk <- subset(names(membership), membership == K[k])
+			Y <- as.matrix(dataY[, which(colnames(dataY) %in% Xk)])
+			fa1 <- cate::factor.analysis(Y = Y, r = 1, method = "ml")$Z
+			LV <- cbind(LV, fa1)
+		}
+		colnames(LV) <- gsub("LX", "LV", LX)
+		rownames(LV) <- rownames(dataY)
+		dataLC <- cbind(group, LV)
+
+		# Group mean differences effects
+		model <- paste0(colnames(LV), "~group")
+	}
+
+	# Hidden modules X -> LY
+	if (HM == "CV") {
+		LY <- clusterGraph(graph = ig, type = type,
+		               HM = "CV",
+		               size = size,
+		               verbose = verbose)
+		if (length(LY) == 0) return(list(fit = NA, M = NA, dataHM = NA))
+		gLM <- LY[[1]]
+		membership <- LY[[2]]
+		LY <- V(gLM)$name[substr(V(gLM)$name, 1, 1) == "C"]
+
+		# Composite Variables(CV) model
+		K <- as.numeric(names(table(membership)))
+		CV <- NULL
+		for(k in 1:length(LY)) {
+			Xk <- subset(names(membership), membership == K[k])
+			Y <- as.matrix(dataY[,which(colnames(dataY) %in% Xk)])
+			pc1 <- cate::factor.analysis(Y = Y, r = 1, method = "pc")$Z
+			CV <- cbind(CV, pc1)
+	}
+	colnames(CV) <- gsub("CY", "CV", LY)
+	rownames(CV) <- rownames(dataY)
+	dataLC <- cbind(group, CV)
+
+	# Group mean differences effects
+	model <- paste0(colnames(CV), "~group")
+	}
+
+	# Hidden modules X -> UV -> Y
+	if (HM == "UV") {
+		if (!is.directed(graph)) {
+			return(message("UV is not applicable with udirected graph !"))
+		}
+		LXY <- clusterGraph(graph = ig, type = type,
+		                HM = "UV",
+		                size = size,
+		                verbose = verbose)
+		if(length(LXY) == 0) return(list(fit = NA, M = NA, dataHM = NA))
+		membership <- LXY[[2]]
+		gLC <- LXY[[3]]
+		LXY <- paste0("HM", names(table(membership)))
+
+		# Unmeasured Variables(UV) model
+		UV <- na <- NULL
+		for (k in 1:length(LXY)) {
+			gk <- gLC[[which(names(gLC) %in% LXY)[k]]]
+			d <- igraph::degree(gk, mode = "in")
+			idx <- which(colnames(dataY) %in% V(gk)$name[d == 0])
+			Xk <- as.matrix(dataY[, idx])
+			idy <- which(colnames(dataY) %in% V(gk)$name[d > 0])
+			if (ncol(Xk) > nrow(Xk) | length(idx) == 0 | length(idy) == 0) {
+				na <- c(na, k)
+				next
+			}
+			Yk <- as.matrix(dataY[, idy])
+			Uk <- Xk%*%solve(t(Xk)%*%Xk)%*%t(Xk)%*%Yk
+			spc1 <- cate::factor.analysis(Y = as.matrix(Uk), r = 1,
+			                              method = "pc")$Z
+			UV <- cbind(UV, spc1)
+		}
+
+		if (length(na) == 0) {
+			colnames(UV) <- gsub("HM", "UV", LXY)
+		} else {
+			colnames(UV) <- gsub("HM", "UV", LXY[-na])
+		}
+		rownames(UV) <- rownames(dataY)
+		dataLC <- cbind(group, UV)
+
+		# Group mean differences effects
+		model <- paste0(colnames(UV), "~group")
+	}
+
+	if (length(group) > 0) {
+		fsr <- sem(model, data = dataLC, se = "standard", fixed.x = TRUE)
+		if (fsr@Fit@converged == TRUE) {
+			srmr <- fitMeasures(fsr, c("srmr"))
+			cat("Model converged:", fsr@Fit@converged, "\nSRMR:", srmr, "\n\n")
+		} else {
+			cat("Model converged:", fsr@Fit@converged, "\nSRMR:", NA, "\n\n")
+			fsr<- NULL
+		}
+
+	} else if (length(group) == 0) {
+		fsr <- NULL
+		dataLC <- cbind(group = rep(NA, nrow(dataY)), dataLC)
+	}
+
+	if (verbose == TRUE) {
+		X <- cbind(dataLC, data)
+		gM <- mergeNodes(graph, membership, HM = HM)
+		sem1 <- SEMfit(gM, X, group)
+	}
+
+	return(list(fit = fsr, membership = membership, dataHM = dataLC))
 }
 
 #' @title Interactome-assisted graph extension
@@ -394,18 +581,19 @@ clusterGraph <- function(graph, type = "wtc", HM = "none", size = 5,
 #'
 #' @examples
 #'
-#' \dontrun{
+#' \donttest{
 #'
-#' # Install data examples, reference networks, and pathways
-#' #devtools::install_github("fernandoPalluzzi/SEMdata")
-#' library(SEMdata)
+#' # Extract from graphite the "Steroid biosynthesis" pathway:
 #'
-#' G <- kegg.pathways$"Steroid biosynthesis"
-#' G <- properties(G)[[1]]
+#' library(graphite)
+#' humanKegg <- pathways("hsapiens", "kegg")
+#' p <- humanKegg[["Steroid biosynthesis"]]
+#' g <- pathwayGraph(p)
+#' graph::nodes(g) <- gsub("ENTREZID:","",graph::nodes(g))
+#' G <- properties(graph_from_graphnel(g))[[1]]
 #'
-#' # Extend a graph using new inferred DAG edges
+#' # Extend a graph using new inferred DAG edges:
 #'
-#' library(SEMdata)
 #' library(huge)
 #' als.npn <- huge.npn(alsData$exprs)
 #'
@@ -413,13 +601,13 @@ clusterGraph <- function(graph, type = "wtc", HM = "none", size = 5,
 #' ext <- extendGraph(list(dag$dag, dag$dag.red), data = als.npn, gnet = kegg)
 #' gplot(ext$Ug)
 #'
-#' # Extend a graph using the inferred bow-free path diagram
+#' # Extend a graph using the inferred bow-free path diagram:
 #'
 #' bap <- SEMbap(graph = G, data = als.npn, gnet = kegg, d = 1, alpha = 0.05)
 #' ext <- extendGraph(list(bap$bap, bap$guu), data = als.npn, gnet = kegg)
 #' gplot(ext$Ug)
 #'
-#' # Create a graph from correlation matrix, using KEGG as reference
+#' # Create a graph from correlation matrix, using KEGG as reference:
 #'
 #' v <- which(colnames(als.npn) %in% V(G)$name)
 #' selectedData <- als.npn[, v]
@@ -429,9 +617,13 @@ clusterGraph <- function(graph, type = "wtc", HM = "none", size = 5,
 #' G1 <- corr2graph(R = cor(selectedData), n = nrow(selectedData),
 #'                  type = "tmfg")
 #' ext <- extendGraph(list(G0, G1), data = selectedData, gnet = kegg)
+#' 
+#' #Graphs
+#' old.par <- par(no.readonly = TRUE)
 #' par(mfrow=c(1,2), mar=rep(1,4))
 #' plot(G1, layout = layout.circle)
 #' plot(ext$Ug, layout = layout.circle)
+#' par(old.par)
 #'
 #' }
 #'
@@ -440,7 +632,7 @@ extendGraph <- function(g = list(), data, gnet, verbose = FALSE, ...)
 	# Set graph (ig, guu, gnet) objects
 	graph <- g[[1]]
 	if (!is_directed(graph)) {
-		cat("ERROR: The first input graph is not a directed graph.\n")
+		message("ERROR: The first input graph is not a directed graph.")
 		return(NULL)
 	}
 	guu <- g[[2]]
@@ -548,223 +740,4 @@ psi2guv <- function(guu, ig, gnet, verbose, ...)
 		guv <- make_empty_graph(n = 0)
 	}
 	return(guv)
-}
-
-#' @title Module scoring
-#'
-#' @description Generate factor scores, principal component scores, or
-#' projection scores of latent, composite, and unmeasured variable modules,
-#' respectively, and fit them in a SEM with exogenous group effect.
-#' @param graph An igraph object.
-#' @param data A matrix or data.frame. Rows correspond to subjects, and
-#' columns to graph nodes.
-#' @param group A binary vector. This vector must be as long as the number
-#' of subjects. Each vector element must be 1 for cases and 0 for control
-#' subjects.
-#' @param HM Hidden model type. For each defined hidden module:
-#' (i) if \code{HM = "LV"}, a latent variable (LV) will be defined as
-#' common unknown cause acting on cluster nodes; (ii) if \code{HM = "CV"},
-#' cluster nodes will be considered as regressors of a latent composite
-#' variable (CV); (iii) if \code{HM = "UV"}, an unmeasured variable (UV)
-#' model will be generated for each module, where source nodes (i.e.,
-#' in-degree = 0) act as common regressors influencing the other nodes
-#' via an unmeasured variable.
-#' @param size Minimum number of nodes per hidden module. By default, a
-#' minimum number of 5 nodes is required.
-#' By default, HM is set to "LV" (i.e., the latent variable model).
-#' @param type Graph clustering method. If \code{type = "tahc"}, network
-#' modules are generated using the tree agglomerative hierarchical
-#' clustering method (Yu et al., 2015).
-#' Other non-tree clustering methods from igraph package include: "wtc"
-#' (default value; walktrap community structure with short random walks),
-#' "ebc" (edge betweeness clustering), "fgc" (fast greedy method), "lbc"
-#' (label propagation method), "lec" (leading eigenvector method), "loc"
-#' (multi-level optimization), "opc" (optimal communiy structure), "sgc"
-#' (spinglass statistical mechanics).
-#' By default, the "wtc" method is used.
-#' @param verbose A logical value. If TRUE, intermediate graphs will be
-#' displayed during the execution. In addition, a condensed graph with
-#' clusters as nodes will be fitted and showed to screen (see also
-#' \code{\link[SEMgraph]{mergeNodes}}). By default, \code{verbode = FALSE}.
-#' @param ... Currently ignored.
-#'
-#' @import igraph
-#' @import lavaan
-#' @importFrom cate factor.analysis
-#' @export
-#'
-#' @seealso
-#' See \code{\link[SEMgraph]{clusterGraph}} and \code{\link[SEMgraph]{cplot}}
-#' for graph clustering, and \code{\link[cate]{factor.analysis}} for
-#' factor analysis.
-#'
-#' @author Mario Grassi \email{mario.grassi@unipv.it}
-#'
-#' @references
-#' Palluzzi F, Grassi M (2021). SEMgraph: An R Package for Causal Network
-#' Analysis of High-Throughput Data with Structural Equation Models.
-#' <arXiv:2103.08332>
-#'
-#' @return A list of 3 objects:
-#' \enumerate{
-#' \item "fit", hidden module fitting as a lavaan object;
-#' \item "membership", hidden module nodes membership;
-#' \code{\link[SEMgraph]{clusterGraph}} function;
-#' \item "dataHM", hidden module data matrix with cluster scores.
-#' }
-#'
-#' @examples
-#'
-#' \dontrun{
-#'
-#' # Install data examples, reference networks, and pathways
-#' #devtools::install_github("fernandoPalluzzi/SEMdata")
-#' library(SEMdata)
-#' library(huge)
-#'
-#' als.npn <- huge.npn(alsData$exprs)
-#'
-#' C <- clusterScore(graph = alsData$graph, data = als.npn,
-#'                   group = alsData$group,
-#'                   HM = "LV",
-#'                   type = "wtc",
-#'                   verbose = TRUE)
-#' summary(C$fit)
-#' head(C$dataHM)
-#' table(C$membership)
-#'
-#' }
-#'
-clusterScore <- function(graph, data, group, HM = "LV", type = "wtc",
-                         size = 5, verbose = FALSE, ...)
-{
-	# Set SEM objects
-	nodes <- colnames(data)[colnames(data) %in% V(graph)$name]
-	dataY <- data[, nodes]
-	ig <- induced_subgraph(graph, vids = which(V(graph)$name %in% nodes))
-	ig <- simplify(ig, remove.loops = TRUE)
-
-	# Hidden modules LX -> Y
-	if (HM == "LV") {
-		LX <- clusterGraph(graph = ig, type = type,
-		               HM = "LV",
-		               size = size,
-		               verbose = verbose)
-		if (length(LX) == 0) return(list(fit = NA, M = NA, dataHM = NA))
-		gLM <- LX[[1]]
-		membership <- LX[[2]]
-		LX <- V(gLM)$name[substr(V(gLM)$name, 1, 1) == "L"]
-
-		# Latent Variables(LV) model
-		K <- as.numeric(names(table(membership)))
-		LV <- NULL
-		for(k in 1:length(LX)) {
-			Xk <- subset(names(membership), membership == K[k])
-			Y <- as.matrix(dataY[, which(colnames(dataY) %in% Xk)])
-			fa1 <- cate::factor.analysis(Y = Y, r = 1, method = "ml")$Z
-			LV <- cbind(LV, fa1)
-		}
-		colnames(LV) <- gsub("LX", "LV", LX)
-		rownames(LV) <- rownames(dataY)
-		dataLC <- cbind(group, LV)
-
-		# Group mean differences effects
-		model <- paste0(colnames(LV), "~group")
-	}
-
-	# Hidden modules X -> LY
-	if (HM == "CV") {
-		LY <- clusterGraph(graph = ig, type = type,
-		               HM = "CV",
-		               size = size,
-		               verbose = verbose)
-		if (length(LY) == 0) return(list(fit = NA, M = NA, dataHM = NA))
-		gLM <- LY[[1]]
-		membership <- LY[[2]]
-		LY <- V(gLM)$name[substr(V(gLM)$name, 1, 1) == "C"]
-
-		# Composite Variables(CV) model
-		K <- as.numeric(names(table(membership)))
-		CV <- NULL
-		for(k in 1:length(LY)) {
-			Xk <- subset(names(membership), membership == K[k])
-			Y <- as.matrix(dataY[,which(colnames(dataY) %in% Xk)])
-			pc1 <- cate::factor.analysis(Y = Y, r = 1, method = "pc")$Z
-			CV <- cbind(CV, pc1)
-	}
-	colnames(CV) <- gsub("CY", "CV", LY)
-	rownames(CV) <- rownames(dataY)
-	dataLC <- cbind(group, CV)
-
-	# Group mean differences effects
-	model <- paste0(colnames(CV), "~group")
-	}
-
-	# Hidden modules X -> UV -> Y
-	if (HM == "UV") {
-		if (!is.directed(graph)) {
-			return(cat("\nUV is not applicable with udirected graph\n"))
-		}
-		LXY <- clusterGraph(graph = ig, type = type,
-		                HM = "UV",
-		                size = size,
-		                verbose = verbose)
-		if(length(LXY) == 0) return(list(fit = NA, M = NA, dataHM = NA))
-		membership <- LXY[[2]]
-		gLC <- LXY[[3]]
-		LXY <- paste0("HM", names(table(membership)))
-
-		# Unmeasured Variables(UV) model
-		UV <- na <- NULL
-		for (k in 1:length(LXY)) {
-			gk <- gLC[[which(names(gLC) %in% LXY)[k]]]
-			d <- igraph::degree(gk, mode = "in")
-			idx <- which(colnames(dataY) %in% V(gk)$name[d == 0])
-			Xk <- as.matrix(dataY[, idx])
-			idy <- which(colnames(dataY) %in% V(gk)$name[d > 0])
-			if (ncol(Xk) > nrow(Xk) | length(idx) == 0 | length(idy) == 0) {
-				na <- c(na, k)
-				next
-			}
-			Yk <- as.matrix(dataY[, idy])
-			Uk <- Xk%*%solve(t(Xk)%*%Xk)%*%t(Xk)%*%Yk
-			spc1 <- cate::factor.analysis(Y = as.matrix(Uk), r = 1,
-			                              method = "pc")$Z
-			UV <- cbind(UV, spc1)
-		}
-
-		if (length(na) == 0) {
-			colnames(UV) <- gsub("HM", "UV", LXY)
-		} else {
-			colnames(UV) <- gsub("HM", "UV", LXY[-na])
-		}
-		rownames(UV) <- rownames(dataY)
-		dataLC <- cbind(group, UV)
-
-		# Group mean differences effects
-		model <- paste0(colnames(UV), "~group")
-	}
-
-	if (length(group) > 0) {
-		fsr <- sem(model, data = dataLC, se = "standard", fixed.x = TRUE)
-		if (fsr@Fit@converged == TRUE) {
-			srmr <- fitMeasures(fsr, c("srmr"))
-			cat("Model converged:", fsr@Fit@converged, "\nSRMR:", srmr, "\n\n")
-		} else {
-			cat("Model converged:", fsr@Fit@converged, "\nSRMR:", NA, "\n\n")
-			fsr<- NULL
-		}
-
-	} else if (length(group) == 0) {
-		fsr <- NULL
-		dataLC <- cbind(group = rep(NA, nrow(dataY)), dataLC)
-	}
-
-	if (verbose == TRUE) {
-		X <- cbind(dataLC, data)
-		gM <- mergeNodes(graph, membership, HM = HM)
-		sem1 <- SEMfit(gM, X, group)
-	}
-
-	return(list(fit = fsr, membership = membership, dataHM = dataLC))
 }

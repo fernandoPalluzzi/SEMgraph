@@ -33,19 +33,10 @@ attribute (e.g., cluster membership).
 }
 \examples{
 
-\dontrun{
-
-# Install data examples, reference networks, and pathways
-#devtools::install_github("fernandoPalluzzi/SEMdata")
-library(SEMdata)
-
-G <- kegg.pathways$"Amyotrophic lateral sclerosis (ALS)"
-# Largest connected component
-G <- properties(G)[[1]]
+# Clustering ALS graph with WTC method
+G <- properties(alsData$graph)[[1]]
 membership <- clusterGraph(graph = G, type = "wtc")
 M <- mergeNodes(G, membership, HM = "LV")
-
-}
 
 }
 \seealso{
