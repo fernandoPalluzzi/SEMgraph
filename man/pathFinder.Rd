@@ -62,15 +62,11 @@ perturbation.
 }
 \examples{
 
-\dontrun{
+\donttest{
 
 # Find and evaluate significantly perturbed paths
 
-# Install data examples, reference networks, and pathways
-#devtools::install_github("fernandoPalluzzi/SEMdata")
-library(SEMdata)
 library(huge)
-
 als.npn <- huge.npn(alsData$exprs)
 
 adjData <- SEMbap(graph = alsData$graph, data = als.npn)$data

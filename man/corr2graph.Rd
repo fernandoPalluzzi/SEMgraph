@@ -53,11 +53,13 @@ C4 <- corr2graph(R = cor(log(sachs$pkc)), n = nrow(sachs$pkc),
                  method = "BH")
 
 # Graphs plots
+old.par <- par(no.readonly = TRUE)
 par(mfrow=c(2,2), mar= rep(2, 4))
 plot(C1, layout=layout.circle, main= "marg"); box(col="gray")
 plot(C2, layout=layout.circle, main= "cond"); box(col="gray")
 plot(C3, layout=layout.circle, main= "mst"); box(col="gray")
 plot(C4, layout=layout.circle, main= "tmfg"); box(col="gray")
+par(old.par)
 
 }
 \references{

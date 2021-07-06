@@ -46,18 +46,15 @@ smallest one is then considered as the overall test P-value
 }
 \examples{
 
-\dontrun{
+#\donttest{
 
-# Install data examples, reference networks, and pathways
-#devtools::install_github("fernandoPalluzzi/SEMdata")
-library(SEMdata)
 library(huge)
-
 als.npn <- huge.npn(alsData$exprs)
+
 sem <- SEMrun(alsData$graph, als.npn)
 C.test <- Shipley.test(sem$graph, als.npn)
 
-}
+#}
 
 }
 \references{

@@ -88,6 +88,9 @@ through a given reference directed graph." />
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -151,10 +154,12 @@ through a given reference directed graph.</p>
 <span class='va'>G1</span> <span class='op'>&lt;-</span> <span class='fu'>orientEdges</span><span class='op'>(</span>ug <span class='op'>=</span> <span class='va'>G0</span>, dg <span class='op'>=</span> <span class='va'>sachs</span><span class='op'>$</span><span class='va'>graph</span><span class='op'>)</span>
 
 <span class='co'># Graphs plotting</span>
+<span class='va'>old.par</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/graphics/par.html'>par</a></span><span class='op'>(</span>no.readonly <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/graphics/par.html'>par</a></span><span class='op'>(</span>mfrow<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>,<span class='fl'>2</span><span class='op'>)</span>, mar<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>2</span>,<span class='fl'>4</span><span class='op'>)</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>G0</span>, layout<span class='op'>=</span><span class='va'>layout.circle</span>, main <span class='op'>=</span> <span class='st'>"Input undirected graph"</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>G1</span>, layout<span class='op'>=</span><span class='va'>layout.circle</span>, main <span class='op'>=</span> <span class='st'>"Output directed graph"</span><span class='op'>)</span>
-</div><div class='img'><img src='orientEdges-1.png' alt='' width='700' height='433' /></div><div class='input'>
+</div><div class='img'><img src='orientEdges-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/par.html'>par</a></span><span class='op'>(</span><span class='va'>old.par</span><span class='op'>)</span>
+
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

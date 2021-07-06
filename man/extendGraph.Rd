@@ -48,18 +48,19 @@ directed paths and new nodes (i.e., new mediators) can be revealed.
 }
 \examples{
 
-\dontrun{
+\donttest{
 
-# Install data examples, reference networks, and pathways
-#devtools::install_github("fernandoPalluzzi/SEMdata")
-library(SEMdata)
+# Extract from graphite the "Steroid biosynthesis" pathway:
 
-G <- kegg.pathways$"Steroid biosynthesis"
-G <- properties(G)[[1]]
+library(graphite)
+humanKegg <- pathways("hsapiens", "kegg")
+p <- humanKegg[["Steroid biosynthesis"]]
+g <- pathwayGraph(p)
+graph::nodes(g) <- gsub("ENTREZID:","",graph::nodes(g))
+G <- properties(graph_from_graphnel(g))[[1]]
 
-# Extend a graph using new inferred DAG edges
+# Extend a graph using new inferred DAG edges:
 
-library(SEMdata)
 library(huge)
 als.npn <- huge.npn(alsData$exprs)
 
@@ -67,13 +68,13 @@ dag <- SEMdag(graph = G, data = als.npn, beta = 0.1)
 ext <- extendGraph(list(dag$dag, dag$dag.red), data = als.npn, gnet = kegg)
 gplot(ext$Ug)
 
-# Extend a graph using the inferred bow-free path diagram
+# Extend a graph using the inferred bow-free path diagram:
 
 bap <- SEMbap(graph = G, data = als.npn, gnet = kegg, d = 1, alpha = 0.05)
 ext <- extendGraph(list(bap$bap, bap$guu), data = als.npn, gnet = kegg)
 gplot(ext$Ug)
 
-# Create a graph from correlation matrix, using KEGG as reference
+# Create a graph from correlation matrix, using KEGG as reference:
 
 v <- which(colnames(als.npn) \%in\% V(G)$name)
 selectedData <- als.npn[, v]
@@ -83,9 +84,13 @@ V(G0)$name <- colnames(selectedData)
 G1 <- corr2graph(R = cor(selectedData), n = nrow(selectedData),
                  type = "tmfg")
 ext <- extendGraph(list(G0, G1), data = selectedData, gnet = kegg)
+
+#Graphs
+old.par <- par(no.readonly = TRUE)
 par(mfrow=c(1,2), mar=rep(1,4))
 plot(G1, layout = layout.circle)
 plot(ext$Ug, layout = layout.circle)
+par(old.par)
 
 }
 

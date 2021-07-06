@@ -48,13 +48,9 @@ Extract and fit clusters from an input graph.
 }
 \examples{
 
-\dontrun{
+\donttest{
 
-# Install data examples, reference networks, and pathways
-#devtools::install_github("fernandoPalluzzi/SEMdata")
-library(SEMdata)
 library(huge)
-
 als.npn <- huge.npn(alsData$exprs)
 
 adjdata <- SEMbap(alsData$graph, als.npn)$data

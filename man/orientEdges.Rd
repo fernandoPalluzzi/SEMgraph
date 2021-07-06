@@ -29,8 +29,10 @@ G0 <- corr2graph(R = cor(log(sachs$pkc)), n = nrow(sachs$pkc), type = "marg")
 G1 <- orientEdges(ug = G0, dg = sachs$graph)
 
 # Graphs plotting
+old.par <- par(no.readonly = TRUE)
 par(mfrow=c(1,2), mar=rep(2,4))
 plot(G0, layout=layout.circle, main = "Input undirected graph")
 plot(G1, layout=layout.circle, main = "Output directed graph")
+par(old.par)
 
 }

@@ -180,21 +180,21 @@ head(parameterEstimates(sem2$fit))
 gplot(sem2$graph, main = "Between group edge differences")
 plot(sem2$graph, layout = layout.circle, main = "Between group edge differences")
 
-\dontrun{
+\donttest{
 
-# Fitting and visualization of a large graph
+# Fitting and visualization of a large pathway:
 
-# Install data examples, reference networks, and pathways
-#devtools::install_github("fernandoPalluzzi/SEMdata")
-library(SEMdata)
+library(graphite)
+humanKegg <- pathways("hsapiens", "kegg")
+p <- humanKegg[["MAPK signaling pathway"]]
+g <- pathwayGraph(p)
+graph::nodes(g) <- gsub("ENTREZID:","",graph::nodes(g))
+G <- properties(graph_from_graphnel(g))[[1]]
+
 library(huge)
-library(org.Hs.eg.db)
-
 als.npn <- huge.npn(alsData$exprs)
-i <- which(names(kegg.pathways) == "MAPK signaling pathway")
-graph <- properties(kegg.pathways[[i]])[[1]]
 
-g1 <- SEMrun(graph, als.npn, alsData$group, algo = "cggm")$graph
+g1 <- SEMrun(G, als.npn, alsData$group, algo = "cggm")$graph
 g2 <- SEMrun(g1, als.npn, alsData$group, fit = 2, algo = "cggm")$graph
 
 # extract the subgraph with between group node and edge differences
@@ -202,8 +202,9 @@ g2 <- g2 - E(g2)[-which(E(g2)$color != "gray50")]
 g <- properties(g2)[[1]]
 
 # plot graph
-E(g)$color<- E(g2)$color[E(g2) \%in\% E(g)]
+library(org.Hs.eg.db)
 V(g)$label <- mapIds(org.Hs.eg.db, V(g)$name, 'SYMBOL', 'ENTREZID')
+E(g)$color<- E(g2)$color[E(g2) \%in\% E(g)]
 gplot(g, l = "fdp", main="node and edge group differences")
 
 }

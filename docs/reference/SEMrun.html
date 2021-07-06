@@ -93,6 +93,9 @@ two nodes) are not allowed." />
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -912,14 +915,73 @@ details, <code><a href='https://rdrr.io/pkg/flip/man/flip.html'>flip</a></code> 
 <span class='fu'><a href='gplot.html'>gplot</a></span><span class='op'>(</span><span class='va'>sem2</span><span class='op'>$</span><span class='va'>graph</span>, main <span class='op'>=</span> <span class='st'>"Between group edge differences"</span><span class='op'>)</span>
 </div><div class='img'><img src='SEMrun-5.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>sem2</span><span class='op'>$</span><span class='va'>graph</span>, layout <span class='op'>=</span> <span class='va'>layout.circle</span>, main <span class='op'>=</span> <span class='st'>"Between group edge differences"</span><span class='op'>)</span>
 </div><div class='img'><img src='SEMrun-6.png' alt='' width='700' height='433' /></div><div class='input'>
-<span class='co'># \dontrun{</span>
+<span class='co'># \donttest{</span>
 
-<span class='co'># Fitting and visualization of a large graph</span>
+<span class='co'># Fitting and visualization of a large pathway:</span>
 
-<span class='co'># Install data examples, reference networks, and pathways</span>
-<span class='co'>#devtools::install_github("fernandoPalluzzi/SEMdata")</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'>SEMdata</span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'>graphite</span><span class='op'>)</span>
+<span class='va'>humanKegg</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/graphite/man/pathways.html'>pathways</a></span><span class='op'>(</span><span class='st'>"hsapiens"</span>, <span class='st'>"kegg"</span><span class='op'>)</span>
+<span class='va'>p</span> <span class='op'>&lt;-</span> <span class='va'>humanKegg</span><span class='op'>[[</span><span class='st'>"MAPK signaling pathway"</span><span class='op'>]</span><span class='op'>]</span>
+<span class='va'>g</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/graphite/man/pathwayGraph.html'>pathwayGraph</a></span><span class='op'>(</span><span class='va'>p</span><span class='op'>)</span>
+<span class='fu'>graph</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/graph/man/graphNEL-class.html'>nodes</a></span><span class='op'>(</span><span class='va'>g</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/grep.html'>gsub</a></span><span class='op'>(</span><span class='st'>"ENTREZID:"</span>,<span class='st'>""</span>,<span class='fu'>graph</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/graph/man/graphNEL-class.html'>nodes</a></span><span class='op'>(</span><span class='va'>g</span><span class='op'>)</span><span class='op'>)</span>
+<span class='va'>G</span> <span class='op'>&lt;-</span> <span class='fu'><a href='properties.html'>properties</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/graph_from_graphnel.html'>graph_from_graphnel</a></span><span class='op'>(</span><span class='va'>g</span><span class='op'>)</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span>
+</div><div class='output co'>#&gt; Frequency distribution of graph components
+#&gt; 
+#&gt;   n.nodes n.graphs
+#&gt; 1       3        1
+#&gt; 2     291        1
+#&gt; 
+#&gt; Percent of vertices in the giant component: 99 %
+#&gt; 
+#&gt;   is.simple      is.dag is.directed is.weighted 
+#&gt;        TRUE       FALSE        TRUE        TRUE 
+#&gt; 
+#&gt; which.mutual.FALSE  which.mutual.TRUE 
+#&gt;               1965                  6 </div><div class='input'>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'>huge</span><span class='op'>)</span>
+<span class='va'>als.npn</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/huge/man/huge.npn.html'>huge.npn</a></span><span class='op'>(</span><span class='va'>alsData</span><span class='op'>$</span><span class='va'>exprs</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; Conducting the nonparanormal (npn) transformation via shrunkun ECDF....done.</div><div class='input'>
+<span class='va'>g1</span> <span class='op'>&lt;-</span> <span class='fu'>SEMrun</span><span class='op'>(</span><span class='va'>G</span>, <span class='va'>als.npn</span>, <span class='va'>alsData</span><span class='op'>$</span><span class='va'>group</span>, algo <span class='op'>=</span> <span class='st'>"cggm"</span><span class='op'>)</span><span class='op'>$</span><span class='va'>graph</span>
+</div><div class='output co'>#&gt; Estimating optimal shrinkage intensity lambda (correlation matrix): 0.0647 
+#&gt; 
+#&gt; GGM (constrained) solver ended normally after 0 iterations 
+#&gt; 
+#&gt; deviance/df: 1.597313  srmr: 0.309441 
+#&gt; 
+#&gt; Brown's combined P-value of node activation: 0 
+#&gt; 
+#&gt; Brown's combined P-value of node inhibition: 0 
+#&gt; </div><div class='input'><span class='va'>g2</span> <span class='op'>&lt;-</span> <span class='fu'>SEMrun</span><span class='op'>(</span><span class='va'>g1</span>, <span class='va'>als.npn</span>, <span class='va'>alsData</span><span class='op'>$</span><span class='va'>group</span>, fit <span class='op'>=</span> <span class='fl'>2</span>, algo <span class='op'>=</span> <span class='st'>"cggm"</span><span class='op'>)</span><span class='op'>$</span><span class='va'>graph</span>
+</div><div class='output co'>#&gt; GGM (constrained) solver ended normally after 0 iterations 
+#&gt; 
+#&gt; deviance/df: 0.7447792  srmr: 0.3063258 
+#&gt; 
+#&gt; Brown's combined P-value of edge activation: 0 
+#&gt; 
+#&gt; Brown's combined P-value of edge inhibition: 1.525516e-08 
+#&gt; </div><div class='input'>
+<span class='co'># extract the subgraph with between group node and edge differences</span>
+<span class='va'>g2</span> <span class='op'>&lt;-</span> <span class='va'>g2</span> <span class='op'>-</span> <span class='fu'><a href='https://rdrr.io/pkg/igraph/man/E.html'>E</a></span><span class='op'>(</span><span class='va'>g2</span><span class='op'>)</span><span class='op'>[</span><span class='op'>-</span><span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/E.html'>E</a></span><span class='op'>(</span><span class='va'>g2</span><span class='op'>)</span><span class='op'>$</span><span class='va'>color</span> <span class='op'>!=</span> <span class='st'>"gray50"</span><span class='op'>)</span><span class='op'>]</span>
+<span class='va'>g</span> <span class='op'>&lt;-</span> <span class='fu'><a href='properties.html'>properties</a></span><span class='op'>(</span><span class='va'>g2</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span>
+</div><div class='output co'>#&gt; Frequency distribution of graph components
+#&gt; 
+#&gt;   n.nodes n.graphs
+#&gt; 1       1      134
+#&gt; 2       2        5
+#&gt; 3       3        1
+#&gt; 4       4        1
+#&gt; 5      13        1
+#&gt; 6      32        1
+#&gt; 7      71        1
+#&gt; 
+#&gt; Percent of vertices in the giant component: 26.6 %
+#&gt; 
+#&gt;   is.simple      is.dag is.directed is.weighted 
+#&gt;        TRUE        TRUE        TRUE        TRUE 
+#&gt; 
+#&gt; which.mutual.FALSE 
+#&gt;                 82 </div><div class='input'>
+<span class='co'># plot graph</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'>org.Hs.eg.db</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span class='message'>Loading required package: AnnotationDbi</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: stats4</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: BiocGenerics</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: parallel</span></div><div class='output co'>#&gt; <span class='message'></span>
 #&gt; <span class='message'>Attaching package: 'BiocGenerics'</span></div><div class='output co'>#&gt; <span class='message'>The following objects are masked from 'package:parallel':</span>
@@ -947,67 +1009,9 @@ details, <code><a href='https://rdrr.io/pkg/flip/man/flip.html'>flip</a></code> 
 #&gt; <span class='message'>    expand.grid</span></div><div class='output co'>#&gt; <span class='message'></span>
 #&gt; <span class='message'>Attaching package: 'IRanges'</span></div><div class='output co'>#&gt; <span class='message'>The following object is masked from 'package:grDevices':</span>
 #&gt; <span class='message'></span>
-#&gt; <span class='message'>    windows</span></div><div class='output co'>#&gt; </div><div class='input'>
-<span class='va'>als.npn</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/huge/man/huge.npn.html'>huge.npn</a></span><span class='op'>(</span><span class='va'>alsData</span><span class='op'>$</span><span class='va'>exprs</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; Conducting the nonparanormal (npn) transformation via shrunkun ECDF....done.</div><div class='input'><span class='va'>i</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>kegg.pathways</span><span class='op'>)</span> <span class='op'>==</span> <span class='st'>"MAPK signaling pathway"</span><span class='op'>)</span>
-<span class='va'>graph</span> <span class='op'>&lt;-</span> <span class='fu'><a href='properties.html'>properties</a></span><span class='op'>(</span><span class='va'>kegg.pathways</span><span class='op'>[[</span><span class='va'>i</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span>
-</div><div class='output co'>#&gt; Frequency distribution of graph components
-#&gt; 
-#&gt;   n.nodes n.graphs
-#&gt; 1       3        1
-#&gt; 2     292        1
-#&gt; 
-#&gt; Percent of vertices in the giant component: 99 %
-#&gt; 
-#&gt;   is.simple      is.dag is.directed is.weighted 
-#&gt;        TRUE       FALSE        TRUE       FALSE 
-#&gt; 
-#&gt; which.mutual.FALSE  which.mutual.TRUE 
-#&gt;               1966                  6 </div><div class='input'>
-<span class='va'>g1</span> <span class='op'>&lt;-</span> <span class='fu'>SEMrun</span><span class='op'>(</span><span class='va'>graph</span>, <span class='va'>als.npn</span>, <span class='va'>alsData</span><span class='op'>$</span><span class='va'>group</span>, algo <span class='op'>=</span> <span class='st'>"cggm"</span><span class='op'>)</span><span class='op'>$</span><span class='va'>graph</span>
-</div><div class='output co'>#&gt; Estimating optimal shrinkage intensity lambda (correlation matrix): 0.0651 
-#&gt; 
-#&gt; GGM (constrained) solver ended normally after 0 iterations 
-#&gt; 
-#&gt; deviance/df: 1.586766  srmr: 0.308381 
-#&gt; 
-#&gt; Brown's combined P-value of node activation: 0 
-#&gt; 
-#&gt; Brown's combined P-value of node inhibition: 0 
-#&gt; </div><div class='input'><span class='va'>g2</span> <span class='op'>&lt;-</span> <span class='fu'>SEMrun</span><span class='op'>(</span><span class='va'>g1</span>, <span class='va'>als.npn</span>, <span class='va'>alsData</span><span class='op'>$</span><span class='va'>group</span>, fit <span class='op'>=</span> <span class='fl'>2</span>, algo <span class='op'>=</span> <span class='st'>"cggm"</span><span class='op'>)</span><span class='op'>$</span><span class='va'>graph</span>
-</div><div class='output co'>#&gt; GGM (constrained) solver ended normally after 0 iterations 
-#&gt; 
-#&gt; deviance/df: 0.740112  srmr: 0.3052719 
-#&gt; 
-#&gt; Brown's combined P-value of edge activation: 0 
-#&gt; 
-#&gt; Brown's combined P-value of edge inhibition: 6.179324e-07 
-#&gt; </div><div class='input'>
-<span class='co'># extract the subgraph with between group node and edge differences</span>
-<span class='va'>g2</span> <span class='op'>&lt;-</span> <span class='va'>g2</span> <span class='op'>-</span> <span class='fu'>E</span><span class='op'>(</span><span class='va'>g2</span><span class='op'>)</span><span class='op'>[</span><span class='op'>-</span><span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='fu'>E</span><span class='op'>(</span><span class='va'>g2</span><span class='op'>)</span><span class='op'>$</span><span class='va'>color</span> <span class='op'>!=</span> <span class='st'>"gray50"</span><span class='op'>)</span><span class='op'>]</span>
-<span class='va'>g</span> <span class='op'>&lt;-</span> <span class='fu'><a href='properties.html'>properties</a></span><span class='op'>(</span><span class='va'>g2</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span>
-</div><div class='output co'>#&gt; Frequency distribution of graph components
-#&gt; 
-#&gt;   n.nodes n.graphs
-#&gt; 1       1      135
-#&gt; 2       2        5
-#&gt; 3       3        1
-#&gt; 4       4        1
-#&gt; 5      13        1
-#&gt; 6      32        1
-#&gt; 7      71        1
-#&gt; 
-#&gt; Percent of vertices in the giant component: 26.5 %
-#&gt; 
-#&gt;   is.simple      is.dag is.directed is.weighted 
-#&gt;        TRUE        TRUE        TRUE        TRUE 
-#&gt; 
-#&gt; which.mutual.FALSE 
-#&gt;                 82 </div><div class='input'>
-<span class='co'># plot graph</span>
-<span class='fu'>E</span><span class='op'>(</span><span class='va'>g</span><span class='op'>)</span><span class='op'>$</span><span class='va'>color</span><span class='op'>&lt;-</span> <span class='fu'>E</span><span class='op'>(</span><span class='va'>g2</span><span class='op'>)</span><span class='op'>$</span><span class='va'>color</span><span class='op'>[</span><span class='fu'>E</span><span class='op'>(</span><span class='va'>g2</span><span class='op'>)</span> <span class='op'>%in%</span> <span class='fu'>E</span><span class='op'>(</span><span class='va'>g</span><span class='op'>)</span><span class='op'>]</span>
-<span class='fu'>V</span><span class='op'>(</span><span class='va'>g</span><span class='op'>)</span><span class='op'>$</span><span class='va'>label</span> <span class='op'>&lt;-</span> <span class='fu'>mapIds</span><span class='op'>(</span><span class='va'>org.Hs.eg.db</span>, <span class='fu'>V</span><span class='op'>(</span><span class='va'>g</span><span class='op'>)</span><span class='op'>$</span><span class='va'>name</span>, <span class='st'>'SYMBOL'</span>, <span class='st'>'ENTREZID'</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>'select()' returned 1:1 mapping between keys and columns</span></div><div class='input'><span class='fu'><a href='gplot.html'>gplot</a></span><span class='op'>(</span><span class='va'>g</span>, l <span class='op'>=</span> <span class='st'>"fdp"</span>, main<span class='op'>=</span><span class='st'>"node and edge group differences"</span><span class='op'>)</span>
+#&gt; <span class='message'>    windows</span></div><div class='output co'>#&gt; </div><div class='input'><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/V.html'>V</a></span><span class='op'>(</span><span class='va'>g</span><span class='op'>)</span><span class='op'>$</span><span class='va'>label</span> <span class='op'>&lt;-</span> <span class='fu'>mapIds</span><span class='op'>(</span><span class='va'>org.Hs.eg.db</span>, <span class='fu'><a href='https://rdrr.io/pkg/igraph/man/V.html'>V</a></span><span class='op'>(</span><span class='va'>g</span><span class='op'>)</span><span class='op'>$</span><span class='va'>name</span>, <span class='st'>'SYMBOL'</span>, <span class='st'>'ENTREZID'</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>'select()' returned 1:1 mapping between keys and columns</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/E.html'>E</a></span><span class='op'>(</span><span class='va'>g</span><span class='op'>)</span><span class='op'>$</span><span class='va'>color</span><span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/igraph/man/E.html'>E</a></span><span class='op'>(</span><span class='va'>g2</span><span class='op'>)</span><span class='op'>$</span><span class='va'>color</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/E.html'>E</a></span><span class='op'>(</span><span class='va'>g2</span><span class='op'>)</span> <span class='op'>%in%</span> <span class='fu'><a href='https://rdrr.io/pkg/igraph/man/E.html'>E</a></span><span class='op'>(</span><span class='va'>g</span><span class='op'>)</span><span class='op'>]</span>
+<span class='fu'><a href='gplot.html'>gplot</a></span><span class='op'>(</span><span class='va'>g</span>, l <span class='op'>=</span> <span class='st'>"fdp"</span>, main<span class='op'>=</span><span class='st'>"node and edge group differences"</span><span class='op'>)</span>
 </div><div class='img'><img src='SEMrun-7.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'># }</span>
 

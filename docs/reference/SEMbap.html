@@ -88,6 +88,9 @@ matrix by removing latent sources of confounding encoded in them." />
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -232,9 +235,8 @@ Wiley Publishing; &lt;ISBN:978-0-470-74366-9&gt;</p>
 #&gt; </div><div class='input'>
 <span class='co'># BAP estimation</span>
 <span class='va'>BAP</span> <span class='op'>&lt;-</span> <span class='fu'>SEMbap</span><span class='op'>(</span>graph <span class='op'>=</span> <span class='va'>sachs</span><span class='op'>$</span><span class='va'>graph</span>, data <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>sachs</span><span class='op'>$</span><span class='va'>pkc</span><span class='op'>)</span>, verbose <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; WARNING: the input graph is not acyclic!
-#&gt;  Applying graph -&gt; DAG conversion ...
-#&gt; DAG conversion: TRUE
+</div><div class='output co'>#&gt; <span class='message'>WARNING: the input graph is not acyclic!</span>
+#&gt; <span class='message'>		 Applying graph -&gt; DAG conversion ...</span></div><div class='output co'>#&gt; DAG conversion: TRUE
 #&gt;  
 #&gt; Degrees of freedom:
 #&gt;  Input graph  = 36 

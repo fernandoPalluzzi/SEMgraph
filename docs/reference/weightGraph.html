@@ -87,6 +87,9 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -226,25 +229,25 @@ Analysis of High-Throughput Data with Structural Equation Models.
                  seed <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.05</span>, <span class='fl'>0.5</span>, <span class='fl'>0.5</span><span class='op'>)</span><span class='op'>)</span>
 
 <span class='co'># New edge attributes</span>
-<span class='fu'>E</span><span class='op'>(</span><span class='va'>G</span><span class='op'>)</span><span class='op'>$</span><span class='va'>pv</span>
+<span class='fu'><a href='https://rdrr.io/pkg/igraph/man/E.html'>E</a></span><span class='op'>(</span><span class='va'>G</span><span class='op'>)</span><span class='op'>$</span><span class='va'>pv</span>
 </div><div class='output co'>#&gt;  [1] 4.401098e-01 5.167191e-61 4.742076e-01 5.848183e-07 1.003647e-09
 #&gt;  [6] 9.642826e-01 2.910306e-03 6.797804e-01 8.370494e-01 2.164419e-01
 #&gt; [11] 5.465880e-01 5.528435e-01 8.129283e-02 8.879150e-02 4.886605e-01
-#&gt; [16] 2.352088e-23 1.495446e-36 3.326762e-14 2.661577e-01 2.661577e-01</div><div class='input'><span class='fu'>E</span><span class='op'>(</span><span class='va'>G</span><span class='op'>)</span><span class='op'>$</span><span class='va'>zsign</span>
+#&gt; [16] 2.352088e-23 1.495446e-36 3.326762e-14 2.661577e-01 2.661577e-01</div><div class='input'><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/E.html'>E</a></span><span class='op'>(</span><span class='va'>G</span><span class='op'>)</span><span class='op'>$</span><span class='va'>zsign</span>
 </div><div class='output co'>#&gt;  [1] 0 1 0 1 1 0 1 0 0 0 0 0 0 0 0 1 1 1 0 0</div><div class='input'>
 <span class='co'># New nodes attributes (1: seed, 0: non-seed)</span>
-<span class='fu'>V</span><span class='op'>(</span><span class='va'>G</span><span class='op'>)</span><span class='op'>$</span><span class='va'>pvlm</span>; <span class='fu'><a href='https://rdrr.io/r/base/table.html'>table</a></span><span class='op'>(</span><span class='fu'>V</span><span class='op'>(</span><span class='va'>G</span><span class='op'>)</span><span class='op'>$</span><span class='va'>pvlm</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/pkg/igraph/man/V.html'>V</a></span><span class='op'>(</span><span class='va'>G</span><span class='op'>)</span><span class='op'>$</span><span class='va'>pvlm</span>; <span class='fu'><a href='https://rdrr.io/r/base/table.html'>table</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/V.html'>V</a></span><span class='op'>(</span><span class='va'>G</span><span class='op'>)</span><span class='op'>$</span><span class='va'>pvlm</span><span class='op'>)</span>
 </div><div class='output co'>#&gt;  [1] 1 1 1 0 1 1 1 1 1 0 1</div><div class='output co'>#&gt; 
 #&gt; 0 1 
-#&gt; 2 9 </div><div class='input'><span class='fu'>V</span><span class='op'>(</span><span class='va'>G</span><span class='op'>)</span><span class='op'>$</span><span class='va'>proto</span>; <span class='fu'><a href='https://rdrr.io/r/base/table.html'>table</a></span><span class='op'>(</span><span class='fu'>V</span><span class='op'>(</span><span class='va'>G</span><span class='op'>)</span><span class='op'>$</span><span class='va'>proto</span><span class='op'>)</span>
+#&gt; 2 9 </div><div class='input'><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/V.html'>V</a></span><span class='op'>(</span><span class='va'>G</span><span class='op'>)</span><span class='op'>$</span><span class='va'>proto</span>; <span class='fu'><a href='https://rdrr.io/r/base/table.html'>table</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/V.html'>V</a></span><span class='op'>(</span><span class='va'>G</span><span class='op'>)</span><span class='op'>$</span><span class='va'>proto</span><span class='op'>)</span>
 </div><div class='output co'>#&gt;  [1] 0 1 0 0 1 1 1 1 0 1 0</div><div class='output co'>#&gt; 
 #&gt; 0 1 
-#&gt; 5 6 </div><div class='input'><span class='fu'>V</span><span class='op'>(</span><span class='va'>G</span><span class='op'>)</span><span class='op'>$</span><span class='va'>qi</span>; <span class='fu'><a href='https://rdrr.io/r/base/table.html'>table</a></span><span class='op'>(</span><span class='fu'>V</span><span class='op'>(</span><span class='va'>G</span><span class='op'>)</span><span class='op'>$</span><span class='va'>qi</span><span class='op'>)</span>
+#&gt; 5 6 </div><div class='input'><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/V.html'>V</a></span><span class='op'>(</span><span class='va'>G</span><span class='op'>)</span><span class='op'>$</span><span class='va'>qi</span>; <span class='fu'><a href='https://rdrr.io/r/base/table.html'>table</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/V.html'>V</a></span><span class='op'>(</span><span class='va'>G</span><span class='op'>)</span><span class='op'>$</span><span class='va'>qi</span><span class='op'>)</span>
 </div><div class='output co'>#&gt;  [1] 1 1 1 1 1 0 0 0 0 0 0</div><div class='output co'>#&gt; 
 #&gt; 0 1 
 #&gt; 6 5 </div><div class='input'>
 <span class='co'># Reduced graph (using highest closeness nodes)</span>
-<span class='va'>R</span> <span class='op'>&lt;-</span> <span class='fu'>induced_subgraph</span><span class='op'>(</span><span class='va'>G</span>, vids <span class='op'>=</span> <span class='fu'>V</span><span class='op'>(</span><span class='va'>G</span><span class='op'>)</span><span class='op'>$</span><span class='va'>name</span><span class='op'>[</span><span class='fu'>V</span><span class='op'>(</span><span class='va'>G</span><span class='op'>)</span><span class='op'>$</span><span class='va'>qi</span> <span class='op'>==</span> <span class='fl'>1</span><span class='op'>]</span><span class='op'>)</span>
+<span class='va'>R</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/igraph/man/subgraph.html'>induced_subgraph</a></span><span class='op'>(</span><span class='va'>G</span>, vids <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/pkg/igraph/man/V.html'>V</a></span><span class='op'>(</span><span class='va'>G</span><span class='op'>)</span><span class='op'>$</span><span class='va'>name</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/V.html'>V</a></span><span class='op'>(</span><span class='va'>G</span><span class='op'>)</span><span class='op'>$</span><span class='va'>qi</span> <span class='op'>==</span> <span class='fl'>1</span><span class='op'>]</span><span class='op'>)</span>
 <span class='va'>R</span> <span class='op'>&lt;-</span> <span class='fu'><a href='properties.html'>properties</a></span><span class='op'>(</span><span class='va'>R</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span>
 </div><div class='output co'>#&gt; Frequency distribution of graph components
 #&gt; 

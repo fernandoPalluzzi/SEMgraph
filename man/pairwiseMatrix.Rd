@@ -19,6 +19,9 @@ pairwiseMatrix(x, y = NULL, size = nrow(x), r = 4, c = 4, ...)
 
 \item{...}{Currently ignored.}
 }
+\value{
+No return value
+}
 \description{
 Display a pairwise scatter plot of two datasets for a
 random selection of variables. If the second dataset is not given,
