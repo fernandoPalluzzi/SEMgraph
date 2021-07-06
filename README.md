@@ -1,5 +1,7 @@
 # SEMgraph
-Network Analysis and Causal Learning with Structural Equation Modeling
+**Network Analysis** and **Causal Learning** with **Structural Equation Modeling**.
+
+# Overview
 
 **SEMgraph**  Estimate networks and causal relations in complex systems through
 Structural Equation Modeling (SEM). **SEMgraph** comes with the following functionalities:
@@ -13,33 +15,28 @@ graph conversion to DAG, and graph creation from correlation matrices.
 parallelization settings for fast fitting in case of very large models.
 
 - Automated data-driven model building and improvement, through causal 
-structure learning and bow-free interaction search and latent variable 
+structure learning, bow-free interaction search, and latent variable 
 confounding adjustment.
 
 - Perturbed paths finding, community searching and sample scoring, 
 together with graph plotting utilities, tracing model architecture 
 modifications and perturbation (i.e., activation or repression) routes.
 
+The *SEMgraph-replicationCode.R* file offers a quick-start guide to explore general **SEMgraph** functionalities.
+
 ## Installation
 
-The latest stable version can be installed from CRAN:
-
-``` r
-install.packages("SEMgraph")
-```
-
-The latest development version can be installed from GitHub:
-
-``` r
-# install.packages("devtools")
+The development version of **SEMgraph** can be installed in **R** through:
+```{r, echo = FALSE}
 devtools::install_github("fernandoPalluzzi/SEMgraph")
 ```
 
-Do not forget to install the SEMdata package too! It contains useful
-high-throughput sequencing data, reference networks, and pathways for
-SEMgraph training:
-
-``` r
+Do not forget to install the [**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata) package too! It contains useful high-throughput 
+sequencing data, reference networks, and pathways for **SEMgraph** training:
+```{r, echo = FALSE}
 devtools::install_github("fernandoPalluzzi/SEMdata")
 ```
 
+# References
+
+Palluzzi F, Grassi M. **SEMgraph: An R Package for Causal Network Analysis of High-Throughput Data with Structural Equation Models**. Mar 2021; arXiv:2103.08332.
