@@ -49,4 +49,4 @@ Next version of SEMgraph will include new functionalities for *de novo* (data-dr
 
 ## References
 
-Palluzzi F, Grassi M. SEMgraph: **An R Package for Causal Network Analysis of High-Throughput Data with Structural Equation Models**. Mar 2021; arXiv:2103.08332.
+Palluzzi F, Grassi M. **SEMgraph: An R Package for Causal Network Analysis of High-Throughput Data with Structural Equation Models**. Mar 2021; arXiv:2103.08332.
