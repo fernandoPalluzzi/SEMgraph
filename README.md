@@ -1,5 +1,5 @@
 # SEMgraph
-Network Analysis and Causal Learning with Structural Equation Modeling
+**Network Analysis** and **Causal Learning** with **Structural Equation Modeling**
 
 **SEMgraph**  Estimate networks and causal relations in complex systems through
 Structural Equation Modeling (SEM). **SEMgraph** comes with the following functionalities:
