@@ -45,7 +45,7 @@ devtools::install_github("fernandoPalluzzi/SEMdata")
 
 ## Coming soon
 
-Next version of SEMgraph will include new functionalities for *de novo* (data-driven) model building. A draft version of this functionality is implemented in the unstable release 1.0.2.
+Next versions of SEMgraph will include new functionalities for *de novo* (data-driven) model building. A draft version of this functionality is implemented in the unstable release 1.0.2 "Parallel Universes".
 
 ## References
 
