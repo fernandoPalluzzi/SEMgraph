@@ -35,7 +35,7 @@ The latest development version can be installed from GitHub:
 devtools::install_github("fernandoPalluzzi/SEMgraph")
 ```
 
-Do not forget to install the [SEMdata](https://github.com/fernandoPalluzzi/SEMdata) 
+Do not forget to install the [**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata) 
 package too! It contains useful high-throughput sequencing data, reference networks, 
 and pathways for SEMgraph training:
 
@@ -49,4 +49,4 @@ Next version of SEMgraph will include new functionalities for *de novo* (data-dr
 
 ## References
 
-Palluzzi F, Grassi M. SEMgraph: An R Package for Causal Network Analysis of High-Throughput Data with Structural Equation Models. Mar 2021; arXiv:2103.08332.
+Palluzzi F, Grassi M. SEMgraph: **An R Package for Causal Network Analysis of High-Throughput Data with Structural Equation Models**. Mar 2021; arXiv:2103.08332.
