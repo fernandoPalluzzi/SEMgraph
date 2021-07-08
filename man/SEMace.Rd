@@ -68,7 +68,7 @@ print(ace2)
 \references{
 Witte J, Henckel L, Maathuis MH, Didelez V (2020). On efficient
 adjustment in causal graphs. arXiv:2002.06825 [math.ST].
-<https://arxiv.org/abs/2002.06825>
+<https://arxiv.org/abs/2002.06825/>
 }
 \author{
 Mario Grassi \email{mario.grassi@unipv.it}

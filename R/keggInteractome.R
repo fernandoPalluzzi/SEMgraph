@@ -15,7 +15,7 @@
 #  GNU General Public License for more details.
 
 #  You should have received a copy of the GNU General Public License
-#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # -------------------------------------------------------------------- #
 
@@ -30,7 +30,7 @@
 #' @format
 #' "kegg" is an igraph network object of 5934 nodes and 77158 edges 
 #' corresponding to the union of 306 KEGG pathways.
-#' @source \url{https://www.kegg.jp/kegg}
+#' @source \url{https://www.genome.jp/kegg/}
 #' @references
 #' 
 #' Kanehisa M, Goto S (1999). KEGG: kyoto encyclopedia of genes and genomes. 

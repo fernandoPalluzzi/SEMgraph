@@ -46,5 +46,5 @@ sib <- V(sachs$graph)[siblings(sachs$graph, "PIP3")]; sib
 \references{
 Rina Foygel Barber, Mathias Drton and Luca Weihs (2019). SEMID:
 Identifiability of Linear Structural Equation Models. R package
-version 0.3.2. <https://CRAN.R-project.org/package=SEMID>
+version 0.3.2. <https://CRAN.R-project.org/package=SEMID/>
 }
