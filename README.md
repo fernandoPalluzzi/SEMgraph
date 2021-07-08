@@ -22,7 +22,7 @@ modifications and perturbation (i.e., activation or repression) routes.
 
 ## Installation
 
-The latest stable version can be installed from [**CRAN**](https://cran.r-project.org/web/packages/SEMgraph/index.html):
+The latest stable version can be installed from [**CRAN**](https://CRAN.R-project.org/package=SEMgraph):
 
 ``` r
 install.packages("SEMgraph")
