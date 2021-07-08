@@ -117,7 +117,7 @@ Acta Informatica, 15(2): 141-145. <https://doi.org/10.1007/BF00288961>
 
 Simon Dirmeier (2018). diffusr: Network Diffusion Algorithms. R
 package version 0.1.4.
-<https://CRAN.R-project.org/package=diffusr>
+<https://CRAN.R-project.org/package=diffusr/>
 }
 \author{
 Mario Grassi \email{mario.grassi@unipv.it}

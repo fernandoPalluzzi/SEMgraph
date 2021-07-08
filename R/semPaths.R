@@ -15,7 +15,7 @@
 #  GNU General Public License for more details.
 
 #  You should have received a copy of the GNU General Public License
-#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # -------------------------------------------------------------------- #
 
@@ -273,7 +273,7 @@ SEMstart <- function(ig, data, group, a, ...)
 #'
 #' Williams D (2020). GGMncv: Gaussian Graphical Models with Non-Convex
 #' Penalties. R package version 1.1.0.
-#' <https://CRAN.R-project.org/package=GGMncv>
+#' <https://CRAN.R-project.org/package=GGMncv/>
 #'
 #' @seealso See \code{\link[ggm]{fitAncestralGraph}} for RICF algorithm
 #' details, \code{\link[flip]{flip}} for randomization P-values, and
@@ -1739,7 +1739,7 @@ EXT_SET <- function(graph, gnet, d = 2, dag = TRUE, ...)
 #'
 #' Witte J, Henckel L, Maathuis MH, Didelez V (2020). On efficient
 #' adjustment in causal graphs. arXiv:2002.06825 [math.ST].
-#' <https://arxiv.org/abs/2002.06825>
+#' <https://arxiv.org/abs/2002.06825/>
 #'
 #' @examples
 #'

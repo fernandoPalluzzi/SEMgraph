@@ -9,7 +9,10 @@ alsData is a list of 4 objects:
 \enumerate{
 \item "graph", ALS graph as the largest connected component of the 
 "Amyotrophic lateral sclerosis (ALS)" pathway from KEGG database;
-\item "exprs", a matrix of 160 rows (subjects) and 17695 columns (genes). 
+\item "exprs", a matrix of 160 rows (subjects) and 303 columns (genes)
+extracted from the original 17695. This subset includes genes from 
+KEGG ALS signaling pathway, MAPK signaling pathway, and Steroid 
+biosynthesis pathway, needed to run SEMgraph examples.
 Raw data from the GEO dataset GSE124439 (Tam et al., 2019) were 
 pre-processed applying batch effect correction, using the sva R package 
 (Leek et al., 2012), to remove data production center and brain area 
@@ -23,7 +26,7 @@ and blacklisted samples.
 }
 }
 \source{
-\url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE124439}
+\url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE124439/}
 }
 \usage{
 alsData

@@ -238,7 +238,7 @@ Analysis of High-Throughput Data with Structural Equation Models.
 
 Williams D (2020). GGMncv: Gaussian Graphical Models with Non-Convex
 Penalties. R package version 1.1.0.
-<https://CRAN.R-project.org/package=GGMncv>
+<https://CRAN.R-project.org/package=GGMncv/>
 }
 \seealso{
 See \code{\link[ggm]{fitAncestralGraph}} for RICF algorithm

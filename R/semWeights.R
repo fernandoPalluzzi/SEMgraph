@@ -15,7 +15,7 @@
 #  GNU General Public License for more details.
 
 #  You should have received a copy of the GNU General Public License
-#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # -------------------------------------------------------------------- #
 
@@ -423,7 +423,7 @@ seedweight <- function(ig, data, group, alpha = 0.05, h = 0.2, q = 0.5, ...)
 #'
 #' Simon Dirmeier (2018). diffusr: Network Diffusion Algorithms. R
 #' package version 0.1.4.
-#' <https://CRAN.R-project.org/package=diffusr>
+#' <https://CRAN.R-project.org/package=diffusr/>
 #'
 #' @examples
 #' 

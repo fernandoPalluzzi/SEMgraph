@@ -9,7 +9,7 @@
 corresponding to the union of 306 KEGG pathways.
 }
 \source{
-\url{https://www.kegg.jp/kegg}
+\url{https://www.genome.jp/kegg/}
 }
 \usage{
 kegg

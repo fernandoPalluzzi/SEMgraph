@@ -15,7 +15,7 @@
 #  GNU General Public License for more details.
 
 #  You should have received a copy of the GNU General Public License
-#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # -------------------------------------------------------------------- #
 
@@ -76,32 +76,30 @@
 #'
 #' \dontrun{
 #'
-#' # Install data examples, reference networks, and pathways
-#' #devtools::install_github("fernandoPalluzzi/SEMdata")
+#' # Install data examples, reference networks, and pathways:
+#' # devtools::install_github("fernandoPalluzzi/SEMdata")
 #' library(SEMdata)
 #' library(huge)
 #'
 #' als.npn <- huge.npn(alsData$exprs)
 #'
-#' #selection of FTD pathways from KEGG site:
-#' # https://www.genome.jp/dbget-bin/www_bget?ds:H00078
+#' #selection of FTD pathways from KEGG
 #'
-#' paths.name<- c(
-#'  "MAPK signaling pathway",
-#'  "Protein processing in endoplasmic reticulum",
-#'  "Endocytosis",
-#'  "Wnt signaling pathway",
-#'  "Notch signaling pathway",
-#'  "Neurotrophin signaling pathway",
-#'  "Amyotrophic lateral sclerosis (ALS)")
-#'
-#' I <- which(names(kegg.pathways) %in% paths.name)
-#' GSA <- SEMgsa(kegg.pathways[I], als.npn, alsData$group,
+#' paths.name <- c("MAPK signaling pathway",
+#'                 "Protein processing in endoplasmic reticulum",
+#'                 "Endocytosis",
+#'                 "Wnt signaling pathway",
+#'                 "Notch signaling pathway",
+#'                 "Neurotrophin signaling pathway",
+#'                 "Amyotrophic lateral sclerosis (ALS)")
+#' 
+#' j <- which(names(kegg.pathways) %in% paths.name)
+#' GSA <- SEMgsa(kegg.pathways[j], als.npn, alsData$group,
 #'               method = "bonferroni", alpha = 0.05,
 #'               n_rep = 1000)
 #' GSA$gsa
 #' GSA$DRN
-#'
+#' 
 #' }
 #'
 SEMgsa <- function(g = list(), data, group, method = "BH", alpha = 0.05,
@@ -1338,7 +1336,7 @@ modelSearch <- function(graph, data, gnet = NULL, d = 2, search = "basic",
 #'
 #' }
 #'
-pathFinder <- function(graph, data, group=NULL, ace = NULL, path = "directed",
+pathFinder <- function(graph, data, group = NULL, ace = NULL, path = "directed",
                        method = "none", alpha = 0.05, verbose = FALSE, ...)
 {
 	if (is.null(ace)) {
@@ -1587,7 +1585,7 @@ pairwiseMatrix<- function (x, y = NULL, size = nrow(x), r = 4, c = 4, ...)
 #' @references
 #' Rina Foygel Barber, Mathias Drton and Luca Weihs (2019). SEMID:
 #' Identifiability of Linear Structural Equation Models. R package
-#' version 0.3.2. <https://CRAN.R-project.org/package=SEMID>
+#' version 0.3.2. <https://CRAN.R-project.org/package=SEMID/>
 #'
 #' @examples
 #'
