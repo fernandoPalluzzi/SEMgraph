@@ -1,5 +1,5 @@
 # SEMgraph
-**Network Analysis** and **Causal Learning** with **Structural Equation Modeling**
+**Causal network inference and discovery** with **Structural Equation Modeling**
 
 **SEMgraph**  Estimate networks and causal relations in complex systems through
 Structural Equation Modeling (SEM). **SEMgraph** comes with the following functionalities:
@@ -43,9 +43,13 @@ and pathways for SEMgraph training:
 devtools::install_github("fernandoPalluzzi/SEMdata")
 ```
 
+## Getting help
+
+See our website [**HERE**](https://fernandopalluzzi.github.io/SEMgraph/) for help and examples.
+
 ## Coming soon
 
-Next versions of SEMgraph will include new functionalities for *de novo* (data-driven) model building. A draft version of this functionality is implemented in the unstable release 1.0-beta2 "Parallel Universes".
+Next versions of SEMgraph will include new functionalities for *de novo* (data-driven) causal model learning and new inference methods.
 
 ## References
 
