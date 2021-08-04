@@ -73,7 +73,13 @@ two nodes) are not allowed." />
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false">
         <span class="sr-only">Toggle navigation</span>
         <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>#> Warning: lavaan WARNING:
+#>     model syntax contains variance/covariance/intercept formulas
+#>     involving (an) exogenous variable(s): [zPIP3 zPKA]; These
+#>     variables will now be treated as random introducing additional
+#>     free parameters. If you wish to treat those variables as fixed,
+#>     remove these formulas from the model syntax. Otherwise, consider
+#>     adding the fixed.x = FALSE option.
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
@@ -984,32 +990,6 @@ details, <code><a href='https://rdrr.io/pkg/flip/man/flip.html'>flip</a></code> 
 <span class='co'># plot graph</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'>org.Hs.eg.db</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span class='message'>Loading required package: AnnotationDbi</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: stats4</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: BiocGenerics</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: parallel</span></div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>Attaching package: 'BiocGenerics'</span></div><div class='output co'>#&gt; <span class='message'>The following objects are masked from 'package:parallel':</span>
-#&gt; <span class='message'></span>
-#&gt; <span class='message'>    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,</span>
-#&gt; <span class='message'>    clusterExport, clusterMap, parApply, parCapply, parLapply,</span>
-#&gt; <span class='message'>    parLapplyLB, parRapply, parSapply, parSapplyLB</span></div><div class='output co'>#&gt; <span class='message'>The following objects are masked from 'package:igraph':</span>
-#&gt; <span class='message'></span>
-#&gt; <span class='message'>    normalize, path, union</span></div><div class='output co'>#&gt; <span class='message'>The following objects are masked from 'package:stats':</span>
-#&gt; <span class='message'></span>
-#&gt; <span class='message'>    IQR, mad, sd, var, xtabs</span></div><div class='output co'>#&gt; <span class='message'>The following objects are masked from 'package:base':</span>
-#&gt; <span class='message'></span>
-#&gt; <span class='message'>    anyDuplicated, append, as.data.frame, basename, cbind, colnames,</span>
-#&gt; <span class='message'>    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,</span>
-#&gt; <span class='message'>    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,</span>
-#&gt; <span class='message'>    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,</span>
-#&gt; <span class='message'>    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,</span>
-#&gt; <span class='message'>    union, unique, unsplit, which.max, which.min</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: Biobase</span></div><div class='output co'>#&gt; <span class='message'>Welcome to Bioconductor</span>
-#&gt; <span class='message'></span>
-#&gt; <span class='message'>    Vignettes contain introductory material; view with</span>
-#&gt; <span class='message'>    'browseVignettes()'. To cite Bioconductor, see</span>
-#&gt; <span class='message'>    'citation("Biobase")', and for packages 'citation("pkgname")'.</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: IRanges</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: S4Vectors</span></div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>Attaching package: 'S4Vectors'</span></div><div class='output co'>#&gt; <span class='message'>The following object is masked from 'package:base':</span>
-#&gt; <span class='message'></span>
-#&gt; <span class='message'>    expand.grid</span></div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>Attaching package: 'IRanges'</span></div><div class='output co'>#&gt; <span class='message'>The following object is masked from 'package:grDevices':</span>
-#&gt; <span class='message'></span>
-#&gt; <span class='message'>    windows</span></div><div class='output co'>#&gt; </div><div class='input'><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/V.html'>V</a></span><span class='op'>(</span><span class='va'>g</span><span class='op'>)</span><span class='op'>$</span><span class='va'>label</span> <span class='op'>&lt;-</span> <span class='fu'>mapIds</span><span class='op'>(</span><span class='va'>org.Hs.eg.db</span>, <span class='fu'><a href='https://rdrr.io/pkg/igraph/man/V.html'>V</a></span><span class='op'>(</span><span class='va'>g</span><span class='op'>)</span><span class='op'>$</span><span class='va'>name</span>, <span class='st'>'SYMBOL'</span>, <span class='st'>'ENTREZID'</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span class='message'>'select()' returned 1:1 mapping between keys and columns</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/E.html'>E</a></span><span class='op'>(</span><span class='va'>g</span><span class='op'>)</span><span class='op'>$</span><span class='va'>color</span><span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/igraph/man/E.html'>E</a></span><span class='op'>(</span><span class='va'>g2</span><span class='op'>)</span><span class='op'>$</span><span class='va'>color</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/E.html'>E</a></span><span class='op'>(</span><span class='va'>g2</span><span class='op'>)</span> <span class='op'>%in%</span> <span class='fu'><a href='https://rdrr.io/pkg/igraph/man/E.html'>E</a></span><span class='op'>(</span><span class='va'>g</span><span class='op'>)</span><span class='op'>]</span>
 <span class='fu'><a href='gplot.html'>gplot</a></span><span class='op'>(</span><span class='va'>g</span>, l <span class='op'>=</span> <span class='st'>"fdp"</span>, main<span class='op'>=</span><span class='st'>"node and edge group differences"</span><span class='op'>)</span>
 </div><div class='img'><img src='SEMrun-7.png' alt='' width='700' height='433' /></div><div class='input'>
