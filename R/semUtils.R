@@ -315,6 +315,7 @@ gplot <- function(graph, l = "dot", main = "", cex.main = 1, font.main = 1,
 	g <- as_graphnel(graph)
 
 	vcol <- V(graph)$color
+	vshape <- V(graph)$shape
 	vsize <- V(graph)$size
 	vlab <- V(graph)$label
 	ecol <- E(graph)$color
@@ -324,6 +325,10 @@ gplot <- function(graph, l = "dot", main = "", cex.main = 1, font.main = 1,
 	if (length(vcol) > 0) {
 		names(vcol) <- V(graph)$name
 		vcol <- vcol[graph::nodes(g)]
+	}
+	if (length(vshape) > 0) {
+		names(vshape) <- V(graph)$name
+		vshape <- vshape[graph::nodes(g)]
 	}
 	if (length(vsize) > 0) {
 		names(vsize) <- V(graph)$name
@@ -367,7 +372,7 @@ gplot <- function(graph, l = "dot", main = "", cex.main = 1, font.main = 1,
 	                                label = vlab, lwd = lwd,
 	                                textCol = color.txt,
 	                                fontsize = fontsize, cex = cex,
-	                                shape = shape, width = w, height = h)
+	                                shape = vshape, width = w, height = h)
 	graph::edgeRenderInfo(g) <- list(col = ecol, lty = 1, lwd = elwd)
 	graph::graphRenderInfo(g) <- list(main = main, cex.main = cex.main,
 	                                  font.main = font.main)
@@ -375,6 +380,7 @@ gplot <- function(graph, l = "dot", main = "", cex.main = 1, font.main = 1,
 	
 	return(invisible(g))
 }
+
 
 #' @title Correlation matrix to graph
 #'
