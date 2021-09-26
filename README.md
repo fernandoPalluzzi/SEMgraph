@@ -51,15 +51,15 @@ See our website [**HERE**](https://fernandopalluzzi.github.io/SEMgraph/) for hel
 
 **SEMgraph** offers several datasets to work with for both training and research. They include:
 
-- **KEGG** directed reference network of 5934 nodes and 77158 edges, derived from the [**KEGG**](https://www.genome.jp/kegg/) database.
+- [**KEGG**](https://www.genome.jp/kegg/) directed reference network of 5934 nodes and 77158 edges, derived from the **KEGG** database.
 
 - **KEGG pathways**. A comprehensive list of 306 KEGG pathways (last update: April 2020). Available with the [**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata) expansion.
 
-- **Reactome** directed reference network of 9762 nodes and 416128, derived from the [**Reactome**](https://reactome.org) database. Available with the [**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata) expansion.
+- [**Reactome**](https://reactome.org) directed reference network of 9762 nodes and 416128, derived from the **Reactome** database. Available with the [**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata) expansion.
 
 - **Reactome pathways**. A comprehensive list of 1641 pathways (last update: April 2020). Available with the [**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata) expansion.
 
-- **STRING** interactome (version 10.5) of 9725 nodes and 170987 edges. Available with the [**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata) expansion.
+- [**STRING**](https://string-db.org/) interactome (version 10.5) of 9725 nodes and 170987 edges. Available with the [**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata) expansion.
 
 - **Amyotrophic Lateral Sclerosis** (ALS) RNA-seq data (139 cases and 21 healthy controls), from Tam O.H. *et al.*, 2019 (GEO accession: [**GSE124439**](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE124439)). Available with the [**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata) expansion.
 
