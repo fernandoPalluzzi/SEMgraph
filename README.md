@@ -55,7 +55,7 @@ See our website [**HERE**](https://fernandopalluzzi.github.io/SEMgraph/) for hel
 
 - **KEGG pathways**. A comprehensive list of 306 KEGG pathways (last update: April 2020). [[**\*\***](https://github.com/fernandoPalluzzi/SEMdata)]
 
-- [**Reactome**](https://reactome.org) directed reference network of 9762 nodes and 416128 edges, derived from the **Reactome** database. [[**\*\***](https://github.com/fernandoPalluzzi/SEMdata)]
+- [**Reactome**](https://reactome.org) directed reference network of 9762 nodes and 416128 edges, derived from **Reactome**. [[**\*\***](https://github.com/fernandoPalluzzi/SEMdata)]
 
 - **Reactome pathways**. A comprehensive list of 1641 pathways (last update: April 2020). [[**\*\***](https://github.com/fernandoPalluzzi/SEMdata)]
 
@@ -69,7 +69,7 @@ See our website [**HERE**](https://fernandopalluzzi.github.io/SEMgraph/) for hel
 
 ## Coming soon
 
-Next versions of SEMgraph will include new updated databases, new functionalities for *de novo* (data-driven) causal model learning, and new inference methods.
+Next versions of SEMgraph will include new updated datasets, new functionalities for *de novo* (data-driven) causal model learning, and new inference methods.
 
 ## References
 
