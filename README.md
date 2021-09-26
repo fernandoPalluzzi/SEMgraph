@@ -69,7 +69,7 @@ See our website [**HERE**](https://fernandopalluzzi.github.io/SEMgraph/) for hel
 
 ## Coming soon
 
-Next versions of SEMgraph will include new functionalities for *de novo* (data-driven) causal model learning and new inference methods.
+Next versions of SEMgraph will include new updated databases, new functionalities for *de novo* (data-driven) causal model learning, and new inference methods.
 
 ## References
 
