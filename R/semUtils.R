@@ -485,14 +485,14 @@ corr2graph <- function(R, n, type = "marg", method = "none",
 		if (length(del) > 0) A <- A0[-del, -del] else A <- A0
 		ug <- graph_from_adjacency_matrix(A, mode = "undirected")
 	}
-    if (type == "mst") {
+	if (type == "mst") {
 		D <- diag(p) - K^2
 		gA <- graph_from_adjacency_matrix(D, mode = "undirected",
 		                                  weighted = TRUE)
 		ug <- igraph::mst(gA, algorithm = "prim")
 	}
 	if (type == "tmfg") ug <- TMFG(K)$graph
-
+	
 	return(graph = ug)
 }
 
@@ -656,26 +656,26 @@ graph2lavaan <- function(graph, nodes = V(graph)$name, ...)
 #'
 graph2dagitty <- function (graph, canonical = FALSE, verbose = FALSE, ...)
 {
-    dg <- graph - E(graph)[which_mutual(graph)]
+	dg <- graph - E(graph)[which_mutual(graph)]
 	ug <- as.undirected(graph - E(graph)[!which_mutual(graph)])
 	ed <- attr(E(dg), "vnames")
-    eb <- attr(E(ug), "vnames")
-    de <- paste(gsub("\\|", "->", ed), collapse = "\n")
-
-    if (length(eb) == 0) {
+	eb <- attr(E(ug), "vnames")
+	de <- paste(gsub("\\|", "->", ed), collapse = "\n")
+	
+	if (length(eb) == 0) {
 		dagi <- paste0("dag {\n", de, "\n}")
-    } else {
+	} else {
 		be <- paste(gsub("\\|", "<->", eb), collapse = "\n")
 		dagi <- paste0("dag {\n", de, "\n", be, "\n}")
-    }
-
+	}
+	
 	if (verbose) plot(dagitty::graphLayout(dagi))
 	if (canonical) {
 		dagi <- dagitty::canonicalize(dagi)
 		if (verbose) plot(dagitty::graphLayout(dagi$g))
 		return(dagi$g)
 	}
-    return(dagi)
+	return(dagi)
 }
 
 #' @title Convert directed graphs to directed acyclic graphs (DAGs)
@@ -815,10 +815,10 @@ graph2dag <- function(graph, data, bap = FALSE, time.limit = Inf, ...)
 orientEdges<- function(ug, dg, ...)
 {
 	if (is_directed(ug)){
-	 return(message("ERROR: the input graph is a Directed graph !"))
+		return(message("ERROR: the input graph is a Directed graph !"))
 	}
 	if (!is_directed(dg)){
-	 return(message("ERROR: the reference graph is an Undirected graph !"))
+		return(message("ERROR: the reference graph is an Undirected graph !"))
 	}
 	mg <- as.directed(ug, mode = "mutual")
 	exy0 <- attr(E(mg), "vnames")
@@ -1549,38 +1549,40 @@ extractClusters <- function(graph, data, group = NULL, membership = NULL,
 #'
 pairwiseMatrix<- function (x, y = NULL, size = nrow(x), r = 4, c = 4, ...)
 {
-    if (r * c > ncol(x)) {
-  	 r <- r - 1
-	 c <- c - 1
-	 p <- 1:(r * c)
-    }else{
-	 p <- sample(1:ncol(x), size = r * c)
+	if (r * c > ncol(x)) {
+		r <- r - 1
+		c <- c - 1
+		p <- 1:(r * c)
+	} else {
+		p <- sample(1:ncol(x), size = r * c)
 	}
-    n <- sample(1:nrow(x), size = size)
-    vnames <- colnames(x)
-    if (is.null(y)) {
-        xx <- x[, vnames]
+	n <- sample(1:nrow(x), size = size)
+	vnames <- colnames(x)
+	if (is.null(y)) {
+		xx <- x[, vnames]
 		old.par <- par(no.readonly = TRUE)
 		par(mfrow = c(r, c), mar = rep(3, 4))
 		for (j in p) {
-            h <- hist(xx[n, j], breaks = 30, freq = FALSE, col = "lightblue", main = vnames[j])
-            x <- seq(-4, +4, by = 0.02)
-            curve(dnorm(x), add = TRUE, col = "blue", lwd = 2)
-        }
+			h <- hist(xx[n, j], breaks = 30,
+				  freq = FALSE,
+				  col = "lightblue",
+				  main = vnames[j])
+			x <- seq(-4, +4, by = 0.02)
+			curve(dnorm(x), add = TRUE, col = "blue", lwd = 2)
+		}
 		on.exit(par(old.par))
-    }
-    else {
-        xx <- x[, vnames]
+	} else {
+		xx <- x[, vnames]
 		yy <- y[, vnames]
 		old.par <- par(no.readonly = TRUE)
-        par(mfrow = c(r, c), mar = rep(2, 4))
-        for (j in p) {
-            r <- round(cor(xx[n, j], yy[n, j]), 2)
-            plot(xx[n, j], yy[n, j], main = vnames[j])
-            legend("topleft", paste0("r = ", r), bty = "n", cex = 1, text.col = "blue")
-        }
+		par(mfrow = c(r, c), mar = rep(2, 4))
+		for (j in p) {
+			r <- round(cor(xx[n, j], yy[n, j]), 2)
+			plot(xx[n, j], yy[n, j], main = vnames[j])
+			legend("topleft", paste0("r = ", r), bty = "n", cex = 1, text.col = "blue")
+		}
 		on.exit(par(old.par))
-    }
+	}
 }
 
 #' @title Node ancestry utilities
