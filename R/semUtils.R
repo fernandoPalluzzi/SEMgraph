@@ -321,7 +321,7 @@ gplot <- function(graph, l = "dot", main = "", cex.main = 1, font.main = 1,
 	ecol <- E(graph)$color
 	elwd <- E(graph)$width
 	elab <- E(graph)$label
-
+	
 	if (length(vcol) > 0) {
 		names(vcol) <- V(graph)$name
 		vcol <- vcol[graph::nodes(g)]
@@ -340,6 +340,10 @@ gplot <- function(graph, l = "dot", main = "", cex.main = 1, font.main = 1,
 	if (length(vlab) > 0) {
 		names(vlab) <- V(graph)$name
 		vlab <- vlab[graph::nodes(g)]
+	}
+	if (length(color) > 1) {
+		names(color) <- V(graph)$name
+		color <- color[graph::nodes(g)]
 	}
 	if (length(ecol) > 0) {
 		names(ecol) <- gsub("\\|", "~", attr(E(graph), "vnames"))
@@ -380,7 +384,6 @@ gplot <- function(graph, l = "dot", main = "", cex.main = 1, font.main = 1,
 	
 	return(invisible(g))
 }
-
 
 #' @title Correlation matrix to graph
 #'
