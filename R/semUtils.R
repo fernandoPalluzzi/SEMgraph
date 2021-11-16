@@ -76,24 +76,22 @@
 #'
 #' \dontrun{
 #'
-#' # Install data examples, reference networks, and pathways:
-#' # devtools::install_github("fernandoPalluzzi/SEMdata")
-#' library(SEMdata)
+#' # Nonparanormal(npn) transformation
+
 #' library(huge)
-#'
 #' als.npn <- huge.npn(alsData$exprs)
 #'
-#' #selection of FTD pathways from KEGG
+#' # Selection of FTD pathways from kegg.pathways.Rdata
 #'
 #' paths.name <- c("MAPK signaling pathway",
 #'                 "Protein processing in endoplasmic reticulum",
 #'                 "Endocytosis",
 #'                 "Wnt signaling pathway",
-#'                 "Notch signaling pathway",
 #'                 "Neurotrophin signaling pathway",
-#'                 "Amyotrophic lateral sclerosis (ALS)")
+#'                 "Amyotrophic lateral sclerosis")
 #' 
 #' j <- which(names(kegg.pathways) %in% paths.name)
+#'
 #' GSA <- SEMgsa(kegg.pathways[j], als.npn, alsData$group,
 #'               method = "bonferroni", alpha = 0.05,
 #'               n_rep = 1000)
@@ -118,6 +116,7 @@ SEMgsa <- function(g = list(), data, group, method = "BH", alpha = 0.05,
 		quiet(ig <- properties(g[[k]])[[1]])
 
 		# SEM fitting
+		fit <- NULL
 		err <- paste(" ValueError: none of pathway #", k,
 		             " variables are present in the dataset.\n",
 		             sep = "")
@@ -186,15 +185,10 @@ SEMgsa <- function(g = list(), data, group, method = "BH", alpha = 0.05,
 #'
 #' @examples
 #'
-#' # Extract from graphite the "Steroid biosynthesis" pathway:
-#'
-#' library(graphite)
-#' humanKegg <- pathways("hsapiens", "kegg")
-#' p <- humanKegg[["Steroid biosynthesis"]]
-#' g <- pathwayGraph(p)
-#' graph::nodes(g) <- gsub("ENTREZID:","",graph::nodes(g))
-#'
-#' properties(graph_from_graphnel(g))
+#' # Extract the "Type II diabetes mellitus" pathway:
+#' g <- kegg.pathways[["Type II diabetes mellitus"]]
+#' properties(g)
+#' summary(g)
 #'
 properties <- function(graph, data = NULL, ...)
 {
@@ -315,20 +309,15 @@ gplot <- function(graph, l = "dot", main = "", cex.main = 1, font.main = 1,
 	g <- as_graphnel(graph)
 
 	vcol <- V(graph)$color
-	vshape <- V(graph)$shape
 	vsize <- V(graph)$size
 	vlab <- V(graph)$label
 	ecol <- E(graph)$color
 	elwd <- E(graph)$width
 	elab <- E(graph)$label
-	
+
 	if (length(vcol) > 0) {
 		names(vcol) <- V(graph)$name
 		vcol <- vcol[graph::nodes(g)]
-	}
-	if (length(vshape) > 0) {
-		names(vshape) <- V(graph)$name
-		vshape <- vshape[graph::nodes(g)]
 	}
 	if (length(vsize) > 0) {
 		names(vsize) <- V(graph)$name
@@ -340,10 +329,6 @@ gplot <- function(graph, l = "dot", main = "", cex.main = 1, font.main = 1,
 	if (length(vlab) > 0) {
 		names(vlab) <- V(graph)$name
 		vlab <- vlab[graph::nodes(g)]
-	}
-	if (length(color) > 1) {
-		names(color) <- V(graph)$name
-		color <- color[graph::nodes(g)]
 	}
 	if (length(ecol) > 0) {
 		names(ecol) <- gsub("\\|", "~", attr(E(graph), "vnames"))
@@ -376,7 +361,7 @@ gplot <- function(graph, l = "dot", main = "", cex.main = 1, font.main = 1,
 	                                label = vlab, lwd = lwd,
 	                                textCol = color.txt,
 	                                fontsize = fontsize, cex = cex,
-	                                shape = vshape, width = w, height = h)
+	                                shape = shape, width = w, height = h)
 	graph::edgeRenderInfo(g) <- list(col = ecol, lty = 1, lwd = elwd)
 	graph::graphRenderInfo(g) <- list(main = main, cex.main = cex.main,
 	                                  font.main = font.main)
@@ -485,14 +470,14 @@ corr2graph <- function(R, n, type = "marg", method = "none",
 		if (length(del) > 0) A <- A0[-del, -del] else A <- A0
 		ug <- graph_from_adjacency_matrix(A, mode = "undirected")
 	}
-	if (type == "mst") {
+    if (type == "mst") {
 		D <- diag(p) - K^2
 		gA <- graph_from_adjacency_matrix(D, mode = "undirected",
 		                                  weighted = TRUE)
 		ug <- igraph::mst(gA, algorithm = "prim")
 	}
 	if (type == "tmfg") ug <- TMFG(K)$graph
-	
+
 	return(graph = ug)
 }
 
@@ -656,26 +641,26 @@ graph2lavaan <- function(graph, nodes = V(graph)$name, ...)
 #'
 graph2dagitty <- function (graph, canonical = FALSE, verbose = FALSE, ...)
 {
-	dg <- graph - E(graph)[which_mutual(graph)]
+    dg <- graph - E(graph)[which_mutual(graph)]
 	ug <- as.undirected(graph - E(graph)[!which_mutual(graph)])
 	ed <- attr(E(dg), "vnames")
-	eb <- attr(E(ug), "vnames")
-	de <- paste(gsub("\\|", "->", ed), collapse = "\n")
-	
-	if (length(eb) == 0) {
+    eb <- attr(E(ug), "vnames")
+    de <- paste(gsub("\\|", "->", ed), collapse = "\n")
+
+    if (length(eb) == 0) {
 		dagi <- paste0("dag {\n", de, "\n}")
-	} else {
+    } else {
 		be <- paste(gsub("\\|", "<->", eb), collapse = "\n")
 		dagi <- paste0("dag {\n", de, "\n", be, "\n}")
-	}
-	
+    }
+
 	if (verbose) plot(dagitty::graphLayout(dagi))
 	if (canonical) {
 		dagi <- dagitty::canonicalize(dagi)
 		if (verbose) plot(dagitty::graphLayout(dagi$g))
 		return(dagi$g)
 	}
-	return(dagi)
+    return(dagi)
 }
 
 #' @title Convert directed graphs to directed acyclic graphs (DAGs)
@@ -815,10 +800,10 @@ graph2dag <- function(graph, data, bap = FALSE, time.limit = Inf, ...)
 orientEdges<- function(ug, dg, ...)
 {
 	if (is_directed(ug)){
-		return(message("ERROR: the input graph is a Directed graph !"))
+	 return(message("ERROR: the input graph is a Directed graph !"))
 	}
 	if (!is_directed(dg)){
-		return(message("ERROR: the reference graph is an Undirected graph !"))
+	 return(message("ERROR: the reference graph is an Undirected graph !"))
 	}
 	mg <- as.directed(ug, mode = "mutual")
 	exy0 <- attr(E(mg), "vnames")
@@ -1486,7 +1471,7 @@ extractClusters <- function(graph, data, group = NULL, membership = NULL,
 		if (is.null(fit)) next
 		if (!is.null(group) & vcount(clusters[[i]]) > 100) {
 			dev_df <- fit$fit$ricf$dev/fit$fit$ricf$df
-			srmr <- fit$fit$fitIdx[3]
+			srmr <- fit$fit$fitIdx$srmr
 			pv1 <- Brown.test(x = fit$dataXY[, -1], p = fit$gest$pvalue,
 			                  theta = fit$gest$Stat,
 			                  tail = "positive")
@@ -1549,40 +1534,38 @@ extractClusters <- function(graph, data, group = NULL, membership = NULL,
 #'
 pairwiseMatrix<- function (x, y = NULL, size = nrow(x), r = 4, c = 4, ...)
 {
-	if (r * c > ncol(x)) {
-		r <- r - 1
-		c <- c - 1
-		p <- 1:(r * c)
-	} else {
-		p <- sample(1:ncol(x), size = r * c)
+    if (r * c > ncol(x)) {
+  	 r <- r - 1
+	 c <- c - 1
+	 p <- 1:(r * c)
+    }else{
+	 p <- sample(1:ncol(x), size = r * c)
 	}
-	n <- sample(1:nrow(x), size = size)
-	vnames <- colnames(x)
-	if (is.null(y)) {
-		xx <- x[, vnames]
+    n <- sample(1:nrow(x), size = size)
+    vnames <- colnames(x)
+    if (is.null(y)) {
+        xx <- x[, vnames]
 		old.par <- par(no.readonly = TRUE)
 		par(mfrow = c(r, c), mar = rep(3, 4))
 		for (j in p) {
-			h <- hist(xx[n, j], breaks = 30,
-				  freq = FALSE,
-				  col = "lightblue",
-				  main = vnames[j])
-			x <- seq(-4, +4, by = 0.02)
-			curve(dnorm(x), add = TRUE, col = "blue", lwd = 2)
-		}
+            h <- hist(xx[n, j], breaks = 30, freq = FALSE, col = "lightblue", main = vnames[j])
+            x <- seq(-4, +4, by = 0.02)
+            curve(dnorm(x), add = TRUE, col = "blue", lwd = 2)
+        }
 		on.exit(par(old.par))
-	} else {
-		xx <- x[, vnames]
+    }
+    else {
+        xx <- x[, vnames]
 		yy <- y[, vnames]
 		old.par <- par(no.readonly = TRUE)
-		par(mfrow = c(r, c), mar = rep(2, 4))
-		for (j in p) {
-			r <- round(cor(xx[n, j], yy[n, j]), 2)
-			plot(xx[n, j], yy[n, j], main = vnames[j])
-			legend("topleft", paste0("r = ", r), bty = "n", cex = 1, text.col = "blue")
-		}
+        par(mfrow = c(r, c), mar = rep(2, 4))
+        for (j in p) {
+            r <- round(cor(xx[n, j], yy[n, j]), 2)
+            plot(xx[n, j], yy[n, j], main = vnames[j])
+            legend("topleft", paste0("r = ", r), bty = "n", cex = 1, text.col = "blue")
+        }
 		on.exit(par(old.par))
-	}
+    }
 }
 
 #' @title Node ancestry utilities

@@ -10,8 +10,8 @@ activeModule(
   seed,
   eweight = "none",
   alpha = 0.05,
-  q = 0.5,
-  limit = 30000,
+  q = 0.9,
+  limit = 10000,
   ...
 )
 }
@@ -49,12 +49,12 @@ when type is "usp". By default, \code{alpha = 0.05}.}
 \item{q}{Inclusion quantile for the "rwr" and "hdi" algorithms. The higher 
 the q, the closer the nodes to the input seeds, the smaller the output 
 graph induced by the q-top ranking nodes. 
-By default, \code{q = 0.5} (i.e., the top 50\% of nodes are selected).}
+By default, \code{q = 0.9} (i.e., the top 10\% of nodes are selected).}
 
 \item{limit}{An integer value corresponding to the number of graph 
 edges. If \code{type = "usp"}, beyond this limit, multicore computation 
 is enabled to reduce the computational burden. 
-By default, \code{limit = 30000}.}
+By default, \code{limit = 10000}.}
 
 \item{...}{Currently ignored.}
 }

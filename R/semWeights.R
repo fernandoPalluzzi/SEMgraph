@@ -74,7 +74,7 @@
 #' @param limit An integer value corresponding to the number of graph 
 #' edges. Beyond this limit, multicore computation is enabled to reduce 
 #' the computational burden. 
-#' By default, \code{limit = 3000}.
+#' By default, \code{limit = 10000}.
 #' @param ... Currently ignored.
 #'
 #' @return A weighted graph, as an igraph object.
@@ -115,7 +115,7 @@
 #' R <- properties(R)[[1]]
 #'
 weightGraph <- function(graph, data, group = NULL, method = "r2z",
-                        seed = "none", limit = 3000, ...)
+                        seed = "none", limit = 10000, ...)
 {
 	# Set genes, from-to-matrix (ftm), vertex degree and data
 	genes <- colnames(data)
@@ -125,11 +125,11 @@ weightGraph <- function(graph, data, group = NULL, method = "r2z",
 	ftm <- as_data_frame(ig)
 	Y <- scale(data)
 
-	if (method == "none") return(graph = ig) 
+	if (is.null(group) | method == "r2z") ew <- ew.r2z(ftm, Y, group)
 	if (method == "sem") ew <- ew.sem(ftm, Y, group, degree, limit = limit)
 	if (method == "cov") ew <- ew.cov(ftm, Y, group, degree, limit = limit)
 	if (method == "cfa") ew <- ew.cfa(ftm, Y, group, limit = limit)
-	if (method == "r2z") ew <- ew.r2z(ftm, Y, group)
+	if (method == "lmi") ew<- ew.lmi(ftm, Y, group, limit=limit)
 
 	zsign <- ew[[1]]
 	pv <- ew[[2]]
@@ -154,7 +154,7 @@ weightGraph <- function(graph, data, group = NULL, method = "r2z",
 	return(graph = gdf)
 }
 
-ew.sem <- function(ftm, Y, group, degree, limit = 3000, ...)
+ew.sem <- function(ftm, Y, group, degree, limit, ...)
 {	
 	local <- function(x) {
 		df <- data.frame(cbind(Y[, c(x[[1]], x[[2]])], group))
@@ -192,7 +192,7 @@ ew.sem <- function(ftm, Y, group, degree, limit = 3000, ...)
 	return (list(zsign, pv))
 }
 
-ew.cov <- function(ftm, Y, group, degree, limit = 3000, ...)
+ew.cov <- function(ftm, Y, group, degree, limit, ...)
 {
 	local <- function(x) {
 		df <- data.frame(cbind(Y[, c(x[[1]], x[[2]])], group))
@@ -233,7 +233,7 @@ ew.cov <- function(ftm, Y, group, degree, limit = 3000, ...)
 	return (list(zsign, pv))
 }
 
-ew.cfa <- function(ftm, Y, group, limit = 3000, ...)
+ew.cfa <- function(ftm, Y, group, limit, ...)
 {
 	local <- function(x) {
 		df <- data.frame(cbind(Y[, c(x[[1]], x[[2]])], group))
@@ -279,13 +279,44 @@ ew.cfa <- function(ftm, Y, group, limit = 3000, ...)
 	return (list(zsign, pv))
 }
 
+ew.lmi<- function(ftm, Y, group, limit, ...)
+{
+	local<- function(x) {
+	 df<- data.frame(cbind(Y[,c(x[[1]],x[[2]])],group))
+	 colnames(df)[1:2]<- c("x", "y")
+	 try(fit<- lm(y ~ x*group, data= df))
+	 try(res<- summary(fit)$coefficients)
+	 try(res[4,])
+	}
+	
+	x<- split(ftm, f = seq(nrow(ftm)))
+	message("Edge weigthing via lm() of ", length(x), " edges...")
+	op<- pbapply::pboptions(type = "timer", style = 2)
+	if (length(x) > limit){
+	 n_cores <- parallel::detectCores()
+	 cl<- parallel::makeCluster(n_cores)
+	 parallel::clusterExport(cl,
+ 	  c("local", "Y", "degree", "group"), envir = environment())
+	 est<- pbapply::pblapply(x, local, cl=cl)
+	 parallel::stopCluster(cl)
+	}else{
+	 est<- pbapply::pblapply(x, local, cl=NULL)
+	}		
+	
+	B<- sapply(1:length(est), function(x) est[[x]][3])
+	zsign<- ifelse(abs(B) < 1.96, 0, sign(B))
+	pv<- sapply(1:length(est), function(x) est[[x]][4])
+	cat("\n")
+	return ( list(zsign, pv) )
+}
+
 ew.r2z <- function(ftm, Y, group, ...)
 {
-	n1 <- length(group[group == 1])
-	n0 <- length(group[group == 0])
 	zsign <- vector()
 	pv <- vector()
 	if(!is.null(group)) {
+		n1 <- length(group[group == 1])
+		n0 <- length(group[group == 0])
 		for(i in 1:nrow(ftm)) {
 			x <- Y[, ftm[i, 1]]
 			y <- Y[, ftm[i, 2]]
@@ -384,11 +415,11 @@ seedweight <- function(ig, data, group, alpha = 0.05, h = 0.2, q = 0.5, ...)
 #' @param q Inclusion quantile for the "rwr" and "hdi" algorithms. The higher 
 #' the q, the closer the nodes to the input seeds, the smaller the output 
 #' graph induced by the q-top ranking nodes. 
-#' By default, \code{q = 0.5} (i.e., the top 50\% of nodes are selected).
+#' By default, \code{q = 0.9} (i.e., the top 10\% of nodes are selected).
 #' @param limit An integer value corresponding to the number of graph 
 #' edges. If \code{type = "usp"}, beyond this limit, multicore computation 
 #' is enabled to reduce the computational burden. 
-#' By default, \code{limit = 30000}.
+#' By default, \code{limit = 10000}.
 #' @param ... Currently ignored.
 #'
 #' @details Graph filtering algorithms include:
@@ -451,7 +482,7 @@ seedweight <- function(ig, data, group, alpha = 0.05, h = 0.2, q = 0.5, ...)
 #' par(old.par)
 #' 
 activeModule <- function(graph, type, seed, eweight = "none", alpha = 0.05,
-                         q = 0.5, limit = 30000, ...)
+                         q = 0.9, limit = 10000, ...)
 {
 	if (length(eweight) == 1) {
 		if (eweight == "kegg") eweight <- (1 - E(graph)$weight)/2
@@ -625,7 +656,7 @@ TMFG <- function(cormat, ...)
 	return(list(graph = gtmf, separators = separators, cliques = cliques))
 }
 
-SteinerTree <- function(graph, seed, eweight)
+SteinerTree <- function(graph, seed, eweight, ...)
 {
 	# Define graph, edge weights, and distance matrix
 	E(graph)$weight <- eweight
@@ -680,7 +711,7 @@ SteinerTree <- function(graph, seed, eweight)
 	return(St)
 }
 
-USPG <- function(graph, seed, eweight, alpha = 0.05, limit = 30000, ...)
+USPG <- function(graph, seed, eweight, alpha, limit, ...)
 {
 	# Define graph, edge weights, and distance matrix
 	E(graph)$weight <- eweight

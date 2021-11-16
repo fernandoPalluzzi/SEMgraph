@@ -64,24 +64,21 @@ by residual variances (D), will be estimated.
 
 \dontrun{
 
-# Install data examples, reference networks, and pathways:
-# devtools::install_github("fernandoPalluzzi/SEMdata")
-library(SEMdata)
+# Nonparanormal(npn) transformation
 library(huge)
-
 als.npn <- huge.npn(alsData$exprs)
 
-#selection of FTD pathways from KEGG
+# Selection of FTD pathways from kegg.pathways.Rdata
 
 paths.name <- c("MAPK signaling pathway",
                 "Protein processing in endoplasmic reticulum",
                 "Endocytosis",
                 "Wnt signaling pathway",
-                "Notch signaling pathway",
                 "Neurotrophin signaling pathway",
-                "Amyotrophic lateral sclerosis (ALS)")
+                "Amyotrophic lateral sclerosis")
 
 j <- which(names(kegg.pathways) \%in\% paths.name)
+
 GSA <- SEMgsa(kegg.pathways[j], als.npn, alsData$group,
               method = "bonferroni", alpha = 0.05,
               n_rep = 1000)

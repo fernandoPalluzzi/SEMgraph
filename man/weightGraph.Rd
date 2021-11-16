@@ -10,7 +10,7 @@ weightGraph(
   group = NULL,
   method = "r2z",
   seed = "none",
-  limit = 3000,
+  limit = 10000,
   ...
 )
 }
@@ -71,7 +71,7 @@ node ~ group);
 \item{limit}{An integer value corresponding to the number of graph 
 edges. Beyond this limit, multicore computation is enabled to reduce 
 the computational burden. 
-By default, \code{limit = 3000}.}
+By default, \code{limit = 10000}.}
 
 \item{...}{Currently ignored.}
 }

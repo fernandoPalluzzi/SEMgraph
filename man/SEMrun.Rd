@@ -184,12 +184,8 @@ plot(sem2$graph, layout = layout.circle, main = "Between group edge differences"
 
 # Fitting and visualization of a large pathway:
 
-library(graphite)
-humanKegg <- pathways("hsapiens", "kegg")
-p <- humanKegg[["MAPK signaling pathway"]]
-g <- pathwayGraph(p)
-graph::nodes(g) <- gsub("ENTREZID:","",graph::nodes(g))
-G <- properties(graph_from_graphnel(g))[[1]]
+g <- kegg.pathways[["MAPK signaling pathway"]]
+G <- properties(g)[[1]]; summary(G)
 
 library(huge)
 als.npn <- huge.npn(alsData$exprs)
