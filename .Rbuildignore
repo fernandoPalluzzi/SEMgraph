@@ -1,2 +1,5 @@
 ^LICENSE\.md$
 docs*
+^.*\.Rproj$
+^\.Rproj\.user$
+^cran-comments\.md$

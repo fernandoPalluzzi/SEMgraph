@@ -1,3 +1,6 @@
+## Version 1.0.4 Release Notes
+- Fixed bugs for CRAN checking
+
 ## Version 1.0.3 Release Notes
 - Fixed bugs for CRAN checking
 - Update kegg.RData (November, 2021)

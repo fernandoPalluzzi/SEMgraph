@@ -1,7 +1,7 @@
 Package: SEMgraph
 Title: Network Analysis and Causal Inference Through Structural
         Equation Modeling
-Version: 1.0.3
+Version: 1.0.4
 Date: 2021-11-13
 Authors@R: c(
     person("Mario", "Grassi", role = "aut", email="mario.grassi@unipv.it"), 
