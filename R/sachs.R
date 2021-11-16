@@ -2,7 +2,7 @@
 #  Copyright (C) 2019-2021 Fernando Palluzzi; Mario Grassi
 #  e-mail: <fernando.palluzzi@gmail.com>
 #  University of Pavia, Department of Brain and Behavioral Sciences
-#  Via Bassi 21, Pavia 27100, Italy
+#  Via Bassi 21, 27100 Pavia, Italy
 
 #  SEMgraph is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -29,13 +29,13 @@
 #' @format
 #' "sachs" is a list of 5 objects:
 #' \enumerate{
-#' \item "rawdata", a list of 14 data.frames containing raw flow cytometry 
+#' \item "rawdata", a list of 14 data.frames containing raw flow cytometry
 #' data (Sachs et al., 2005);
 #' \item "graph", consensus signaling network;
 #' \item "model", consensus model (lavaan syntax);
-#' \item "pkc", data.frame of 1766 samples and 11 variables, containing 
+#' \item "pkc", data.frame of 1766 samples and 11 variables, containing
 #' cd3cd28 (baseline) and pma (PKC activation) data;
-#' \item "group", a binary group vector, where 0 is for cd3cd28 samples 
+#' \item "group", a binary group vector, where 0 is for cd3cd28 samples
 #' (n = 853) and 1 is for pma samples (n = 913).
 #' \item "details", a data.frame containing dataset information.
 #' }
@@ -43,8 +43,8 @@
 #'
 #' @references
 #'
-#' Sachs K, Perez O, Pe'er D, Lauffenburger DA, Nolan GP (2019). 
-#' Causal Protein-Signaling Networks Derived from Multiparameter 
+#' Sachs K, Perez O, Pe'er D, Lauffenburger DA, Nolan GP (2019).
+#' Causal Protein-Signaling Networks Derived from Multiparameter
 #' Single-Cell Data. Science, 308(5721): 523-529.
 #'
 #' @examples
