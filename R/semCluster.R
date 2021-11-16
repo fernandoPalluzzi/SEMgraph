@@ -169,8 +169,8 @@ mergeNodes <- function(graph, membership, HM, ...)
 #'
 #' @description Topological graph clustering methods.
 #' @param graph An igraph object.
-#' @param type Topological clustering methods. If type = "tahc", network
-#' modules are generated using the tree agglomerative hierarchical
+#' @param type Topological clustering methods. If \code{type = "tahc"},
+#' network modules are generated using the tree agglomerative hierarchical
 #' clustering method (Yu et al., 2015).
 #' Other non-tree clustering methods from igraph package include: "wtc"
 #' (default value; walktrap community structure with short random walks),
@@ -342,9 +342,9 @@ clusterGraph <- function(graph, type = "wtc", HM = "none", size = 5,
 #' model will be generated for each module, where source nodes (i.e.,
 #' in-degree = 0) act as common regressors influencing the other nodes
 #' via an unmeasured variable.
+#' By default, HM is set to "LV" (i.e., the latent variable model).
 #' @param size Minimum number of nodes per hidden module. By default, a
 #' minimum number of 5 nodes is required.
-#' By default, HM is set to "LV" (i.e., the latent variable model).
 #' @param type Graph clustering method. If \code{type = "tahc"}, network
 #' modules are generated using the tree agglomerative hierarchical
 #' clustering method (Yu et al., 2015).

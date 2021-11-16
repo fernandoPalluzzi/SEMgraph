@@ -9,8 +9,8 @@ clusterGraph(graph, type = "wtc", HM = "none", size = 5, verbose = FALSE, ...)
 \arguments{
 \item{graph}{An igraph object.}
 
-\item{type}{Topological clustering methods. If type = "tahc", network
-modules are generated using the tree agglomerative hierarchical
+\item{type}{Topological clustering methods. If \code{type = "tahc"},
+network modules are generated using the tree agglomerative hierarchical
 clustering method (Yu et al., 2015).
 Other non-tree clustering methods from igraph package include: "wtc"
 (default value; walktrap community structure with short random walks),

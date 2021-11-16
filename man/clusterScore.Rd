@@ -32,7 +32,8 @@ cluster nodes will be considered as regressors of a latent composite
 variable (CV); (iii) if \code{HM = "UV"}, an unmeasured variable (UV)
 model will be generated for each module, where source nodes (i.e.,
 in-degree = 0) act as common regressors influencing the other nodes
-via an unmeasured variable.}
+via an unmeasured variable.
+By default, HM is set to "LV" (i.e., the latent variable model).}
 
 \item{type}{Graph clustering method. If \code{type = "tahc"}, network
 modules are generated using the tree agglomerative hierarchical
@@ -46,8 +47,7 @@ Other non-tree clustering methods from igraph package include: "wtc"
 By default, the "wtc" method is used.}
 
 \item{size}{Minimum number of nodes per hidden module. By default, a
-minimum number of 5 nodes is required.
-By default, HM is set to "LV" (i.e., the latent variable model).}
+minimum number of 5 nodes is required.}
 
 \item{verbose}{A logical value. If TRUE, intermediate graphs will be
 displayed during the execution. In addition, a condensed graph with
