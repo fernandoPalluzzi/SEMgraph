@@ -63,7 +63,7 @@ An active module of class \code{\link{igraph}}.
 }
 \description{
 Uses different information flow and tree-based strategies 
-for identifying active modules (e.g., disease modules), showing a 
+for identifying active modules (e.g., disease modules), including a 
 perturbed subset of nodes and edges. 
 Function scalability enables graph reduction at both pathway and 
 entire interactome scales.

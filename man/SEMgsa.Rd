@@ -20,8 +20,7 @@ subjects.}
 available in \code{\link[stats]{p.adjust}}. By default, method is set
 to "BH" (i.e., Benjamini-Hochberg correction).}
 
-\item{alpha}{Gene set test significance level. Alpha is set to 0.05
-by default.}
+\item{alpha}{Gene set test significance level (default = 0.05).}
 
 \item{n_rep}{Number of randomization replicates (default = 1000).}
 
@@ -57,8 +56,8 @@ For directed graphs, they include: the sum of group effects adjusted
 by residual variances (D), the sum of the tagret nodes perturbation
 (i.e., group effect) accumulation from source nodes (A), and the sum
 of the source nodes perturbation emission towards target nodes (E).
-For undirected graphs, the sum of group effects, adjusted
-by residual variances (D), will be estimated.
+For undirected graphs, the sum of group effects (D), adjusted
+by residual variances, will be estimated.
 }
 \examples{
 

@@ -26,7 +26,7 @@ gplot(
 \arguments{
 \item{graph}{An igraph or graphNEL object.}
 
-\item{l}{any layout supported by \code{Rgraphviz}. It can be one among:
+\item{l}{Any layout supported by \code{Rgraphviz}. It can be one among:
 "dot" (default), "neato", "circo", "fdp", "osage", "twopi".}
 
 \item{main}{Plot main title (by default, no title is added).}

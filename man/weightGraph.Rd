@@ -26,17 +26,17 @@ subjects. By default, \code{group = NULL}.}
 
 \item{method}{Edge weighting method. It can be one of the following:
 \enumerate{
-\item "r2z", Weight edges of a graph using Fisher's r-to-z transform 
+\item "r2z", weight edges of a graph using Fisher's r-to-z transform 
 to test the group difference between correlation coefficients of pairs 
 of interacting nodes (Fisher, 1915).
-\item "sem". Edge weights are defined by a SEM model that implies 
+\item "sem", edge weights are defined by a SEM model that implies 
 testing the group effect simultaneously on the j-th source node and 
 the k-th sink node. 
 A new parameter w is defined as the weighted sum of the total effect 
 of the group on source and sink nodes, adjusted by node degree centrality, 
 and edge weights correspond to the sign and P-value of the 
 z-test = w/SE(w). Not available if \code{group == NULL}.
-\item "cov". Edge weights are defined by a new parameter w combining 
+\item "cov", edge weights are defined by a new parameter w combining 
 the group effect on the source node (mean group difference, adjusted 
 by source degree centrality), the sink node (mean group difference, 
 adjusted by sink degree centrality), and the source-sink interaction 
