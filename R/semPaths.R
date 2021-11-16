@@ -335,12 +335,8 @@ SEMstart <- function(ig, data, group, a, ...)
 #'
 #' # Fitting and visualization of a large pathway:
 #'
-#' library(graphite)
-#' humanKegg <- pathways("hsapiens", "kegg")
-#' p <- humanKegg[["MAPK signaling pathway"]]
-#' g <- pathwayGraph(p)
-#' graph::nodes(g) <- gsub("ENTREZID:","",graph::nodes(g))
-#' G <- properties(graph_from_graphnel(g))[[1]]
+#' g <- kegg.pathways[["MAPK signaling pathway"]]
+#' G <- properties(g)[[1]]; summary(G)
 #' 
 #' library(huge)
 #' als.npn <- huge.npn(alsData$exprs)
@@ -1815,7 +1811,8 @@ SEMace <- function(graph, data, group = NULL, method = "none", alpha = 0.05,
 		forb <- c(V(dag)$name[descendants(dag, cn)], x)
 		z <- setdiff(pa_cn, forb)
 		Z <- scale(data[, c(y, x, z)])
-
+		if( nrow(Z) < ncol(Z) ) boot <- 1000
+		
 		# LM fitting
 		if (is.null(group)) {
 			if (is.null(boot)) {
@@ -1842,12 +1839,10 @@ SEMace <- function(graph, data, group = NULL, method = "none", alpha = 0.05,
 lmest <- function(x, y, Z, ...)
 {
 	# LM fitting y ~ x + Z
-
 	fit <- stats::lm.fit(as.matrix(Z[, -1]), Z[, 1])
 	est <- as.numeric(fit$coefficients)[1]
 	sigma <- sum(fit$residuals^2)/fit$df.residual
 
-	if (is.na(sigma)) return(NULL)
 	X <- as.matrix(Z[, -1])
 	r <- fit$rank
 	p <- ncol(X)
@@ -1893,6 +1888,7 @@ lmest2 <- function(x, y, Z, group, boot, ...)
 	# LM fitting y ~ x + Z  w/n groups
 	Z1 <- as.matrix(Z[group == 1,])
 	Z0 <- as.matrix(Z[group == 0,])
+	if(nrow(Z1) < ncol(Z1) | nrow(Z0) < ncol(Z0)) boot <- 1000
 	if (is.null(boot)) {
 		est1 <- lmest(x, y, Z1)
 		est0 <- lmest(x, y, Z0)

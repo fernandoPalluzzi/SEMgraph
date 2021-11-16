@@ -25,15 +25,10 @@ graph components (ordered by decreasing size), without self-loops.
 }
 \examples{
 
-# Extract from graphite the "Steroid biosynthesis" pathway:
-
-library(graphite)
-humanKegg <- pathways("hsapiens", "kegg")
-p <- humanKegg[["Steroid biosynthesis"]]
-g <- pathwayGraph(p)
-graph::nodes(g) <- gsub("ENTREZID:","",graph::nodes(g))
-
-properties(graph_from_graphnel(g))
+# Extract the "Type II diabetes mellitus" pathway:
+g <- kegg.pathways[["Type II diabetes mellitus"]]
+properties(g)
+summary(g)
 
 }
 \author{

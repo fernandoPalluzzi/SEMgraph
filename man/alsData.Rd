@@ -11,8 +11,8 @@ alsData is a list of 4 objects:
 "Amyotrophic lateral sclerosis (ALS)" pathway from KEGG database;
 \item "exprs", a matrix of 160 rows (subjects) and 303 columns (genes)
 extracted from the original 17695. This subset includes genes from 
-KEGG ALS signaling pathway, MAPK signaling pathway, and Steroid 
-biosynthesis pathway, needed to run SEMgraph examples.
+KEGG ALS signaling pathway, MAPK signaling pathway, and Type II diabetes
+mellitus pathway, needed to run SEMgraph examples.
 Raw data from the GEO dataset GSE124439 (Tam et al., 2019) were 
 pre-processed applying batch effect correction, using the sva R package 
 (Leek et al., 2012), to remove data production center and brain area 
