@@ -28,9 +28,8 @@
 #' @usage kegg
 #' @docType data
 #' @format
-#' "kegg" is an igraph network object of 5934 nodes and 77158 edges 
-#' (41122 directed and 3164/2 = 1582 bidirected) corresponding to the
-#' union of 225 KEGG pathways.
+#' "kegg" is an igraph network object of 5007 nodes and 44755 edges 
+#' corresponding to the union of 225 KEGG pathways.
 #' @source \url{https://www.genome.jp/kegg/}
 #' @references
 #' 
