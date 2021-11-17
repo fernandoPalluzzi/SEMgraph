@@ -1483,7 +1483,7 @@ extractClusters <- function(graph, data, group = NULL, membership = NULL,
 		if (is.null(fit)) next
 		if (!is.null(group) & vcount(clusters[[i]]) > 100) {
 			dev_df <- fit$fit$ricf$dev/fit$fit$ricf$df
-			srmr <- fit$fit$fitIdx$srmr
+			srmr <- fit$fit$fitIdx[3]
 			pv1 <- Brown.test(x = fit$dataXY[, -1], p = fit$gest$pvalue,
 			                  theta = fit$gest$Stat,
 			                  tail = "positive")
