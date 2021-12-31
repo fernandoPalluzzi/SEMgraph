@@ -142,14 +142,13 @@ SEMgsa <- function(g = list(), data, group, method = "BH", alpha = 0.05,
 		DRN <- c(DRN, list(genes))
 
 		# data.frame of SEM results
-		df <- data.frame(
-		 N.nodes = vcount(ig),
-		 #N.edges= ecount(ig),
-		 N.DRNs = sum(p.adjust(pval, method = method) < alpha),
-		 pD = round(fit$gest[1, 4], 6),
-		 pA = round(fit$gest[2, 4], 6),
-		 pE = round(fit$gest[3, 4], 6))
-		pvalue = round(pX2(x = df[1, 3:5]), 6)
+		df <- data.frame(N.nodes = vcount(ig),
+		                 #N.edges= ecount(ig),
+		                 N.DRNs = sum(p.adjust(pval, method = method) < alpha),
+		                 pD = round(fit$gest[1, 4], 6),
+		                 pA = round(fit$gest[2, 4], 6),
+		                 pE = round(fit$gest[3, 4], 6))
+		pvalue <- round(pX2(x = df[1, 3:5]), 6)
 		res.tbl <- rbind(res.tbl, cbind(df, pvalue))
 	}
 
@@ -220,8 +219,8 @@ properties <- function(graph, data = NULL, ...)
 	return(invisible(list(ig1 = ig1, gcs = gcs[-which.max(vsize)])))
 }
 
-mergeGraph <- function(g = list(), gref = NULL, gnet = NULL, verbose = FALSE,
-                       ...)
+mergeGraph <- function(g = list(), gref = NULL, gnet = NULL,
+                       verbose = FALSE, ...)
 {
 	g1 <- list()
 	for (i in 1:length(g)) {
@@ -998,30 +997,6 @@ colorMatch <- function(g1, g2, ...)
 	return(list(Vcol, Ecol, Ewid))
 }
 
-Brown.test <- function(x, p, theta = NULL, tail = "both", ...)
-{
-	# From two-sided to one-sided (positive or negative) tests
-	if (tail == "positive") p <- ifelse(theta > 0, p/2, 1 - p/2)
-	if (tail == "negative") p <- ifelse(theta > 0, 1 - p/2, p/2)
-
-	# Fisher's (1932, 4th ed.) combined X2 test
-	if (is.null(x)) return(1 - pchisq(q = -2*sum(log(p)), df = 2*length(p)))
-
-	# Brown's (1975) combined X2 test
-	tmp <- c(-2.59, -2.382, -2.17, -1.946, -1.709, -1.458, -1.194,
-	         -0.916, -0.625, -0.320, 0, 0.334, 0.681, 1.044,
-	         1.421, 1.812, 2.219, 2.641, 3.079, 3.531, 4)
-
-	s2X2 <- 4*ncol(x) + 2*sum(approx(seq(-1, 1, .1), tmp,
-	                      xout = cor(x)[which(as.vector(lower.tri(cor(x))))])$x)
-	EX2 <- 2*ncol(x)
-
-	fX2 <- -2*sum(log(p))
-	pX2 <- 1 - pchisq(q = fX2/(s2X2/(2*EX2)), df = 2*EX2^2/s2X2)
-
-	return(pX2)
-}
-
 #' @title Optimal model search strategies
 #'
 #' @description Four model search strategies are implemented combining
@@ -1650,4 +1625,10 @@ siblings <- function(g, nodes)
     return(numeric(0))
   }
   sort(unique(unlist(neighborhood(g, 1, nodes = nodes, mode = "out"))))
+}
+
+quiet <- function(x) {
+	sink(tempfile())
+	on.exit(sink())
+	invisible(force(x))
 }
