@@ -236,9 +236,8 @@ SEMstart <- function(ig, data, group, a, ...)
 #' @import lavaan
 #' @importFrom stats cor sd
 #' @importFrom corpcor is.positive.definite cor.shrink
-#' @importFrom GGMncv constrained inference ggm_compare
+#' @importFrom GGMncv constrained inference compare_edges
 #' @importFrom ggm fitAncestralGraph
-#' @importFrom parallel makeCluster stopCluster
 #' @importFrom gdata unmatrix
 #' @export
 #'
@@ -863,6 +862,7 @@ SEMggm <- function(graph, data, group = NULL, method = "none",
 	cggm <- GGMncv::constrained(covXY, adj)
 	Sigma <- cggm$Sigma
 	Theta <- cggm$Theta
+	rownames(Sigma) <- colnames(Sigma) <- colnames(dataXY)
 	rownames(Theta) <- colnames(Theta) <- colnames(dataXY)
 	fit <- list(Theta = Theta, n = n, R = covXY)
 	class(fit) <- c("ggmncv", "default")
@@ -872,11 +872,9 @@ SEMggm <- function(graph, data, group = NULL, method = "none",
 		-1*sapply(1:p, function(x) Theta[x,]/Theta[x, x])
 	}
 	B <- ifelse(dadj == 1, betas(Theta), 0)
-	colnames(B) <- colnames(dataXY)
 	O <- ifelse(dadj == 100, t(diag(p) - B)%*%Sigma%*%(diag(p) - B), 0)
 	diag(O) <- apply(scale(dataXY) %*% (diag(p) - B), 2, var)
-	colnames(O)<- colnames(dataXY)
-	Sigma <- solve(diag(p) - B)%*%O%*%t(solve(diag(p) - B))
+	#Sigma <- solve(diag(p) - B)%*%O%*%t(solve(diag(p) - B))
 	cat(paste0("GGM (constrained) solver ended normally after ", 0,
 	           " iterations"), "\n\n")
 	df <- p*(p + 1)/2 - (sum(B != 0) + (sum(O != 0) - p)/2 + p)
@@ -887,9 +885,9 @@ SEMggm <- function(graph, data, group = NULL, method = "none",
 	dggm <- suppressWarnings(
 		GGMncv::inference(fit, method = method, alpha = alpha))
 		#dggm <- GGMncv::inference(fit, method = method, alpha = alpha)
-		pvB <- ifelse(dadj == 1, dggm$corrected, 0)
+		pvB <- ifelse(dadj == 1, dggm$pval_corrected, 0)
 		rownames(pvB) <- colnames(pvB) <- colnames(dataXY)
-		pvO <- ifelse(dadj == 100, dggm$corrected, 0)
+		pvO <- ifelse(dadj == 100, dggm$pval_corrected, 0)
 		rownames(pvO) <- colnames(pvO) <- colnames(dataXY)
 
 	est <- parameterEstimates.GGM(object = list(B = B, O = O, pvB = pvB,
@@ -953,10 +951,10 @@ SEMggm2 <- function(graph, data, group, method = "none", alpha = 0.05, ...)
 
 	# Edge differences based on the de-sparsified precision matrix
 	dggms<- suppressWarnings(
-		GGMncv::ggm_compare(fit1, fit0, method = method, alpha = alpha))
-	#dggms <- GGMncv::ggm_compare(fit1, fit0, method = method, alpha = alpha)
+		GGMncv::compare_edges(fit1, fit0, method = method, alpha = alpha))
+	#dggms <- GGMncv::compare_edges(fit1, fit0, method = method, alpha = alpha)
 	d_est <- cggm1$fit$Beta - cggm0$fit$Beta
-	d_pv <- ifelse(dadj == 1, dggms$corrected, 0)
+	d_pv <- ifelse(dadj == 1, dggms$pvals_corrected, 0)
 	rownames(d_pv) <- colnames(d_pv) <- colnames(dataY)
 
 	if (sum(d_est) != 0) {
@@ -1119,7 +1117,7 @@ fitIndices <- function(n, df, S, Sigma, Theta = NULL, ...)
 	} else {
 		ST <- S %*% Theta
 	}
-	dev <- n*(sum(diag(ST)) - log(det(ST)) - p)
+	dev <- n*(sum(diag(ST)) - log(det(ST) + 1*10^-10) - p)
 
 	# Deviance and df for model 0 (null model)
 	dev0 <- n*(sum(diag(S)) - log(det(S)) - p)  # n*(-log(det(R)))
@@ -1141,6 +1139,35 @@ fitIndices <- function(n, df, S, Sigma, Theta = NULL, ...)
 	ULS <- 1 - sum(diag(t(E)%*%E))/sum(diag(t(S)%*%S))
 
 	return(c(dev = dev, df = df, srmr = SRMR, rmsea = RMSEA, n = n, t = t))
+}
+
+Brown.test<- function(x, p, theta=NULL, tail="both", ...)
+{
+	# from two-sided to one-sided (positive or negative) tests
+	p <- p[!is.na(p)]
+	theta <- theta[!is.na(p)]
+	if (tail == "positive") p<- ifelse(theta > 0, p/2, 1-p/2)
+	if (tail == "negative") p<- ifelse(theta > 0, 1-p/2, p/2)
+	
+	#Fisher's (1932, 4th ed.) combined X2 test
+	if(is.null(x)) return(1-pchisq(q=-2*sum(log(p)), df=2*length(p)))
+
+	#Brown's (1975) combined X2 test
+	tmp <-	c(
+	-2.59, -2.382, -2.17, -1.946, -1.709, -1.458, -1.194,
+	-0.916, -0.625, -0.320,	0, 0.334, 0.681, 1.044,
+	1.421, 1.812, 2.219, 2.641, 3.079, 3.531, 4)
+
+	s2X2<- 4 * ncol(x) + 2 * sum ( approx( seq(-1,1,.1), tmp,
+	       xout=cor(x)[which( as.vector(lower.tri(cor(x))) )] )$x )
+	EX2<- 2 * ncol(x)
+	
+	# df "f" = 2 * (2 * k)^2 /s2X2
+	# X2 c_correction "c" = s2X2/(2 * 2 * k)
+	fX2<- -2*sum(log(p))
+	pX2<- 1-pchisq(q=fX2/(s2X2/(2*EX2)), df=2*EX2^2/s2X2)
+
+	return( pX2 )
 }
 
 #' @title Bow-free covariance search and data de-correlation
@@ -1199,7 +1226,6 @@ fitIndices <- function(n, df, S, Sigma, Theta = NULL, ...)
 #' @import GGMncv
 #' @importFrom stats na.omit var cov qchisq pchisq p.adjust
 #' @importFrom corpcor is.positive.definite cor.shrink
-#' @importFrom flip flip plot
 #' @export
 #'
 #' @author Mario Grassi \email{mario.grassi@unipv.it}
@@ -1315,6 +1341,7 @@ SEMbap <- function(graph, data, method = "BH", alpha = 0.05, limit = 30000,
 #'
 #' @import igraph
 #' @importFrom stats cov pt
+#' @importFrom parallel detectCores makeCluster clusterExport stopCluster
 #' @export
 #'
 #' @return A list of three objects: (i) the list of all d-separation tests
@@ -1397,6 +1424,65 @@ Shipley.test <- function(graph, data, limit = 30000, verbose = TRUE, ...)
 	}
 
 	return(list(bap = bap, dsep = dsep, ctest = c(ctest, df, pv)))
+}
+
+dsep.test <- function(dag, S, n, limit = 30000, ...)
+{
+ 	# d-sep (basis set) testing of a DAG
+	idx <- as.numeric(topo_sort(dag, mode = "out"))
+	A <- as_adj(dag, sparse = FALSE)[idx, idx]
+	M <- gdata::unmatrix(A, byrow = FALSE)
+	M <- M[as.vector(upper.tri(A, diag = FALSE))]
+	M <- names(M)[which(M == 0)]
+
+	local <- function(x) {
+		s <- strsplit(x, ":")
+		ed <- c(s[[1]][1], s[[1]][2])
+		pa.r <- igraph::V(dag)$name[SEMgraph::parents(dag, ed[1])]
+		pa.s <- igraph::V(dag)$name[SEMgraph::parents(dag, ed[2])]
+		dsep <- union(pa.r, pa.s)
+		dsep <- setdiff(dsep, ed)
+		B <- c(ed, dsep)
+		if(length(B) > (n - 3)) return(rep(NA, 4))
+		p.value <- pcor.test(S, B, n, H0 = 0.05)
+		set <- paste(B[-c(1:2)], collapse = ",")
+		return(data.frame(X = B[1], Y = B[2], SET = set, p.value))
+	}
+
+	#message("d-separation test (basis set) of ", length(M), " edges ...")
+	op <- pbapply::pboptions(type = "timer", style = 2)
+	df <- vcount(dag)*(vcount(dag) - 1)/2 - ecount(dag)
+	if (df > limit) {
+		n_cores <- parallel::detectCores()/2
+		cl <- parallel::makeCluster(n_cores)
+		parallel::clusterExport(cl, c("local", "dag", "S", "n"),
+		                        envir = environment())
+		SET <- pbapply::pblapply(M, local, cl = cl)
+		parallel::stopCluster(cl)
+	} else {
+		SET <- pbapply::pblapply(M, local, cl = NULL)
+	}
+	SET <- do.call(rbind, lapply(SET, as.data.frame))
+	flush.console
+	return(SET = na.omit(SET))
+}
+
+pcor.test <- function(S, B, n, H0 = 0, ...)
+{
+	k <- solve(S[B, B])
+	r <- -k[1, 2]/sqrt(k[1, 1]*k[2, 2])
+	q <- length(B) - 2
+	if (H0 == 0) {
+		df <- n - 2 - q
+		tval <- r*sqrt(df)/sqrt(1 - r^2)
+		pval <- 2*pt(-abs(tval), df)
+	} else {
+		z <- atanh(r)
+		se <- 1/sqrt(n - 3 - q)
+		pval <- pchisq((z/se)^2, df = 1, ncp = (atanh(.05)/se)^2,
+		               lower.tail = FALSE)
+	}
+	return(pval)
 }
 
 msep.test<- function(bap, S, n, ...)
@@ -1793,20 +1879,11 @@ SEMace <- function(graph, data, group = NULL, method = "none", alpha = 0.05,
 		x <- ftm[i, 1]
 		y <- ftm[i, 2]
 
-		# Adjustement SET Z using adjustmentSets() of dagitty package
-		#Z <- dagitty::adjustmentSets(dag, x, y, type = "minimal",
-		#                             effect = "total")
-		#if (length(Z) == 0) next
-		#X <- scale(data[, c(x, unlist(Z[[1]]))])
-		#Y <- scale(data[, y])
-
 		# Adjustement SET Z using OptAdjSet (Witte et al, 2020)
-		#paths <- all_simple_paths(dag, from = x, to = y, mode = "out")
-		#cn <- setdiff(unique(names(unlist(paths))), x)
 		paths <- dagitty::paths(dagy, from = x, to = y, directed = TRUE)$paths
 		cn <- setdiff(unique(unlist(strsplit(gsub("->", "", paths), "  "))), x)
 		#pa_cn <- dagitty::parents(dag, cn)
-		#forb <- c(dagitty::descendants(dag, cn),x)
+		#forb <- c(dagitty::descendants(dag, cn), x)
 		pa_cn <- V(dag)$name[parents(dag, cn)]
 		forb <- c(V(dag)$name[descendants(dag, cn)], x)
 		z <- setdiff(pa_cn, forb)
@@ -1969,8 +2046,8 @@ SEMpath <- function(graph, data, group, from, to, path, verbose = FALSE, ...)
 
 	if (path == "shortest") {
 		# Set shortest path nodes
-		paths<- all_shortest_paths(ig, from, to, mode = "out", weights = NA)
-		nodes<- unique(names(unlist(paths$res)))
+		paths <- all_shortest_paths(ig, from, to, mode = "out", weights = NA)
+		nodes <- unique(names(unlist(paths$res)))
 	} else if (path == "directed") {
 		# Set directed path nodes
 		#paths <- all_simple_paths(ig, from, to, mode = "out")
@@ -2003,69 +2080,4 @@ SEMpath <- function(graph, data, group, from, to, path, verbose = FALSE, ...)
 	}
 
 	return(list(fit = sem$fit, gest = sem$gest, graph = ig1, map = ig))
-}
-
-dsep.test <- function(dag, S, n, limit = 30000, ...)
-{
- 	# d-sep (basis set) testing of a DAG
-	idx <- as.numeric(topo_sort(dag, mode = "out"))
-	A <- as_adj(dag, sparse = FALSE)[idx, idx]
-	M <- gdata::unmatrix(A, byrow = FALSE)
-	M <- M[as.vector(upper.tri(A, diag = FALSE))]
-	M <- names(M)[which(M == 0)]
-
-	local <- function(x) {
-		s <- strsplit(x, ":")
-		ed <- c(s[[1]][1], s[[1]][2])
-		pa.r <- igraph::V(dag)$name[SEMgraph::parents(dag, ed[1])]
-		pa.s <- igraph::V(dag)$name[SEMgraph::parents(dag, ed[2])]
-		dsep <- union(pa.r, pa.s)
-		dsep <- setdiff(dsep, ed)
-		B <- c(ed, dsep)
-		if(length(B) > (n - 3)) return(rep(NA, 4))
-		p.value <- pcor.test(S, B, n, H0 = 0.05)
-		set <- paste(B[-c(1:2)], collapse = ",")
-		return(data.frame(X = B[1], Y = B[2], SET = set, p.value))
-	}
-
-	#message("d-separation test (basis set) of ", length(M), " edges ...")
-	op <- pbapply::pboptions(type = "timer", style = 2)
-	df <- vcount(dag)*(vcount(dag) - 1)/2 - ecount(dag)
-	if (df > limit) {
-		n_cores <- parallel::detectCores()/2
-		cl <- parallel::makeCluster(n_cores)
-		parallel::clusterExport(cl, c("local", "dag", "S", "n"),
-		                        envir = environment())
-		SET <- pbapply::pblapply(M, local, cl = cl)
-		parallel::stopCluster(cl)
-	} else {
-		SET <- pbapply::pblapply(M, local, cl = NULL)
-	}
-	SET <- do.call(rbind, lapply(SET, as.data.frame))
-	flush.console
-	return(SET = na.omit(SET))
-}
-
-pcor.test <- function(S, B, n, H0 = 0, ...)
-{
-	k <- solve(S[B, B])
-	r <- -k[1, 2]/sqrt(k[1, 1]*k[2, 2])
-	q <- length(B) - 2
-	if (H0 == 0) {
-		df <- n - 2 - q
-		tval <- r*sqrt(df)/sqrt(1 - r^2)
-		pval <- 2*pt(-abs(tval), df)
-	} else {
-		z <- atanh(r)
-		se <- 1/sqrt(n - 3 - q)
-		pval <- pchisq((z/se)^2, df = 1, ncp = (atanh(.05)/se)^2,
-		               lower.tail = FALSE)
-	}
-	return(pval)
-}
-
-quiet <- function(x) {
-	sink(tempfile())
-	on.exit(sink())
-	invisible(force(x))
 }

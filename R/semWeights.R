@@ -129,7 +129,7 @@ weightGraph <- function(graph, data, group = NULL, method = "r2z",
 	if (method == "sem") ew <- ew.sem(ftm, Y, group, degree, limit = limit)
 	if (method == "cov") ew <- ew.cov(ftm, Y, group, degree, limit = limit)
 	if (method == "cfa") ew <- ew.cfa(ftm, Y, group, limit = limit)
-	if (method == "lmi") ew<- ew.lmi(ftm, Y, group, limit=limit)
+	if (method == "lmi") ew <- ew.lmi(ftm, Y, group, limit = limit)
 
 	zsign <- ew[[1]]
 	pv <- ew[[2]]
@@ -537,7 +537,6 @@ RWR <- function(graph, seed, eweight, algo, q, ...)
 	return(graph = induced_subgraph(graph, top))
 }
 
-#Triangulated Maximally Filtered Graph
 TMFG <- function(cormat, ...)
 {
     n <- ncol(cormat)
