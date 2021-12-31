@@ -631,8 +631,11 @@ to attach them to the start of each source file to most effectively
 state the exclusion of warranty; and each file should have at least
 the "copyright" line and a pointer to where the full notice is found.
 
-    SEMgraph: Causal Structure Learning and Network Analysis with 
-    Structural Equation Modeling.
+    SEMgraph: Causal Structure Learning and Network Analysis with
+    Structural Equation Modeling.This R package includes functions
+    to import, weight, manipulate, and fit biological network models
+    within the Structural Equation Modeling framework described in
+    Palluzzi and Grassi (2021) <arXiv:2103.08332>.
     Copyright (C) 2019-2022  Fernando Palluzzi; Mario Grassi
 
     This program is free software: you can redistribute it and/or modify
