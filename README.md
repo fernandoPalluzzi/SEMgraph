@@ -51,7 +51,7 @@ See our website [**HERE**](https://fernandopalluzzi.github.io/SEMgraph/) for hel
 
 **SEMgraph** offers several datasets to work with, for both training and research. They include (**\*\*** available with the [**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata) expansion):
 
-- [**KEGG**](https://www.genome.jp/kegg/) directed reference network of 5934 nodes and 77158 edges, derived from the **KEGG** database.
+- [**KEGG**](https://www.genome.jp/kegg/) directed reference network of 5007 nodes and 44755 edges, derived from the **KEGG** database.
 
 - **KEGG pathways**. A comprehensive list of 225 KEGG pathways (last update: November 2021).
 
