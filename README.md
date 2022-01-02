@@ -1,7 +1,7 @@
 # SEMgraph
 **Causal network inference and discovery** with **Structural Equation Modeling**
 
-**SEMgraph**  Estimate networks and causal relations in complex systems through
+**SEMgraph** estimates networks and causal relationships in complex systems through
 Structural Equation Modeling (SEM). **SEMgraph** comes with the following functionalities:
 
 - Interchangeable model representation as either an **igraph** object 
