@@ -1,5 +1,5 @@
 #  SEMgraph library
-#  Copyright (C) 2019-2021 Fernando Palluzzi; Mario Grassi
+#  Copyright (C) 2019-2022 Fernando Palluzzi; Mario Grassi
 #  e-mail: <fernando.palluzzi@gmail.com>
 #  University of Pavia, Department of Brain and Behavioral Sciences
 #  Via Bassi 21, 27100 Pavia, Italy
@@ -29,8 +29,7 @@
 #' @docType data
 #' @format
 #' "kegg" is an igraph network object of 5934 nodes and 77158 edges 
-#' (41122 directed and 3164/2 = 1582 bidirected) corresponding to the
-#' union of 225 KEGG pathways.
+#' corresponding to the union of 225 KEGG pathways.
 #' @source \url{https://www.genome.jp/kegg/}
 #' @references
 #' 
