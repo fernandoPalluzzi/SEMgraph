@@ -1,5 +1,5 @@
 #  SEMgraph library
-#  Copyright (C) 2019-2022 Fernando Palluzzi; Mario Grassi
+#  Copyright (C) 2019-2021  Mario Grassi; Fernando Palluzzi
 #  e-mail: <fernando.palluzzi@gmail.com>
 #  University of Pavia, Department of Brain and Behavioral Sciences
 #  Via Bassi 21, 27100 Pavia, Italy
@@ -32,10 +32,11 @@
 #' \enumerate{
 #' \item "graph", ALS graph as the largest connected component of the 
 #' "Amyotrophic lateral sclerosis (ALS)" pathway from KEGG database;
-#' \item "exprs", a matrix of 160 rows (subjects) and 303 columns (genes)
+#' \item "exprs", a matrix of 160 rows (subjects) and 318 columns (genes)
 #' extracted from the original 17695. This subset includes genes from 
-#' KEGG ALS signaling pathway, MAPK signaling pathway, and Type II diabetes
-#' mellitus pathway, needed to run SEMgraph examples.
+#' KEGG ALS signaling pathway, MAPK signaling pathway, and Protein
+#' processing in endoplasmic reticulum pathway, needed to run SEMgraph
+#' examples.
 #' Raw data from the GEO dataset GSE124439 (Tam et al., 2019) were 
 #' pre-processed applying batch effect correction, using the sva R package 
 #' (Leek et al., 2012), to remove data production center and brain area 

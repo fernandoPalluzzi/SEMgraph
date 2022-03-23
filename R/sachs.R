@@ -1,5 +1,5 @@
 #  SEMgraph library
-#  Copyright (C) 2019-2022 Fernando Palluzzi; Mario Grassi
+#  Copyright (C) 2019-2021 Mario Grass; iFernando Palluzzi 
 #  e-mail: <fernando.palluzzi@gmail.com>
 #  University of Pavia, Department of Brain and Behavioral Sciences
 #  Via Bassi 21, 27100 Pavia, Italy

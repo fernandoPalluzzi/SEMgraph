@@ -40,7 +40,7 @@ modules are generated using the tree agglomerative hierarchical
 clustering method (Yu et al., 2015).
 Other non-tree clustering methods from igraph package include: "wtc"
 (default value; walktrap community structure with short random walks),
-"ebc" (edge betweeness clustering), "fgc" (fast greedy method), "lbc"
+"ebc" (edge betweenness clustering), "fgc" (fast greedy method), "lbc"
 (label propagation method), "lec" (leading eigenvector method), "loc"
 (multi-level optimization), "opc" (optimal communiy structure), "sgc"
 (spinglass statistical mechanics).

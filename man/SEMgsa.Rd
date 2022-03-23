@@ -2,7 +2,7 @@
 % Please edit documentation in R/semUtils.R
 \name{SEMgsa}
 \alias{SEMgsa}
-\title{SEM-based gene set analysis}
+\title{SEM-based gene set analysis (GSA)}
 \usage{
 SEMgsa(g = list(), data, group, method = "BH", alpha = 0.05, n_rep = 1000, ...)
 }
@@ -32,42 +32,59 @@ A list of 2 objects:
 \item "gsa", A data.frame reporting the following information for each
 pathway in the input list:
 \itemize{
-\item "N.nodes", pathway size (number of nodes);
-\item "N.DRNs", number of differential regulated genes (DRNs) within the pathway,
-after multiple test correction with Benjamini-Hochberg method;
-\item "pD", significance of the sum of group effects, adjusted by the
-residual variance;
-\item "pA", significance of the sum of tagret nodes perturbation
-(i.e., group effect) accumulation from source nodes;
-\item "pE", significance of the sum of source nodes perturbation
-(i.e., group effect) emission towards target nodes;
-\item "pvalue", Fisher's combined P-value of pD, pA, and pE.
+\item "No.nodes", pathway size (number of nodes);
+\item "No.DEGs", number of differential espression genes (DEGs) within
+the pathway, after multiple test correction with one of the methods
+available in \code{\link[stats]{p.adjust}};
+\item "pert", pathway perturbation status (see details);
+\item "pNA", Brown's combined P-value of pathway node activation;
+\item "pNI", Brown's combined P-value of pathway node inhibition;
+\item "PVAL", Bonferroni combined P-value of pNA, and pNI; i.e.,
+2* min(pNA, PNI);
+\item "ADJP", Adjusted Bonferroni P-value of pathway perturbation; i.e.,
+min(No.pathways * PVAL; 1).
 }
-\item "DRN", a list with DRNs names per pathways.
+\item "DEG", a list with DEGs names per pathways.
 }
 }
 \description{
 Gene Set Analysis (GSA) via self-contained test for group
-effect on signaling (directed) pathways as SEM, evaluating overall pathway
-perturbation, perturbation emission from source nodes, and perturbation
-accumulation on target nodes. Approximate randomization test P-values
-of specific node and aggregated group effects will be computed.
-For directed graphs, they include: the sum of group effects adjusted
-by residual variances (D), the sum of the tagret nodes perturbation
-(i.e., group effect) accumulation from source nodes (A), and the sum
-of the source nodes perturbation emission towards target nodes (E).
-For undirected graphs, the sum of group effects (D), adjusted
-by residual variances, will be estimated.
+effect on signaling (directed) pathways based on SEM. The core of the
+methodology is implemented in the RICF algorithm of \code{SEMrun()},
+recovering from RICF output node-specific group effect p-values, and
+Brown’s combined permutation p-values of node activation and inhibition.
+}
+\details{
+For gaining more biological insights into the functional roles
+of pre-defined subsets of genes, node perturbation obtained from RICF
+fitting has been combined with up- or down-regulation of genes from KEGG
+to obtain overall pathway perturbation as follows: 
+\itemize{
+\item The node perturbation is defined as activated when the minimum among
+the p-values is positive; if negative, the status is inhibited. 
+\item Up- or down- regulation of genes (derived from KEGG database) has
+been obtained from the weighted adjacency matrix of each pathway as column
+sum of weights over each source node. If the overall sum of node weights
+is below 1, the pathway is flagged as down-regulated otherwise as up-regulated. 
+\item The combination between these two quantities allows to define the
+direction (up or down) of gene perturbation. Up- or down regulated gene status,
+associated with node inhibition, indicates a decrease in activation (or
+increase in inhibition) in cases with respect to control group. Conversely,
+up- or down regulated gene status, associated with node activation, indicates
+an increase in activation (or decrease in inhibition) in cases with
+respect to control group.
+}
 }
 \examples{
 
 \dontrun{
 
 # Nonparanormal(npn) transformation
+
 library(huge)
 als.npn <- huge.npn(alsData$exprs)
 
-# Selection of FTD pathways from kegg.pathways.Rdata
+# Selection of FTD-ALS pathways from kegg.pathways.Rdata
 
 paths.name <- c("MAPK signaling pathway",
                 "Protein processing in endoplasmic reticulum",
@@ -82,7 +99,7 @@ GSA <- SEMgsa(kegg.pathways[j], als.npn, alsData$group,
               method = "bonferroni", alpha = 0.05,
               n_rep = 1000)
 GSA$gsa
-GSA$DRN
+GSA$DEG
 
 }
 
