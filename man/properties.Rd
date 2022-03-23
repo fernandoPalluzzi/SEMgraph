@@ -9,9 +9,9 @@ properties(graph, data = NULL, ...)
 \arguments{
 \item{graph}{Input network as an igraph object.}
 
-\item{data}{An optional data matrix whith rows corresponding to subjects,
-and columns to graph nodes (variables). Nodes will be mapped onto
-variable names.}
+\item{data}{An optional data matrix (default data = NULL) whith rows
+corresponding to subjects, and columns to graph nodes (variables).
+Nodes will be mapped onto variable names.}
 
 \item{...}{Currently ignored.}
 }
@@ -27,8 +27,8 @@ graph components (ordered by decreasing size), without self-loops.
 
 # Extract the "Type II diabetes mellitus" pathway:
 g <- kegg.pathways[["Type II diabetes mellitus"]]
-properties(g)
 summary(g)
+properties(g)
 
 }
 \author{

@@ -1,5 +1,5 @@
 #  SEMgraph library
-#  Copyright (C) 2019-2022 Fernando Palluzzi; Mario Grassi
+#  Copyright (C) 2019-2021 Mario Grassi; Fernando Palluzzi 
 #  e-mail: <fernando.palluzzi@gmail.com>
 #  University of Pavia, Department of Brain and Behavioral Sciences
 #  Via Bassi 21, 27100 Pavia, Italy
@@ -18,7 +18,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # -------------------------------------------------------------------- #
-
 
 #' @title Graph weighting methods
 #'
@@ -52,7 +51,7 @@
 #' }
 #' @param seed A vector of three cutoffs. By default, \code{seed = "none"} 
 #' and seed calculation is disabled. Suggested cutoff values are 
-#' \code{seed = c(0.05, 0.5, 0.5)}. If these cutoffs are defined, seed 
+#' \code{seed = c(0.05, 0.5, 0.9)}. If these cutoffs are defined, seed 
 #' search is enabled. Nodes can be labeled as either seeds (node 
 #' weight = 1) or non-seeds (node weight = 0), according to three 
 #' alternative importance criteria: perturbed group effect, prototype 
@@ -60,16 +59,15 @@
 #' level of the group effect over graph nodes. The second is a threshold 
 #' corresponding to the prototype clustering distance measure 
 #' (= 1 - abs(correlation)) cutoff. The third one is the closeness 
-#' percentile. Nodes having closeness greater than the q-th percentile 
+#' percentile, nodes having closeness greater than the q-th percentile 
 #' are labeled as seeds. If the seed argument is enabled, the output 
 #' graph will have three new binary (1: seed, 0: non-seed) vertex 
-#' attibutes:
+#' attributes:
 #' \enumerate{
-#' \item "pvlm", P-value of the simple linear regression y ~ x (i.e.,
-#' node ~ group);
-#' \item "proto", prototype seeds derived from
-#' \code{\link[protoclust]{protoclust}};
-#' \item "qi", nodes with closeness greater than the q-th percentile.
+#' \item "pvlm", adjusted FDR p-value < alpha seeds from simple linear regression
+#' y ~ x (i.e., lm(node ~ group));
+#' \item "proto", prototype seeds derived from \code{\link[protoclust]{protoclust}};
+#' \item "qi", nodes with \code{\link[igraph]{closeness}} greater than the q-th percentile.
 #' }
 #' @param limit An integer value corresponding to the number of graph 
 #' edges. Beyond this limit, multicore computation is enabled to reduce 
@@ -120,7 +118,6 @@ weightGraph <- function(graph, data, group = NULL, method = "r2z",
 	# Set genes, from-to-matrix (ftm), vertex degree and data
 	genes <- colnames(data)
 	ig <- induced_subgraph(graph, vids = which(V(graph)$name %in% genes))
-	
 	degree <- igraph::degree(ig, v = V(ig), mode = "all")
 	ftm <- as_data_frame(ig)
 	Y <- scale(data)
@@ -129,7 +126,7 @@ weightGraph <- function(graph, data, group = NULL, method = "r2z",
 	if (method == "sem") ew <- ew.sem(ftm, Y, group, degree, limit = limit)
 	if (method == "cov") ew <- ew.cov(ftm, Y, group, degree, limit = limit)
 	if (method == "cfa") ew <- ew.cfa(ftm, Y, group, limit = limit)
-	if (method == "lmi") ew <- ew.lmi(ftm, Y, group, limit = limit)
+	if (method == "lmi") ew<- ew.lmi(ftm, Y, group, limit=limit)
 
 	zsign <- ew[[1]]
 	pv <- ew[[2]]
@@ -145,7 +142,7 @@ weightGraph <- function(graph, data, group = NULL, method = "r2z",
 		for(i in 2:length(Vattr))
 		gdf <- set_vertex_attr(gdf, names(Vattr)[i], value = Vattr[[i]][idx])
 	}
-	if (length(seed) > 1) {
+	if (length(seed) == 3) {
 		gdf <- seedweight(gdf, data, group,
 		                  alpha = seed[1],
 		                  h = seed[2],
@@ -345,7 +342,7 @@ ew.r2z <- function(ftm, Y, group, ...)
 	return (list(zsign, pv))
 }
 
-seedweight <- function(ig, data, group, alpha = 0.05, h = 0.2, q = 0.5, ...)
+seedweight <- function(ig, data, group, alpha, h, q, ...)
 {
 	# Set data object
 	Y <- data[, which(colnames(data) %in% V(ig)$name)]
@@ -355,8 +352,8 @@ seedweight <- function(ig, data, group, alpha = 0.05, h = 0.2, q = 0.5, ...)
 	pv.lm <- function(x) { summary(lm(x~group))$coefficients[2, 4] }
 	if (!is.null(group)) {
 		pvlm <- apply(Y, 2, pv.lm)
-		#pvlm
-		seed1 <- V(ig)$name[pvlm < alpha]
+		p.adj <- p.adjust(pvlm, method="BH")
+		seed1 <- V(ig)$name[p.adj < alpha]
 		V(ig)$pvlm <- ifelse(V(ig)$name %in% seed1, 1, 0)
 	} else {
 		V(ig)$pvlm <- 0
@@ -377,7 +374,7 @@ seedweight <- function(ig, data, group, alpha = 0.05, h = 0.2, q = 0.5, ...)
 	seed3 <- V(ig)$name[which(qi > quantile(qi, probs = q))]
 	V(ig)$qi <- ifelse(V(ig)$name %in% seed3, 1, 0)
 	
-	return(graph = ig)
+	return (ig)
 }
 
 #' @title Active module identification
@@ -412,10 +409,9 @@ seedweight <- function(ig, data, group, alpha = 0.05, h = 0.2, q = 0.5, ...)
 #' measure specified by the user as "weight" edge attribute.
 #' @param alpha Significance level to assess shortest paths significance, 
 #' when type is "usp". By default, \code{alpha = 0.05}.
-#' @param q Inclusion quantile for the "rwr" and "hdi" algorithms. The higher 
-#' the q, the closer the nodes to the input seeds, the smaller the output 
-#' graph induced by the q-top ranking nodes. 
-#' By default, \code{q = 0.9} (i.e., the top 10\% of nodes are selected).
+#' @param top Number of top nodes for the "rwr" and "hdi" algorithms. The 
+#' output subgraph is induced by the top-n ranking nodes.
+#' By default, \code{top = 100} (i.e., the top-100 of nodes are selected).
 #' @param limit An integer value corresponding to the number of graph 
 #' edges. If \code{type = "usp"}, beyond this limit, multicore computation 
 #' is enabled to reduce the computational burden. 
@@ -425,16 +421,17 @@ seedweight <- function(ig, data, group, alpha = 0.05, h = 0.2, q = 0.5, ...)
 #' @details Graph filtering algorithms include:
 #' \enumerate{
 #' \item "kou", the Steiner tree connecting a set of seed nodes, using 
-#' the algorithm from Kou et al. (1981);
+#' the algorithm suggested by Kou et al. (1981);
 #' \item "usp", generates a subnetwork as the union of the significant 
 #' (P-value < alpha) shortest paths between the seeds set;
-#' \item "rwr", Random Walk with Restart; wrapper for random.walk of the 
-#' R package diffusr;
-#' \item "hdi", Heat Diffusion algorithm; wrapper for heat.diffusion of 
-#' the R package diffusr.
+#' \item "rwr", Random Walk with Restart, a wrapper for \code{random.walk}
+#' function of the R package \code{diffusr};
+#' \item "hdi", Heat Diffusion algorithm, a wrapper for \code{heat.diffusion}
+#' function of the R package \code{diffusr}.
 #' }
 #'
-#' @return An active module of class \code{\link{igraph}}.
+#' @return An active module, an igraph object with colored nodes
+#' (seed = "green", and connector = "white").
 #'
 #' @import igraph
 #' @importFrom diffusr random.walk heat.diffusion
@@ -482,46 +479,47 @@ seedweight <- function(ig, data, group, alpha = 0.05, h = 0.2, q = 0.5, ...)
 #' par(old.par)
 #' 
 activeModule <- function(graph, type, seed, eweight = "none", alpha = 0.05,
-                         q = 0.9, limit = 10000, ...)
+                         top = 100, limit = 10000, ...)
 {
 	if (length(eweight) == 1) {
-		if (eweight == "kegg") eweight <- (1 - E(graph)$weight)/2
-		else if (eweight == "zsign") eweight <- 1 - abs(E(graph)$zsign)
-		else if (eweight == "pvalue") eweight <- 1/(-log10(E(graph)$pv))
-		else if (eweight == "custom") eweight <- E(graph)$weight
-		else if (eweight == "none") eweight <- rep(1, ecount(graph))
+	 if (eweight == "kegg") eweight <- (1 - E(graph)$weight)/2
+	 else if (eweight == "zsign") eweight <- 1 - abs(E(graph)$zsign)
+	 else if (eweight == "pvalue") eweight <- 1/(-log10(E(graph)$pv))
+	 else if (eweight == "custom") eweight <- E(graph)$weight
+	 else if (eweight == "none") eweight <- rep(1, ecount(graph))
 	}
 	
 	if (length(seed) == 1) {
-		if (seed == "pvlm") seed <- V(graph)$name[V(graph)$pvlm == 1]
-		else if (seed == "proto") seed <- V(graph)$name[V(graph)$proto == 1]
-		else if (seed == "qi") seed <- V(graph)$name[V(graph)$qi == 1]
+	 if (seed == "pvlm") seed <- V(graph)$name[V(graph)$pvlm == 1]
+	 else if (seed == "proto") seed <- V(graph)$name[V(graph)$proto == 1]
+	 else if (seed == "qi") seed <- V(graph)$name[V(graph)$qi == 1]
 	} else {
-		seed <- seed[seed %in% V(graph)$name]
+	 seed <- seed[seed %in% V(graph)$name]
 	}
 	
 	if (type == "kou" & length(seed) != 0) {
-		return(SteinerTree(graph, seed = seed, eweight = eweight))
+	 R <- SteinerTree(graph, seed = seed, eweight = eweight)
 	
 	} else if (type == "usp" & length(seed) != 0) {
-		return(USPG(graph, seed = seed, eweight = eweight, alpha = alpha,
-		            limit = limit))
+	 R <- USPG(graph, seed = seed, eweight = eweight, alpha = alpha, limit = limit)
 	
 	} else if (type == "rwr" & length(seed) != 0) {
-		return(RWR(graph, seed = seed, eweight = eweight, algo = "rwr",
-		           q = q))
+	 R <- RWR(graph, seed = seed, eweight = eweight, algo = "rwr", top = top)
 	
 	} else if (type == "hdi" & length(seed) != 0) {
-		return(RWR(graph, seed = seed, eweight = eweight, algo = "hdi",
-		           q = q))
+	 R <- RWR(graph, seed = seed, eweight = eweight, algo = "hdi", top = top)
 	}
+	V(R)$color <- ifelse(V(R)$name %in% seed, "green", "white")
+	
+	return(R)
 }
 
-RWR <- function(graph, seed, eweight, algo, q, ...)
+RWR <- function(graph, seed, eweight, algo, top, ...)
 {
 	E(graph)$weight <- eweight
 	W <- as_adjacency_matrix(graph, attr = "weight", sparse = FALSE)
 	p0 <- ifelse(V(graph)$name %in% seed, 1, 0)
+	q <- 1-top/vcount(graph)
 	
 	if (algo == "rwr") {
 		pt <- diffusr::random.walk(p0 = p0, W, r = 0.5)
@@ -535,124 +533,6 @@ RWR <- function(graph, seed, eweight, algo, q, ...)
 	}
 	
 	return(graph = induced_subgraph(graph, top))
-}
-
-TMFG <- function(cormat, ...)
-{
-    n <- ncol(cormat)
-    cormat <- abs(cormat)
-    in_v <- matrix(nrow = nrow(cormat), ncol = 1)
-    ou_v <- matrix(nrow = nrow(cormat), ncol = 1)
-    tri <- matrix(nrow = ((2 * n) - 4), ncol = 3)
-    separators <- matrix(nrow = n - 4, ncol = 3)
-    s <- rowSums(cormat*(cormat > mean(matrix(unlist(cormat),nrow = 1)))*1)
-    in_v[1:4] <- order(s, decreasing = TRUE)[1:4]
-    ou_v <- setdiff(1:nrow(in_v), in_v)
-    tri[1,] <- in_v[1:3,]
-    tri[2,] <- in_v[2:4,]
-    tri[3,] <- in_v[c(1, 2, 4),]
-    tri[4,] <- in_v[c(1, 3, 4),]
-	
-    S <- matrix(nrow = (3 * nrow(cormat) - 6), ncol = 3)
-    if (cormat[in_v[1], in_v[2]] > cormat[in_v[2], in_v[1]]) {
-		S[1,] <- c(in_v[1], in_v[2], 1)
-    } else {
-		S[1, ] <- c(in_v[2], in_v[1], 1)
-    }
-    
-    if (cormat[in_v[1], in_v[3]] > cormat[in_v[3], in_v[1]]) {
-		S[2,] <- c(in_v[1], in_v[3], 1)
-    } else {
-		S[2,] <- c(in_v[3], in_v[1], 1)
-    }
-    
-    if (cormat[in_v[1], in_v[4]] > cormat[in_v[4], in_v[1]]) {
-		S[3,] <- c(in_v[1], in_v[4], 1)
-    } else {
-		S[3,] <- c(in_v[4], in_v[1], 1)
-    }
-    
-    if (cormat[in_v[2], in_v[3]] > cormat[in_v[3], in_v[2]]) {
-		S[4,] <- c(in_v[2], in_v[3], 1)
-    } else {
-		S[4,] <- c(in_v[3], in_v[2], 1)
-    }
-    
-    if (cormat[in_v[2], in_v[4]] > cormat[in_v[4], in_v[2]]) {
-		S[5,] <- c(in_v[2], in_v[4], 1)
-    } else {
-		S[5,] <- c(in_v[4], in_v[2], 1)
-    }
-    
-    if (cormat[in_v[3], in_v[4]] > cormat[in_v[4], in_v[3]]) {
-            S[6,] <- c(in_v[3], in_v[4], 1)
-    } else {
-            S[6,] <- c(in_v[4], in_v[3], 1)
-    }
-    
-	gain <- matrix(-Inf, nrow = n, ncol = (2 * (n - 2)))
-    gain[ou_v, 1] <- rowSums(cormat[ou_v, (tri[1,])])
-    gain[ou_v, 2] <- rowSums(cormat[ou_v, (tri[2,])])
-    gain[ou_v, 3] <- rowSums(cormat[ou_v, (tri[3,])])
-    gain[ou_v, 4] <- rowSums(cormat[ou_v, (tri[4,])])
-    ntri <- 4
-    gij <- matrix(nrow = 1, ncol = ncol(gain))
-    v <- matrix(nrow = 1, ncol = ncol(gain))
-    ve <- array()
-    tr <- 0
-    for (e in 5:n) {
-		if (length(ou_v) == 1) {
-			ve <- ou_v
-			v <- 1
-			w <- 1
-			tr <- which.max(gain[ou_v,])
-        } else {
-			for (q in 1:ncol(gain)) {
-				gij[, q] <- max(gain[ou_v, q])
-				v[, q] <- which.max(gain[ou_v, q])
-				tr <- which.max(gij)
-            }
-            ve <- ou_v[v[tr]]
-            w <- v[tr]
-        }
-        ou_v <- ou_v[-w]
-        in_v[e] <- ve
-        for (u in 1:length(tri[tr, ])) {
-            cou <- 6 + ((3 * (e - 5)) + u)
-            S[cou, ] <- cbind(ve, tri[tr, u], 1)
-        }
-        separators[e - 4, ] <- tri[tr, ]
-        tri[ntri + 1, ] <- cbind(rbind(tri[tr, c(1, 3)]), ve)
-        tri[ntri + 2, ] <- cbind(rbind(tri[tr, c(2, 3)]), ve)
-        tri[tr, ] <- cbind(rbind(tri[tr, c(1, 2)]), ve)
-        gain[ve, ] <- 0
-        gain[ou_v, tr] <- rowSums(cormat[ou_v, tri[tr, ], drop = FALSE])
-        gain[ou_v, ntri + 1] <- rowSums(cormat[ou_v, tri[ntri + 1, ],
-                                        drop = FALSE])
-        gain[ou_v, ntri + 2] <- rowSums(cormat[ou_v, tri[ntri + 2, ],
-                                        drop = FALSE])
-        ntri <- ntri + 2
-    }
-   	cliques <- rbind(in_v[1:4], (cbind(separators, in_v[5:ncol(cormat)])))
-    L <- S
-    L[, 1] <- S[, 2]
-    L[, 2] <- S[, 1]
-    K <- rbind(S, L)
-    x <- as.matrix(Matrix::sparseMatrix(i = K[, 1], j = K[, 2], x = K[, 3]))
-    diag(x) <- 1
-    for (r in 1:nrow(x)) for (z in 1:ncol(x)) {
-        if (x[r, z] == 1) {
-            x[r, z] <- cormat[r, z]
-        }
-    }
-    colnames(x) <- colnames(cormat)
-    x <- as.data.frame(x)
-    row.names(x) <- colnames(x)
-    x <- as.matrix(x)
-	x <- x - diag(nrow(x))
-	gtmf <- graph_from_adjacency_matrix(x, mode = "undirected", weighted = TRUE)
-    
-	return(list(graph = gtmf, separators = separators, cliques = cliques))
 }
 
 SteinerTree <- function(graph, seed, eweight, ...)
@@ -781,3 +661,122 @@ USPG <- function(graph, seed, eweight, alpha, limit, ...)
 	
 	return(Gs)
 }
+
+TMFG <- function(cormat, ...)
+{
+    n <- ncol(cormat)
+    cormat <- abs(cormat)
+    in_v <- matrix(nrow = nrow(cormat), ncol = 1)
+    ou_v <- matrix(nrow = nrow(cormat), ncol = 1)
+    tri <- matrix(nrow = ((2 * n) - 4), ncol = 3)
+    separators <- matrix(nrow = n - 4, ncol = 3)
+    s <- rowSums(cormat*(cormat > mean(matrix(unlist(cormat),nrow = 1)))*1)
+    in_v[1:4] <- order(s, decreasing = TRUE)[1:4]
+    ou_v <- setdiff(1:nrow(in_v), in_v)
+    tri[1,] <- in_v[1:3,]
+    tri[2,] <- in_v[2:4,]
+    tri[3,] <- in_v[c(1, 2, 4),]
+    tri[4,] <- in_v[c(1, 3, 4),]
+	
+    S <- matrix(nrow = (3 * nrow(cormat) - 6), ncol = 3)
+    if (cormat[in_v[1], in_v[2]] > cormat[in_v[2], in_v[1]]) {
+		S[1,] <- c(in_v[1], in_v[2], 1)
+    } else {
+		S[1, ] <- c(in_v[2], in_v[1], 1)
+    }
+    
+    if (cormat[in_v[1], in_v[3]] > cormat[in_v[3], in_v[1]]) {
+		S[2,] <- c(in_v[1], in_v[3], 1)
+    } else {
+		S[2,] <- c(in_v[3], in_v[1], 1)
+    }
+    
+    if (cormat[in_v[1], in_v[4]] > cormat[in_v[4], in_v[1]]) {
+		S[3,] <- c(in_v[1], in_v[4], 1)
+    } else {
+		S[3,] <- c(in_v[4], in_v[1], 1)
+    }
+    
+    if (cormat[in_v[2], in_v[3]] > cormat[in_v[3], in_v[2]]) {
+		S[4,] <- c(in_v[2], in_v[3], 1)
+    } else {
+		S[4,] <- c(in_v[3], in_v[2], 1)
+    }
+    
+    if (cormat[in_v[2], in_v[4]] > cormat[in_v[4], in_v[2]]) {
+		S[5,] <- c(in_v[2], in_v[4], 1)
+    } else {
+		S[5,] <- c(in_v[4], in_v[2], 1)
+    }
+    
+    if (cormat[in_v[3], in_v[4]] > cormat[in_v[4], in_v[3]]) {
+            S[6,] <- c(in_v[3], in_v[4], 1)
+    } else {
+            S[6,] <- c(in_v[4], in_v[3], 1)
+    }
+    
+	 gain <- matrix(-Inf, nrow = n, ncol = (2 * (n - 2)))
+    gain[ou_v, 1] <- rowSums(cormat[ou_v, (tri[1,])])
+    gain[ou_v, 2] <- rowSums(cormat[ou_v, (tri[2,])])
+    gain[ou_v, 3] <- rowSums(cormat[ou_v, (tri[3,])])
+    gain[ou_v, 4] <- rowSums(cormat[ou_v, (tri[4,])])
+    ntri <- 4
+    gij <- matrix(nrow = 1, ncol = ncol(gain))
+    v <- matrix(nrow = 1, ncol = ncol(gain))
+    ve <- array()
+    tr <- 0
+    for (e in 5:n) {
+		if (length(ou_v) == 1) {
+			ve <- ou_v
+			v <- 1
+			w <- 1
+			tr <- which.max(gain[ou_v,])
+        } else {
+			for (q in 1:ncol(gain)) {
+				gij[, q] <- max(gain[ou_v, q])
+				v[, q] <- which.max(gain[ou_v, q])
+				tr <- which.max(gij)
+            }
+            ve <- ou_v[v[tr]]
+            w <- v[tr]
+        }
+        ou_v <- ou_v[-w]
+        in_v[e] <- ve
+        for (u in 1:length(tri[tr, ])) {
+            cou <- 6 + ((3 * (e - 5)) + u)
+            S[cou, ] <- cbind(ve, tri[tr, u], 1)
+        }
+        separators[e - 4, ] <- tri[tr, ]
+        tri[ntri + 1, ] <- cbind(rbind(tri[tr, c(1, 3)]), ve)
+        tri[ntri + 2, ] <- cbind(rbind(tri[tr, c(2, 3)]), ve)
+        tri[tr, ] <- cbind(rbind(tri[tr, c(1, 2)]), ve)
+        gain[ve, ] <- 0
+        gain[ou_v, tr] <- rowSums(cormat[ou_v, tri[tr, ], drop = FALSE])
+        gain[ou_v, ntri + 1] <- rowSums(cormat[ou_v, tri[ntri + 1, ],
+                                        drop = FALSE])
+        gain[ou_v, ntri + 2] <- rowSums(cormat[ou_v, tri[ntri + 2, ],
+                                        drop = FALSE])
+        ntri <- ntri + 2
+    }
+   	cliques <- rbind(in_v[1:4], (cbind(separators, in_v[5:ncol(cormat)])))
+    L <- S
+    L[, 1] <- S[, 2]
+    L[, 2] <- S[, 1]
+    K <- rbind(S, L)
+    x <- as.matrix(Matrix::sparseMatrix(i = K[, 1], j = K[, 2], x = K[, 3]))
+    diag(x) <- 1
+    for (r in 1:nrow(x)) for (z in 1:ncol(x)) {
+        if (x[r, z] == 1) {
+            x[r, z] <- cormat[r, z]
+        }
+    }
+    colnames(x) <- colnames(cormat)
+    x <- as.data.frame(x)
+    row.names(x) <- colnames(x)
+    x <- as.matrix(x)
+	x <- x - diag(nrow(x))
+	gtmf <- graph_from_adjacency_matrix(x, mode = "undirected", weighted = TRUE)
+    
+	return(list(graph = gtmf, separators = separators, cliques = cliques))
+}
+

@@ -48,7 +48,7 @@ Not available if \code{group == NULL}.
 
 \item{seed}{A vector of three cutoffs. By default, \code{seed = "none"} 
 and seed calculation is disabled. Suggested cutoff values are 
-\code{seed = c(0.05, 0.5, 0.5)}. If these cutoffs are defined, seed 
+\code{seed = c(0.05, 0.5, 0.9)}. If these cutoffs are defined, seed 
 search is enabled. Nodes can be labeled as either seeds (node 
 weight = 1) or non-seeds (node weight = 0), according to three 
 alternative importance criteria: perturbed group effect, prototype 
@@ -56,16 +56,15 @@ clustering, and closeness node index. The first cutoff is the significance
 level of the group effect over graph nodes. The second is a threshold 
 corresponding to the prototype clustering distance measure 
 (= 1 - abs(correlation)) cutoff. The third one is the closeness 
-percentile. Nodes having closeness greater than the q-th percentile 
+percentile, nodes having closeness greater than the q-th percentile 
 are labeled as seeds. If the seed argument is enabled, the output 
 graph will have three new binary (1: seed, 0: non-seed) vertex 
-attibutes:
+attributes:
 \enumerate{
-\item "pvlm", P-value of the simple linear regression y ~ x (i.e.,
-node ~ group);
-\item "proto", prototype seeds derived from
-\code{\link[protoclust]{protoclust}};
-\item "qi", nodes with closeness greater than the q-th percentile.
+\item "pvlm", adjusted FDR p-value < alpha seeds from simple linear regression
+y ~ x (i.e., lm(node ~ group));
+\item "proto", prototype seeds derived from \code{\link[protoclust]{protoclust}};
+\item "qi", nodes with \code{\link[igraph]{closeness}} greater than the q-th percentile.
 }}
 
 \item{limit}{An integer value corresponding to the number of graph 

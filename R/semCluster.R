@@ -1,5 +1,5 @@
 #  SEMgraph library
-#  Copyright (C) 2019-2022 Fernando Palluzzi; Mario Grassi
+#  Copyright (C) 2019-2021 Mario Grassi; Fernando Palluzzi
 #  e-mail: <fernando.palluzzi@gmail.com>
 #  University of Pavia, Department of Brain and Behavioral Sciences
 #  Via Bassi 21, 27100 Pavia, Italy
@@ -19,164 +19,18 @@
 
 # -------------------------------------------------------------------- #
 
-
-#' @title Subgraph mapping
-#'
-#' @description Map groups of nodes onto an input graph, based on a
-#' membership vector.
-#' @param graph An igraph object.
-#' @param membership Cluster membership vector for each node.
-#' @param l graph layout. One of the \code{\link{igraph}} layouts.
-#' If this argument is ignored, an automatic layout will be applied.
-#' @param map A logical value. Visualize cluster mapping over the input
-#' graph. If FALSE (default), visualization will be disabled. For large
-#' graphs, visualization may take long.
-#' @param verbose A logical value. If FALSE (default), the processed
-#' graphs will not be plotted to screen, saving execution time (they will
-#' be returned in output anyway).
-#' @param ... Currently ignored.
-#'
-#' @import igraph
-#' @importFrom stats qnorm cov2cor cor hclust as.dist cutree
-#' @importFrom graphics abline
-#' @export
-#'
-#' @return The list of clusters and cluster mapping as igraph objects.
-#'
-#' @author Mario Grassi \email{mario.grassi@unipv.it}
-#'
-#' @seealso \code{\link[SEMgraph]{clusterGraph}},
-#' \code{\link[SEMgraph]{clusterScore}}
-#'
-#' @examples
-#'
-#' \donttest{
-#'
-#' # Clustering ALS graph with WTC method
-#' G <- alsData$graph
-#' membership <- clusterGraph(graph = G, type = "wtc")
-#' cplot(G, membership, map = TRUE, verbose = FALSE)
-#' cplot(G, membership, map = FALSE, verbose = TRUE)
-#'
-#' }
-#'
-cplot <- function(graph, membership, l = layout.auto, map = FALSE,
-                  verbose = FALSE, ...)
-{
-	# Overall cluster visualization
-	V(graph)$M <- 9999
-    V(graph)$M[which(V(graph)$name %in% names(membership))] <- membership
-	if (map) {
-		V(graph)$color <- V(graph)$M + 1
-		gplot(graph)
-		Sys.sleep(3)
-	}
-
-	# Within cluster visualization
-	M <- names(table(V(graph)$M))
-	K <- length(table(V(graph)$M))
-	vcol <- as.numeric(M) + 1
-
-	HM <- lapply(1:K, function(x) induced_subgraph(graph,
-	             V(graph)$name[V(graph)$M == M[x]]))
-
-	names(HM) <- paste0("HM", M)
-	d <- igraph::degree(graph, mode = "all")*2 + 1
-
-	if (verbose) {
-		glv <- lapply(1:K, function(x) {
-			          E(HM[[x]])$weight <- 1
-			          plot(HM[[x]],
-			          vertex.color = vcol[x],
-			          vertex.size = d[V(HM[[x]])$name],
-			          layout = l,
-			          main = paste0("Hidden Module ", M[x]))
-		Sys.sleep(3)})
-	}
-
-	return(invisible(c(list(graph = graph), HM)))
-}
-
-#' @title Graph nodes merging by a user-defined membership attribute
-#'
-#' @description Merge groups of graph nodes using a custom membership
-#' attribute (e.g., cluster membership).
-#' @param graph Network as an igraph object.
-#' @param membership Cluster membership. A vector of cluster membership
-#' identifiers, where vector names correspond to graph node names.
-#' Topological graph clustering can be done using
-#' \code{\link[SEMgraph]{clusterGraph}}.
-#' @param HM Hidden model label. If HM = "LV", a latent variable (LV)
-#' will be defined as common unknown cause acting on cluster nodes.
-#' If HM = "CV", cluster nodes will be considered as regressors of a
-#' latent composite variable (CV). Finally, if HM = "UV", an unmeasured
-#' variable (UV) is defined, where source nodes of the module (i.e.,
-#' in-degree = 0) act as common regressors influencing the other nodes
-#' via an unmeasured variable.
-#' @param ... Currently ignored.
-#'
-#' @import igraph
-#' @importFrom graph combineNodes
-#' @export
-#'
-#' @return A network with merged nodes as an igraph object.
-#' @seealso \code{\link[SEMgraph]{clusterGraph}}
-#'
-#' @author Mario Grassi \email{mario.grassi@unipv.it}
-#'
-#' @examples
-#'
-#' # Clustering ALS graph with WTC method
-#' G <- properties(alsData$graph)[[1]]
-#' membership <- clusterGraph(graph = G, type = "wtc")
-#' M <- mergeNodes(G, membership, HM = "LV")
-#'
-mergeNodes <- function(graph, membership, HM, ...)
-{
-	# Set membership object
-	if (is.numeric(membership)) {
-		nodes <- names(membership)
-		membership <- paste0(HM, membership)
-		names(membership) <- nodes
-	}
-
-	LM <- NULL
-	for (i in 1:length(table(membership))) { #i=1
-		m <- names(table(membership))[i]
-		LMi <- V(graph)$name[which(V(graph)$name %in% names(membership)[membership == m])]
-		LM <- c(LM, list(LMi))
-	}
-	names(LM) <- names(table(membership))
-
-	# Visualize graph object
-	gLM <- as_graphnel(graph)
-	for (i in 1:length(LM)) {
-		gLMi <- graph::combineNodes(LM[[i]], gLM, names(LM)[i], mean)
-		gLM <- gLMi
-	}
-
-	ig <- graph_from_graphnel(gLM)
-	if (length(V(ig)$color) == 0) V(ig)$color <- "white"
-	V(ig)$color[substr(V(ig)$name, 2, 2) == "V"] <- "orange"
-	vcol <- V(ig)$color
-	names(vcol) <- V(ig)$name
-	gplot(ig)
-
-	return(gLM = ig)
-}
-
 #' @title Topological graph clustering
 #'
 #' @description Topological graph clustering methods.
 #' @param graph An igraph object.
 #' @param type Topological clustering methods. If \code{type = "tahc"},
 #' network modules are generated using the tree agglomerative hierarchical
-#' clustering method (Yu et al., 2015).
-#' Other non-tree clustering methods from igraph package include: "wtc"
+#' clustering method (Yu et al., 2015). Other non-tree clustering methods
+#' from \code{\link{igraph}} package include: "wtc"
 #' (default value; walktrap community structure with short random walks),
 #' "ebc" (edge betweeness clustering), "fgc" (fast greedy method), "lbc"
 #' (label propagation method), "lec" (leading eigenvector method), "loc"
-#' (multi-level optimization), "opc" (optimal communiy structure), "sgc"
+#' (multi-level optimization), "opc" (optimal community structure), "sgc"
 #' (spinglass statistical mechanics).
 #' @param HM Hidden model type. Enables the visualization of the hidden
 #' model. If set to "none" (default), no HM is visualized.
@@ -350,7 +204,7 @@ clusterGraph <- function(graph, type = "wtc", HM = "none", size = 5,
 #' clustering method (Yu et al., 2015).
 #' Other non-tree clustering methods from igraph package include: "wtc"
 #' (default value; walktrap community structure with short random walks),
-#' "ebc" (edge betweeness clustering), "fgc" (fast greedy method), "lbc"
+#' "ebc" (edge betweenness clustering), "fgc" (fast greedy method), "lbc"
 #' (label propagation method), "lec" (leading eigenvector method), "loc"
 #' (multi-level optimization), "opc" (optimal communiy structure), "sgc"
 #' (spinglass statistical mechanics).
@@ -534,207 +388,259 @@ clusterScore <- function(graph, data, group, HM = "LV", type = "wtc",
 	return(list(fit = fsr, membership = membership, dataHM = dataLC))
 }
 
-#' @title Interactome-assisted graph extension
+#' @title Cluster extraction utility
 #'
-#' @description Extend an input directed graph, importing new interactions
-#' from a second graph. Added interactions will be chosen among those
-#' available in a given reference interactome.
+#' @description Extract and fit clusters from an input graph.
 #'
-#' @param g A list of two graphs as igraph objects.
-#' @param data A matrix with rows corresponding to subjects, and columns
-#' to graph nodes.
-#' @param gnet External interaction network as an igraph object. Interaction
-#' data from this network will be used to integrate additional interaction
-#' information inside the graph.
-#' @param verbose A logical value. If FALSE (default), the processed graphs
-#' will not be plotted to screen, saving execution time (they will be
-#' returned anyway).
+#' @param graph Input network as an igraph object.
+#' @param membership A vector of cluster membership IDs. If NULL, clusters
+#' will be automatically generated with \code{\link[SEMgraph]{clusterGraph}}
+#' using the edge betweenness clustering ("ebc") algorithm.
+#' @param data A matrix or data.frame. Rows correspond to subjects, and
+#' columns to graph nodes (variables).
+#' @param group A binary vector. This vector must be as long as the
+#' number of subjects. Each vector element must be 1 for cases and 0
+#' for control subjects. Group specification enables node perturbation
+#' testing. By default, \code{group = NULL}.
+#' @param map Logical value. If TRUE, the plot of the input graph
+#' (coloured by cluster membership) will be generated along with independent
+#' module plots. If the input graph is very large, plotting could be
+#' computationally intensive (by default, \code{map = FALSE}).
+#' @param verbose Logical value. If TRUE, a plot will be showed for each
+#' cluster.
 #' @param ... Currently ignored.
-#'
-#' @details This function takes two input graphs: the first is the input
-#' causal model (i.e., a directed graph), and the second can be either
-#' a directed or undirected graph, providing a set of connections to be
-#' checked against the reference network and imported to the first graph.
-#' Typically, the second graph is the output of either
-#' \code{\link[SEMgraph]{SEMdag}} or \code{\link[SEMgraph]{SEMbap}}.
-#' In the former we use the new inferred causal structure stored in the
-#' \code{dag.red} object. In the latter, we use the new inferred covariance
-#' structure stored in the \code{guu} object. In both cases, new hidden
-#' directed paths and new nodes (i.e., new mediators) can be revealed.
 #'
 #' @import igraph
 #' @import lavaan
+#' @importFrom stats cor approx
+#' @importFrom corpcor is.positive.definite cor.shrink
+#' @importFrom ggm fitAncestralGraph
+#' @importFrom flip flip plot
 #' @export
 #'
-#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#' @return List of clusters as igraph objects and fitting results for
+#' each cluster as a lavaan object.
 #'
-#' @references
-#' Palluzzi F, Grassi M (2021). SEMgraph: An R Package for Causal Network
-#' Analysis of High-Throughput Data with Structural Equation Models.
-#' <arXiv:2103.08332>
-#'
-#' @return A list of 2 objects:
-#' \enumerate{
-#' \item "Ug", the extended graph (union of the input graph and guv);
-#' \item "guv", the directed subgraph added to the input graph.
-#' }
+#' @author Fernando Palluzzi \email{fernando.palluzzi@gmail.com}
 #'
 #' @examples
 #'
 #' \donttest{
 #'
-#' # Extract the "Type II diabetes mellitus" pathway:
-#'
-#' g <- kegg.pathways[["Type II diabetes mellitus"]]
-#' G <- properties(g)[[1]]; summary(G)
-#'
-#' # Extend a graph using new inferred DAG edges:
-#'
 #' library(huge)
 #' als.npn <- huge.npn(alsData$exprs)
 #'
-#' dag <- SEMdag(graph = G, data = als.npn, beta = 0.1)
-#' gplot(dag$dag)
-#' ext <- extendGraph(list(dag$dag, dag$dag.red), data = als.npn, gnet = kegg)
-#' gplot(ext$Ug) 
+#' adjdata <- SEMbap(alsData$graph, als.npn)$data
 #'
-#' # Extend a graph using the inferred bow-free path diagram:
+#' # Clusters creation
+#' clusters <- extractClusters(graph = alsData$graph, data = adjdata)
+#' head(parameterEstimates(clusters$fit$HM1))
+#' head(parameterEstimates(clusters$fit$HM2))
+#' head(parameterEstimates(clusters$fit$HM4))
+#' gplot(clusters$clusters$HM2)
 #'
-#' bap <- SEMbap(graph = G, data = als.npn, gnet = kegg, d = 1, alpha = 0.1)
-#' ext <- extendGraph(list(bap$bap, bap$guu), data = als.npn, gnet = kegg)
-#' gplot(ext$Ug)
-#'
-#' # Create a graph from correlation matrix, using KEGG as reference:
-#'
-#' v <- which(colnames(als.npn) %in% V(G)$name)
-#' selectedData <- als.npn[, v]
-#' G0 <- make_empty_graph(n = ncol(selectedData))
-#' V(G0)$name <- colnames(selectedData)
-#'
-#' G1 <- corr2graph(R = cor(selectedData), n = nrow(selectedData),
-#'                  type = "tmfg")
-#' ext <- extendGraph(list(G0, G1), data = selectedData, gnet = kegg)
-#' 
-#' #Graphs
-#' old.par <- par(no.readonly = TRUE)
-#' par(mfrow=c(1,2), mar=rep(1,4))
-#' plot(G1, layout = layout.circle)
-#' plot(ext$Ug, layout = layout.circle)
-#' par(old.par)
+#' # Map cluster on the input graph
+#' g <- alsData$graph
+#' c <- clusters$clusters$HM2
+#' V(g)$color <- ifelse(V(g)$name %in% V(c)$name, "gold", "white")
+#' gplot(g)
 #'
 #' }
 #'
-extendGraph <- function(g = list(), data, gnet, verbose = FALSE, ...)
+extractClusters <- function(graph, data, group = NULL, membership = NULL,
+                            map = FALSE, verbose = FALSE, ...)
 {
-	# Set graph (ig, guu, gnet) objects
-	graph <- g[[1]]
-	if (!is_directed(graph)) {
-		message("ERROR: The first input graph is not a directed graph.")
-		return(NULL)
-	}
-	guu <- g[[2]]
-	vids <- which(V(gnet)$name %in% colnames(data))
-	gnet <- induced_subgraph(graph = gnet, vids = vids)
-	vids <- which(V(graph)$name %in% colnames(data))
-	graph <- induced_subgraph(graph = graph, vids = vids)
-	ig <- graph - E(graph)[E(graph)$color == "red"]
-	if (!is.null(E(ig)$weight)) ig <- delete_edge_attr(ig, "weight")
-	if (!is.null(E(ig)$color)) ig <- delete_edge_attr(ig, "color")
-	if (!is.null(V(ig)$color)) ig <- delete_vertex_attr(ig, "color")
-
-	# Search external nodes from interactome
-	guv <- psi2guv(guu = guu, ig = ig, gnet = gnet, verbose = verbose)
-	if (ecount(guv) == 0) return(list(Ug = ig, guv = guv))
-
-	# Union graph
-
-	if (is.directed(guv) & is.directed(gnet)) {
-		Ug <- graph.union(g = list(ig, guv))
-	}
-
-	if (!is.directed(guv) & is.directed(gnet)) {
-		guv <- orientEdges(ug = guv, dg = gnet)
-		Ug <- graph.union(g = list(ig, guv))
-	}
-
-	if (!is.directed(guv) & !is.directed(gnet)) {
-		Ug <- graph.union(g = list(as.undirected(ig), guv))
-	}
-
-	E1 <- attr(E(Ug), "vnames")
-	E0 <- attr(E(ig), "vnames")
-	E(Ug)$color <- ifelse(E1 %in% E0, "blue", "red")
-
-	return(list(Ug = Ug, guv = guv))
+  if (is.null(membership)) {
+    membership <- clusterGraph(graph, type = "ebc", HM = "none",
+                               size = 5,
+                               verbose = FALSE)
+  }
+  clusters <- cplot(graph, membership, l=layout.auto, map, verbose)[-1]
+  if ("HM9999" %in% names(clusters)) N <- length(clusters) - 1
+  N <- length(clusters)
+  res <- NULL
+  lav <- list()
+  for (i in 1:N) {
+    fit <- quiet(SEMfit(clusters[[i]], data, group))
+    if (is.null(fit)) next
+    if (!is.null(group) & vcount(clusters[[i]]) > 100) {
+      dev_df <- fit$fit$ricf$dev/fit$fit$ricf$df
+      srmr <- fit$fit$fitIdx[3]
+      pv1 <- Brown.test(x = fit$dataXY[, -1], p = fit$gest$pvalue,
+                        theta = fit$gest$Stat,
+                        tail = "positive")
+      pv2 <- Brown.test(x = fit$dataXY[, -1], p = fit$gest$pvalue,
+                        theta = fit$gest$Stat,
+                        tail = "negative")
+    } else {
+      dev_df <- fitMeasures(fit$fit, "chisq")/fitMeasures(fit$fit, "df")
+      srmr <- fitMeasures(fit$fit, "srmr")
+      pv1 <- Brown.test(x = fit$dataXY[, -1], p = fit$gest$pvalue,
+                        theta = fit$gest$est,
+                        tail = "positive")
+      pv2 <- Brown.test(x = fit$dataXY[, -1], p = fit$gest$pvalue,
+                        theta = fit$gest$est,
+                        tail = "negative")
+    }
+    
+    dfc <- data.frame(cluster = names(clusters)[i],
+                      N.nodes = vcount(clusters[[i]]),
+                      N.edges = ecount(clusters[[i]]),
+                      dev_df = round(dev_df, 3),
+                      srmr = round(srmr, 3),
+                      pv.act = round(pv1, 6),
+                      pv.inh = round(pv2, 6))
+    
+    res <- rbind(res, dfc)
+    lav[[i]] <- fit$fit
+  }
+  rownames(res) <- NULL
+  names(lav) <- names(clusters)
+  print(res)
+  return(list(clusters = clusters, fit = lav, dfc = res))
 }
 
-psi2guv <- function(guu, ig, gnet, verbose, ...)
+#' @title Subgraph mapping
+#'
+#' @description Map groups of nodes onto an input graph, based on a
+#' membership vector.
+#' @param graph An igraph object.
+#' @param membership Cluster membership vector for each node.
+#' @param l graph layout. One of the \code{\link{igraph}} layouts.
+#' If this argument is ignored, an automatic layout will be applied.
+#' @param map A logical value. Visualize cluster mapping over the input
+#' graph. If FALSE (default), visualization will be disabled. For large
+#' graphs, visualization may take long.
+#' @param verbose A logical value. If FALSE (default), the processed
+#' graphs will not be plotted to screen, saving execution time (they will
+#' be returned in output anyway).
+#' @param ... Currently ignored.
+#'
+#' @import igraph
+#' @importFrom stats qnorm cov2cor cor hclust as.dist cutree
+#' @importFrom graphics abline
+#' @export
+#'
+#' @return The list of clusters and cluster mapping as igraph objects.
+#'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
+#' @seealso \code{\link[SEMgraph]{clusterGraph}},
+#' \code{\link[SEMgraph]{clusterScore}}
+#'
+#' @examples
+#'
+#' \donttest{
+#'
+#' # Clustering ALS graph with WTC method
+#' G <- alsData$graph
+#' membership <- clusterGraph(graph = G, type = "wtc")
+#' cplot(G, membership, map = TRUE, verbose = FALSE)
+#' cplot(G, membership, map = FALSE, verbose = TRUE)
+#'
+#' }
+#'
+cplot <- function(graph, membership, l = layout.auto, map = FALSE,
+                  verbose = FALSE, ...)
 {
-	# Adding new nodes to undirected graph (guu) from the interactome
-	vids <- which(V(guu)$name %in% V(gnet)$name)
-	guu <- induced_subgraph(graph = guu, vids = vids)
-	if(verbose) {
-		plot(guu, main = "direct(or covariance) graph (guu) in gnet")
-		Sys.sleep(3)
-	}
-	ftm <- as_edgelist(guu)
-	vpath <- ftmuv <- NULL
+  # Overall cluster visualization
+  V(graph)$M <- 9999
+  V(graph)$M[which(V(graph)$name %in% names(membership))] <- membership
+  if (map) {
+    V(graph)$color <- V(graph)$M + 1
+    gplot(graph)
+    Sys.sleep(3)
+  }
+  
+  # Within cluster visualization
+  M <- names(table(V(graph)$M))
+  K <- length(table(V(graph)$M))
+  vcol <- as.numeric(M) + 1
+  
+  HM <- lapply(1:K, function(x) induced_subgraph(graph,
+                                                 V(graph)$name[V(graph)$M == M[x]]))
+  
+  names(HM) <- paste0("HM", M)
+  d <- igraph::degree(graph, mode = "all")*2 + 1
+  
+  if (verbose) {
+    glv <- lapply(1:K, function(x) {
+      E(HM[[x]])$weight <- 1
+      plot(HM[[x]],
+           vertex.color = vcol[x],
+           vertex.size = d[V(HM[[x]])$name],
+           layout = l,
+           main = paste0("Hidden Module ", M[x]))
+      Sys.sleep(3)})
+  }
+  
+  return(invisible(c(list(graph = graph), HM)))
+}
 
-	for (i in 1:nrow(ftm)) {
-
-		mode <- ifelse(is.directed(guu) & is.directed(gnet), "out", "all")
-
-		if (distances(gnet, ftm[i, 1], ftm[i, 2], mode = mode,
-		              weights = NA) == Inf) next
-
-		if (is.null(E(gnet)$pv)) {
-			suppressWarnings(path <- shortest_paths(gnet, ftm[i, 1],
-			                                        ftm[i, 2],
-			                                        mode = mode,
-			                                        weights = NA)$vpath)
-		} else {
-			path <- all_shortest_paths(gnet, ftm[i, 1], ftm[i, 2],
-			                           mode = mode,
-			                           weights = NA)$res
-		}
-
-		if (length(path) > 1) {
-			fX2 <- NULL
-			for (k in 1:length(path)) {
-				pathk <- induced_subgraph(gnet, V(gnet)$name[path[[k]]])
-				fX2[k] <- -2*sum(log(E(pathk)$pv))
-			}
-			path <- path[[which(fX2 == max(fX2))[1]]]
-		} else {
-			path <- path[[1]]
-		}
-		V <- V(gnet)$name[path]
-		vpath <- c(vpath, V[-c(1, length(V))])
-		for(h in 1:(length(V) - 1)) ftmuv <- rbind(ftmuv, c(V[h], V[h + 1]))
-	}
-
-	# Graph with added nodes from interactome (guv)
-	ftmuv <- na.omit(ftmuv[duplicated(ftmuv) != TRUE,])
-	ftmuv <- matrix(ftmuv, ncol = 2)
-
-	if (nrow(ftmuv) > 0) {
-		mode <- ifelse(is.directed(guu) & is.directed(gnet), TRUE, FALSE)
-		guv <- graph_from_data_frame(ftmuv, directed = mode)
-		guv <- simplify(guv, remove.loops = TRUE)
-		vv <- V(guv)$name[-which(V(guv)$name %in% V(ig)$name)]
-		uv <- V(ig)$name[which(V(ig)$name %in% unique(vpath))]
-		V(guv)$color[V(guv)$name %in% V(guu)$name] <- "lightblue"
-		V(guv)$color[V(guv)$name %in% vv] <- "yellow"
-		V(guv)$color[V(guv)$name %in% uv] <- "green2"
-
-		if(verbose) {
-			plot(guv, main = "Extended connector graph (guv)")
-			Sys.sleep(3)
-		}
-
-	} else {
-		cat("\n", "no edges u->u (or u--v) found !", "\n\n")
-		guv <- make_empty_graph(n = 0)
-	}
-	return(guv)
+#' @title Graph nodes merging by a user-defined membership attribute
+#'
+#' @description Merge groups of graph nodes using a custom membership
+#' attribute (e.g., cluster membership).
+#' @param graph Network as an igraph object.
+#' @param membership Cluster membership. A vector of cluster membership
+#' identifiers, where vector names correspond to graph node names.
+#' Topological graph clustering can be done using
+#' \code{\link[SEMgraph]{clusterGraph}}.
+#' @param HM Hidden model label. If HM = "LV", a latent variable (LV)
+#' will be defined as common unknown cause acting on cluster nodes.
+#' If HM = "CV", cluster nodes will be considered as regressors of a
+#' latent composite variable (CV). Finally, if HM = "UV", an unmeasured
+#' variable (UV) is defined, where source nodes of the module (i.e.,
+#' in-degree = 0) act as common regressors influencing the other nodes
+#' via an unmeasured variable.
+#' @param ... Currently ignored.
+#'
+#' @import igraph
+#' @importFrom graph combineNodes
+#' @export
+#'
+#' @return A network with merged nodes as an igraph object.
+#' @seealso \code{\link[SEMgraph]{clusterGraph}}
+#'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
+#' @examples
+#'
+#' # Clustering ALS graph with WTC method
+#' G <- properties(alsData$graph)[[1]]
+#' membership <- clusterGraph(graph = G, type = "wtc")
+#' M <- mergeNodes(G, membership, HM = "LV")
+#'
+mergeNodes <- function(graph, membership, HM, ...)
+{
+  # Set membership object
+  if (is.numeric(membership)) {
+    nodes <- names(membership)
+    membership <- paste0(HM, membership)
+    names(membership) <- nodes
+  }
+  
+  LM <- NULL
+  for (i in 1:length(table(membership))) { #i=1
+    m <- names(table(membership))[i]
+    LMi <- V(graph)$name[which(V(graph)$name %in% names(membership)[membership == m])]
+    LM <- c(LM, list(LMi))
+  }
+  names(LM) <- names(table(membership))
+  
+  # Visualize graph object
+  gLM <- as_graphnel(graph)
+  for (i in 1:length(LM)) {
+    gLMi <- graph::combineNodes(LM[[i]], gLM, names(LM)[i], mean)
+    gLM <- gLMi
+  }
+  
+  ig <- graph_from_graphnel(gLM)
+  if (length(V(ig)$color) == 0) V(ig)$color <- "white"
+  V(ig)$color[substr(V(ig)$name, 2, 2) == "V"] <- "orange"
+  vcol <- V(ig)$color
+  names(vcol) <- V(ig)$name
+  gplot(ig)
+  
+  return(gLM = ig)
 }

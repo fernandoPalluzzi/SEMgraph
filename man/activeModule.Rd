@@ -10,7 +10,7 @@ activeModule(
   seed,
   eweight = "none",
   alpha = 0.05,
-  q = 0.9,
+  top = 100,
   limit = 10000,
   ...
 )
@@ -46,10 +46,9 @@ measure specified by the user as "weight" edge attribute.}
 \item{alpha}{Significance level to assess shortest paths significance, 
 when type is "usp". By default, \code{alpha = 0.05}.}
 
-\item{q}{Inclusion quantile for the "rwr" and "hdi" algorithms. The higher 
-the q, the closer the nodes to the input seeds, the smaller the output 
-graph induced by the q-top ranking nodes. 
-By default, \code{q = 0.9} (i.e., the top 10\% of nodes are selected).}
+\item{top}{Number of top nodes for the "rwr" and "hdi" algorithms. The 
+output subgraph is induced by the top-n ranking nodes.
+By default, \code{top = 100} (i.e., the top-100 of nodes are selected).}
 
 \item{limit}{An integer value corresponding to the number of graph 
 edges. If \code{type = "usp"}, beyond this limit, multicore computation 
@@ -59,7 +58,8 @@ By default, \code{limit = 10000}.}
 \item{...}{Currently ignored.}
 }
 \value{
-An active module of class \code{\link{igraph}}.
+An active module, an igraph object with colored nodes
+(seed = "green", and connector = "white").
 }
 \description{
 Uses different information flow and tree-based strategies 
@@ -72,13 +72,13 @@ entire interactome scales.
 Graph filtering algorithms include:
 \enumerate{
 \item "kou", the Steiner tree connecting a set of seed nodes, using 
-the algorithm from Kou et al. (1981);
+the algorithm suggested by Kou et al. (1981);
 \item "usp", generates a subnetwork as the union of the significant 
 (P-value < alpha) shortest paths between the seeds set;
-\item "rwr", Random Walk with Restart; wrapper for random.walk of the 
-R package diffusr;
-\item "hdi", Heat Diffusion algorithm; wrapper for heat.diffusion of 
-the R package diffusr.
+\item "rwr", Random Walk with Restart, a wrapper for \code{random.walk}
+function of the R package \code{diffusr};
+\item "hdi", Heat Diffusion algorithm, a wrapper for \code{heat.diffusion}
+function of the R package \code{diffusr}.
 }
 }
 \examples{
