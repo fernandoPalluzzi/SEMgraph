@@ -19,7 +19,7 @@ the function displays a histogram with normal curve superposition."><!-- mathjax
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.2</span>
       </span>
     </div>
 
@@ -65,7 +65,7 @@ the function displays a histogram with normal curve superposition.</p>
     <dl><dt>x</dt>
 <dd><p>A matrix or data.frame (n x p) of continuous data.</p></dd>
 <dt>y</dt>
-<dd><p>A matrix or data.frame (n x q) of continuous data.</p></dd>
+<dd><p>A matrix or data.frame (n x p) of continuous data matched with x.</p></dd>
 <dt>size</dt>
 <dd><p>number of rows to be sampled (default <code>s = nrow(z)</code>).</p></dd>
 <dt>r</dt>
@@ -96,7 +96,7 @@ the function displays a histogram with normal curve superposition.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Output graph = 37 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> d-separation test (basis set) of 37 edges...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  / 0 % elapsed=00s    - 3 % elapsed=00s, remaining~01s \ 5 % elapsed=00s, remaining~00s | 8 % elapsed=00s, remaining~00s / 11% elapsed=00s, remaining~00s - 14% elapsed=00s, remaining~00s \ 16% elapsed=00s, remaining~00s | 19% elapsed=00s, remaining~00s / 22% elapsed=00s, remaining~00s - 24% elapsed=00s, remaining~00s \ 27% elapsed=00s, remaining~00s | 30% elapsed=00s, remaining~00s / 32% elapsed=00s, remaining~00s - 35% elapsed=00s, remaining~00s \ 38% elapsed=00s, remaining~00s | 41% elapsed=00s, remaining~00s / 43% elapsed=00s, remaining~00s - 46% elapsed=00s, remaining~00s \ 49% elapsed=00s, remaining~00s | 51% elapsed=00s, remaining~00s / 54% elapsed=00s, remaining~00s - 57% elapsed=00s, remaining~00s \ 59% elapsed=00s, remaining~00s | 62% elapsed=00s, remaining~00s / 65% elapsed=00s, remaining~00s - 68% elapsed=00s, remaining~00s \ 70% elapsed=00s, remaining~00s | 73% elapsed=00s, remaining~00s / 76% elapsed=00s, remaining~00s - 78% elapsed=00s, remaining~00s \ 81% elapsed=00s, remaining~00s | 84% elapsed=00s, remaining~00s / 86% elapsed=00s, remaining~00s - 89% elapsed=00s, remaining~00s \ 92% elapsed=00s, remaining~00s | 95% elapsed=00s, remaining~00s / 97% elapsed=00s, remaining~00s - 100% elapsed=00s, remaining~00s</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  / 0 % elapsed=00s    - 3 % elapsed=00s, remaining~00s \ 5 % elapsed=00s, remaining~00s | 8 % elapsed=00s, remaining~00s / 11% elapsed=00s, remaining~00s - 14% elapsed=00s, remaining~00s \ 16% elapsed=00s, remaining~00s | 19% elapsed=00s, remaining~00s / 22% elapsed=00s, remaining~00s - 24% elapsed=00s, remaining~00s \ 27% elapsed=00s, remaining~00s | 30% elapsed=00s, remaining~00s / 32% elapsed=00s, remaining~00s - 35% elapsed=00s, remaining~00s \ 38% elapsed=00s, remaining~00s | 41% elapsed=00s, remaining~00s / 43% elapsed=00s, remaining~00s - 46% elapsed=00s, remaining~00s \ 49% elapsed=00s, remaining~00s | 51% elapsed=00s, remaining~00s / 54% elapsed=00s, remaining~00s - 57% elapsed=00s, remaining~00s \ 59% elapsed=00s, remaining~00s | 62% elapsed=00s, remaining~00s / 65% elapsed=00s, remaining~00s - 68% elapsed=00s, remaining~00s \ 70% elapsed=00s, remaining~00s | 73% elapsed=00s, remaining~00s / 76% elapsed=00s, remaining~00s - 78% elapsed=00s, remaining~00s \ 81% elapsed=00s, remaining~00s | 84% elapsed=00s, remaining~00s / 86% elapsed=00s, remaining~00s - 89% elapsed=00s, remaining~00s \ 92% elapsed=00s, remaining~00s | 95% elapsed=00s, remaining~00s / 97% elapsed=00s, remaining~00s - 100% elapsed=00s, remaining~00s</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Number of significant local tests: 4 / 37 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span class="va">rawdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span></span>

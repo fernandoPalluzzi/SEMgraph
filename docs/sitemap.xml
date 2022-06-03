@@ -13,9 +13,6 @@
     <loc>/news/index.html</loc>
   </url>
   <url>
-    <loc>/reference/activeModule.html</loc>
-  </url>
-  <url>
     <loc>/reference/alsData.html</loc>
   </url>
   <url>
@@ -31,10 +28,10 @@
     <loc>/reference/colorGraph.html</loc>
   </url>
   <url>
-    <loc>/reference/corr2graph.html</loc>
+    <loc>/reference/cplot.html</loc>
   </url>
   <url>
-    <loc>/reference/cplot.html</loc>
+    <loc>/reference/dagitty2graph.html</loc>
   </url>
   <url>
     <loc>/reference/extractClusters.html</loc>
@@ -107,6 +104,9 @@
   </url>
   <url>
     <loc>/reference/SEMrun.html</loc>
+  </url>
+  <url>
+    <loc>/reference/SEMtree.html</loc>
   </url>
   <url>
     <loc>/reference/Shipley.test.html</loc>
