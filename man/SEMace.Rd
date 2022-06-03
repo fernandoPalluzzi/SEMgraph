@@ -8,7 +8,9 @@ SEMace(
   graph,
   data,
   group = NULL,
-  method = "none",
+  type = "parents",
+  effect = "all",
+  method = "BH",
   alpha = 0.05,
   boot = NULL,
   ...
@@ -25,9 +27,18 @@ number of subjects. Each vector element must be 1 for cases and 0
 for control subjects. If \code{group = NULL} (default), group influence
 will not be considered.}
 
+\item{type}{character Conditioning set Z. If "parents" (default) the
+Pearl's back-door set (Pearl, 1998), "minimal" the dagitty minimal set
+(Perkovic et al, 2018), or "optimal" the O-set with the smallest
+asymptotic variance (Witte et al, 2020) are computed.}
+
+\item{effect}{character X to Y effect. If "all" (default) all effects from
+X to Y, "source2sink" only effects from source X to sink Y, or "direct"
+only direct effects from X to Y are computed.}
+
 \item{method}{Multiple testing correction method. One of the values
 available in \code{\link[stats]{p.adjust}}.
-By default, \code{method = "none"} (i.e., no multiple test correction).}
+By default, \code{method = "BH"} (i.e., FDR multiple test correction).}
 
 \item{alpha}{Significance level for ACE selection (by default,
 \code{alpha = 0.05}).}
@@ -42,15 +53,13 @@ is disabled.}
 A data.frame of ACE estimates between network sources and sinks.
 }
 \description{
-Compute total effects as ACEs of source variables X
-(i.e., incoming connectivity = 0) on sink variables Y (i.e., outgoing
-connectivity = 0), in a directed graph. The ACE will be estimated as
+Compute total effects as ACEs X -> Y of variables X
+on variables Y in a directed graph. The ACE will be estimated as
 the path coefficient of X (i.e., theta) in the linear equation
 Y ~ X + Z. Z is defined as the adjustment (or conditioning) set of
-Y over X, applying an "optimal" valid set (O-set), with the smallest
-asymptotic variance. Standard errors (SE), for each ACE, are computed
-following the \code{lavaan} standard procedure or a bootstrap-based
-procedure (see \code{\link[boot]{boot}} for details).
+Y over X, applying various adjustement sets. Standard errors (SE),
+for each ACE, are computed following the \code{lm} standard procedure
+or a bootstrap-based procedure (see \code{\link[boot]{boot}} for details).
 }
 \examples{
 
@@ -58,17 +67,26 @@ procedure (see \code{\link[boot]{boot}} for details).
 ace <- SEMace(graph = sachs$graph, data = log(sachs$pkc))
 print(ace)
 
-# ACE estimation, with group perturbation and multiple test correction
+# ACE with group perturbation, and optimal adjustement
 ace2 <- SEMace(graph = sachs$graph, data = log(sachs$pkc),
-               group = sachs$group,
-               method = "BH", alpha = 0.05)
+               group = sachs$group, type="optimal", effect="all",
+               method = "bonferroni", alpha = 0.05)
 print(ace2)
 
 }
 \references{
+Pearl J (1998). Graphs, Causality, and Structural Equation Models.
+Sociological Methods & Research, 27(2):226-284.
+<https://doi.org/10.1177/0049124198027002004>
+
+Perkovic E, Textor J, Kalisch M, Maathuis MH (2018). Complete graphical
+characterization and construction of adjustment sets in Markov equivalence
+classes of ancestral graphs. Journal of Machine Learning Research, 18:1-62.
+<http://jmlr.org/papers/v18/16-319.html>
+
 Witte J, Henckel L, Maathuis MH, Didelez V (2020). On efficient
-adjustment in causal graphs. arXiv:2002.06825 [math.ST].
-<https://arxiv.org/abs/2002.06825/>
+adjustment in causal graphs. Journal of Machine Learning Research, 21:1-45.
+<http://jmlr.org/papers/v21/20-175.htm>
 }
 \author{
 Mario Grassi \email{mario.grassi@unipv.it}

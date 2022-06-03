@@ -2,9 +2,9 @@
 % Please edit documentation in R/semUtils.R
 \name{SEMdci}
 \alias{SEMdci}
-\title{SEM-based differential connectivity inference (DCI)}
+\title{SEM-based differential causal inference (DCI)}
 \usage{
-SEMdci(graph, data, group, C = "none", method = "BH", alpha = 0.05, ...)
+SEMdci(graph, data, group, type = "none", method = "BH", alpha = 0.05, ...)
 }
 \arguments{
 \item{graph}{Input network as an igraph object.}
@@ -16,11 +16,12 @@ columns to graph nodes (variables).}
 of subjects. Each vector element must be 1 for cases and 0 for control
 subjects.}
 
-\item{C}{Topological clustering methods (default C = "none"). If
-\code{type = "tahc"}, network modules are generated using the tree
-agglomerative hierarchical clustering method (Yu et al., 2015).
-Other non-tree clustering methods from igraph package include: "wtc"
-(walktrap community structure with short random walks),
+\item{type}{Average Causal Effect (ACE) with two-group, "parents" (back-door)
+adjustement set, and "direct" effects (\code{type = "ace"}), or a topological
+clustering methods (default \code{type = "none"}). If \code{type = "tahc"},
+network modules are generated using the tree agglomerative hierarchical
+clustering method. Other non-tree clustering methods from igraph package
+include: "wtc" (walktrap community structure with short random walks),
 "ebc" (edge betweeness clustering), "fgc" (fast greedy method), "lbc"
 (label propagation method), "lec" (leading eigenvector method), "loc"
 (multi-level optimization), "opc" (optimal community structure), "sgc"
@@ -28,7 +29,7 @@ Other non-tree clustering methods from igraph package include: "wtc"
 
 \item{method}{Multiple testing correction method. One of the values
 available in \code{\link[stats]{p.adjust}}. By default, method is set
-to "BH" (i.e., Benjamini-Hochberg correction).}
+to "BH" (i.e., FDR multiple test correction).}
 
 \item{alpha}{Gene set test significance level (default = 0.05).}
 
@@ -39,7 +40,8 @@ An igraph object.
 }
 \description{
 Creates a network with perturbed edges obtained from 
-the output of \code{\link[SEMgraph]{SEMrun}} with two-group and CGGM solver.
+the output of \code{\link[SEMgraph]{SEMrun}} with two-group and CGGM solver,
+or of \code{\link[SEMgraph]{SEMace}}.
 To increase the efficiency of computations for large graphs,
 users can select to break the network structure into clusters and select
 the topological clustering method (see \code{\link[SEMgraph]{clusterGraph}}). 
@@ -58,7 +60,7 @@ g <- kegg.pathways[["MAPK signaling pathway"]]
 G <- properties(g)[[1]]; summary(G)
 
 # Create ALS network with perturbed edges using edge betweeness clustering
-gU<- SEMdci(G, als.npn, alsData$group, C="ebc", method="BH", alpha=0.2)
+gU<- SEMdci(G, als.npn, alsData$group, type="ebc", method="BH", alpha=0.2)
 gcU<- properties(gU)
 
 old.par <- par(no.readonly = TRUE)

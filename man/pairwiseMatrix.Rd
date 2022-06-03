@@ -9,7 +9,7 @@ pairwiseMatrix(x, y = NULL, size = nrow(x), r = 4, c = 4, ...)
 \arguments{
 \item{x}{A matrix or data.frame (n x p) of continuous data.}
 
-\item{y}{A matrix or data.frame (n x q) of continuous data.}
+\item{y}{A matrix or data.frame (n x p) of continuous data matched with x.}
 
 \item{size}{number of rows to be sampled (default \code{s = nrow(z)}).}
 

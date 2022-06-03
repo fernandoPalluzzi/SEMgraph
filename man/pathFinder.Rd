@@ -10,7 +10,7 @@ pathFinder(
   group = NULL,
   ace = NULL,
   path = "directed",
-  method = "none",
+  method = "BH",
   alpha = 0.05,
   verbose = FALSE,
   ...
@@ -36,7 +36,7 @@ If \code{path = "shortest"}, only shortest paths will be considered.}
 
 \item{method}{Multiple testing correction method. One of the values
 available in \code{\link[stats]{p.adjust}}.
-By default, \code{method = "none"} (i.e., no multiple test correction).}
+By default, \code{method = "BH"} (i.e., FDR multiple test correction).}
 
 \item{alpha}{Significance level for ACE selection (by default,
 \code{alpha = 0.05}).}
@@ -80,13 +80,14 @@ paths <- pathFinder(graph = alsData$graph, data = adjData,
                     group = alsData$group,
                     ace = ace)
 
-head(parameterEstimates(paths$fit$P19))
-gplot(paths$paths$P19)
+print(paths$dfp)
+head(parameterEstimates(paths$fit$P61))
+gplot(paths$paths$P61)
 
-path19 <- SEMpath(graph = alsData$graph, data = adjData,
+path61 <- SEMpath(graph = alsData$graph, data = adjData,
                   group = alsData$group,
-                  from = "7133",
-                  to = "4747",
+                  from = "1616",
+                  to = "4741",
                   path = "directed",
                   verbose = TRUE)
 

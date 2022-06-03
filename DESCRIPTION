@@ -1,7 +1,8 @@
 Package: SEMgraph
-Title: Network Analysis and Causal Inference Through Structural Equation Modeling
-Version: 1.1.0
-Date: 2022-01-03
+Title: Network Analysis and Causal Inference Through Structural
+        Equation Modeling
+Version: 1.1.2
+Date: 2022-06-01
 Authors@R: c(
     person("Mario", "Grassi", role = "aut", email="mario.grassi@unipv.it"),
     person("Fernando", "Palluzzi", role = "aut", email="fernando.palluzzi@gmail.com"),
@@ -14,12 +15,12 @@ Description: Estimate networks and causal relationships in complex systems throu
 URL: https://github.com/fernandoPalluzzi/SEMgraph
 Depends: igraph (>= 1.2.1), lavaan (>= 0.5-23), R (>= 4.0)
 Imports: boot (>= 1.3-25), cate (>= 1.0.4), corpcor (>= 1.6.9), dagitty
-        (>= 0.3-0), diffusr (>= 0.1.4), flip (>= 2.5.0), gdata (>=
-        2.18.0), ggm (>= 2.3), GGMncv (>= 2.1.0), glmnet (>= 2.0-18),
-        graph (>= 1.56.0), leaps (>= 3.1), Matrix (>= 1.3-0), pbapply (>= 1.4-3),
-        protoclust (>= 1.6.3), RcppEigen (>= 0.3.3.4.0), Rgraphviz (>=
-        2.22.0)
-Suggests: huge, pcalg, SILGGM, org.Hs.eg.db
+        (>= 0.3-0), flip (>= 2.5.0), gdata (>= 2.18.0), ggm (>= 2.3),
+        GGMncv (>= 2.1.0), glmnet (>= 2.0-18), graph (>= 1.56.0), leaps
+        (>= 3.1), Matrix (>= 1.3-0), mgcv (>= 1.8-39), pbapply (>=
+        1.4-3), protoclust (>= 1.6.3), RBGL (>= 1.68.0), RcppEigen (>=
+        0.3.3.4.0), Rgraphviz (>= 2.22.0)
+Suggests: huge, pcalg, org.Hs.eg.db
 License: GPL-3
 LazyData: true
 Encoding: UTF-8
@@ -27,8 +28,8 @@ NeedsCompilation: no
 RoxygenNote: 7.1.2
 Maintainer: Barbara Tarantino <barbara.tarantino01@universitadipavia.it>
 Repository: CRAN
-Date/Publication: 2022-01-04 00:50:02 UTC
-Packaged: 2022-01-03 18:15:47 UTC; Mario Grassi
+Date/Publication: 2022-04-09 17:50:02 UTC
+Packaged: 2022-06-02 06:58:31 UTC; Mario Grassi
 Author: Mario Grassi [aut],
   Fernando Palluzzi [aut],
   Barbara Tarantino [aut, cre]

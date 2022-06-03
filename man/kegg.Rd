@@ -21,19 +21,11 @@ extracted using the \code{ROntoTools} R package (update: November, 2021).
 }
 \examples{
 
-\donttest{
-library(igraph)
-
 # KEGG graph
 summary(kegg)
 
 # KEGG degrees of freedom
 vcount(kegg)*(vcount(kegg) - 1)/2 - ecount(kegg)
-
-# KEGG average shortest path length
-mean_distance(kegg)
-
-}
 
 }
 \references{

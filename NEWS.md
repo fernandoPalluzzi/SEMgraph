@@ -1,3 +1,20 @@
+## Version 1.1.2 Release Notes
+* Added new SEMtree() function for tree-based structure learning methods.
+
+* Deprecated activeModule() and corr2graph() functions in favor of new SEMtree() function. 
+
+* Added new dagitty2graph() function for conversion from a dagitty object to
+an igraph object.
+
+* Added new arguments for SEMace() function: type = c("parents", "minimal",
+"optimal") to choose the conditioning set Z of Y over X; effect = c("all",
+"source2sink", "direct",) to choose the type of X to Y effect. 
+
+* Added new argument for SEMdci() function: type = "ace" from ACE function()
+with fixed type= "parents", and effect="direct"
+
+* Various fixed bugs
+
 ## Version 1.1.0 Release Notes
 * Major release with significant changes:
 
@@ -16,7 +33,7 @@ functions
 * Change SEMgsa() deleting D,A,E p-values with more performing activation and
 inhibition pvalues
 
-* Added argument MCX2 = TRUE or FALSE for Shipley.test() function, a Monte Carlo
+* Added argument MCX2= TRUE or FALSE for Shipley.test() function, a Monte Carlo
 P-value of the combined C test
 
 * Added new SEMdci() function for differentially connected genes inference
@@ -29,25 +46,25 @@ by the top-n ranking nodes.
 
 * Various fixed bugs
 
-## Version 1.0.5 Release Notes
-* Fixed bugs for an update from 2.0.0 to 2.1.0 of GGMncv
-
-## Version 1.0.4 Release Notes
-* Fixed bugs for CRAN checking
-
 ## Version 1.0.3 Release Notes
-* Fixed bugs for CRAN checking
 * Update kegg.RData (November, 2021)
+
 * Added kegg.pathways.RData (November, 2021)
+
 * Added pkgdown website
 
+* Various fixed bugs for CRAN checking
+
 ## Version 1.0.2 Release Notes
-* Change `orientEdges` function
-* Added `graph2dagitty` function
+* Change orientEdges() function
+
+* Added graph2dagitty() function
+
 * Fixed bugs
 
 ## Version 1.0.1 Release Notes
-* Change parallel computation using `pbapply` package
+* Change parallel computation using "pbapply" package
+
 * Fixed bugs 
 
 ## Version 1.0.0 Release Notes

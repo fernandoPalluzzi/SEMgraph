@@ -4,14 +4,7 @@
 \alias{lavaan2graph}
 \title{lavaan model to graph}
 \usage{
-lavaan2graph(
-  model,
-  directed = TRUE,
-  psi = TRUE,
-  format = "igraph",
-  verbose = FALSE,
-  ...
-)
+lavaan2graph(model, directed = TRUE, psi = TRUE, verbose = FALSE, ...)
 }
 \arguments{
 \item{model}{Model specified using lavaan syntax.}
@@ -23,9 +16,6 @@ be undirected.}
 \item{psi}{Logical value. If TRUE (default) covariances will be converted
 into bidirected graph edges. If FALSE, covariances will be excluded from
 the output graph.}
-
-\item{format}{Output graph format. It can be either "igraph" (default)
-or "dagitty".}
 
 \item{verbose}{Logical value. If TRUE, a plot of the output graph will
 be generated. For large graphs, this could significantly increase

@@ -96,25 +96,6 @@ bap <- SEMbap(graph = G, data = als.npn, gnet = kegg, alpha = 0.01)
 ext <- resizeGraph(g=list(bap$dag, bap$guu), gnet = kegg, d = 1, v = FALSE)
 gplot(ext)
 
-# Create a directed graph from correlation matrix, using
-# i) empty graph as causal graph, and ii) KEGG as reference:
-
-v <- which(colnames(als.npn) \%in\% V(G)$name)
-selectedData <- als.npn[, v]
-G0 <- make_empty_graph(n = ncol(selectedData))
-V(G0)$name <- colnames(selectedData)
-
-G1 <- corr2graph(R = cor(selectedData), n = nrow(selectedData),
-                 type = "tmfg")
-ext <- resizeGraph(g=list(G0, G1), gnet = kegg, d = 2, v = FALSE)
-
-#Graphs
-old.par <- par(no.readonly = TRUE)
-par(mfrow=c(1,2), mar=rep(1,4))
-plot(G1, layout = layout.circle)
-plot(ext, layout = layout.circle)
-par(old.par)
-
 }
 
 }
