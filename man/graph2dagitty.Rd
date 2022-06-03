@@ -4,13 +4,15 @@
 \alias{graph2dagitty}
 \title{Graph conversion from igraph to dagitty}
 \usage{
-graph2dagitty(graph, canonical = FALSE, verbose = FALSE, ...)
+graph2dagitty(graph, graphType = "dag", verbose = FALSE, ...)
 }
 \arguments{
-\item{graph}{A graph as an igraph or dagitty object.}
+\item{graph}{A graph as an igraph or as an adjacency matrix.}
 
-\item{canonical}{A logical value. If TRUE, DAG conversion is enforced
-(for \code{graph2dagitty} only). This argument is FALSE by default.}
+\item{graphType}{character, is one of "dag" (default)' or "pdag".
+DAG can contain the directed (->) and bi-directed (<->) edges,
+while PDAG can contain the edges: ->, <->, and the undirected edges
+(--) that represent edges whose direction is not known.}
 
 \item{verbose}{A logical value. If TRUE, the output graph is shown
 (for \code{graph2dagitty} only). This argument is FALSE by default.}

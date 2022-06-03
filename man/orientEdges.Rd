@@ -18,12 +18,14 @@ A directed graph as an igraph object.
 }
 \description{
 Assign edge orientation of an undirected graph
-through a given reference directed graph.
+through a given reference directed graph. The vertex (color)
+and edge (color, width and weight) attributes of the input
+undirected graph are preserved in the output directed graph.
 }
 \examples{
 
 # Graphs definition
-G0 <- corr2graph(R = cor(log(sachs$pkc)), n = nrow(sachs$pkc), type = "marg")
+G0 <- as.undirected(sachs$graph)
 
 # Reference graph-based orientation
 G1 <- orientEdges(ug = G0, dg = sachs$graph)

@@ -1,6 +1,6 @@
 #  SEMgraph library
-#  Copyright (C) 2019-2021 Mario Grassi; Fernando Palluzzi 
-#  e-mail: <fernando.palluzzi@gmail.com>
+#  Copyright (C) 2019-2021 Mario Grassi; Fernando Palluzzi; Barbara Tarantino
+#  e-mail: <mario.grassi@unipv.it>
 #  University of Pavia, Department of Brain and Behavioral Sciences
 #  Via Bassi 21, 27100 Pavia, Italy
 
@@ -140,6 +140,7 @@ SEMgsa<- function(g=list(), data, group, method = "BH", alpha = 0.05, n_rep = 10
 	 if (length(fit[[1]]) == 0) {
 	  res.tbl<- rbind(res.tbl, rep(NA,6))
 	  colnames(res.tbl) <- c("No.nodes","No.DEGs","pert","pNa","pNi","PVAL")
+	  DEG <- c(DEG, list(NULL))
 	  next
 	 }
 	 pval<- fit$gest$pvalue
@@ -177,10 +178,11 @@ SEMgsa<- function(g=list(), data, group, method = "BH", alpha = 0.05, n_rep = 10
 	return( list(gsa=gsa, DEG=DEG) )
 }
 
-#' @title SEM-based differential connectivity inference (DCI)
+#' @title SEM-based differential causal inference (DCI)
 #'
 #' @description Creates a network with perturbed edges obtained from 
-#' the output of \code{\link[SEMgraph]{SEMrun}} with two-group and CGGM solver.
+#' the output of \code{\link[SEMgraph]{SEMrun}} with two-group and CGGM solver,
+#' or of \code{\link[SEMgraph]{SEMace}}.
 #' To increase the efficiency of computations for large graphs,
 #' users can select to break the network structure into clusters and select
 #' the topological clustering method (see \code{\link[SEMgraph]{clusterGraph}}). 
@@ -193,18 +195,19 @@ SEMgsa<- function(g=list(), data, group, method = "BH", alpha = 0.05, n_rep = 10
 #' @param group A binary vector. This vector must be as long as the number
 #' of subjects. Each vector element must be 1 for cases and 0 for control
 #' subjects.
-#' @param C Topological clustering methods (default C = "none"). If
-#' \code{type = "tahc"}, network modules are generated using the tree
-#' agglomerative hierarchical clustering method (Yu et al., 2015).
-#' Other non-tree clustering methods from igraph package include: "wtc"
-#' (walktrap community structure with short random walks),
+#' @param type  Average Causal Effect (ACE) with two-group, "parents" (back-door)
+#' adjustement set, and "direct" effects (\code{type = "ace"}), or a topological
+#' clustering methods (default \code{type = "none"}). If \code{type = "tahc"},
+#' network modules are generated using the tree agglomerative hierarchical
+#' clustering method. Other non-tree clustering methods from igraph package
+#' include: "wtc" (walktrap community structure with short random walks),
 #' "ebc" (edge betweeness clustering), "fgc" (fast greedy method), "lbc"
 #' (label propagation method), "lec" (leading eigenvector method), "loc"
 #' (multi-level optimization), "opc" (optimal community structure), "sgc"
 #' (spinglass statistical mechanics).
 #' @param method Multiple testing correction method. One of the values
 #' available in \code{\link[stats]{p.adjust}}. By default, method is set
-#' to "BH" (i.e., Benjamini-Hochberg correction).
+#' to "BH" (i.e., FDR multiple test correction).
 #' @param alpha Gene set test significance level (default = 0.05).
 #' @param ... Currently ignored.
 #'
@@ -229,7 +232,7 @@ SEMgsa<- function(g=list(), data, group, method = "BH", alpha = 0.05, n_rep = 10
 #' G <- properties(g)[[1]]; summary(G)
 #'
 #' # Create ALS network with perturbed edges using edge betweeness clustering
-#' gU<- SEMdci(G, als.npn, alsData$group, C="ebc", method="BH", alpha=0.2)
+#' gU<- SEMdci(G, als.npn, alsData$group, type="ebc", method="BH", alpha=0.2)
 #' gcU<- properties(gU)
 #'
 #' old.par <- par(no.readonly = TRUE)
@@ -242,29 +245,38 @@ SEMgsa<- function(g=list(), data, group, method = "BH", alpha = 0.05, n_rep = 10
 #'
 #' }
 #'
-SEMdci<- function(graph, data, group, C = "none", method = "BH", alpha = 0.05, ...)
+SEMdci<- function(graph, data, group, type = "none", method = "BH", alpha = 0.05, ...)
 {
-	if (C != "none"){
-	 C <- clusterGraph(graph, type = C, size = 10)#table(C)
+	if (type != "none" | type != "ace"){
+	 C <- clusterGraph(graph, type = type, size = 10)#table(C)
 	 K <- as.numeric(names(table(C)))
 	 gL <- NULL
 	 for (k in K){ #k=1
 	  cat( "fit cluster =", k, "\n" )
 	  g <- induced_subgraph(graph, vids= names(C)[C == k])
-	  dest <- quiet(SEMggm2(g, data, group, method, alpha)$dest)
-	  dsub <- subset(dest, dest$pvalue < alpha)
+	  dest <- quiet(SEMrun(g, data, group, algo="cggm", fit=2)$dest)
+	  dsub <- subset(dest, p.adjust(dest$pvalue, method=method) < alpha)
 	  ftm <- data.frame(from=dsub$rhs, to=dsub$lhs)
 	  gC <- graph_from_data_frame(ftm) #gplot(gU)
 	  if (ecount(gC) > 0) gL <- c(gL,list(gC))
 	 }
 	cat("Done.\n")
+	if (is.null(gL)) return(gU = make_empty_graph(n = vcount(graph)))
 	gU <- graph.union(gL)
-	}else{
+	}
+	else{
 	 g <- graph
-	 dest <- quiet(SEMggm2(g, data, group, method, alpha)$dest)
-	 dsub <- subset(dest, dest$pvalue < alpha)
-	 ftm <- data.frame(from=dsub$rhs, to=dsub$lhs)
-	 gU <- graph_from_data_frame(ftm) #gplot(gU)
+	 if(type == "none"){
+	  dest <- quiet(SEMrun(g, data, group, algo="cggm", fit=2)$dest)
+	  dsub <- subset(dest, p.adjust(dest$pvalue, method=method) < alpha)
+	  ftm <- data.frame(from=dsub$rhs, to=dsub$lhs)
+	 }
+	 if(type == "ace"){
+	  dest <- SEMace(g, data, group, type="parents", effect="direct", method="none", alpha=1, boot=NULL)
+	  dsub <- subset(dest, p.adjust(dest$pvalue, method=method) < alpha)
+	  ftm <- data.frame(from=dsub$source, to=dsub$sink)
+	 }
+	 gU <- graph_from_data_frame(ftm)
 	}
 	return(gU)
 }
@@ -373,8 +385,13 @@ gplot <- function(graph, l = "dot", main = "", cex.main = 1, font.main = 1,
                   w = "auto", h = "auto", psize = 80, ...)
 {
 	# Set graphNEL object
-	g <- as_graphnel(graph)
-
+	if(is_igraph(graph)){
+	 g <- as_graphnel(graph)
+	} else {
+	 g <- graph
+	 graph <- graph_from_graphnel(graph)
+	}
+	
 	vcol <- V(graph)$color
 	vshape <- V(graph)$shape
 	vsize <- V(graph)$size
@@ -432,129 +449,19 @@ gplot <- function(graph, l = "dot", main = "", cex.main = 1, font.main = 1,
 
 	if (w == "auto") w <- vsize
 	if (h == "auto") h <- vsize
-
-	graph::nodeRenderInfo(g)<- list(col = color, fill = vcol, lty = lty,
-	                                label = vlab, lwd = lwd,
+	
+	g<- Rgraphviz::layoutGraph(g, layoutType=l, edgeAttrs=list(label=elab))
+	graph::nodeRenderInfo(g)<- list(col = color, fill = vcol, label = vlab,
+	                                lwd = lwd, lty = lty,
 	                                textCol = color.txt,
 	                                fontsize = fontsize, cex = cex,
 	                                shape = vshape, width = w, height = h)
-	graph::edgeRenderInfo(g) <- list(col = ecol, lty = 1, lwd = elwd)
+	graph::edgeRenderInfo(g) <- list(col = ecol, lty = lty, lwd = elwd)
 	graph::graphRenderInfo(g) <- list(main = main, cex.main = cex.main,
 	                                  font.main = font.main)
 	Rgraphviz::renderGraph(g)
 	
 	return(invisible(g))
-}
-
-#' @title Correlation matrix to graph
-#'
-#' @description Convert a correlation matrix to an igraph object.
-#' @param R Correlation matrix.
-#' @param n Sample size (i.e., the number of subjects).
-#' @param alpha Significance level used to compute the correlation threshold.
-#' By default, \code{alpha = 0.05}.
-#' @param method Multiple testing correction method. One of the values
-#' available in \code{\link[stats]{p.adjust}}. By default,
-#' \code{method = "none"} (i.e., no multiple test correction).
-#' See \code{\link[stats]{p.adjust}} for other correction methods.
-#' @param type Graph building method. If \code{type} is either
-#' \code{"marg"} or \code{"cond"}, marginal or conditional correlation
-#' tests will be used, respectively.
-#' If \code{type = "mst"}, input correlations are converted to distances
-#' and a minimum spanning tree is generated from the distance matrix,
-#' using Prim's algorithm (Prim, 1957).
-#' If \code{type = "tmfg"}, a triangulate maximally graph is generated
-#' from the given correlation matrix (Massara et al., 2016).
-#' @param ... Currently ignored.
-#'
-#' @import lavaan
-#' @import igraph
-#' @export
-#'
-#' @references
-#'
-#' Palluzzi F, Grassi M (2021). SEMgraph: An R Package for Causal Network
-#' Analysis of High-Throughput Data with Structural Equation Models.
-#' <arXiv:2103.08332>
-#'
-#' Massara GP, Di Matteo T and Aste T (2009). Network Filtering for Big
-#' Data: Triangulated Maximally Filtered Graph.
-#' Journal of complex Networks, 5(2): 161--178.
-#' <https://doi.org/10.1093/comnet/cnw015>
-#'
-#' Prim RC (1957). Shortest connection networks and some generalizations.
-#' Bell System Technical Journal, 36(6):1389--1401.
-#' <https://doi.org/10.1002/j.1538-7305.1957.tb01515.x>
-#'
-#' @return An igraph object.
-#'
-#' @author Mario Grassi \email{mario.grassi@unipv.it}
-#'
-#' @examples
-#'
-#' # Graphs creation
-#' C1 <- corr2graph(R = cor(log(sachs$pkc)), n = nrow(sachs$pkc),
-#'                  type = "marg",
-#'                  method = "BH")
-#' C2 <- corr2graph(R = cor(log(sachs$pkc)), n = nrow(sachs$pkc),
-#'                  type = "cond",
-#'                  method = "BH")
-#' C3 <- corr2graph(R = cor(log(sachs$pkc)), n = nrow(sachs$pkc),
-#'                  type = "mst",
-#'                  method = "BH")
-#' C4 <- corr2graph(R = cor(log(sachs$pkc)), n = nrow(sachs$pkc),
-#'                  type = "tmfg",
-#'                  method = "BH")
-#'
-#' # Graphs plots
-#' old.par <- par(no.readonly = TRUE)
-#' par(mfrow=c(2,2), mar= rep(2, 4))
-#' plot(C1, layout=layout.circle, main= "marg"); box(col="gray")
-#' plot(C2, layout=layout.circle, main= "cond"); box(col="gray")
-#' plot(C3, layout=layout.circle, main= "mst"); box(col="gray")
-#' plot(C4, layout=layout.circle, main= "tmfg"); box(col="gray")
-#' par(old.par)
-#' 
-corr2graph <- function(R, n, type = "marg", method = "none",
-                       alpha = 0.05, ...)
-{
-	# Set correlation matrix
-	p <- nrow(R)
-	q <- 0
-	if (type == "cond") {
-		q <- p - 2
-		if (corpcor::is.positive.definite(R)) {
-			K <- corpcor::cor2pcor(R)
-			rownames(K) <- colnames(K) <- rownames(R)
-		} else {
-			K <- corpcor::pcor.shrink(R, verbose = TRUE)[1:p, 1:p]
-		}
-	} else {
-		K <- R
-	}
-
-	if (type == "marg" | type == "cond") {
-		# select the correlation threshold
-		z <- abs(atanh(K[lower.tri(K)]))/sqrt(1/(n - 3 - q))
-		p.adj <- p.adjust(2*(1 - pnorm(z)), method = method)
-		Z <- min(z[which(p.adj < alpha)])
-		#Z <- qnorm(alpha/2, lower.tail = FALSE)
-		thr <- (exp(2*Z/sqrt(n - 3 - q)) - 1)/(exp(2*Z/sqrt(n - 3 - q)) + 1)
-		A0 <- ifelse(abs(K) > thr, 1, 0)
-		diag(A0) <- 0
-		del <- which(colSums(A0) == 0)
-		if (length(del) > 0) A <- A0[-del, -del] else A <- A0
-		ug <- graph_from_adjacency_matrix(A, mode = "undirected")
-	}
-    if (type == "mst") {
-		D <- diag(p) - K^2
-		gA <- graph_from_adjacency_matrix(D, mode = "undirected",
-		                                  weighted = TRUE)
-		ug <- igraph::mst(gA, algorithm = "prim")
-	}
-	if (type == "tmfg") ug <- TMFG(K)$graph
-
-	return(graph = ug)
 }
 
 #' @title lavaan model to graph
@@ -568,8 +475,6 @@ corr2graph <- function(R, n, type = "marg", method = "none",
 #' @param psi Logical value. If TRUE (default) covariances will be converted
 #' into bidirected graph edges. If FALSE, covariances will be excluded from
 #' the output graph.
-#' @param format Output graph format. It can be either "igraph" (default)
-#' or "dagitty".
 #' @param verbose Logical value. If TRUE, a plot of the output graph will
 #' be generated. For large graphs, this could significantly increase
 #' computation time. If FALSE (default), graph plotting will be disabled.
@@ -577,7 +482,6 @@ corr2graph <- function(R, n, type = "marg", method = "none",
 #'
 #' @import lavaan
 #' @import igraph
-#' @importFrom dagitty graphLayout canonicalize
 #' @export
 #'
 #' @return An igraph object.
@@ -614,25 +518,24 @@ corr2graph <- function(R, n, type = "marg", method = "none",
 #' G1 <- lavaan2graph(model, psi = FALSE)
 #' plot(G1, layout = layout.circle)
 #'
-lavaan2graph <- function(model, directed = TRUE, psi = TRUE,
-                         format = "igraph", verbose = FALSE, ...)
+lavaan2graph<- function (model, directed = TRUE, psi = TRUE, verbose = FALSE, ...)			
 {
-	lav <- lavParTable(model, fixed.x = FALSE)
-	lavb <- subset(lav, lav$op == "~")
-	lavc <- subset(lav, lav$op == "~~" & (lav$rhs != lav$lhs))
-	ftm <- data.frame(cbind(from = lavb$rhs, to = lavb$lhs, label = lavb$label),
-	                  color="blue")
-	if (nrow(lavc) != 0 & psi == TRUE) {
-		ftmc1 <- data.frame(cbind(from = lavc$rhs, to = lavc$lhs, label = "",
-		                    color = "gray60"))
-		ftmc2 <- data.frame(cbind(from = lavc$lhs, to = lavc$rhs, label = "",
-		                    color = "gray60"))
-		ftm <- rbind(ftm, ftmc1, ftmc2)
-	}
-	graph <- graph_from_data_frame(ftm, directed = directed)
-	if (format == "dagitty") graph <- graph2dagitty(graph, verbose)
-	if (format == "igraph" & verbose) plot(graph)
-	return(graph)
+    lav <- lavParTable(model, fixed.x = FALSE)
+    lavb <- subset(lav, lav$op == "~")
+    lavc <- subset(lav, lav$op == "~~" & (lav$rhs != lav$lhs))
+	lavc<- lavc[lavc$user == 1,]
+    ftm <- data.frame(cbind(from = lavb$rhs, to = lavb$lhs, label = lavb$label), 
+        color = "black")
+    if (nrow(lavc) != 0 & psi == TRUE) {
+		ftmc1 <- data.frame(cbind(from = lavc$rhs, to = lavc$lhs, 
+            label = "", color = "gray60"))
+        ftmc2 <- data.frame(cbind(from = lavc$lhs, to = lavc$rhs, 
+            label = "", color = "gray60"))
+        ftm <- rbind(ftm, ftmc1, ftmc2)
+    }
+    graph <- graph_from_data_frame(ftm, directed = directed)
+	if (verbose) gplot(graph)
+    return(graph)
 }
 
 #' @title Graph to lavaan model
@@ -645,7 +548,6 @@ lavaan2graph <- function(model, directed = TRUE, psi = TRUE,
 #'
 #' @import lavaan
 #' @import igraph
-#' @importFrom dagitty graphLayout canonicalize
 #' @export
 #'
 #' @author Mario Grassi \email{mario.grassi@unipv.it}
@@ -693,16 +595,18 @@ graph2lavaan <- function(graph, nodes = V(graph)$name, ...)
 #' @title Graph conversion from igraph to dagitty
 #'
 #' @description Convert an igraph object to a dagitty object.
-#' @param graph A graph as an igraph or dagitty object.
-#' @param canonical A logical value. If TRUE, DAG conversion is enforced
-#' (for \code{graph2dagitty} only). This argument is FALSE by default.
+#' @param graph A graph as an igraph or as an adjacency matrix.
+#' @param graphType character, is one of "dag" (default)' or "pdag".
+#' DAG can contain the directed (->) and bi-directed (<->) edges,
+#' while PDAG can contain the edges: ->, <->, and the undirected edges
+#' (--) that represent edges whose direction is not known.
 #' @param verbose A logical value. If TRUE, the output graph is shown
 #' (for \code{graph2dagitty} only). This argument is FALSE by default.
 #' @param ... Currently ignored.
 #'
 #' @import lavaan
 #' @import igraph
-#' @importFrom dagitty graphLayout canonicalize
+#' @importFrom dagitty graphLayout
 #' @export
 #'
 #' @author Mario Grassi \email{mario.grassi@unipv.it}
@@ -715,28 +619,62 @@ graph2lavaan <- function(graph, nodes = V(graph)$name, ...)
 #'
 #' @return A dagitty object.
 #'
-graph2dagitty <- function (graph, canonical = FALSE, verbose = FALSE, ...)
+graph2dagitty<- function (graph, graphType = "dag", verbose = FALSE, ...) 
 {
-    dg <- graph - E(graph)[which_mutual(graph)]
-	ug <- as.undirected(graph - E(graph)[!which_mutual(graph)])
-	ed <- attr(E(dg), "vnames")
+    if (!is.igraph(graph)) graph <- graph_from_adjacency_matrix(graph)
+	dg <- graph - E(graph)[which_mutual(graph)]
+    ug <- as.undirected(graph - E(graph)[!which_mutual(graph)])
+    ed <- attr(E(dg), "vnames")
     eb <- attr(E(ug), "vnames")
     de <- paste(gsub("\\|", "->", ed), collapse = "\n")
-
     if (length(eb) == 0) {
-		dagi <- paste0("dag {\n", de, "\n}")
-    } else {
-		be <- paste(gsub("\\|", "<->", eb), collapse = "\n")
-		dagi <- paste0("dag {\n", de, "\n", be, "\n}")
+        dagi <- paste0("dag {\n", de, "\n}")
     }
-
-	if (verbose) plot(dagitty::graphLayout(dagi))
-	if (canonical) {
-		dagi <- dagitty::canonicalize(dagi)
-		if (verbose) plot(dagitty::graphLayout(dagi$g))
-		return(dagi$g)
+    else {
+		be <- paste(gsub("\\|", "<->", eb), collapse = "\n")
+        dagi <- paste0("dag {\n", de, "\n", be, "\n}")
+    }
+    if (graphType == "pdag"){
+		dagi <- gsub("<->", "--", dagi)
+		dagi <- gsub("dag", "pdag", dagi) #cat(dagy)
 	}
-    return(dagi)
+	if (verbose) plot(dagitty::graphLayout(dagi))
+  	return(dagi)
+}
+
+#' @title Graph conversion from dagitty to igraph
+#'
+#' @description Convert a dagitty object to a igraph object.
+#' @param dagi A graph as a dagitty object ("dag" or "pdag").
+#' @param verbose A logical value. If TRUE, the output graph is shown
+#' (for \code{graph2dagitty} only). This argument is FALSE by default.
+#' @param ... Currently ignored.
+#'
+#' @import lavaan
+#' @import igraph
+#' @importFrom dagitty graphType
+#' @export
+#'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
+#' @examples
+#'
+#' # Graph as a dagitty  object to igraph object
+#' dagi <- graph2dagitty(sachs$graph, verbose = TRUE)
+#' G <- dagitty2graph(dagi, verbose = TRUE)
+#'
+#' @return An igraph object.
+#'
+dagitty2graph<- function(dagi, verbose = FALSE, ...) 
+{
+    if(dagitty::graphType(dagi) == "pdag") {
+	 dagi <- gsub("--", "<->", dagi)
+	 dagi <- gsub("pdag", "dag", dagi) #cat(dagi)
+	}
+	lavaan <- dagitty:::toString.dagitty(dagi, "lavaan")# cat(lavaan)
+	graph <- lavaan2graph(lavaan)
+	if (verbose) gplot(graph)
+	return(graph)
 }
 
 #' @title Convert directed graphs to directed acyclic graphs (DAGs)
@@ -847,7 +785,9 @@ graph2dag <- function(graph, data, bap = FALSE, time.limit = Inf, ...)
 #' @title Assign edge orientation of an undirected graph
 #'
 #' @description Assign edge orientation of an undirected graph
-#' through a given reference directed graph.
+#' through a given reference directed graph. The vertex (color)
+#' and edge (color, width and weight) attributes of the input
+#' undirected graph are preserved in the output directed graph. 
 #'
 #' @param ug An undirected graph as an igraph object.
 #' @param dg A directed reference graph.
@@ -861,7 +801,7 @@ graph2dag <- function(graph, data, bap = FALSE, time.limit = Inf, ...)
 #' @examples
 #'
 #' # Graphs definition
-#' G0 <- corr2graph(R = cor(log(sachs$pkc)), n = nrow(sachs$pkc), type = "marg")
+#' G0 <- as.undirected(sachs$graph)
 #'
 #' # Reference graph-based orientation
 #' G1 <- orientEdges(ug = G0, dg = sachs$graph)
@@ -876,27 +816,64 @@ graph2dag <- function(graph, data, bap = FALSE, time.limit = Inf, ...)
 orientEdges<- function(ug, dg, ...)
 {
 	if (is_directed(ug)){
-	 return(message("ERROR: the input graph is a Directed graph !"))
+	 return(message(" ERROR: the input graph is a Directed graph !"))
 	}
 	if (!is_directed(dg)){
-	 return(message("ERROR: the reference graph is an Undirected graph !"))
+	 return(message(" ERROR: the reference graph is an UNdirected graph !"))
 	}
+	
+	# graph edge comparison:
 	mg <- as.directed(ug, mode = "mutual")
 	exy0 <- attr(E(mg), "vnames")
 	exy1 <- attr(E(dg)[which_mutual(dg) == FALSE], "vnames")
 	exy2 <- exy0[which(exy0 %in% exy1)]
 	if (length(exy2) == 0) return(graph = mg)
 	str2 <- strsplit(exy2,"\\|")
-	ftm2 <- matrix(unlist(str2),nrow=length(str2),byrow=TRUE)
-	g2 <- graph_from_edgelist(ftm2, directed=TRUE)
-	ug0 <- difference(ug, as.undirected(g2))
+	ftm1 <- matrix(unlist(str2),nrow=length(str2),byrow=TRUE)
+	g1 <- graph_from_edgelist(ftm1, directed=TRUE)
+	# plot(g1, layout=layout.circle)
+	ug0 <- difference(ug, as.undirected(g1))
 	mg0 <- as.directed(ug0, mode = "mutual")
-	g <- graph.union(mg0, g2)
-	E1 <- attr(E(g), "vnames")
-	E0 <- attr(E(g2), "vnames")
-	E(g)$color<- ifelse(E1 %in% E0, "blue", "gray")
-	V(g)$color <- colorMatch(ug, g)[[1]]
+	
+	#output graph with attr matching:
+	g <- graph.union(mg0, g1)
+	gattr<- attrMatch(mg, g)
+	V(g)$color <- gattr[[1]]
+	E(g)$color <- gattr[[2]]
+	E(g)$width <- gattr[[3]]
+	E(g)$weight <- gattr[[4]]
+	# plot(g, layout=layout.circle)
+	
 	return(graph = g)
+}
+
+attrMatch<- function(g1, g2, ...)
+{
+	if (!is.null(V(g1)$color)) {
+	 idx<- match(V(g2)$name, V(g1)$name)
+	 Vcol<- V(g1)$color[idx]
+	}else{
+	 Vcol<- rep(NA, vcount(g2))
+	}
+	if (!is.null(E(g1)$color)) {
+	 idx<- match(attr(E(g2), "vnames"), attr(E(g1), "vnames"))
+	 Ecol<- E(g1)$color[idx]
+	}else{
+	 Ecol<- rep("gray", ecount(g2))
+	}
+	if (!is.null(E(g1)$width)) {
+	 idx<- match(attr(E(g2), "vnames"), attr(E(g1), "vnames"))
+	 Ewid<- E(g1)$width[idx]
+	}else{
+	 Ewid<- rep(1, ecount(g2))
+	}
+	if (!is.null(E(g1)$weight)) {
+	 idx<- match(attr(E(g2), "vnames"), attr(E(g1), "vnames"))
+	 Ewei<- E(g1)$weight[idx]
+	}else{
+	 Ewei<- rep(1, ecount(g2))
+	}
+	return(list(Vcol, Ecol, Ewid, Ewei))
 }
 
 #' @title Vertex and edge graph coloring on the base of fitting
@@ -1043,29 +1020,6 @@ colorGraph <- function (est, graph, group, method = "none", alpha = 0.05,
 	return(graph)
 }
 
-colorMatch <- function(g1, g2, ...)
-{
-	if (!is.null(V(g1)$color)) {
-		idx <- match(V(g2)$name, V(g1)$name)
-		Vcol <- V(g1)$color[idx]
-	} else {
-		Vcol <- rep("white", vcount(g2))
-	}
-	if (!is.null(E(g1)$color)) {
-		idx <- match(attr(E(g2), "vnames"), attr(E(g1), "vnames"))
-		Ecol <- E(g1)$color[idx]
-	} else {
-		Ecol <- rep("gray60", ecount(g2))
-	}
-	if (!is.null(E(g1)$width)) {
-		idx <- match(attr(E(g2), "vnames"), attr(E(g1), "vnames"))
-		Ewid <- E(g1)$width[idx]
-	} else {
-		Ewid <- rep(1, ecount(g2))
-	}
-	return(list(Vcol, Ecol, Ewid))
-}
-
 #' @title Pairwise plotting of multivariate data
 #'
 #' @description Display a pairwise scatter plot of two datasets for a
@@ -1073,7 +1027,7 @@ colorMatch <- function(g1, g2, ...)
 #' the function displays a histogram with normal curve superposition.
 #'
 #' @param x A matrix or data.frame (n x p) of continuous data.
-#' @param y A matrix or data.frame (n x q) of continuous data.
+#' @param y A matrix or data.frame (n x p) of continuous data matched with x.
 #' @param size number of rows to be sampled (default \code{s = nrow(z)}).
 #' @param r number of rows of the plot layout (default \code{r = 4}).
 #' @param c number of columns of the plot layout (default \code{r = 4}).
@@ -1094,7 +1048,7 @@ colorMatch <- function(g1, g2, ...)
 #'
 pairwiseMatrix<- function (x, y = NULL, size = nrow(x), r = 4, c = 4, ...)
 {
-    if (r * c > ncol(x)) {
+ 	if (r * c > ncol(x)) {
   	 r <- r - 1
 	 c <- c - 1
 	 p <- 1:(r * c)
@@ -1165,7 +1119,7 @@ ancestors <- function(g, nodes)
   if (vcount(g) == 0 || length(nodes) == 0) {
     return(numeric(0))
   }
-  as.numeric(sort(graph.bfs(g, nodes, neimode = "in", unreachable = F)$order,
+  as.numeric(sort(graph.bfs(g, nodes, mode = "in", unreachable = F)$order,
                   na.last = NA))
 }
 
@@ -1176,7 +1130,7 @@ descendants <- function(g, nodes)
   if (vcount(g) == 0 || length(nodes) == 0) {
     return(numeric(0))
   }
-  as.numeric(sort(graph.bfs(g, nodes, neimode = "out", unreachable = F)$order,
+  as.numeric(sort(graph.bfs(g, nodes, mode = "out", unreachable = F)$order,
                   na.last = NA))
 }
 
