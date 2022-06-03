@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.2</span>
       </span>
     </div>
 
@@ -53,16 +53,18 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">graph2dagitty</span><span class="op">(</span><span class="va">graph</span>, canonical <span class="op">=</span> <span class="cn">FALSE</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">graph2dagitty</span><span class="op">(</span><span class="va">graph</span>, graphType <span class="op">=</span> <span class="st">"dag"</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>graph</dt>
-<dd><p>A graph as an igraph or dagitty object.</p></dd>
-<dt>canonical</dt>
-<dd><p>A logical value. If TRUE, DAG conversion is enforced
-(for <code>graph2dagitty</code> only). This argument is FALSE by default.</p></dd>
+<dd><p>A graph as an igraph or as an adjacency matrix.</p></dd>
+<dt>graphType</dt>
+<dd><p>character, is one of "dag" (default)' or "pdag".
+DAG can contain the directed (-&gt;) and bi-directed (&lt;-&gt;) edges,
+while PDAG can contain the edges: -&gt;, &lt;-&gt;, and the undirected edges
+(--) that represent edges whose direction is not known.</p></dd>
 <dt>verbose</dt>
 <dd><p>A logical value. If TRUE, the output graph is shown
 (for <code>graph2dagitty</code> only). This argument is FALSE by default.</p></dd>

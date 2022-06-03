@@ -20,7 +20,7 @@ perturbation."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/li
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.2</span>
       </span>
     </div>
 
@@ -65,7 +65,7 @@ perturbation.</p>
   group <span class="op">=</span> <span class="cn">NULL</span>,
   ace <span class="op">=</span> <span class="cn">NULL</span>,
   path <span class="op">=</span> <span class="st">"directed"</span>,
-  method <span class="op">=</span> <span class="st">"none"</span>,
+  method <span class="op">=</span> <span class="st">"BH"</span>,
   alpha <span class="op">=</span> <span class="fl">0.05</span>,
   verbose <span class="op">=</span> <span class="cn">FALSE</span>,
   <span class="va">...</span>
@@ -94,7 +94,7 @@ If <code>path = "shortest"</code>, only shortest paths will be considered.</p></
 <dt>method</dt>
 <dd><p>Multiple testing correction method. One of the values
 available in <code><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">p.adjust</a></code>.
-By default, <code>method = "none"</code> (i.e., no multiple test correction).</p></dd>
+By default, <code>method = "BH"</code> (i.e., FDR multiple test correction).</p></dd>
 <dt>alpha</dt>
 <dd><p>Significance level for ACE selection (by default,
 <code>alpha = 0.05</code>).</p></dd>
@@ -128,66 +128,63 @@ inside the input graph.</p></dd>
 <span class="r-in"></span>
 <span class="r-in"><span class="va">adjData</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMbap.html">SEMbap</a></span><span class="op">(</span>graph <span class="op">=</span> <span class="va">alsData</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="va">als.npn</span><span class="op">)</span><span class="op">$</span><span class="va">data</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> d-separation test (basis set) of 420 edges...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  / 0 % elapsed=00s    - 1 % elapsed=00s, remaining~01s \ 2 % elapsed=00s, remaining~00s | 4 % elapsed=00s, remaining~01s / 5 % elapsed=00s, remaining~01s - 6 % elapsed=00s, remaining~01s \ 7 % elapsed=00s, remaining~01s | 8 % elapsed=00s, remaining~01s / 10% elapsed=00s, remaining~01s - 11% elapsed=00s, remaining~01s \ 12% elapsed=00s, remaining~01s | 13% elapsed=00s, remaining~01s / 14% elapsed=00s, remaining~01s - 15% elapsed=00s, remaining~01s \ 17% elapsed=00s, remaining~01s | 18% elapsed=00s, remaining~01s / 19% elapsed=00s, remaining~01s - 20% elapsed=00s, remaining~01s \ 21% elapsed=00s, remaining~01s | 23% elapsed=00s, remaining~01s / 24% elapsed=00s, remaining~01s - 25% elapsed=00s, remaining~01s \ 26% elapsed=00s, remaining~01s | 27% elapsed=00s, remaining~01s / 29% elapsed=00s, remaining~01s - 30% elapsed=00s, remaining~01s \ 31% elapsed=00s, remaining~01s | 32% elapsed=00s, remaining~01s / 33% elapsed=00s, remaining~01s - 35% elapsed=00s, remaining~01s \ 36% elapsed=00s, remaining~01s | 37% elapsed=00s, remaining~01s / 38% elapsed=00s, remaining~01s - 39% elapsed=00s, remaining~01s \ 40% elapsed=00s, remaining~01s | 42% elapsed=00s, remaining~01s / 43% elapsed=00s, remaining~01s - 44% elapsed=00s, remaining~01s \ 45% elapsed=00s, remaining~01s | 46% elapsed=00s, remaining~01s / 48% elapsed=00s, remaining~00s - 49% elapsed=00s, remaining~00s \ 50% elapsed=00s, remaining~00s | 51% elapsed=00s, remaining~00s / 52% elapsed=00s, remaining~00s - 54% elapsed=00s, remaining~00s \ 55% elapsed=01s, remaining~00s | 56% elapsed=01s, remaining~00s / 57% elapsed=01s, remaining~00s - 58% elapsed=01s, remaining~00s \ 60% elapsed=01s, remaining~00s | 61% elapsed=01s, remaining~00s / 62% elapsed=01s, remaining~00s - 63% elapsed=01s, remaining~00s \ 64% elapsed=01s, remaining~00s | 65% elapsed=01s, remaining~00s / 67% elapsed=01s, remaining~00s - 68% elapsed=01s, remaining~00s \ 69% elapsed=01s, remaining~00s | 70% elapsed=01s, remaining~00s / 71% elapsed=01s, remaining~00s - 73% elapsed=01s, remaining~00s \ 74% elapsed=01s, remaining~00s | 75% elapsed=01s, remaining~00s / 76% elapsed=01s, remaining~00s - 77% elapsed=01s, remaining~00s \ 79% elapsed=01s, remaining~00s | 80% elapsed=01s, remaining~00s / 81% elapsed=01s, remaining~00s - 82% elapsed=01s, remaining~00s \ 83% elapsed=01s, remaining~00s | 85% elapsed=01s, remaining~00s / 86% elapsed=01s, remaining~00s - 87% elapsed=01s, remaining~00s \ 88% elapsed=01s, remaining~00s | 89% elapsed=01s, remaining~00s / 90% elapsed=01s, remaining~00s - 92% elapsed=01s, remaining~00s \ 93% elapsed=01s, remaining~00s | 94% elapsed=01s, remaining~00s / 95% elapsed=01s, remaining~00s - 96% elapsed=01s, remaining~00s \ 98% elapsed=01s, remaining~00s | 99% elapsed=01s, remaining~00s / 100% elapsed=01s, remaining~00s</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  / 0 % elapsed=00s    - 1 % elapsed=00s, remaining~00s \ 2 % elapsed=00s, remaining~00s | 4 % elapsed=00s, remaining~01s / 5 % elapsed=00s, remaining~01s - 6 % elapsed=00s, remaining~01s \ 7 % elapsed=00s, remaining~01s | 8 % elapsed=00s, remaining~01s / 10% elapsed=00s, remaining~01s - 11% elapsed=00s, remaining~01s \ 12% elapsed=00s, remaining~01s | 13% elapsed=00s, remaining~01s / 14% elapsed=00s, remaining~01s - 15% elapsed=00s, remaining~01s \ 17% elapsed=00s, remaining~01s | 18% elapsed=00s, remaining~01s / 19% elapsed=00s, remaining~01s - 20% elapsed=00s, remaining~01s \ 21% elapsed=00s, remaining~01s | 23% elapsed=00s, remaining~01s / 24% elapsed=00s, remaining~01s - 25% elapsed=00s, remaining~01s \ 26% elapsed=00s, remaining~01s | 27% elapsed=00s, remaining~01s / 29% elapsed=00s, remaining~01s - 30% elapsed=00s, remaining~01s \ 31% elapsed=00s, remaining~01s | 32% elapsed=00s, remaining~01s / 33% elapsed=00s, remaining~01s - 35% elapsed=00s, remaining~01s \ 36% elapsed=00s, remaining~01s | 37% elapsed=00s, remaining~01s / 38% elapsed=00s, remaining~01s - 39% elapsed=00s, remaining~01s \ 40% elapsed=00s, remaining~01s | 42% elapsed=00s, remaining~01s / 43% elapsed=00s, remaining~01s - 44% elapsed=00s, remaining~01s \ 45% elapsed=00s, remaining~01s | 46% elapsed=00s, remaining~01s / 48% elapsed=00s, remaining~00s - 49% elapsed=00s, remaining~00s \ 50% elapsed=00s, remaining~00s | 51% elapsed=00s, remaining~00s / 52% elapsed=00s, remaining~00s - 54% elapsed=00s, remaining~00s \ 55% elapsed=01s, remaining~00s | 56% elapsed=01s, remaining~00s / 57% elapsed=01s, remaining~00s - 58% elapsed=01s, remaining~00s \ 60% elapsed=01s, remaining~00s | 61% elapsed=01s, remaining~00s / 62% elapsed=01s, remaining~00s - 63% elapsed=01s, remaining~00s \ 64% elapsed=01s, remaining~00s | 65% elapsed=01s, remaining~00s / 67% elapsed=01s, remaining~00s - 68% elapsed=01s, remaining~00s \ 69% elapsed=01s, remaining~00s | 70% elapsed=01s, remaining~00s / 71% elapsed=01s, remaining~00s - 73% elapsed=01s, remaining~00s \ 74% elapsed=01s, remaining~00s | 75% elapsed=01s, remaining~00s / 76% elapsed=01s, remaining~00s - 77% elapsed=01s, remaining~00s \ 79% elapsed=01s, remaining~00s | 80% elapsed=01s, remaining~00s / 81% elapsed=01s, remaining~00s - 82% elapsed=01s, remaining~00s \ 83% elapsed=01s, remaining~00s | 85% elapsed=01s, remaining~00s / 86% elapsed=01s, remaining~00s - 87% elapsed=01s, remaining~00s \ 88% elapsed=01s, remaining~00s | 89% elapsed=01s, remaining~00s / 90% elapsed=01s, remaining~00s - 92% elapsed=01s, remaining~00s \ 93% elapsed=01s, remaining~00s | 94% elapsed=01s, remaining~00s / 95% elapsed=01s, remaining~00s - 96% elapsed=01s, remaining~00s \ 98% elapsed=01s, remaining~00s | 99% elapsed=01s, remaining~00s / 100% elapsed=01s, remaining~00s</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Number of significant local tests: 220 / 420 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"></span>
 <span class="r-in"><span class="va">ace</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMace.html">SEMace</a></span><span class="op">(</span>graph <span class="op">=</span> <span class="va">alsData</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="va">adjData</span>,</span>
 <span class="r-in">              group <span class="op">=</span> <span class="va">alsData</span><span class="op">$</span><span class="va">group</span><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Frequency distribution of path length from X to Y :</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Frequency distribution of path length from X to Y :</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  1  2  3  4  5 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12  1  3  1  6 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 45 21 16 12  6 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ACE 1 of 23 ACE 2 of 23 ACE 3 of 23 ACE 4 of 23 ACE 5 of 23 ACE 6 of 23 ACE 7 of 23 ACE 8 of 23 ACE 9 of 23 ACE 10 of 23 ACE 11 of 23 ACE 12 of 23 ACE 13 of 23 ACE 14 of 23 ACE 15 of 23 ACE 16 of 23 ACE 17 of 23 ACE 18 of 23 ACE 19 of 23 ACE 20 of 23 ACE 21 of 23 ACE 22 of 23 ACE 23 of 23</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ACE= 1 of 100 ACE= 2 of 100 ACE= 3 of 100 ACE= 4 of 100 ACE= 5 of 100 ACE= 6 of 100 ACE= 7 of 100 ACE= 8 of 100 ACE= 9 of 100 ACE= 10 of 100 ACE= 11 of 100 ACE= 12 of 100 ACE= 13 of 100 ACE= 14 of 100 ACE= 15 of 100 ACE= 16 of 100 ACE= 17 of 100 ACE= 18 of 100 ACE= 19 of 100 ACE= 20 of 100 ACE= 21 of 100 ACE= 22 of 100 ACE= 23 of 100 ACE= 24 of 100 ACE= 25 of 100 ACE= 26 of 100 ACE= 27 of 100 ACE= 28 of 100 ACE= 29 of 100 ACE= 30 of 100 ACE= 31 of 100 ACE= 32 of 100 ACE= 33 of 100 ACE= 34 of 100 ACE= 35 of 100 ACE= 36 of 100 ACE= 37 of 100 ACE= 38 of 100 ACE= 39 of 100 ACE= 40 of 100 ACE= 41 of 100 ACE= 42 of 100 ACE= 43 of 100 ACE= 44 of 100 ACE= 45 of 100 ACE= 46 of 100 ACE= 47 of 100 ACE= 48 of 100 ACE= 49 of 100 ACE= 50 of 100 ACE= 51 of 100 ACE= 52 of 100 ACE= 53 of 100 ACE= 54 of 100 ACE= 55 of 100 ACE= 56 of 100 ACE= 57 of 100 ACE= 58 of 100 ACE= 59 of 100 ACE= 60 of 100 ACE= 61 of 100 ACE= 62 of 100 ACE= 63 of 100 ACE= 64 of 100 ACE= 65 of 100 ACE= 66 of 100 ACE= 67 of 100 ACE= 68 of 100 ACE= 69 of 100 ACE= 70 of 100 ACE= 71 of 100 ACE= 72 of 100 ACE= 73 of 100 ACE= 74 of 100 ACE= 75 of 100 ACE= 76 of 100 ACE= 77 of 100 ACE= 78 of 100 ACE= 79 of 100 ACE= 80 of 100 ACE= 81 of 100 ACE= 82 of 100 ACE= 83 of 100 ACE= 84 of 100 ACE= 85 of 100 ACE= 86 of 100 ACE= 87 of 100 ACE= 88 of 100 ACE= 89 of 100 ACE= 90 of 100 ACE= 91 of 100 ACE= 92 of 100 ACE= 93 of 100 ACE= 94 of 100 ACE= 95 of 100 ACE= 96 of 100 ACE= 97 of 100 ACE= 98 of 100 ACE= 99 of 100 ACE= 100 of 100</span>
 <span class="r-in"><span class="va">ace</span> <span class="op">&lt;-</span> <span class="va">ace</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">ace</span><span class="op">$</span><span class="va">pvalue</span><span class="op">)</span>,<span class="op">]</span></span>
 <span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">ace</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    sink op source  d_est  d_se    d_z pvalue d_lower d_upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9  5534 &lt;-   6647  0.723 0.199  3.633  0.000   0.333   1.112</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14  836 &lt;-    317 -0.524 0.168 -3.120  0.002  -0.853  -0.195</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21 4747 &lt;-   5630  0.523 0.201  2.595  0.009   0.128   0.918</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19 4741 &lt;-   7133  0.786 0.315  2.498  0.012   0.169   1.403</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  4747 &lt;-   6647  0.376 0.162  2.312  0.021   0.057   0.694</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  5530 &lt;-   6647 -0.360 0.174 -2.063  0.039  -0.702  -0.018</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7  5532 &lt;-   6647  0.369 0.181  2.035  0.042   0.014   0.724</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    pathL sink op source  d_est  d_se    d_z pvalue d_lower d_upper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12     1 5534 &lt;-   6647  0.723 0.199  3.633  0.000   0.333   1.112</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 61     4 4741 &lt;-   1616 -1.088 0.262 -4.144  0.000  -1.602  -0.573</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24     2  842 &lt;-    596  0.614 0.183  3.356  0.001   0.255   0.973</span>
 <span class="r-in"></span>
 <span class="r-in"><span class="va">paths</span> <span class="op">&lt;-</span> <span class="fu">pathFinder</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">alsData</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="va">adjData</span>,</span>
 <span class="r-in">                    group <span class="op">=</span> <span class="va">alsData</span><span class="op">$</span><span class="va">group</span>,</span>
 <span class="r-in">                    ace <span class="op">=</span> <span class="va">ace</span><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Found 7 significant ACEs.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Found 3 significant ACEs with &gt; 2 nodes</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   pathId sink op source N.nodes N.edges dev_df  srmr   pv.act   pv.inh</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1    P14  836 &lt;-    317       3       2  0.182 0.010 0.001450 0.678200</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2    P19 4741 &lt;-   7133      10      16  2.768 0.081 0.000002 0.000817</span>
 <span class="r-in"></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">parameterEstimates</span><span class="op">(</span><span class="va">paths</span><span class="op">$</span><span class="va">fit</span><span class="op">$</span><span class="va">P19</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    lhs op   rhs    est    se      z pvalue ci.lower ci.upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 z317  ~ group  0.201 0.077  2.590  0.010    0.049    0.352</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 z836  ~ group  0.200 0.078  2.575  0.010    0.048    0.352</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 z842  ~ group -0.087 0.080 -1.092  0.275   -0.245    0.070</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 z836  ~  z842  0.062 0.078  0.804  0.422   -0.090    0.214</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 z842  ~  z317  0.101 0.080  1.265  0.206   -0.056    0.258</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 z317 ~~  z317  0.954 0.107  8.944  0.000    0.745    1.163</span>
-<span class="r-in"><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">paths</span><span class="op">$</span><span class="va">paths</span><span class="op">$</span><span class="va">P19</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">paths</span><span class="op">$</span><span class="va">dfp</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   pathId sink op source N.nodes N.edges dev_df  srmr   pv.act   pv.inh</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1    P61 4741 &lt;-   1616       9      15  2.250 0.065 0.000000 0.036180</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2    P24  842 &lt;-    596       3       2  0.368 0.015 0.242459 0.611958</span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">parameterEstimates</span><span class="op">(</span><span class="va">paths</span><span class="op">$</span><span class="va">fit</span><span class="op">$</span><span class="va">P61</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op   rhs    est    se      z pvalue ci.lower ci.upper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 z1432  ~ group -0.017 0.072 -0.238  0.812   -0.157    0.123</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 z1616  ~ group  0.104 0.079  1.328  0.184   -0.050    0.259</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 z4217  ~ group  0.062 0.077  0.802  0.422   -0.089    0.213</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 z4741  ~ group  0.444 0.073  6.110  0.000    0.302    0.587</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 z5600  ~ group -0.296 0.076 -3.910  0.000   -0.445   -0.148</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 z5603  ~ group  0.003 0.079  0.032  0.974   -0.153    0.158</span>
+<span class="r-in"><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">paths</span><span class="op">$</span><span class="va">paths</span><span class="op">$</span><span class="va">P61</span><span class="op">)</span></span>
 <span class="r-plt img"><img src="pathFinder-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"></span>
-<span class="r-in"><span class="va">path19</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMpath.html">SEMpath</a></span><span class="op">(</span>graph <span class="op">=</span> <span class="va">alsData</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="va">adjData</span>,</span>
+<span class="r-in"><span class="va">path61</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMpath.html">SEMpath</a></span><span class="op">(</span>graph <span class="op">=</span> <span class="va">alsData</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="va">adjData</span>,</span>
 <span class="r-in">                  group <span class="op">=</span> <span class="va">alsData</span><span class="op">$</span><span class="va">group</span>,</span>
-<span class="r-in">                  from <span class="op">=</span> <span class="st">"7133"</span>,</span>
-<span class="r-in">                  to <span class="op">=</span> <span class="st">"4747"</span>,</span>
+<span class="r-in">                  from <span class="op">=</span> <span class="st">"1616"</span>,</span>
+<span class="r-in">                  to <span class="op">=</span> <span class="st">"4741"</span>,</span>
 <span class="r-in">                  path <span class="op">=</span> <span class="st">"directed"</span>,</span>
 <span class="r-in">                  verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span class="r-plt img"><img src="pathFinder-2.png" alt="" width="700" height="433"></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Path: 7133 -&gt; 4747 size- 10 16 --</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Path: 1616 -&gt; 4741 size- 9 15 --</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NLMINB solver ended normally after 6 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 2.607828  srmr: 0.07847444 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 2.250185  srmr: 0.0648899 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node activation: 0.3594458 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node activation: 5.277656e-07 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 0.0005751165 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 0.03962176 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># }</span></span>

@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.2</span>
       </span>
     </div>
 
@@ -48,7 +48,16 @@
     </div>
 
     <div class="section level2">
-<h2 class="page-header" data-toc-text="1.1.0" id="version-110-release-notes">Version 1.1.0 Release Notes<a class="anchor" aria-label="anchor" href="#version-110-release-notes"></a></h2>
+<h2 class="page-header" data-toc-text="1.1.2" id="version-112-release-notes">Version 1.1.2 Release Notes<a class="anchor" aria-label="anchor" href="#version-112-release-notes"></a></h2>
+<ul><li><p>Added new SEMtree() function for tree-based structure learning methods.</p></li>
+<li><p>Deprecated activeModule() and corr2graph() functions in favor of new SEMtree() function.</p></li>
+<li><p>Added new dagitty2graph() function for conversion from a dagitty object to an igraph object.</p></li>
+<li><p>Added new arguments for SEMace() function: type = c(“parents”, “minimal”, “optimal”) to choose the conditioning set Z of Y over X; effect = c(“all”, “source2sink”, “direct”,) to choose the type of X to Y effect.</p></li>
+<li><p>Added new argument for SEMdci() function: type = “ace” from ACE function() with fixed type= “parents”, and effect=“direct”</p></li>
+<li><p>Various fixed bugs</p></li>
+</ul></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="1.1.0" id="version-110-release-notes">Version 1.1.0 Release Notes<small>2022-03-24</small><a class="anchor" aria-label="anchor" href="#version-110-release-notes"></a></h2>
 <ul><li><p>Major release with significant changes:</p></li>
 <li><p>Added new arguments for SEMdag() function: LO = “TO” or “TD” for knowledge-based topological order or data-driven top-down order, and penalty = TRUE or FALSE, separate penalty factors can be applied to each coefficient</p></li>
 <li><p>Deprecated extendGraph() in favor of new resizeGraph() function, that re-sized graph, removing edges or adding edges/nodes if they are present or absent in a given reference network</p></li>
@@ -61,30 +70,22 @@
 <li><p>Various fixed bugs</p></li>
 </ul></div>
     <div class="section level2">
-<h2 class="page-header" data-toc-text="1.0.5" id="version-105-release-notes">Version 1.0.5 Release Notes<small>2022-01-03</small><a class="anchor" aria-label="anchor" href="#version-105-release-notes"></a></h2>
-<ul><li>Fixed bugs for an update from 2.0.0 to 2.1.0 of GGMncv</li>
-</ul></div>
-    <div class="section level2">
-<h2 class="page-header" data-toc-text="1.0.4" id="version-104-release-notes">Version 1.0.4 Release Notes<small>2021-11-16</small><a class="anchor" aria-label="anchor" href="#version-104-release-notes"></a></h2>
-<ul><li>Fixed bugs for CRAN checking</li>
-</ul></div>
-    <div class="section level2">
 <h2 class="page-header" data-toc-text="1.0.3" id="version-103-release-notes">Version 1.0.3 Release Notes<small>2021-07-08</small><a class="anchor" aria-label="anchor" href="#version-103-release-notes"></a></h2>
-<ul><li>Fixed bugs for CRAN checking</li>
-<li>Update kegg.RData (November, 2021)</li>
-<li>Added kegg.pathways.RData (November, 2021)</li>
-<li>Added pkgdown website</li>
+<ul><li><p>Update kegg.RData (November, 2021)</p></li>
+<li><p>Added kegg.pathways.RData (November, 2021)</p></li>
+<li><p>Added pkgdown website</p></li>
+<li><p>Various fixed bugs for CRAN checking</p></li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="1.0.2" id="version-102-release-notes">Version 1.0.2 Release Notes<a class="anchor" aria-label="anchor" href="#version-102-release-notes"></a></h2>
-<ul><li>Change <code>orientEdges</code> function</li>
-<li>Added <code>graph2dagitty</code> function</li>
-<li>Fixed bugs</li>
+<ul><li><p>Change orientEdges() function</p></li>
+<li><p>Added graph2dagitty() function</p></li>
+<li><p>Fixed bugs</p></li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="1.0.1" id="version-101-release-notes">Version 1.0.1 Release Notes<a class="anchor" aria-label="anchor" href="#version-101-release-notes"></a></h2>
-<ul><li>Change parallel computation using <code>pbapply</code> package</li>
-<li>Fixed bugs</li>
+<ul><li><p>Change parallel computation using “pbapply” package</p></li>
+<li><p>Fixed bugs</p></li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="1.0.0" id="version-100-release-notes">Version 1.0.0 Release Notes<a class="anchor" aria-label="anchor" href="#version-100-release-notes"></a></h2>
