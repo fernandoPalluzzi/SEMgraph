@@ -73,7 +73,7 @@
 #'
 #' @import igraph
 #' @import lavaan
-#' @import GGMncv
+#' @importFrom GGMncv constrained
 #' @importFrom stats na.omit var cov qchisq pchisq p.adjust
 #' @importFrom corpcor is.positive.definite cor.shrink
 #' @export
@@ -230,7 +230,7 @@ Shipley.test<- function(graph, data, MCX2=FALSE, limit=30000, verbose=TRUE, ...)
   cat("d-separation test (basis set) of", df2, "edges...\n")
   dsep<- dsep.test(dag=dag, S=cov(dataY), n=nrow(dataY), limit=limit)
   #Combining p-values with Fisher's procedure:
-  X2<- -2 * sum(log(dsep$p.value + 1E-16))
+  X2<- -2 * sum(log(dsep$p.value + 1e-16))
   df<- 2 * nrow(dsep)
   if (MCX2) {
     pv<- MCX2(model.df=df, n.obs=nrow(data), model.chi.square=X2)[[1]]
@@ -269,7 +269,7 @@ dsep.test <- function(dag, S, n, limit = 30000, ...)
   op <- pbapply::pboptions(type = "timer", style = 2)
   df <- vcount(dag)*(vcount(dag) - 1)/2 - ecount(dag)
   if (df > limit) {
-    n_cores <- parallel::detectCores()/2
+    n_cores <- parallel::detectCores(logical = FALSE)
     cl <- parallel::makeCluster(n_cores)
     parallel::clusterExport(cl, c("local", "dag", "S", "n"),
                             envir = environment())
@@ -320,8 +320,8 @@ MCX2 <- function (model.df, n.obs, model.chi.square, n.sim = 10000, ...)
     obs.VCV <- var(dat)
     model.VCV <- diag(v)
     diag(model.VCV)[1:c.value] <- diag(obs.VCV)[1:c.value]
-    MCX2[i] <- (n.obs - 1) * (log(det(model.VCV) + 1e-09) + sum(diag(obs.VCV) * 
-                                (1/diag(model.VCV))) - log(det(obs.VCV) + 1e-09) - v)
+    MCX2[i] <- (n.obs - 1) * (log(det(model.VCV)) + sum(diag(obs.VCV) * 
+                             (1/diag(model.VCV))) - log(det(obs.VCV)) - v)
   }
   MCprob <- sum(MCX2 >= model.chi.square)/n.sim
   x <- seq(0, max(MCX2))
@@ -806,8 +806,9 @@ getNetEdges<- function(graph, gnet, d, yes, ...)
 #' Chow-Liu–Edmonds’ algorithm (CLE) to recover the skeleton of the
 #' polytree. The first method, called Causal Additive Trees (CAT) uses
 #' pairwise addittive weights as input for CLE algorithm. The second one
-#' applies CHE algorithm for skeleton recovery and extends the skeleton to
+#' applies CLE algorithm for skeleton recovery and extends the skeleton to
 #' a Completed Partially Directed Acyclic Graph (CPDAG).
+#'
 #' @param graph An igraph object.
 #' @param data A matrix or data.frame. Rows correspond to subjects, and
 #' columns to graph nodes (variables).
@@ -843,6 +844,20 @@ getNetEdges<- function(graph, gnet, d, yes, ...)
 #' Finally, the CPDAG of the polytree can be found applying iteratively only
 #' Rule 1 of Meek (1995). Argument \code{seed} must be specified to analyse a
 #' subset of nodes (variables) of interest.}
+#' @param eweight Edge weight type for igraph object derived from
+#' \code{\link[SEMgraph]{weightGraph}} or from user-defined distances. 
+#' This option determines the weight-to-distance transform.
+#' If set to "NULL" (default), edge weights will be internally computed
+#' equal to correlation data-driven methods (i.e., Mutual Information). 
+#' If \code{eweight = "kegg"}, repressing interactions (-1) will be set 
+#' to 1 (maximum distance), neutral interactions (0) will be set to 0.5, 
+#' and activating interactions (+1) will be set to 0 (minimum distance).
+#' If \code{eweight = "zsign"}, all significant interactions will be set 
+#' to 0 (minimum distance), while non-significant ones will be set to 1.
+#' If \code{eweight = "pvalue"}, weights (p-values) will be transformed 
+#' to the inverse of negative base-10 logarithm. 
+#' If \code{eweight = "custom"}, the algorithm will use the distance 
+#' measure specified by the user as "weight" edge attribute.
 #' @param alpha Threshold for rejecting a pair of node being independent in 
 #' "CPDAG" algorithm. The latter implements a natural v-structure identification 
 #' procedure by thresholding the pairwise sample correlations over all adjacent 
@@ -899,13 +914,15 @@ getNetEdges<- function(graph, gnet, d, yes, ...)
 #' <https://doi.org/10.48550/arxiv.2107.10955>
 #'
 #' @examples
+#' 
+#' \donttest{
 #'
-#' # Sachs data
-#' data <- log(sachs$pkc)
-#' graph <- sachs$graph
+#' library(huge)
+#' data <- huge.npn(alsData$exprs)
+#' graph <- alsData$graph
 #'
 #' # graph-based trees
-#' seed <- V(graph)$name[sample(1:10, 5)]
+#' seed <- V(graph)$name[sample(1:vcount(graph), 10)]
 #' tree1<- SEMtree(graph, data, seed=seed, type="ST", verbose=TRUE)
 #' tree2<- SEMtree(graph, data, seed=NULL, type="MST", verbose=TRUE)
 #'
@@ -914,14 +931,22 @@ getNetEdges<- function(graph, gnet, d, yes, ...)
 #' tree3<- SEMtree(NULL, data, seed=V, type="CAT", verbose=TRUE)
 #' tree4<- SEMtree(NULL, data, seed=V, type="CPDAG", alpha=0.05, verbose=TRUE)
 #'
-SEMtree <- function(graph, data, seed, type = "ST", alpha = 0.05, verbose = FALSE, ...)
+#' }
+#'
+SEMtree <- function(graph, data, seed, type = "ST", eweight = NULL, alpha = 0.05, verbose = FALSE, ...)
 {
 	# Set data and graph objects:
 	if (!is.null(graph)) {
 	 nodes <- colnames(data)[colnames(data) %in% V(graph)$name]
 	 ig <- induced_subgraph(graph, vids = V(graph)$name %in% nodes)
 	 X <- data[,nodes]
-	 if (is.null(E(graph)$weight)){
+	 if (!is.null(eweight)) {
+	  if (eweight == "kegg") E(graph)$weight <- (1 - E(graph)$weight)/2
+	  else if (eweight == "zsign") E(graph)$weight <- 1 - abs(E(graph)$zsign)
+	  else if (eweight == "pvalue") E(graph)$weight <- 1/(-log10(E(graph)$pv))
+	  else if (eweight == "custom") E(graph)$weight <- E(graph)$weight
+	 }
+	 else if (is.null(eweight)) {
 	  NegW <- -log(1-cor(X)^2)
 	  NegW <- NegW + 2*abs(min(NegW))
 	  A <- NegW*as_adj(ig, sparse=FALSE)[nodes,nodes]
@@ -951,7 +976,8 @@ SEMtree <- function(graph, data, seed, type = "ST", alpha = 0.05, verbose = FALS
 
 	# Causal Addittive Tree(CAT) or CPDAG Tree:
 	} else if (is.null(graph)) {
-	  X<- data[, seed]
+	  nodes <- colnames(data)[colnames(data) %in% seed]
+	  X<- data[, nodes]
 	  if (type == "CAT") T <- CAT.R(data = data.frame(X))
 	  if (type == "CPDAG") T <- CPDAG(X, alpha, verbose=TRUE)
 	}
@@ -961,7 +987,7 @@ SEMtree <- function(graph, data, seed, type = "ST", alpha = 0.05, verbose = FALS
 	 fit<- SEMrun(T, X, algo="ricf")
 	}
 	
-	return(list(T = T, graph = graph))
+	return(Tree=T)
 }
 
 SteinerTree<- function(graph, seed, eweight, ...)
@@ -972,8 +998,9 @@ SteinerTree<- function(graph, seed, eweight, ...)
 	 	 
 	# step 1) Complete undirected distance graph Gd for terminal nodes:
 	Gd<- graph_from_adjacency_matrix(D, mode="undirected", weighted=TRUE)
-	Gd<- Gd-igraph::edges(E(Gd)[which(E(Gd)$weight == Inf)])
-	 
+	Gd<- delete_edges(Gd, E(Gd)[which(E(Gd)$weight == Inf)])
+	#Gd<- Gd-igraph::edges(E(Gd)[which(E(Gd)$weight == Inf)])
+
 	# step 2) MST T1 of the complete distance graph Gd:
 	T1<- mst(Gd, weights=NULL, algorithm="prim")
 
@@ -1017,7 +1044,7 @@ SteinerTree<- function(graph, seed, eweight, ...)
 CAT.R<- function(data, limit = 100, ...)
 {   	
 	local<- function(x){
-	 form <- formula(paste0("X",x[[2]],"~","s(X",x[[1]],",bs='tp')"))
+	 form <- formula(paste0("X",x[[2]],"~","s(X",x[[1]],",bs='ps')"))
 	 Cond_exp <- mgcv::gam(form, data = data)
 	 #form <- formula(paste0("X",x[[2]],"~","X",x[[1]]))
 	 #Cond_exp <- lm(form, data = data)
@@ -1039,7 +1066,7 @@ CAT.R<- function(data, limit = 100, ...)
 	 op <- pbapply::pboptions(type = "timer", style = 2)
 
 	 if (ncol(data) > limit){
-	  n_cores <- parallel::detectCores()
+	  n_cores <- parallel::detectCores(logical = FALSE)
 	  cl <- parallel::makeCluster(n_cores)
 	  parallel::clusterExport(cl, c("local"),
 	   envir = environment())
@@ -1075,7 +1102,7 @@ CPDAG <- function(data, alpha, verbose = FALSE, ...)
 {
 	# a) MST on the full graph (with zero edges)
 	R<- cor(data)
-	MI<- -nrow(data)*log(1-R^2 + 1e-09)
+	MI<- -nrow(data)*log(1-R^2 + 1e-16)
 	A<- ifelse(MI <= qchisq(1-alpha, df=1), 0, abs(R))
 	gA<- graph_from_adjacency_matrix(A, mode="undirected", weighted=TRUE, diag=FALSE)
 	MST<- mst(gA, weights = 1-E(gA)$weight, algorithm = "prim")
@@ -1107,14 +1134,12 @@ CPDAG <- function(data, alpha, verbose = FALSE, ...)
 	}
 	
 	# 2) apply Rule 1 in the resulting PDAG:
-	rownames(pdag)<- colnames(pdag)<- paste0("z", rownames(pdag))
 	dagy <- graph2dagitty(pdag, graphType = "pdag")
 	# plot( dagitty::graphLayout(dagy) ) 
 	cpdag <- dagitty::orientPDAG(dagy)
 	# plot( dagitty::graphLayout(cpdag))
 	CPDAG <- dagitty2graph(cpdag)
 	# gplot(CPDAG)
-	V(CPDAG)$name <- gsub("z", "", V(CPDAG)$name)
 	E(CPDAG)$color <- ifelse(which_mutual(CPDAG), "gold", "gray60")
 		
 	return(CPDAG)

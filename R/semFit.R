@@ -1118,10 +1118,10 @@ fitIndices <- function(n, df, S, Sigma, Theta = NULL, ...)
 	} else {
 		ST <- S %*% Theta
 	}
-	dev <- n*(sum(diag(ST)) - log(det(ST) + 1e-9) - p)
+	dev <- n*(sum(diag(ST)) - log(det(ST)) - p)
 
 	# Deviance and df for model 0 (null model)
-	dev0 <- n*(sum(diag(S)) - log(det(S) + 1e-9) - p) # n*(-log(det(R)))
+	dev0 <- n*(sum(diag(S)) - log(det(S)) - p) # n*(-log(det(R)))
 	df0 <- p*(p + 1)/2 - p
 
 	# Standardized Root Mean Square Residual (SRMR)
@@ -1151,7 +1151,7 @@ Brown.test<- function(x, p, theta=NULL, tail="both", ...)
 	if (tail == "negative") p<- ifelse(theta > 0, 1-p/2, p/2)
 	
 	#Fisher's (1932, 4th ed.) combined X2 test
-	if(is.null(x)) return(1-pchisq(q=-2*sum(log(p + 1E-16)), df=2*length(p)))
+	if(is.null(x)) return(1-pchisq(q=-2*sum(log(p + 1e-16)), df=2*length(p)))
 
 	#Brown's (1975) combined X2 test
 	tmp <-	c(
@@ -1165,7 +1165,7 @@ Brown.test<- function(x, p, theta=NULL, tail="both", ...)
 	
 	# df "f" = 2 * (2 * k)^2 /s2X2
 	# X2 c_correction "c" = s2X2/(2 * 2 * k)
-	fX2<- -2*sum(log(p + 1E-16))
+	fX2<- -2*sum(log(p + 1e-16))
 	pX2<- 1-pchisq(q=fX2/(s2X2/(2*EX2)), df=2*EX2^2/s2X2)
 
 	return( pX2 )

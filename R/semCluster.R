@@ -415,7 +415,6 @@ clusterScore <- function(graph, data, group, HM = "LV", type = "wtc",
 #' @importFrom stats cor approx
 #' @importFrom corpcor is.positive.definite cor.shrink
 #' @importFrom ggm fitAncestralGraph
-#' @importFrom flip flip plot
 #' @export
 #'
 #' @return List of clusters as igraph objects and fitting results for
