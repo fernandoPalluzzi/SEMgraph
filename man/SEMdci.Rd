@@ -31,7 +31,7 @@ include: "wtc" (walktrap community structure with short random walks),
 available in \code{\link[stats]{p.adjust}}. By default, method is set
 to "BH" (i.e., FDR multiple test correction).}
 
-\item{alpha}{Gene set test significance level (default = 0.05).}
+\item{alpha}{Significance level (default = 0.05) for edge set selection.}
 
 \item{...}{Currently ignored.}
 }
@@ -40,13 +40,16 @@ An igraph object.
 }
 \description{
 Creates a network with perturbed edges obtained from 
-the output of \code{\link[SEMgraph]{SEMrun}} with two-group and CGGM solver,
-or of \code{\link[SEMgraph]{SEMace}}.
-To increase the efficiency of computations for large graphs,
-users can select to break the network structure into clusters and select
-the topological clustering method (see \code{\link[SEMgraph]{clusterGraph}}). 
-The function \code{\link[SEMgraph]{SEMrun}} is applied iteratively on 
-each cluster to obtain the graph with the full list of perturbed edges.
+the output of \code{\link[SEMgraph]{SEMrun}} with two-group and CGGM
+solver, comparable to the algorithm 2 in Belyaeva et al (2021), or of
+\code{\link[SEMgraph]{SEMace}}, comparable to the procedure in
+Jablonski et al (2022).
+To increase the efficiency of computations for large graphs, users can
+select to break the network structure into clusters, and select the
+topological clustering method (see \code{\link[SEMgraph]{clusterGraph}}).
+The function \code{\link[SEMgraph]{SEMrun}} is applied iteratively on
+each cluster (with size min > 10 and max < 500) to obtain the graph
+with the full list of perturbed edges.
 }
 \examples{
 
@@ -73,6 +76,16 @@ par(old.par)
 
 }
 
+}
+\references{
+Belyaeva A, Squires C, Uhler C (2021). DCI: learning causal differences
+between gene regulatory networks. Bioinformatics, 37(18): 3067–3069.
+<https://doi: 10.1093/bioinformatics/btab167>
+
+Jablonski K, Pirkl M, Ćevid D, Bühlmann P, Beerenwinkel N (2022).
+Identifying cancer pathway dysregulations using differential
+causal effects. Bioinformatics, 38(6):1550–1559.
+<https://doi.org/10.1093/bioinformatics/btab847>
 }
 \author{
 Mario Grassi \email{mario.grassi@unipv.it}

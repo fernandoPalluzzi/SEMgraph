@@ -174,7 +174,7 @@ ew.sem <- function(ftm, Y, group, degree, limit, ...)
 	message("Edge weigthing via SEM of ", length(x), " edges ...")
 	op <- pbapply::pboptions(type = "timer", style = 2)
 	if (length(x) > limit) {
-		n_cores <- parallel::detectCores()/2
+		n_cores <- parallel::detectCores(logical = FALSE)
 		cl <- parallel::makeCluster(n_cores)
 		parallel::clusterExport(cl, c("local", "Y", "degree", "group"),
 		                        envir = environment())
@@ -215,7 +215,7 @@ ew.cov <- function(ftm, Y, group, degree, limit, ...)
 	op <- pbapply::pboptions(type = "timer", style = 2)
 	
 	if (length(x) > limit) {
-		n_cores <- parallel::detectCores()/2
+		n_cores <- parallel::detectCores(logical = FALSE)
 		cl <- parallel::makeCluster(n_cores)
 		parallel::clusterExport(cl, c("local", "Y", "degree", "group"),
 		                        envir = environment())
@@ -256,7 +256,7 @@ ew.cfa <- function(ftm, Y, group, limit, ...)
 	op <- pbapply::pboptions(type = "timer", style = 2)
 	
 	if (length(x) > limit) {
-		n_cores <- parallel::detectCores()/2
+		n_cores <- parallel::detectCores(logical = FALSE)
 		cl <- parallel::makeCluster(n_cores)
 		parallel::clusterExport(cl, c("local", "Y", "degree", "group"),
 		                        envir = environment())
@@ -292,7 +292,7 @@ ew.lmi<- function(ftm, Y, group, limit, ...)
 	message("Edge weigthing via lm() of ", length(x), " edges...")
 	op<- pbapply::pboptions(type = "timer", style = 2)
 	if (length(x) > limit){
-	 n_cores <- parallel::detectCores()
+	 n_cores <- parallel::detectCores(logical = FALSE)
 	 cl<- parallel::makeCluster(n_cores)
 	 parallel::clusterExport(cl,
  	  c("local", "Y", "degree", "group"), envir = environment())

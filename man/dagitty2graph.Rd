@@ -22,9 +22,9 @@ Convert a dagitty object to a igraph object.
 }
 \examples{
 
-# Graph as a dagitty  object to igraph object
+# Conversion from igraph to dagitty  (and viceversa)
 dagi <- graph2dagitty(sachs$graph, verbose = TRUE)
-G <- dagitty2graph(dagi, verbose = TRUE)
+graph <- dagitty2graph(dagi, verbose = TRUE)
 
 }
 \author{

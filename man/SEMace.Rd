@@ -53,24 +53,26 @@ is disabled.}
 A data.frame of ACE estimates between network sources and sinks.
 }
 \description{
-Compute total effects as ACEs X -> Y of variables X
-on variables Y in a directed graph. The ACE will be estimated as
-the path coefficient of X (i.e., theta) in the linear equation
-Y ~ X + Z. Z is defined as the adjustment (or conditioning) set of
+Compute total effects as ACEs of variables X
+on variables Y in a directed acyclic graph (DAG). The ACE will be estimated
+as the path coefficient of X (i.e., theta) in the linear equation
+Y ~ X + Z. The set Z is defined as the adjustment (or conditioning) set of
 Y over X, applying various adjustement sets. Standard errors (SE),
 for each ACE, are computed following the \code{lm} standard procedure
 or a bootstrap-based procedure (see \code{\link[boot]{boot}} for details).
 }
 \examples{
 
-# ACE estimation, without group (default)
-ace <- SEMace(graph = sachs$graph, data = log(sachs$pkc))
-print(ace)
+# ACE estimation, without group
+ace1 <- SEMace(graph = sachs$graph, data = log(sachs$pkc),
+               group = NULL, type="parents", effect="all",
+               method = "BH", alpha = 0.05)
+print(ace1)
 
-# ACE with group perturbation, and optimal adjustement
+# ACE with group perturbation
 ace2 <- SEMace(graph = sachs$graph, data = log(sachs$pkc),
-               group = sachs$group, type="optimal", effect="all",
-               method = "bonferroni", alpha = 0.05)
+               group = sachs$group, type="optimal", effect="direct",
+               method = "none", alpha = 0.05)
 print(ace2)
 
 }

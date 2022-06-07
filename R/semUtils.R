@@ -181,13 +181,16 @@ SEMgsa<- function(g=list(), data, group, method = "BH", alpha = 0.05, n_rep = 10
 #' @title SEM-based differential causal inference (DCI)
 #'
 #' @description Creates a network with perturbed edges obtained from 
-#' the output of \code{\link[SEMgraph]{SEMrun}} with two-group and CGGM solver,
-#' or of \code{\link[SEMgraph]{SEMace}}.
-#' To increase the efficiency of computations for large graphs,
-#' users can select to break the network structure into clusters and select
-#' the topological clustering method (see \code{\link[SEMgraph]{clusterGraph}}). 
-#' The function \code{\link[SEMgraph]{SEMrun}} is applied iteratively on 
-#' each cluster to obtain the graph with the full list of perturbed edges. 
+#' the output of \code{\link[SEMgraph]{SEMrun}} with two-group and CGGM
+#' solver, comparable to the algorithm 2 in Belyaeva et al (2021), or of
+#' \code{\link[SEMgraph]{SEMace}}, comparable to the procedure in
+#' Jablonski et al (2022).
+#' To increase the efficiency of computations for large graphs, users can
+#' select to break the network structure into clusters, and select the
+#' topological clustering method (see \code{\link[SEMgraph]{clusterGraph}}).
+#' The function \code{\link[SEMgraph]{SEMrun}} is applied iteratively on
+#' each cluster (with size min > 10 and max < 500) to obtain the graph
+#' with the full list of perturbed edges. 
 #' 
 #' @param graph Input network as an igraph object.
 #' @param data A matrix or data.frame. Rows correspond to subjects, and
@@ -208,7 +211,7 @@ SEMgsa<- function(g=list(), data, group, method = "BH", alpha = 0.05, n_rep = 10
 #' @param method Multiple testing correction method. One of the values
 #' available in \code{\link[stats]{p.adjust}}. By default, method is set
 #' to "BH" (i.e., FDR multiple test correction).
-#' @param alpha Gene set test significance level (default = 0.05).
+#' @param alpha Significance level (default = 0.05) for edge set selection.
 #' @param ... Currently ignored.
 #'
 #' @return An igraph object.
@@ -218,6 +221,17 @@ SEMgsa<- function(g=list(), data, group, method = "BH", alpha = 0.05, n_rep = 10
 #' @export
 #'
 #' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
+#' @references
+#'
+#' Belyaeva A, Squires C, Uhler C (2021). DCI: learning causal differences
+#' between gene regulatory networks. Bioinformatics, 37(18): 3067–3069.
+#' <https://doi: 10.1093/bioinformatics/btab167>
+#'
+#' Jablonski K, Pirkl M, Ćevid D, Bühlmann P, Beerenwinkel N (2022).
+#' Identifying cancer pathway dysregulations using differential
+#' causal effects. Bioinformatics, 38(6):1550–1559.
+#' <https://doi.org/10.1093/bioinformatics/btab847>
 #'
 #' @examples
 #'
@@ -245,40 +259,41 @@ SEMgsa<- function(g=list(), data, group, method = "BH", alpha = 0.05, n_rep = 10
 #'
 #' }
 #'
-SEMdci<- function(graph, data, group, type = "none", method = "BH", alpha = 0.05, ...)
+SEMdci<- function (graph, data, group, type = "none", method = "BH", alpha = 0.05, ...) 
 {
-	if (type != "none" | type != "ace"){
-	 C <- clusterGraph(graph, type = type, size = 10)#table(C)
+	if (type == "ace") {
+	 dest <- SEMace(graph, data, group,
+					type = "parents", effect = "direct",
+					method = method, alpha = alpha,
+					boot = NULL)
+	 ftm <- data.frame(from = dest$source, to = dest$sink)
+	 return(gD = graph_from_data_frame(ftm))
+	}
+	if (type != "none") {
+	 C <- clusterGraph(graph, type = type, size = 10)
 	 K <- as.numeric(names(table(C)))
 	 gL <- NULL
-	 for (k in K){ #k=1
-	  cat( "fit cluster =", k, "\n" )
-	  g <- induced_subgraph(graph, vids= names(C)[C == k])
-	  dest <- quiet(SEMrun(g, data, group, algo="cggm", fit=2)$dest)
-	  dsub <- subset(dest, p.adjust(dest$pvalue, method=method) < alpha)
-	  ftm <- data.frame(from=dsub$rhs, to=dsub$lhs)
-	  gC <- graph_from_data_frame(ftm) #gplot(gU)
-	  if (ecount(gC) > 0) gL <- c(gL,list(gC))
+	 for (k in K) {
+		cat("fit cluster =", k, "\n")
+		g <- induced_subgraph(graph, vids = names(C)[C == k])
+		if (vcount(g) > 500) next
+		dest <- quiet(SEMrun(g, data, group, algo = "cggm", fit = 2)$dest)
+		dsub <- subset(dest, p.adjust(dest$pvalue, method = method) < alpha)
+		ftm <- data.frame(from = dsub$rhs, to = dsub$lhs)
+		gC <- graph_from_data_frame(ftm)
+		if (ecount(gC) > 0) gL <- c(gL, list(gC))
 	 }
-	cat("Done.\n")
-	if (is.null(gL)) return(gU = make_empty_graph(n = vcount(graph)))
-	gU <- graph.union(gL)
+	 cat("Done.\n")
+	 if (is.null(gL)) return(gD = make_empty_graph(n = vcount(graph)))
+	 gD <- graph.union(gL)
 	}
-	else{
-	 g <- graph
-	 if(type == "none"){
-	  dest <- quiet(SEMrun(g, data, group, algo="cggm", fit=2)$dest)
-	  dsub <- subset(dest, p.adjust(dest$pvalue, method=method) < alpha)
-	  ftm <- data.frame(from=dsub$rhs, to=dsub$lhs)
-	 }
-	 if(type == "ace"){
-	  dest <- SEMace(g, data, group, type="parents", effect="direct", method="none", alpha=1, boot=NULL)
-	  dsub <- subset(dest, p.adjust(dest$pvalue, method=method) < alpha)
-	  ftm <- data.frame(from=dsub$source, to=dsub$sink)
-	 }
-	 gU <- graph_from_data_frame(ftm)
+	else if (type == "none"){
+	 dest <- quiet(SEMrun(graph, data, group, algo = "cggm", fit = 2)$dest)
+	 dsub <- subset(dest, p.adjust(dest$pvalue, method = method) < alpha)
+	 ftm <- data.frame(from = dsub$rhs, to = dsub$lhs)
+	 gD <- graph_from_data_frame(ftm)
 	}
-	return(gU)
+	return(gD)
 }
 
 #' @title Graph properties summary and graph decomposition
@@ -649,30 +664,31 @@ graph2dagitty<- function (graph, graphType = "dag", verbose = FALSE, ...)
 #' @param verbose A logical value. If TRUE, the output graph is shown
 #' (for \code{graph2dagitty} only). This argument is FALSE by default.
 #' @param ... Currently ignored.
-#'
-#' @import lavaan
-#' @import igraph
-#' @importFrom dagitty graphType
+#' 
 #' @export
 #'
 #' @author Mario Grassi \email{mario.grassi@unipv.it}
 #'
 #' @examples
 #'
-#' # Graph as a dagitty  object to igraph object
+#' # Conversion from igraph to dagitty  (and viceversa)
 #' dagi <- graph2dagitty(sachs$graph, verbose = TRUE)
-#' G <- dagitty2graph(dagi, verbose = TRUE)
+#' graph <- dagitty2graph(dagi, verbose = TRUE)
 #'
 #' @return An igraph object.
 #'
 dagitty2graph<- function(dagi, verbose = FALSE, ...) 
 {
-    if(dagitty::graphType(dagi) == "pdag") {
-	 dagi <- gsub("--", "<->", dagi)
-	 dagi <- gsub("pdag", "dag", dagi) #cat(dagi)
-	}
-	lavaan <- dagitty:::toString.dagitty(dagi, "lavaan")# cat(lavaan)
-	graph <- lavaan2graph(lavaan)
+	# edges to ftm
+	edges<- dagitty::edges(dagi)
+	dsel<- which(edges$e == "->")
+	d1<- data.frame(from=edges$v[dsel], to=edges$w[dsel])
+	bsel<- which(edges$e == "<->" | edges$e == "--")
+	b1<- data.frame(from=edges$v[bsel], to=edges$w[bsel])
+	b2<- data.frame(from=edges$w[bsel], to=edges$v[bsel])
+	# ftm to graph
+	ftm<- rbind(d1,b1,b2)
+	graph<- igraph::graph_from_data_frame(ftm)
 	if (verbose) gplot(graph)
 	return(graph)
 }

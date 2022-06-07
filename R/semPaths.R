@@ -21,10 +21,10 @@
 
 #' @title Compute the Average Causal Effect (ACE) for a given source-sink pair
 #'
-#' @description Compute total effects as ACEs X -> Y of variables X
-#' on variables Y in a directed graph. The ACE will be estimated as
-#' the path coefficient of X (i.e., theta) in the linear equation
-#' Y ~ X + Z. Z is defined as the adjustment (or conditioning) set of
+#' @description Compute total effects as ACEs of variables X
+#' on variables Y in a directed acyclic graph (DAG). The ACE will be estimated
+#' as the path coefficient of X (i.e., theta) in the linear equation
+#' Y ~ X + Z. The set Z is defined as the adjustment (or conditioning) set of
 #' Y over X, applying various adjustement sets. Standard errors (SE),
 #' for each ACE, are computed following the \code{lm} standard procedure
 #' or a bootstrap-based procedure (see \code{\link[boot]{boot}} for details).
@@ -82,14 +82,16 @@
 #'
 #' @examples
 #'
-#' # ACE estimation, without group (default)
-#' ace <- SEMace(graph = sachs$graph, data = log(sachs$pkc))
-#' print(ace)
+#' # ACE estimation, without group
+#' ace1 <- SEMace(graph = sachs$graph, data = log(sachs$pkc),
+#'                group = NULL, type="parents", effect="all",
+#'                method = "BH", alpha = 0.05)
+#' print(ace1)
 #'
-#' # ACE with group perturbation, and optimal adjustement
+#' # ACE with group perturbation
 #' ace2 <- SEMace(graph = sachs$graph, data = log(sachs$pkc),
-#'                group = sachs$group, type="optimal", effect="all",
-#'                method = "bonferroni", alpha = 0.05)
+#'                group = sachs$group, type="optimal", effect="direct",
+#'                method = "none", alpha = 0.05)
 #' print(ace2)
 #'
 SEMace<- function(graph, data, group=NULL, type="parents", effect="all", method="BH", alpha=0.05, boot=NULL, ...)
@@ -98,7 +100,7 @@ SEMace<- function(graph, data, group=NULL, type="parents", effect="all", method=
 	nodes<- colnames(data)[colnames(data) %in% V(graph)$name]
 	ig<- induced_subgraph(graph, vids= which(V(graph)$name %in% nodes))
 	
-	if( !is_dag(ig) ){
+	if( !is_dag(ig) & type != "parents" ){
 	 cat("\nWARNING: input graph is not acyclic!\n")
      cat(" Applying graph -> DAG conversion.\n")
 	 dag<- graph2dag(ig, data) #del cycles & all <->
@@ -180,7 +182,7 @@ SEMace<- function(graph, data, group=NULL, type="parents", effect="all", method=
 boot.lmest<- function(x, y, Z, R,...)
 {
 	# LM fitting y ~ x + Z :
-	#ncpus<- parallel::detectCores()
+	#ncpus<- parallel::detectCores(logical = TRUE)
 	est<- function(Z, i) { 
 	 stats::lm.fit(as.matrix(Z[i,-1]),Z[i,1])$coefficients[1]
 	}
@@ -476,7 +478,7 @@ pathFinder <- function(graph, data, group = NULL, ace = NULL, path = "directed",
     paths[[i]] <- fit$graph
     lav[[i]] <- fit$fit
   }
-  cat("\nFound", N, "significant ACEs with > 2 nodes\n\n")
+  cat("\nFound", nrow(res), "significant ACEs with > 2 nodes\n\n")
   rownames(res) <- NULL
   names(paths) <-  paste0("P", rownames(ace))
   names(lav) <-  paste0("P", rownames(ace))

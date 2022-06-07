@@ -4,7 +4,16 @@
 \alias{SEMtree}
 \title{Tree-based structure learning methods}
 \usage{
-SEMtree(graph, data, seed, type = "ST", alpha = 0.05, verbose = FALSE, ...)
+SEMtree(
+  graph,
+  data,
+  seed,
+  type = "ST",
+  eweight = NULL,
+  alpha = 0.05,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{graph}{An igraph object.}
@@ -46,6 +55,21 @@ Finally, the CPDAG of the polytree can be found applying iteratively only
 Rule 1 of Meek (1995). Argument \code{seed} must be specified to analyse a
 subset of nodes (variables) of interest.}}
 
+\item{eweight}{Edge weight type for igraph object derived from
+\code{\link[SEMgraph]{weightGraph}} or from user-defined distances. 
+This option determines the weight-to-distance transform.
+If set to "NULL" (default), edge weights will be internally computed
+equal to correlation data-driven methods (i.e., Mutual Information). 
+If \code{eweight = "kegg"}, repressing interactions (-1) will be set 
+to 1 (maximum distance), neutral interactions (0) will be set to 0.5, 
+and activating interactions (+1) will be set to 0 (minimum distance).
+If \code{eweight = "zsign"}, all significant interactions will be set 
+to 0 (minimum distance), while non-significant ones will be set to 1.
+If \code{eweight = "pvalue"}, weights (p-values) will be transformed 
+to the inverse of negative base-10 logarithm. 
+If \code{eweight = "custom"}, the algorithm will use the distance 
+measure specified by the user as "weight" edge attribute.}
+
 \item{alpha}{Threshold for rejecting a pair of node being independent in 
 "CPDAG" algorithm. The latter implements a natural v-structure identification 
 procedure by thresholding the pairwise sample correlations over all adjacent 
@@ -73,7 +97,7 @@ The data-driven methods propose fast and scalable procedures based on
 Chow-Liu–Edmonds’ algorithm (CLE) to recover the skeleton of the
 polytree. The first method, called Causal Additive Trees (CAT) uses
 pairwise addittive weights as input for CLE algorithm. The second one
-applies CHE algorithm for skeleton recovery and extends the skeleton to
+applies CLE algorithm for skeleton recovery and extends the skeleton to
 a Completed Partially Directed Acyclic Graph (CPDAG).
 }
 \details{
@@ -85,12 +109,14 @@ regression for conditional expectation mapped on the output tree.
 }
 \examples{
 
-# Sachs data
-data <- log(sachs$pkc)
-graph <- sachs$graph
+\donttest{
+
+library(huge)
+data <- huge.npn(alsData$exprs)
+graph <- alsData$graph
 
 # graph-based trees
-seed <- V(graph)$name[sample(1:10, 5)]
+seed <- V(graph)$name[sample(1:vcount(graph), 10)]
 tree1<- SEMtree(graph, data, seed=seed, type="ST", verbose=TRUE)
 tree2<- SEMtree(graph, data, seed=NULL, type="MST", verbose=TRUE)
 
@@ -98,6 +124,8 @@ tree2<- SEMtree(graph, data, seed=NULL, type="MST", verbose=TRUE)
 V <- colnames(data)[colnames(data) \%in\% V(graph)$name]
 tree3<- SEMtree(NULL, data, seed=V, type="CAT", verbose=TRUE)
 tree4<- SEMtree(NULL, data, seed=V, type="CPDAG", alpha=0.05, verbose=TRUE)
+
+}
 
 }
 \references{
