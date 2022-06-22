@@ -7,6 +7,7 @@ reproduce the analysis of the manuscript. The folder structure can be
 summarised as follows:
 
 ./Data/:
+    
     GSE172114_series_matrix.txt.gz
     GSE172114_rsem_gene_count_matrix_TMM_69samples.csv
     Raw COVID-19 source data
