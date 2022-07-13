@@ -228,11 +228,44 @@ summary(cggm2$fit$Group_1)
 print(cggm2$dest)
 ```
 
-&nbsp;
+### 2.3. Total effect estimation as Average Causal Effect (ACE).
 
-### 2.3. Model learning.
+In its general definition, the total effect (TE) between two nodes x and y in a path P = x -> ... -> y is the sum of the DE x -> y (i.e., the "beta" coefficient) and the IE = b(1,2)*b(2,3)*...*b(k-1,k).
+One convenient way of estimating the TE is through the definition of ACE [Pearl J, 1998](https://doi.org/10.1177/0049124198027002004). The simplest estimation of the TE as ACE is possible in DAGs, thorugh linear regression. The parent set pa(X) of X blocks all backdoor (i.e., confounding) paths from X to Y, and the ACE is equal to the b(Y,X|Z) coefficient in a multiple regression Y ~ X + pa(X).
+
+```r
+# Average Causal Effect (ACE)
+# optimal adjustement set (type = "optimal")
+# source -> sink ACE (effect = "source2sink");
+# Benjamini-Hochberg multiple test adjustment (method = "BH");
+# 5% significance level (alpha = 0.05)
+
+ace <- SEMace(graph = alsData$graph, data = data.npn,
+			  type = "optimal", effect = "source2sink",
+			  method = "BH", alpha = 0.05)
 
 
+# Sort by decreasing abs(z) value
+ace <- ace[order(abs(ace$z), decreasing = TRUE),]
+nrow(ace)
+head(ace)
+
+
+# SOD1-CASP3 path extraction and fitting
+
+source <- as.character(ace$source[6])
+sink <- as.character(ace$sink[6])
+path <- SEMpath(alsData$graph, data.npn, alsData$group,
+                from = source, to = sink, 
+                path = "directed",
+                verbose = TRUE)
+
+
+# All directed paths extraction, fit, and perturbation evaluation
+
+paths <- pathFinder(alsData$graph, data.npn, alsData$group, ace = ace)
+print(paths$dfp)
+```
 
 &nbsp;
 
