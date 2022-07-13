@@ -73,10 +73,16 @@ See our website [**HERE**](https://fernandopalluzzi.github.io/SEMgraph/) for hel
 
 # SEMgraph tutorial
 
-## Manual dependencies installation
+The following section offers an overview of **SEMgraph** functionalities. Starting from model fitting, it will gently introduce functions for model learning, weighting, clustering, and evaluation of causal effects and model perturbation. This section includes:
+
+1. **Manual dependencies installation**
+2. **Causal effects estimation, model learning, extension, and clusterinng (Amyotrophic Lateral Sclerosis dataset)**
+3. **Gene Set Analysis and perturbed subnetwork/module extraction (Frontotemporal Dementia dataset)**
+
+## 1. Manual dependencies installation
 
 ```r
-SEMgraph URL: https://github.com/fernandoPalluzzi/SEMgraph
+# Defining dependency installers
 
 installFromCran <- function(pkg) {
   if (!requireNamespace(pkg, quietly = TRUE))
@@ -98,7 +104,7 @@ devtools::install_github("fernandoPalluzzi/SEMdata")
 
 pkgs.cran <- c("BiocManager", "boot", "cate", "corpcor", "dagitty",
                "flip", "gdata", "ggm", "GGMncv", "glmnet",
-			         "leaps", "mgcv", "pbapply", "protoclust")
+	       "leaps", "mgcv", "pbapply", "protoclust")
 
 pkgs.bioc <- c("graph", "RBGL", "Rgraphviz")
 
@@ -111,8 +117,7 @@ install.packages("huge")
 
 options(warn = -1)
 
-# Load libraries
-
+# Library loading
 library(SEMgraph)
 library(SEMdata)
 ```
