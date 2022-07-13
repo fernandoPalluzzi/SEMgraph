@@ -124,13 +124,15 @@ library(SEMdata)
 
 ## 2. Amyotrophic Lateral Sclerosis (ALS) data analysis.
 
+### 2.1. The ALS dataset.
 
+**SEMdata** provides the ALS RNA-seq dataset of 139 cases and 21 healthy controls, from Tam O.H. *et al.*, 2019 (GEO accession: GSE124439). Raw data from the GEO dataset GSE124439 (Tam et al., 2019) were pre-processed applying batch effect correction, using the sva R package (Leek et al., 2012), to remove data production center and brain area biases. Using multidimensional scaling-based clustering, ALS-specific and HC-specific clusters were generated. Misclassified samples were blacklisted and removed from the dataset. Since the expression of many genes is significantly different from Gaussian, we apply a nonparanormal transform with the **huge** package, to relax the normality assumption.
 
 ```r
 # ALS input graph
 summary(alsData$graph)
 
-# ALS RNA -seq expression data
+# ALS RNA-seq expression data
 dim(alsData$exprs)
 
 # group = {1: case, 0: control} vector
@@ -225,6 +227,12 @@ summary(cggm2$fit$Group_0)
 summary(cggm2$fit$Group_1)
 print(cggm2$dest)
 ```
+
+&nbsp;
+
+### 2.3. Model learning.
+
+
 
 &nbsp;
 
