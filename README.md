@@ -230,7 +230,7 @@ print(cggm2$dest)
 
 ### 2.3. Total effect estimation as Average Causal Effect (ACE).
 
-In its general definition, the total effect (TE) between two nodes x and y in a path P = x -> ... -> y is the sum of the DE x -> y (i.e., the "beta" coefficient) and the IE = b(1,2)<sub>*</sub>b(2,3)<sub>*</sub>...<sub>*</sub>b(k-1,k).
+In its general definition, the total effect (TE) between two nodes x and y in a path P = x -> ... -> y is the sum of the DE x -> y (i.e., the "beta" coefficient) and the IE = b(1,2)<sub>*;</sub>b(2,3)<sub>*;</sub>...<sub>*;</sub>b(k-1,k).
 One convenient way of estimating the TE is through the definition of ACE by [Pearl J, 1998](https://doi.org/10.1177/0049124198027002004). The simplest estimation of the TE as ACE is possible in DAGs, thorugh linear regression. The parent set pa(X) of X blocks all backdoor (i.e., confounding) paths from X to Y, and the ACE is equal to the b(Y,X|Z) coefficient in a multiple regression Y ~ X + pa(X).
 
 ```r
