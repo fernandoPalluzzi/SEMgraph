@@ -122,6 +122,106 @@ library(SEMgraph)
 library(SEMdata)
 ```
 
+## 2. 
+
+### 2.1. 
+
+```r
+# ALS model fitting (sem0: common model, no groups)
+
+# ALS input graph
+summary(alsData$graph)
+
+# ALS RNA -seq expression data
+dim(alsData$exprs)
+
+# group = {1: case, 0: control} vector
+table(alsData$group)
+
+# Nonparanormal transform
+library(huge)
+data.npn <- huge.npn(alsData$exprs)
+
+
+# Model fitting
+# The whole dataset is used to fit the model and perturbation is not evaluated (group = NULL)
+sem0 <- SEMrun(graph = alsData$graph, data = data.npn)
+
+est0 <- parameterEstimates(sem0$fit)
+head(est0)
+
+# Other possible output (not shown in the manuscript)
+summary(sem0$fit)
+
+
+# ALS model fitting
+# sem1: common model, group influence on nodes (node perturbation)
+
+sem1 <- SEMrun(graph = alsData$graph, data = data.npn, group = alsData$group)
+
+est1 <- parameterEstimates(sem1$fit)
+head(est1)
+
+# Other possible output (not shown in the manuscript).
+summary(sem1$fit)
+
+
+## Figure 1. Estimated group effects on nodes and direct effects. ----##
+
+# Convert Entrez identifiers to gene symbols
+library(org.Hs.eg.db)
+V(sem1$graph)$label <- mapIds(org.Hs.eg.db, V(sem1$graph)$name,
+                              column = 'SYMBOL',
+                              keytype = 'ENTREZID')
+# Graph plot
+pdf("Figure1.pdf", width = 14, height = 9)
+gplot(sem1$graph, cex.main = 2.5, fontsize = 22)
+dev.off()
+
+##--------------------------------------------------------------------##
+
+
+# RICF fitting
+# Fast fitting for large graphs; SE estimation disabled
+ricf1 <- SEMrun(alsData$graph, data.npn, alsData$group, algo = "ricf")
+
+# Other possible output (not shown in the manuscript)
+summary(ricf1$fit)
+print(ricf1$gest)
+
+
+# ALS model fitting
+# sem2: one model for eaach group, group influence on edges (edge perturbation)
+
+sem2 <- SEMrun(alsData$graph, data.npn, alsData$group, fit = 2)
+
+# Other possible output (not shown in the manuscript).
+summary(sem2$fit)
+
+
+# Perturbed graph elements
+
+# Differentially Regualted Nodes (DRNs)
+DRN <- sem1$gest[sem1$gest$pvalue < 0.05,]
+nrow(DRN)
+head(DRN)
+
+# Differentially Regulated Edges (DREs)
+DRE <- sem2$dest[sem2$dest$pvalue < 0.05,]
+nrow(DRE)
+head(DRE)
+
+
+# CGGM fitting
+# Fast edge perturbation calculation for large graphs
+cggm2 <- SEMrun(alsData$graph, data.npn, alsData$group, fit = 2, algo = "cggm")
+
+# Other possible output (not shown in the manuscript)
+summary(cggm2$fit$Group_0)
+summary(cggm2$fit$Group_1)
+print(cggm2$dest)
+```
+
 &nbsp;
 
 # References
