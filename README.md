@@ -261,7 +261,7 @@ path <- SEMpath(alsData$graph, data.npn, alsData$group,
 		verbose = TRUE)
 
 
-# All directed paths extraction, fit, and perturbation evaluation
+#  The pathFinder function extracts all directed paths, fits them, and evaluates their perturbation
 
 paths <- pathFinder(alsData$graph, data.npn, alsData$group, ace = ace)
 print(paths$dfp)
