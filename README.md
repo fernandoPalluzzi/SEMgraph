@@ -69,10 +69,52 @@ See our website [**HERE**](https://fernandopalluzzi.github.io/SEMgraph/) for hel
 
 - **Flow cytometry** data and causal model from [Sachs *et al.*, 2005](https://www.science.org/lookup/doi/10.1126/science.1105809).
 
-## Coming soon
 
-Next versions of SEMgraph will include new updated datasets, new functionalities for *de novo* (data-driven) causal model learning, and new inference methods.
+# SEMgraph tutorial
 
-## References
+## Manual dependencies installation
+
+SEMgraph URL: https://github.com/fernandoPalluzzi/SEMgraph
+
+installFromCran <- function(pkg) {
+  if (!requireNamespace(pkg, quietly = TRUE))
+    install.packages(pkg)
+}
+
+installFromBioconductor <- function(pkg) {
+  if (!requireNamespace(pkg, quietly = TRUE))
+    BiocManager::install(pkg)
+}
+
+# SEMgraph package
+devtools::install_github("fernandoPalluzzi/SEMgraph")
+
+# SEMdata package
+devtools::install_github("fernandoPalluzzi/SEMdata")
+
+# Required packages
+
+pkgs.cran <- c("BiocManager", "boot", "cate", "corpcor", "dagitty",
+               "flip", "gdata", "ggm", "GGMncv", "glmnet",
+			         "leaps", "mgcv", "pbapply", "protoclust")
+
+pkgs.bioc <- c("graph", "RBGL", "Rgraphviz")
+
+install_1 <- sapply(pkgs.cran, installFromCran)
+install_2 <- sapply(pkgs.cran, installFromBioconductor)
+
+# Installing suggested packages
+install.packages("org.Hs.eg.db")
+install.packages("huge")
+
+options(warn = -1)
+
+# Load libraries
+
+library(SEMgraph)
+library(SEMdata)
+
+
+# References
 
 Palluzzi F, Grassi M. **SEMgraph: An R Package for Causal Network Analysis of High-Throughput Data with Structural Equation Models**. 3 Jan 2022; arXiv:2103.08332.
