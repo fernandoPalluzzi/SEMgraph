@@ -69,11 +69,13 @@ See our website [**HERE**](https://fernandopalluzzi.github.io/SEMgraph/) for hel
 
 - **Flow cytometry** data and causal model from [Sachs *et al.*, 2005](https://www.science.org/lookup/doi/10.1126/science.1105809).
 
+&nbsp;
 
 # SEMgraph tutorial
 
 ## Manual dependencies installation
 
+```r
 SEMgraph URL: https://github.com/fernandoPalluzzi/SEMgraph
 
 installFromCran <- function(pkg) {
@@ -113,7 +115,9 @@ options(warn = -1)
 
 library(SEMgraph)
 library(SEMdata)
+```
 
+&nbsp;
 
 # References
 
