@@ -241,8 +241,8 @@ One convenient way of estimating the TE is through the definition of ACE by [Pea
 # 5% significance level (alpha = 0.05)
 
 ace <- SEMace(graph = alsData$graph, data = data.npn,
-			  type = "optimal", effect = "source2sink",
-			  method = "BH", alpha = 0.05)
+              type = "optimal", effect = "source2sink",
+	      method = "BH", alpha = 0.05)
 
 
 # Sort by decreasing abs(z) value
@@ -256,9 +256,9 @@ head(ace)
 source <- as.character(ace$source[6])
 sink <- as.character(ace$sink[6])
 path <- SEMpath(alsData$graph, data.npn, alsData$group,
-                from = source, to = sink, 
-                path = "directed",
-                verbose = TRUE)
+                from = source, to = sink,
+		path = "directed",
+		verbose = TRUE)
 
 
 # All directed paths extraction, fit, and perturbation evaluation
