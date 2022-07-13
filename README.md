@@ -122,13 +122,11 @@ library(SEMgraph)
 library(SEMdata)
 ```
 
-## 2. 
+## 2. Amyotrophic Lateral Sclerosis (ALS) data analysis.
 
-### 2.1. 
+
 
 ```r
-# ALS model fitting (sem0: common model, no groups)
-
 # ALS input graph
 summary(alsData$graph)
 
@@ -141,9 +139,14 @@ table(alsData$group)
 # Nonparanormal transform
 library(huge)
 data.npn <- huge.npn(alsData$exprs)
+```
 
+### 2.2. Model fitting.
 
-# Model fitting
+**SEMgraph** offers three main modes of model fitting: (i) common model fitting, (ii) node perturbation evaluation, and (iii) edge perturbation evaluation. **SEMgraph** will automatically take care of applying shrinkage methods in case of high dimensionality (#variables >> #subjects), heuristics and parallelization settings for large graphs. In addition, perturbation evaluation enables the extraction of differentially regulated nodes (DRNs) and edges (DREs).
+
+```r
+# ALS model fitting (sem0: common model, no groups)
 # The whole dataset is used to fit the model and perturbation is not evaluated (group = NULL)
 sem0 <- SEMrun(graph = alsData$graph, data = data.npn)
 
@@ -182,7 +185,8 @@ dev.off()
 
 
 # RICF fitting
-# Fast fitting for large graphs; SE estimation disabled
+# Fast fitting for large graphs (SE estimation disabled)
+
 ricf1 <- SEMrun(alsData$graph, data.npn, alsData$group, algo = "ricf")
 
 # Other possible output (not shown in the manuscript)
