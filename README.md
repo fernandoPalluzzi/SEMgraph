@@ -231,7 +231,7 @@ print(cggm2$dest)
 ### 2.3. Total effect estimation as Average Causal Effect (ACE).
 
 Suppose having a path P = X -> M1 -> ... -> Mk -> Y between two nodes X and Y, separated by k mediators. The total effect (TE = DE + IE) is the sum of the direct effect X -> Y, DE = b(X,Y), and the indirect effect through the mediators, IE = b(X,M1)\*b(M1,M2)\*...\*b(Mk,Y).
-One convenient way of estimating the TE is through the definition of ACE by [Pearl J, 1998](https://doi.org/10.1177/0049124198027002004). The simplest estimation of the TE as ACE is possible in directed acyclic graphs (DAGs), thorugh linear regression. The parent set pa(X) of X blocks all backdoor (i.e., confounding) paths from X to Y, and the ACE is equal to the coefficient in a multiple regression Y ~ X + pa(X).
+One convenient way of estimating the TE is through the definition of ACE by [Pearl J, 1998](https://doi.org/10.1177/0049124198027002004). The simplest estimation of the TE as ACE is possible in directed acyclic graphs (DAGs), thorugh linear regression. The parent set pa(X) of X blocks all backdoor (i.e., confounding) paths from X to Y, and the ACE is equal to the coefficient b(X,Y) in a multiple regression Y ~ X + pa(X).
 
 ```r
 # Average Causal Effect (ACE)
