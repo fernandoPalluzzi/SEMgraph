@@ -336,8 +336,8 @@ model2 <- modelSearch(graph = alsData$graph, data = data.npn,
 		      search = "inner",
 		      beta = 0.05,
 		      method = "BH",
-                     alpha = 0.05,
-                     verbose = FALSE)
+		      alpha = 0.05,
+		      verbose = FALSE)
 					 
 # Outer strategy.
 # - Knowledge-based estimation (gnet should be a directed reference network).
@@ -345,13 +345,13 @@ model2 <- modelSearch(graph = alsData$graph, data = data.npn,
 # - Larger d values increase model complexity (suggested: d = 2).
 
 model3 <- modelSearch(graph = alsData$graph, data = data.npn,
-                     gnet = kegg, d = 2,
-                     search = "outer",
-                     beta = 0.05, 
-                     method = "BH",
-		     alpha = 0.05,
-		     verbose = FALSE)
-					 
+                      gnet = kegg, d = 2,
+		      search = "outer",
+		      beta = 0.05,
+		      method = "BH",
+		      alpha = 0.05,
+		      verbose = FALSE)
+
 # graph models visualization:	 
 par(mfrow=c(2,2), mar=rep(2,4))
 gplot(model$graph, main="basic")
