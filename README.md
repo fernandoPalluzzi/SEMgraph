@@ -278,7 +278,7 @@ The input graph is a picture of the current knowledge. Besides the evaluation of
 # Reducing beta (up to 0) will increase model complexity.
 
 # This strategy is data-driven (gnet = NULL) and 
-# only new direct connections are added (d = 0; i.e., no mediators allowed)
+# only direct connections are added (d = 0; i.e., no new mediators).
 
 model <- modelSearch(graph = alsData$graph, data = data.npn,
                      gnet = NULL, d = 0,
