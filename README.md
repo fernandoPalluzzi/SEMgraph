@@ -126,7 +126,7 @@ library(SEMdata)
 
 ### 2.1. The ALS dataset.
 
-**SEMdata** provides the ALS RNA-seq dataset of 139 cases and 21 healthy controls, from Tam O.H. *et al.*, 2019 (GEO accession: GSE124439). Raw data were pre-processed applying batch effect correction, using the sva R package (Leek et al., 2012), to remove data production center and brain area biases. Using multidimensional scaling-based clustering, ALS-specific and HC-specific clusters were generated. Misclassified samples were blacklisted and removed from the dataset. Since the expression of many genes is significantly different from Gaussian, we apply a nonparanormal transform with the **huge** package, to relax the normality assumption.
+**SEMdata** provides the ALS RNA-seq dataset of 139 cases and 21 healthy controls, from Tam O.H. *et al.*, 2019 (GEO accession: [GSE124439](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE124439)). Raw data were pre-processed applying batch effect correction, using the sva R package (Leek et al., 2012), to remove data production center and brain area biases. Using multidimensional scaling-based clustering, ALS-specific and HC-specific clusters were generated. Misclassified samples were blacklisted and removed from the dataset. Since the expression of many genes is significantly different from Gaussian, we apply a nonparanormal transform with the **huge** package, to relax the normality assumption.
 
 ```r
 # ALS input graph
@@ -358,6 +358,70 @@ gplot(model$graph, main="basic")
 gplot(model1$graph, main="direct")
 gplot(model2$graph, main="inner")
 gplot(model3$graph, main="outer")
+
+```
+
+### 2.5. Communities and factor scores.
+
+The modular structure of biological networks could often reveal local effects and perturbed routes and communities hidden within a larger and more complex context. **SEMgraph** allows to detect and estimate these local properties as follows.
+
+```r
+# Improved ALS model (model$graph) clustering and scoring, using alatent variable
+# "hidden" model (LV), edge betweeness clustering (EBC) algorithm, and a minimum 
+# cluster size of 5 nodes.
+
+LV <- clusterScore(model$graph, model$data, alsData$group,
+                   type = "ebc",
+		   HM = "LV",
+		   size = 5)
+
+table(LV$membership)
+
+head(parameterEstimates(LV$fit))
+
+
+# Clustering only (no scores calculation)
+
+C <- clusterGraph(model$graph, type = "ebc", HM = "LV", size = 5, verbose = FALSE)
+
+
+# Cluster plot utility
+
+cg <- cplot(graph = model$graph, membership = LV$membership, verbose=TRUE)
+list(cg)
+gplot(cg$graph)
+
+
+# Cluster extraction, fitting, and perturbation evaluation
+
+cls <- extractClusters(graph = model$graph, data = model$data, group = alsData$group,
+                       membership = LV$membership)
+print(cls$dfc)
+
+
+## Figure 3. Edge betweenness clusters (EBC) mapped over the improved model. --##
+
+# Graph plot
+pdf("Figure3.pdf", width = 16, height = 8)
+gplot(cg$graph, fontsize = 30)
+dev.off()
+
+##-----------------------------------------------------------------------------##
+```
+
+## 3. Frontotemporal Dementia (FTD) data analysis.
+
+The FTD dataset coming with **SEMdata** is a data matrix of 256 rows (subjects; 150 FTD patients and 150 healthy controls) and 16560 columns (genes) containing the value of the first principal component of DNAme levels, obtained applying a principal component analysis to methylated CpG sites within the promoter region, for each gene (genes with unmethylated CpGs in both conditions were discarded). This dataset was derived from the study by Li Y. *et al.*, 2014 (GEO accession: [GSE53740](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE53740)).
+
+```r
+# Library loading
+
+library(SEMgraph)
+library(SEMdata)
+library(huge)
+
+
+
 
 ```
 
