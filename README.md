@@ -487,7 +487,12 @@ sem1 <- SEMrun(ST, pc1.npn, group)
 
 # Data deconfounding and perturbation evaluation
 
+# When a DAG is used for causal network inference, missing edges 
+# are often masked by unmeasured confounding variables.
+# This step might reduce this effect through Bow-free Acyclic Path (BAP) 
+# search and data deconfounding.
 adj.pc1 <- SEMbap(ST, pc1.npn, method = "bonferroni", alpha = 5E-06)$data
+
 adj.sem1 <- SEMrun(ST, adj.pc1, group)
 
 # Tree agglomerative hierarchical clustering (TAHC)
