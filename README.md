@@ -464,7 +464,7 @@ seed <- unique(unlist(ftd.gsa$DEG))
 length(seed)
 ```
 
-### 3.1. Network weighting and perturbed backbone extraction.
+### 3.2. Network weighting and perturbed backbone extraction.
 
 
 
