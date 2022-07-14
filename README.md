@@ -1,4 +1,4 @@
-https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE124439# SEMgraph
+# SEMgraph
 **Causal network inference and discovery** with **Structural Equation Modeling**
 
 **SEMgraph**  Estimates networks and causal relations in complex systems through
