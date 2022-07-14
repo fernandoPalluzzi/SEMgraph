@@ -437,7 +437,7 @@ table(group)
 
 ### 3.1. Gene Set Analysis (GSA).
 
-In absence of a conceptual model (e.e., one built from an expert's indication), the input graph can be inferred from data, literature or both of them. In the following example, we will take advantage of our FTD dataset and known FTD-associated pathways from the KEGG database. To this end, GSA can be used to assess the actual perturbation of known pathways, given data, and extract those genes (i.e., seeds) underlying perturbed routes.
+In absence of a conceptual model (e.e., one built from an expert's indication), the input graph can be inferred from data, literature or both of them. In the following example, we will take advantage of our FTD dataset and known FTD-associated pathways from the KEGG database. To this end, GSA can be used to assess the actual perturbation of known pathways, given data, and extract those genes (i.e., seeds) underlying perturbed routes. Seeds can also be defined using knowledge, such as importing a list of known disease-associated genes, or from other data sources (e.g. mutational, transcriptional, or epigenetic data).
 
 ```r
 # Known FTD-related pathway selection from KEGG
@@ -466,7 +466,7 @@ length(seed)
 
 ### 3.2. Network weighting and perturbed backbone extraction.
 
-
+While seeds pinpoint specific nodes, edges can be weighted on the base of quantitative data and phenotype (group) information to define preferential ways of information exchange (perturbation propagation) through the network. **SEMgraph** offers different alternatives to generate data-driven weights, but the fastest of them is based on the Fisher's "r-to-z" method, to test the group difference between correlation coefficients of pairs of interacting nodes (Fisher, 1915).
 
 ```r
 # KEGG interactome weighting
@@ -475,6 +475,8 @@ W <- weightGraph(kegg, pc1.npn, group, method = "r2z")
 summary(W)
 
 # Perturbed backbone as a Steiner tree (Kou's algorithm)
+# A Steiner tree is the minimum cost (distance) graph
+# including all the specified seeds.
 
 ST <- SEMtree(W, data = pc1.npn, seed = seed, type = "ST", eweight = "pvalue")
 summary(ST)
@@ -483,12 +485,14 @@ summary(ST)
 
 sem1 <- SEMrun(ST, pc1.npn, group)
 
-# Perturbation evaluation and data deconfounding
+# Data deconfounding and perturbation evaluation
 
 adj.pc1 <- SEMbap(ST, pc1.npn, method = "bonferroni", alpha = 5E-06)$data
 adj.sem1 <- SEMrun(ST, adj.pc1, group)
 
 # Tree agglomerative hierarchical clustering (TAHC)
+# This optional step allow us to detect possible communities
+# within our tree.
 
 C <- clusterGraph(ST, type = "tahc")
 cg <- cplot(ST, membership = C)
