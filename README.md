@@ -1,4 +1,4 @@
-# SEMgraph
+https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE124439# SEMgraph
 **Causal network inference and discovery** with **Structural Equation Modeling**
 
 **SEMgraph**  Estimates networks and causal relations in complex systems through
@@ -420,10 +420,20 @@ library(SEMgraph)
 library(SEMdata)
 library(huge)
 
+# Nonparanormal transform of DNAme PC1 data
 
+pc1.npn <- huge.npn(ftdDNAme$pc1)
 
+dim(pc1.npn)
 
+# Defining groups
+
+group <- ftdDNAme$group
+
+table(group)
 ```
+
+
 
 &nbsp;
 
