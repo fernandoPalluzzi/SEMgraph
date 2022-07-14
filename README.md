@@ -466,7 +466,7 @@ length(seed)
 
 ### 3.2. Network weighting and perturbed backbone extraction.
 
-While seeds pinpoint nodes with specific properties, edges can be weighted on the base of quantitative and phenotype data to define preferential ways of information exchange (e.g., perturbation propagation) through the network. **SEMgraph** offers different alternatives to generate data-driven weights, but the fastest of them is based on the Fisher's "r-to-z" method, to test the group difference between correlation coefficients of pairs of interacting nodes (Fisher, 1915).
+While seeds pinpoint nodes with specific properties, edges can be weighted on the base of quantitative and phenotype data to define preferential ways of information exchange (e.g., perturbation propagation) through the network. **SEMgraph** offers different alternatives to generate data-driven weights, but the fastest of them is based on the Fisher's "r-to-z" method, to test the group difference between correlation coefficients of pairs of interacting nodes (Fisher, 1915). Both seeds and weights can be used to extract the perturbed core(s) of a network to highlight its disease-associated components.
 
 ```r
 # KEGG interactome weighting
