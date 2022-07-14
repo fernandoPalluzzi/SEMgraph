@@ -369,6 +369,8 @@ The modular structure of biological networks could often reveal local effects an
 # Improved ALS model (model$graph) clustering and scoring, using alatent variable
 # "hidden" model (LV), edge betweeness clustering (EBC) algorithm, and a minimum 
 # cluster size of 5 nodes.
+# Other clustering algorithms can be exploited (e.g., the walktrap community 
+# detection algorithm, WTC) to improve the interpretation of results.
 
 LV <- clusterScore(model$graph, model$data, alsData$group,
                    type = "ebc",
@@ -431,6 +433,90 @@ dim(pc1.npn)
 group <- ftdDNAme$group
 
 table(group)
+```
+
+### 3.1. Gene Set Analysis (GSA).
+
+In absence of a conceptual model (e.e., one built from an expert's indication), the input graph can be inferred from data, literature or both of them. In the following example, we will take advantage of our FTD dataset and known FTD-associated pathways from the KEGG database. To this end, GSA can be used to assess the actual perturbation of known pathways, given data, and extract those genes (i.e., seeds) underlying perturbed routes.
+
+```r
+# Known FTD-related pathway selection from KEGG
+
+ftd.pathways <- c("MAPK signaling pathway",
+                  "Protein processing in endoplasmic reticulum",
+                  "Endocytosis",
+                  "Wnt signaling pathway",
+                  "Notch signaling pathway",
+                  "Neurotrophin signaling pathway")
+
+# Pathway extraction from the kegg.pathways object
+
+j <- which(names(kegg.pathways) %in% ftd.pathways)
+
+# Gene set analysis (GSA) with 5000 permutations
+
+ftd.gsa <- SEMgsa(kegg.pathways[j], pc1.npn, group, n_rep = 5000)
+print(ftd.gsa$gsa)
+
+# Seed extraction
+
+seed <- unique(unlist(ftd.gsa$DEG))
+length(seed)
+```
+
+### 3.1. Network weighting and perturbed backbone extraction.
+
+
+
+```r
+# KEGG interactome weighting
+
+W <- weightGraph(kegg, pc1.npn, group, method = "r2z")
+summary(W)
+
+# Perturbed backbone as a Steiner tree (Kou's algorithm)
+
+ST <- SEMtree(W, data = pc1.npn, seed = seed, type = "ST", eweight = "pvalue")
+summary(ST)
+
+# Perturbation evaluation with raw data
+
+sem1 <- SEMrun(ST, pc1.npn, group)
+
+# Perturbation evaluation and data deconfounding
+
+adj.pc1 <- SEMbap(ST, pc1.npn, method = "bonferroni", alpha = 5E-06)$data
+adj.sem1 <- SEMrun(ST, adj.pc1, group)
+
+# Tree agglomerative hierarchical clustering (TAHC)
+
+C <- clusterGraph(ST, type = "tahc")
+cg <- cplot(ST, membership = C)
+list(cg)
+
+
+## Figure 4. FTD perturbed backbone. ---------------------------------##
+
+# Set node color and sze
+
+cg2 <- cg$HM2
+
+V(cg2)$color <- ifelse(V(cg2)$name %in% seed, "green", "white")
+#gplot(cg2, l = "neato")
+
+V(cg2)$size <- 3*degree(cg2, mode="total")
+#gplot(cg2, l = "neato")
+
+# Convert Entrez identifiers to gene symbols
+library(org.Hs.eg.db)
+V(cg2)$label <- mapIds(org.Hs.eg.db, V(cg2)$name, 'SYMBOL', 'ENTREZID')
+#gplot(cg2, l = "neato")
+
+pdf("Figure4.pdf", width = 16, height = 12)
+gplot(cg2, l = "neato", fontsize = 30)
+dev.off()
+
+##--------------------------------------------------------------------##
 ```
 
 
