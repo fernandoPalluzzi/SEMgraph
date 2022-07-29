@@ -132,6 +132,8 @@ summary(cggm2$fit$Group_1)
 print(cggm2$dest)
 ```
 
+**Figure 1. ALS model fitting.** Estimated group effects on nodes and direct effects.
+
 ![alt text](https://github.com/fernandoPalluzzi/SEMgraph/blob/master/docs/figures/Figure1.png)
 
 ### 2.3. Total effect estimation as Average Causal Effect (ACE).
