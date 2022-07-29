@@ -55,7 +55,7 @@ The full list of **SEMgraph** functions with examples is available at our websit
 
 &nbsp;
 
-## SEMgraph projects
+## SEMgraph-related projects
 
 - [**SEMgsa**](). SEM-based gene set analysis tool enabling perturbed pathway and gene finding by exploiting the causal structure of a graph.
 
