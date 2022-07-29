@@ -23,10 +23,10 @@ summarised as follows:
     Help.R
     An R script with functions to import for running the analysis
 
-## Note:
+## Notes
 1. Set folder SEMgsa_code_data as the current working directory.
 2. Specify a smaller number of iterations by argument “N” to reduce computing time for data simulations.
 
-## Source of data:
+## Data source
 The original data used in this research can be downloaded from:
 https://www.ncbi.nlm.nih.gov/gds.
