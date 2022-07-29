@@ -50,7 +50,7 @@ By default, the "wtc" method is used.}
 minimum number of 5 nodes is required.}
 
 \item{verbose}{A logical value. If TRUE, intermediate graphs will be
-displayed during the execution. In addition, a condensed graph with
+displayed during the execution. In addition, a reduced graph with
 clusters as nodes will be fitted and showed to screen (see also
 \code{\link[SEMgraph]{mergeNodes}}). By default, \code{verbode = FALSE}.}
 
@@ -62,13 +62,13 @@ A list of 3 objects:
 \item "fit", hidden module fitting as a lavaan object;
 \item "membership", hidden module nodes membership;
 \code{\link[SEMgraph]{clusterGraph}} function;
-\item "dataHM", hidden module data matrix with cluster scores.
+\item "dataHM", data matrix with cluster scores in first columns.
 }
 }
 \description{
 Generate factor scores, principal component scores, or
 projection scores of latent, composite, and unmeasured variable modules,
-respectively, and fit them in a SEM with exogenous group effect.
+respectively, and fit them with an exogenous group effect.
 }
 \examples{
 
@@ -79,7 +79,7 @@ C <- clusterScore(graph = alsData$graph, data = als.npn,
                   group = alsData$group,
                   HM = "LV",
                   type = "wtc",
-                  verbose = TRUE)
+                  verbose = FALSE)
 summary(C$fit)
 head(C$dataHM)
 table(C$membership)

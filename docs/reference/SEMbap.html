@@ -18,7 +18,7 @@ matrix by removing latent sources of confounding encoded in them."><!-- mathjax 
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
       </span>
     </div>
 
@@ -70,13 +70,19 @@ matrix by removing latent sources of confounding encoded in them.</p>
     <h2>Arguments</h2>
     <dl><dt>graph</dt>
 <dd><p>An igraph object.</p></dd>
+
+
 <dt>data</dt>
 <dd><p>A matrix whith rows corresponding to subjects, and
 columns to graph nodes (variables).</p></dd>
+
+
 <dt>method</dt>
 <dd><p>Multiple testing correction method. One of the values
 available in <code><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">p.adjust</a></code>. By default, <code>method</code>
 is set to "BH" (i.e., Benjamini-Hochberg multiple test correction).</p></dd>
+
+
 <dt>alpha</dt>
 <dd><p>Significance level for false discovery rate (FDR) used
 for Shipley's local d-separation tests. This argument is used to
@@ -84,33 +90,43 @@ control data de-correlation. A higher <code>alpha</code> level includes more
 hidden covariances, thus considering more sources of confounding.
 If <code>alpha = 0</code>, data de-correlation is disabled.
 By default, <code>alpha = 0.05</code>.</p></dd>
+
+
 <dt>limit</dt>
 <dd><p>An integer value corresponding to the number of missing
 edges of the extracted acyclic graph. Beyond this limit, multicore
 computation is enabled to reduce the computational burden.
 By default, <code>limit = 30000</code>.</p></dd>
+
+
 <dt>verbose</dt>
 <dd><p>A logical value. If FALSE (default), the processed graphs
 will not be plotted to screen.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Currently ignored.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A list of 3 igraph objects and 1 data matrix:</p><ul><li><p>"dag", the output DAG (BAP = dag + guu),</p></li>
-<li><p>"guu", the bidirected graph of significant covariances,</p></li>
+    
+
+<p>A list of four objects:</p><ul><li><p>"dag", the directed acyclic graph (DAG) extracted from input graph,</p></li>
 <li><p>"gLV", the directed graph of latent variables (LV) underlying
 significant covariances (i.e., the canonical graph, where bidirected
 X &lt;-&gt; Y edges are substituted by directed edges X &lt;- LV -&gt; Y),</p></li>
+<li><p>"dsep", the data.frame of all d-separation tests over missing edges
+in the DAG</p></li>
 <li><p>"data", the adjusted (de-correlated) data matrix.</p></li>
 </ul></div>
     <div id="details">
     <h2>Details</h2>
     <p>SEMbap algorithm makes an exhaustive search of all possible
-missing edges of the mixed acyclic graph (BAP or DAG) via d-separation
+missing edges of the directed acyclic graph (DAG) via d-separation
 P-value screening.
-The d-separation test evaluates if two variables (X, Y) in an acyclic
-graph are conditionally independent for a given conditioning set Z,
+The d-separation test evaluates if two variables (X, Y) in a DAG
+are conditionally independent for a given conditioning set Z,
 The conditioning set Z is represented in a DAG by the union of the
 parent sets of X and Y (Shipley, 2000). A new bow-free covariance is
 added if there is a significant (X, Y) association, after multiple
@@ -150,25 +166,25 @@ Analysis of High-Throughput Data with Structural Equation Models.
 <span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 66.93929  srmr: 0.08947309 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"></span>
-<span class="r-in"><span class="co"># BAP estimation</span></span>
+<span class="r-in"><span class="co"># BAP search</span></span>
 <span class="r-in"><span class="va">BAP</span> <span class="op">&lt;-</span> <span class="fu">SEMbap</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> WARNING: input graph is not acyclic !</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Applying graph -&gt; DAG conversion...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> DAG conversion: TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> DAG conversion : TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Degrees of freedom:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Input graph  = 36 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Output graph = 37 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> d-separation test (basis set) of 37 edges...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> d-separation test (basis set) of 37 edges...</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  / 0 % elapsed=00s    - 3 % elapsed=00s, remaining~00s \ 5 % elapsed=00s, remaining~00s | 8 % elapsed=00s, remaining~00s / 11% elapsed=00s, remaining~00s - 14% elapsed=00s, remaining~00s \ 16% elapsed=00s, remaining~00s | 19% elapsed=00s, remaining~00s / 22% elapsed=00s, remaining~00s - 24% elapsed=00s, remaining~00s \ 27% elapsed=00s, remaining~00s | 30% elapsed=00s, remaining~00s / 32% elapsed=00s, remaining~00s - 35% elapsed=00s, remaining~00s \ 38% elapsed=00s, remaining~00s | 41% elapsed=00s, remaining~00s / 43% elapsed=00s, remaining~00s - 46% elapsed=00s, remaining~00s \ 49% elapsed=00s, remaining~00s | 51% elapsed=00s, remaining~00s / 54% elapsed=00s, remaining~00s - 57% elapsed=00s, remaining~00s \ 59% elapsed=00s, remaining~00s | 62% elapsed=00s, remaining~00s / 65% elapsed=00s, remaining~00s - 68% elapsed=00s, remaining~00s \ 70% elapsed=00s, remaining~00s | 73% elapsed=00s, remaining~00s / 76% elapsed=00s, remaining~00s - 78% elapsed=00s, remaining~00s \ 81% elapsed=00s, remaining~00s | 84% elapsed=00s, remaining~00s / 86% elapsed=00s, remaining~00s - 89% elapsed=00s, remaining~00s \ 92% elapsed=00s, remaining~00s | 95% elapsed=00s, remaining~00s / 97% elapsed=00s, remaining~00s - 100% elapsed=00s, remaining~00s</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Number of significant local tests: 4 / 37 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-plt img"><img src="SEMbap-1.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="SEMbap-2.png" alt="" width="700" height="433"></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> RICF solver ended normally after 2 iterations </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NLMINB solver ended normally after 6 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 4.607101  srmr: 0.0355126 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 4.3078  srmr: 0.03409096 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Model fitting (node perturbation) with adjusted data</span></span>
@@ -177,9 +193,9 @@ Analysis of High-Throughput Data with Structural Equation Models.
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 5.122116  srmr: 0.0280388 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node activation: 0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node activation: 6.953278e-10 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 0.1162649 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"></span>
 </code></pre></div>
@@ -196,7 +212,7 @@ Analysis of High-Throughput Data with Structural Equation Models.
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
       </footer></div>

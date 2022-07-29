@@ -60,10 +60,16 @@
 #' Fixed values may compromise model fitting, and scaling them is a safe
 #' option to avoid this problem. As a rule of thumb, to our experience,
 #' \code{start = 0.1} generally performs well with {-1, 0, 1} weights.
+#' @param SE If "standard" (default), with \code{algo = "lavaan"},
+#' conventional standard errors are computed based on inverting the observed
+#' information matrix. If "none", no standard errors are computed.
+#' @param n_rep Number of randomization replicates (default = 1000),
+#' for permutation flip or boostrap samples, if \code{algo = "ricf"}.
 #' @param limit An integer value corresponding to the network size
 #' (i.e., number of nodes). Beyond this limit, the execution under
-#' \code{algo = "lavaan"} will be ridirected to \code{algo = "ricf"}, if
-#' fit is either 0 or 1, or to \code{algo = "ggm"}, if \code{fit = 2}.
+#' \code{algo = "lavaan"} will run with \code{SE = "none"}, if 
+#' \code{fit = 0}, or will be ridirected to \code{algo = "ricf"}, if
+#' \code{fit = 1}, or to \code{algo = "ggm"}, if \code{fit = 2}.
 #' This redirection is necessary to reduce the computational demand of
 #' standard error estimation by lavaan. Increasing this number will
 #' enforce lavaan execution when \code{algo = "lavaan"}.
@@ -126,11 +132,14 @@
 #'
 #' @import igraph
 #' @import lavaan
-#' @importFrom stats cor sd
-#' @importFrom corpcor is.positive.definite cor.shrink
-#' @importFrom GGMncv constrained inference compare_edges
-#' @importFrom ggm fitAncestralGraph
-#' @importFrom gdata unmatrix
+#' @importFrom boot boot
+#' @importFrom graphics abline curve hist legend par
+#' @importFrom mgcv gam
+#' @importFrom stats approx as.dist coefficients cor cov
+#'             cutree dchisq dnorm formula hclust lm lm.fit
+#' 			   na.omit p.adjust pchisq pnorm pt qchisq
+#'             qnorm quantile rnorm runif sd var
+#' @importFrom utils flush.console
 #' @export
 #'
 #' @author Mario Grassi \email{mario.grassi@unipv.it}
@@ -179,17 +188,9 @@
 #' summary(sem0$fit)
 #' head(parameterEstimates(sem0$fit))
 #'
-#' sem0 <- SEMrun(graph = sachs$graph, data = log(sachs$pkc), algo = "ricf")
-#' summary(sem0$fit)
-#' head(sem0$fit$parameterEstimates)
-#'
-#' sem0 <- SEMrun(graph = sachs$graph, data = log(sachs$pkc), algo = "cggm")
-#' summary(sem0$fit)
-#' head(sem0$fit$parameterEstimates)
-#'
 #' # Graphs
-#' gplot(sem0$graph, main = "edge differences")
-#' plot(sem0$graph, layout = layout.circle, main = "edge differences")
+#' gplot(sem0$graph, main = "significant edge weights")
+#' plot(sem0$graph, layout = layout.circle, main = "significant edge weights")
 #'
 #'
 #' #### Model fitting (common model, group effect on nodes)
@@ -203,8 +204,8 @@
 #' head(parameterEstimates(sem1$fit))
 #'
 #' # Graphs
-#' gplot(sem1$graph, main = "node differences")
-#' plot(sem1$graph, layout = layout.circle, main = "node differences")
+#' gplot(sem1$graph, main = "Between group node differences")
+#' plot(sem1$graph, layout = layout.circle, main = "Between group node differences")
 #'
 #'
 #' #### Two-group model fitting (group effect on edges)
@@ -248,7 +249,8 @@
 #' }
 #'
 SEMrun <- function(graph, data, group = NULL, fit = 0, algo = "lavaan",
-                   start = NULL, limit = 100, ...)
+                   start = NULL, SE = "standard", n_rep = 1000,
+				   limit = 100, ...)
 {
 	if (is.null(group) & fit != 0) fit <- 0
 	if (!is.null(group) & fit == 0) fit <- 1
@@ -256,38 +258,36 @@ SEMrun <- function(graph, data, group = NULL, fit = 0, algo = "lavaan",
 	if (fit == 0) {
 		if (algo == "lavaan") {
 			return(fit = SEMfit(graph = graph, data = data, group = NULL,
-			                    start = start,
-			                    limit = limit))
+			                    start = start, SE = SE, limit = limit))
 		} else if (algo == "cggm") {
 			return(fit = SEMggm(graph = graph, data = data, group = NULL))
 		} else if (algo == "ricf") {
-			return(fit = SEMricf(graph = graph, data = data, group = NULL))
+			return(fit = SEMricf(graph = graph, data = data, group = NULL,
+								 n_rep = n_rep))
 		}
 	}
 
 	if (fit == 1) {
 		if (algo == "lavaan") {
 			return(fit = SEMfit(graph = graph, data = data, group = group,
-			                    start = start,
-			                    limit = limit))
+			                    start = start, SE = SE, limit = limit))
 		} else if (algo == "cggm") {
 			return(fit = SEMggm(graph = graph, data = data, group = group))
 		} else if( algo == "ricf" ) {
 			return(fit = SEMricf(graph = graph, data = data, group = group,
-			                     n_rep = 1000))
+			                     n_rep = n_rep))
 		}
 	}
 
 	if (fit == 2) {
 		if (algo == "lavaan") {
 			return(fit = SEMfit2(graph = graph, data = data, group = group,
-			                     start = start,
-			                     limit = limit))
+			                     start = start, SE = SE, limit = limit))
 		} else if (algo == "cggm") {
 			return(fit = SEMggm2(graph = graph, data = data, group = group))
 		} else if (algo == "ricf") {
 			return(fit = SEMricf2(graph = graph, data = data, group = group,
-			                      n_rep = 0))
+			                      n_rep = n_rep))
 		}
 	}
 }
@@ -399,11 +399,16 @@ SEMstart <- function(ig, data, group, a, ...)
 	}
 }
 
-SEMfit <- function(graph, data, group = NULL, start = NULL, limit = 100,
-                   SE = "standard", ...)
+SEMfit <- function(graph, data, group = NULL, start = NULL, fit = 0,
+					SE = "standard", limit = 100,...)
 {
-	# Model fitting with GGM algo if n.nodes > limit
-	if (vcount(graph) > limit) {
+	# Change SEM fitting if n.nodes > limit
+	if (vcount(graph) > limit & fit == 0) {
+		message("WARNING: very large input graph (>", limit, " nodes) !
+		 SEs are not computed...\n")
+		SE <- "none"
+	}
+	if (vcount(graph) > limit & fit == 1) {
 		message("WARNING: very large input graph (>", limit, " nodes) !
 		 RICF solver activated...\n")
 		return(fit = SEMricf(graph = graph, data = data, group = group))
@@ -474,7 +479,7 @@ SEMfit <- function(graph, data, group = NULL, start = NULL, limit = 100,
 	}
 
 	# Output objects
-	ig <- colorGraph(est = est, graph = ig, group = group, alpha = 0.05)
+	if (SE != "none") ig <- colorGraph(est = est, graph = ig, group = group, alpha = 0.05)
 	if (is.null(group)) dataXY <- cbind(group = rep(NA, n), dataXY)
 	colnames(dataXY) <- gsub("z", "", colnames(dataXY))
 
@@ -482,8 +487,8 @@ SEMfit <- function(graph, data, group = NULL, start = NULL, limit = 100,
 	            dataXY = dataXY))
 }
 
-SEMfit2 <- function(graph, data, group, start = NULL, limit = 100,
-                    SE = "standard", ...)
+SEMfit2 <- function(graph, data, group, start = NULL, SE = "standard",
+                    limit = 100, ...)
 {
 	# Model fitting with GGM algo if n.nodes > limit
 	if (vcount(graph) > limit) {
@@ -562,9 +567,9 @@ SEMfit2 <- function(graph, data, group, start = NULL, limit = 100,
 		pvalue <- 2*(1-pnorm(abs(d_est/d_se)))
 		d_lower <- d_est - 1.96*d_se
 		d_upper <- d_est + 1.96*d_se
-		pval1 <- Brown.test(x = NULL, p = pvalue, theta = d_est,
+		pval1 <- Brown.test(x = dataY, p = pvalue, theta = d_est,
 		                    tail = "positive")
-		pval2 <- Brown.test(x = NULL, p = pvalue, theta = d_est,
+		pval2 <- Brown.test(x = dataY, p = pvalue, theta = d_est,
 		                    tail = "negative")
 		cat("Brown's combined P-value of edge activation:", pval1, "\n\n")
 		cat("Brown's combined P-value of edge inhibition:", pval2, "\n\n")
@@ -574,9 +579,8 @@ SEMfit2 <- function(graph, data, group, start = NULL, limit = 100,
 					  d_lower, d_upper)
 		dest$lhs <- sub("z", "", dest$lhs)
 		dest$rhs <- sub("z", "", dest$rhs)
-		dest <- data.frame(lapply(dest,
-						   function(y) if(is.numeric(y)) round(y, 3) else y))
-		ig <- colorGraph(est = dest, graph = ig, group = NULL, alpha = 0.05)
+		class(dest)<- c("lavaan.data.frame" ,"data.frame")
+		if (SE != "none") ig <- colorGraph(est = dest, graph = ig, group = NULL, alpha = 0.05)
 	} else {
 		dest <- NULL
 	}
@@ -608,7 +612,7 @@ SEMricf<- function (graph, data, group = NULL, random.x = FALSE, n_rep = 1000, .
 	}
 	ig <- induced_subgraph(graph, vids = which(V(graph)$name %in% nodes))
 	E(ig)$weight <- ifelse(which_mutual(ig), 100, 1)
-	A <- igraph::as_adj(ig, attr = "weight", sparse = FALSE)[nodes,nodes]
+	A <- as_adj(ig, attr = "weight", sparse = FALSE)[nodes,nodes]
 	if (is.null(group) & random.x == TRUE) {
 		Vx <- which(colSums(A) == 0)
 		A[Vx, Vx] <- 100
@@ -623,34 +627,37 @@ SEMricf<- function (graph, data, group = NULL, random.x = FALSE, n_rep = 1000, .
 		" iterations"), "\n\n")
 	idx <- fitIndices(n, fit$df, covXY, fit$Shat)
 	cat("deviance/df:", idx[1]/idx[2], " srmr:", round(idx[3], 7), "\n\n")
+	
 	est <- parameterEstimates.RICF(fit)
-	if (!is.null(group)) {
-		gest <- gest.RICF(fit = fit, data = dataY, group = group, 
-			n_rep = n_rep)
-		pval1 <- Brown.test(x = dataY, p = gest[[1]][, 4],
-			theta = gest[[1]][, 2], tail = "positive")
-		pval2 <- Brown.test(x = dataY, p = gest[[1]][, 4],
-			theta = gest[[1]][, 2], tail = "negative")
-		cat("Brown's combined P-value of node activation:", 
-			pval1, "\n\n")
-		cat("Brown's combined P-value of node inhibition:", 
-			pval2, "\n\n")
-		ig <- colorGraph(est = gest[[1]], ig, group, alpha = 0.05)
-		pval <- c(pval1, pval2)
-	}else{
-		gest <- list(NULL, NULL)
-		pval <- NULL
+	gest <- list(NULL, NULL)
+	pval <- NULL
+	
+	if (!is.null(group) & n_rep != 0) {
+	 gest <- flip.RICF(fit = fit, data = dataY, group = group, n_rep = n_rep)
+	 pval1 <- Brown.test(x = dataY, p = gest[[1]][,4],
+		theta = gest[[1]][,2], tail = "positive")
+	 pval2 <- Brown.test(x = dataY, p = gest[[1]][,4],
+		theta = gest[[1]][,2], tail = "negative")
+	 cat("Brown's combined P-value of node activation:", pval1, "\n\n")
+	 cat("Brown's combined P-value of node inhibition:", pval2, "\n\n")
+	 ig <- colorGraph(est = gest[[1]], ig, group, alpha = 0.05)
+	 pval <- c(pval1, pval2)
 	}
+	
+	if (is.null(group) & n_rep != 0) {
+	 est <- boot.RICF(A, dataXY, group, est, n_rep)
+	 ig <- colorGraph(est, graph=ig, group=group, alpha=0.05)
+	 dataXY <- cbind(group = rep(NA, n), dataXY)
+	}
+	
 	fit <- list(ricf = fit, fitIdx = idx, parameterEstimates = est)
-	if (is.null(group)) {
-		dataXY <- cbind(group = rep(NA, n), dataXY)
-	}
 	class(fit) <- "RICF"
+	
 	return(list(fit = fit, gest = gest[[1]], model = NULL, graph = ig, 
 		dataXY = dataXY, r_gest = gest[[2]], pval = pval))
 }
 
-SEMricf2 <- function(graph, data, group, random.x = FALSE, n_rep = 0, ...)
+SEMricf2 <- function(graph, data, group, random.x = FALSE, n_rep = 1000, ...)
 {
 	# Set graph and data objects
 	nodes <- colnames(data)[colnames(data) %in% V(graph)$name]
@@ -663,12 +670,12 @@ SEMricf2 <- function(graph, data, group, random.x = FALSE, n_rep = 0, ...)
 	n <- n1 + n0
 
 	# Fitting RICF for group = 1
-	fit1 <- quiet(SEMricf(graph, data1, group = NULL, random.x = FALSE, n_rep))
-	est1 <- fit1$fit$parameterEstimates$Reg
+	fit1 <- quiet(SEMricf(graph, data1, group = NULL, random.x = FALSE, n_rep = 0))
+	est1 <- fit1$fit$parameterEstimates
 
 	# Fitting RICF for group = 0
-	fit0 <- quiet(SEMricf(graph, data0, group = NULL, random.x = FALSE, n_rep))
-	est0 <- fit0$fit$parameterEstimates$Reg
+	fit0 <- quiet(SEMricf(graph, data0, group = NULL, random.x = FALSE, n_rep = 0))
+	est0 <- fit0$fit$parameterEstimates
 
 	# Two-group fit indices
 	it <- fit1$fit$ricf$it + fit0$fit$ricf$it
@@ -678,19 +685,29 @@ SEMricf2 <- function(graph, data, group, random.x = FALSE, n_rep = 0, ...)
 	df <- fit1$fit$fitIdx[2] + fit0$fit$fitIdx[2]
 	cat("deviance/df:", dev/df , " srmr:", round(srmr, 7), "\n\n")
 
-	# Output objects
-	est <- list(Group_1 = est1, Group_0 = est0)
-	d_est <- est[[1]]$est - est[[2]]$est
-	dest <- cbind(est[[1]][,c(1:3)], d_est)
-	fit <- list(Group_0=fit0[[1]], Group_1 = fit1[[1]],
-	            parameterEstimates = est)
-	dataXY<- cbind(c(rep(1, n1), rep(0, n0)), rbind(data1, data0))
+	# edge differences based on group randomization with n_rep=1000
+	d_est<- est1$est - est0$est
+	dest<- cbind(est1[,c(1:3)], d_est)[est1$op == "~",]
+	
+	if (n_rep != 0) {
+	 A<- ifelse(abs(fit1$fit$ricf$Bhat) > 0, 1, 0)
+	 diag(A)<- 0
+	 dest<- boot.RICF(t(A), dataY, group, dest, R=n_rep)
+	 pval1<- Brown.test(x=dataY, p=dest$pvalue, theta=dest$d_est, tail="positive")
+	 pval2<- Brown.test(x=dataY, p=dest$pvalue, theta=dest$d_est, tail="negative")
+	 cat("Brown's combined P-value of edge activation:", pval1, "\n\n")
+     cat("Brown's combined P-value of edge inhibition:", pval2, "\n\n")
+	 ig<- colorGraph(est=dest, graph=ig, group=NULL, alpha=0.05)
+	}
 
-	return(list(fit = fit, dest = dest, model = NULL, graph = ig,
-	            dataXY = dataXY))
+	# output objects:
+	fit<- list(Group_1 = fit1[[1]], Group_0 = fit0[[1]])	
+	dataXY<- cbind(c(rep(1,n1),rep(0,n0)),rbind(data1,data0))
+		
+	return(list(fit = fit, dest = dest, model = NULL, graph = ig, dataXY = dataXY))
 }
 
-gest.RICF<- function(fit, data, group, n_rep, ...)
+flip.RICF<- function(fit, data, group, n_rep, ...)
 {
 	# Permutation pvalues of group -> nodes:
 	p <- ncol(data)
@@ -711,14 +728,51 @@ gest.RICF<- function(fit, data, group, n_rep, ...)
 	return( list(gest=gest@res, r_gest=gest@permT) )
 }
 
+boot.RICF <- function(A, Z, group, L, R, ...)
+{
+	est<- function(Z, i){
+	 Z <- Z[i,]
+	 if (corpcor::is.positive.definite(cor(Z))) {
+	  covXY <- cor(Z)
+	 }else{
+	  covXY<- corpcor::cor.shrink(Z, verbose = FALSE)
+	 }
+	 fit <- ggm::fitAncestralGraph(A, covXY, n=nrow(Z), tol = 1e-06)
+	 B <- parameterEstimates.RICF(fit)$est
+	}
+	dest<- function(Z, i){
+	 Zi<- Z[i,]
+	 D <- est(Zi[group == 1,]) - est(Zi[group == 0,])
+	}
+
+	message(paste0("Model randomization with B = ", R, " bootstrap samples ..."))
+	ncpus<- parallel::detectCores(logical = FALSE)
+	if (is.null(group)){
+	 xboot<- boot::boot(Z, est, R, parallel="snow", ncpus=ncpus)
+	 #xboot<- boot::boot(Z, FUN1, R=R)
+	}else{
+	 xboot<- boot::boot(Z, dest, strata=group, R=R, parallel="snow", ncpus=ncpus)
+	 #xboot<- boot::boot(Z, est, strata=group, R=R)
+	}
+	t0<- xboot$t0[1:nrow(L)]
+	se<- apply(xboot$t[,1:nrow(L)], MARGIN=2, sd)
+	z <- t0/se
+	
+	est<- data.frame(L, se = se, z=z,
+	 pvalue = 2*(1-pnorm(abs(z))),
+	 ci.lower = (t0-1.96*se),
+	 ci.upper = (t0+1.96*se))
+	class(est)<- c("lavaan.data.frame" ,"data.frame")
+
+	return(est)
+}
+
 parameterEstimates.RICF <- function(object, ...)
 {
-	# Output of parameter estimates
-
+	# Convert into a vector the output of parameter estimates
 	p <- nrow(object$Bhat)
 	B <- gdata::unmatrix(diag(p) - object$Bhat, byrow = FALSE)
 	B <- B[which(B != 0)]
-
 	O <- ifelse(lower.tri(object$Ohat, diag = TRUE), object$Ohat, 0)
 	diag(O) <- ifelse(diag(O) == 0, 1, diag(O))
 	rownames(O) <- colnames(O) <- rownames(object$Ohat)
@@ -739,87 +793,9 @@ parameterEstimates.RICF <- function(object, ...)
 			             stringsAsFactors = FALSE))
 		}
 	}
-
-	rownames(est) <- NULL
-	reg <- est[which(est$op == "~"),]
-	cov <- est[which(est$op == "~~"),]
-	sel <- which(cov$lhs == cov$rhs)
-	var <- cov[sel,]
-	cov <- cov[-sel,]
-	reg <- reg[order(reg$lhs),]
-	cov <- cov[order(cov$lhs),]
-	var <- var[order(var$lhs),]
-
-	return(list(Reg = reg, Cov = cov, Var = var))
-}
-
-#' @title RICF model summary
-#'
-#' @description Generate a summary for a RICF solver similar to
-#' lavaan-formatted summary
-#'
-#' @param object A RICF fitted model object.
-#' @param ... Currently ignored.
-#'
-#' @import igraph
-#' @import lavaan
-#' @export
-#'
-#' @method summary RICF
-#' @return Shown the lavaan-formatted summary to console
-#'
-#' @author Mario Grassi \email{mario.grassi@unipv.it}
-#'
-#' @seealso \code{\link[SEMgraph]{SEMrun}}.
-#'
-#' @examples
-#' sem0 <- SEMrun(sachs$graph, log(sachs$pkc), algo = "ricf")
-#' summary(sem0$fit)
-#'
-summary.RICF <- function(object, ...)
-{
-	.local <- function(object) {
-		it <- object$ricf$it
-		t <- object$fitIdx[6]
-		n <- object$fitIdx[5]
-		dev <- round(object$fitIdx[1], 3)
-		df <- object$fitIdx[2]
-		srmr <- round(object$fitIdx[3], 3)
-
-		cat(paste0("RICF solver ended normally after ", it, " iterations"),
-		           "\n\n")
-		cat(paste0("  Estimator                                       ML"),
-		           "\n")
-		cat(paste0("  Optimization method                             RICF"),
-		           "\n\n")
-		cat(paste0("  Number of free parameters                       ",
-		           t), "\n\n")
-		cat(paste0("  Number of observations                          ",
-		           n), "\n")
-		cat("\nModel Test User Model\n\n")
-		cat(paste0("  Test statistic (Deviance)                       ",
-		           dev), "\n")
-		cat(paste0("  Degrees of freedom (df)                         ",
-		           df), "\n")
-		cat(paste0("  Deviance/df                                     ",
-		           round(dev/df, 3)), "\n")
-		cat(paste0("  Standardized Root Mean Square Residual (srmr)   ",
-		           srmr), "\n")
-		cat("\nParameter Estimates:\n\n")
-
-		#print(fit$parameterEstimates)
-		K <- c("Regressions:", "Covariances:", "Variances:")
-		L <- object$parameterEstimates
-		for (l in 1:3) {
-			cat(K[l], "\n\n")
-			print(data.frame(lapply(L[[l]], function(y) {
-					if(is.numeric(y)) round(y, 3) else y
-				}
-			)))
-			cat("\n")
-		}
-	}
-	.local(object)
+	rownames(est)<- NULL
+	
+	return(est)
 }
 
 SEMggm <- function(graph, data, group = NULL, method = "none",
@@ -891,7 +867,9 @@ SEMggm <- function(graph, data, group = NULL, method = "none",
 	est <- parameterEstimates.GGM(object = list(B = B, O = O, pvB = pvB,
 	                              pvO = pvO))
 	if (!is.null(group)) {
-		gest <- est$Reg[est$Reg$rhs == "group",]
+		Reg<- est[which(est$op == "~"),]
+		gest<- Reg[Reg$rhs == "group",]
+		class(gest)<- c("lavaan.data.frame" ,"data.frame")
 		pval1 <- Brown.test(x = dataY, p = gest$pvalue, theta = gest$est,
 		                    tail = "positive")
 		pval2 <- Brown.test(x = dataY, p = gest$pvalue, theta = gest$est,
@@ -905,8 +883,7 @@ SEMggm <- function(graph, data, group = NULL, method = "none",
 	# Output objects
 	fit <- list(cggm = fit, Beta = B, Psi = O, fitIdx = idx,
 	            parameterEstimates = est)
-	ig <- colorGraph(est = est$Reg, graph = ig, group = group, alpha = 0.05)
-	#gplot(ig)
+	ig <- colorGraph(est = est, graph = ig, group = group, alpha = 0.05)
 	if (is.null(group)) dataXY <- cbind(group = rep(NA, n), dataXY)
 	class(fit) <- "GGM"
 
@@ -956,50 +933,46 @@ SEMggm2 <- function(graph, data, group, method = "none", alpha = 0.05, ...)
 	rownames(d_pv) <- colnames(d_pv) <- colnames(dataY)
 
 	if (sum(d_est) != 0) {
-		dest <- parameterEstimates.GGM(object = list(B = d_est, O = diag(p),
-		                               pvB = d_pv, pvO = diag(p)),
-		                               dest = TRUE)[[1]]
-		pval1 <- Brown.test(x = NULL, p = dest$pvalue, theta = dest$d_est,
+		est <- parameterEstimates.GGM(object = list(B = d_est, O = diag(p),
+		                               pvB = d_pv, pvO = diag(p)))
+		dest <- est[which(est$op == "~"),]
+		colnames(dest)[4] <- "d_est"
+		class(dest)<- c("lavaan.data.frame" ,"data.frame")
+		pval1 <- Brown.test(x = dataY, p = dest$pvalue, theta = dest$d_est,
 		                    tail = "positive")
-		pval2 <- Brown.test(x = NULL, p = dest$pvalue, theta = dest$d_est,
+		pval2 <- Brown.test(x = dataY, p = dest$pvalue, theta = dest$d_est,
 		                    tail = "negative")
 		cat("Brown's combined P-value of edge activation:", pval1, "\n\n")
 		cat("Brown's combined P-value of edge inhibition:", pval2, "\n\n")
 		ig <- colorGraph(est = dest, graph = ig, group = NULL, alpha = 0.05)
-		#gplot(ig)
 	} else {
 		dest <- NULL
 	}
 
 	# Output objects
-	est <- list(Group_1 = cggm1$fit[[5]], Group_0 = cggm0$fit[[5]])
-	fit <- list(Group_0 = cggm0$fit, Group_1 = cggm1$fit,
-	            parameterEstimates = est)
+	fit <- list(Group_0 = cggm0$fit, Group_1 = cggm1$fit)
 	dataXY <- cbind(c(rep(1, n1), rep(0, n0)), rbind(data1, data0))
 
 	return(list(fit = fit, dest = dest, model = NULL, graph = ig,
 	            dataXY = dataXY))
 }
 
-parameterEstimates.GGM <- function(object, dest = FALSE, ...)
+parameterEstimates.GGM <- function(object, ...)
 {
-	# Output of parameter estimates
-
+	# Convert into a vector the output of parameter estimates
 	B <- gdata::unmatrix(object$B, byrow = TRUE)
 	B <- B[which(B != 0)]
-
 	O <- ifelse(lower.tri(object$O, diag = TRUE), object$O, 0)
 	rownames(O) <- colnames(O) <- rownames(object$O)
-
 	O <- gdata::unmatrix(O, byrow = TRUE)
 	O <- O[which(O != 0)]
 	P <- c(B, O)
+
+	# Convert into a vector the output of p-values	
 	PvB <- gdata::unmatrix(object$pvB, byrow = TRUE)
 	PvB <- PvB[which(PvB != 0)]
-
 	PvO <- ifelse(lower.tri(object$pvO, diag = TRUE), object$pvO, 0)
 	rownames(PvO) <- colnames(PvO) <- rownames(object$pvO)
-
 	diag(PvO) <- ifelse(diag(PvO) == 0, 1E-9, diag(PvO))
 	PvO <- gdata::unmatrix(PvO, byrow = TRUE)
 	PvO <- PvO[which(PvO != 0)]
@@ -1021,86 +994,9 @@ parameterEstimates.GGM <- function(object, dest = FALSE, ...)
 			             stringsAsFactors = FALSE))
 		}
 	}
-
 	rownames(est) <- NULL
-	reg <- est[which(est$op == "~"),]
-	cov <- est[which(est$op == "~~"),]
-	sel <- which(cov$lhs == cov$rhs)
-	var <- cov[sel,]
-	cov <- cov[-sel,]
-	if (dest) colnames(reg)[4] <- "d_est"
-
-	return(list(Reg = reg[order(reg$lhs),], Cov = cov[order(cov$lhs),],
-	            Var = var[order(var$lhs),]))
-}
-
-#' @title GGM model summary
-#'
-#' @description Generate a summary for a constrained Gaussian Graphical
-#' Model (GGM) similar to lavaan-formated summary
-#'
-#' @param object A constrained GGM fitted model object.
-#' @param ... Currently ignored.
-#'
-#' @import igraph
-#' @import lavaan
-#' @export
-#'
-#' @method summary GGM
-#' @return Shown the lavaan-formatted summary to console
-#'
-#' @author Mario Grassi \email{mario.grassi@unipv.it}
-#'
-#' @seealso \code{\link[SEMgraph]{SEMrun}}.
-#'
-#' @examples
-#' sem0 <- SEMrun(sachs$graph, log(sachs$pkc), algo = "cggm")
-#' summary(sem0$fit)
-#'
-summary.GGM <- function(object, ...)
-{
-	.local <- function(object) {
-		it <- 0
-		t <- object$fitIdx[6]
-		n <- object$fitIdx[5]
-		dev <- round(object$fitIdx[1], 3)
-		df <- object$fitIdx[2]
-		srmr <- round(object$fitIdx[3], 3)
-
-		cat(paste0("GGM (constrained) solver ended normally after ", it,
-		           " iterations"), "\n\n")
-		cat(paste0("  Estimator                                       ML"),
-		           "\n")
-		cat(paste0("  Optimization method                             CGGM"),
-		           "\n\n")
-		cat(paste0("  Number of free parameters                       ",
-		           t), "\n\n")
-		cat(paste0("  Number of observations                          ",
-		           n), "\n")
-		cat("\nModel Test User Model\n\n")
-		cat(paste0("  Test statistic (Deviance)                       ",
-		           dev), "\n")
-		cat(paste0("  Degrees of freedom (df)                         ",
-		           df), "\n")
-		cat(paste0("  Deviance/df                                     ",
-		           round(dev/df, 3)), "\n")
-		cat(paste0("  Standardized Root Mean Square Residual (srmr)   ",
-		           srmr), "\n")
-		cat("\nParameter Estimates:\n\n")
-
-		#print(object$parameterEstimates)
-		K <- c("Regressions:", "Covariances:", "Variances:")
-		L <- object$parameterEstimates
-		for (l in 1:3) {
-			cat(K[l], "\n\n")
-			print(data.frame(lapply(L[[l]], function(y) {
-					if(is.numeric(y)) round(y, 3) else y
-				}
-			)))
-			cat("\n")
-		}
-	}
-	.local(object)
+	
+	return(est)
 }
 
 fitIndices <- function(n, df, S, Sigma, Theta = NULL, ...)
@@ -1142,31 +1038,344 @@ fitIndices <- function(n, df, S, Sigma, Theta = NULL, ...)
 	return(c(dev = dev, df = df, srmr = SRMR, rmsea = RMSEA, n = n, t = t))
 }
 
-Brown.test<- function(x, p, theta=NULL, tail="both", ...)
+Brown.test <- function (x, p, theta = NULL, tail = "both", ...)
 {
 	# from two-sided to one-sided (positive or negative) tests
-	p <- p[!is.na(p)]
-	theta <- theta[!is.na(p)]
-	if (tail == "positive") p<- ifelse(theta > 0, p/2, 1-p/2)
-	if (tail == "negative") p<- ifelse(theta > 0, 1-p/2, p/2)
+	del <- which(is.na(p) | p <= 0 | p >= 1)
+    if (length(del) > 0) {
+     p <- p[-del]
+     theta <- theta[-del]
+    }
+	if (tail == "positive") p <- ifelse(theta > 0, p/2, 1 - p/2)
+	if (tail == "negative") p <- ifelse(theta > 0, 1 - p/2, p/2)
 	
 	#Fisher's (1932, 4th ed.) combined X2 test
-	if(is.null(x)) return(1-pchisq(q=-2*sum(log(p + 1e-16)), df=2*length(p)))
-
-	#Brown's (1975) combined X2 test
-	tmp <-	c(
-	-2.59, -2.382, -2.17, -1.946, -1.709, -1.458, -1.194,
-	-0.916, -0.625, -0.320,	0, 0.334, 0.681, 1.044,
-	1.421, 1.812, 2.219, 2.641, 3.079, 3.531, 4)
-
-	s2X2<- 4 * ncol(x) + 2 * sum ( approx( seq(-1,1,.1), tmp,
-	       xout=cor(x)[which( as.vector(lower.tri(cor(x))) )] )$x )
-	EX2<- 2 * ncol(x)
+	if (is.null(x)) {
+	 pX2<- 1 - pchisq(q = -2 * sum(log(p)), df = 2 * length(p))
+	 if (pX2 <= 0 | pX2 >= 1) pX2 <- length(p) * min(p)
+	 return(pX2)
+	}
 	
-	# df "f" = 2 * (2 * k)^2 /s2X2
-	# X2 c_correction "c" = s2X2/(2 * 2 * k)
-	fX2<- -2*sum(log(p + 1e-16))
-	pX2<- 1-pchisq(q=fX2/(s2X2/(2*EX2)), df=2*EX2^2/s2X2)
+	#Brown's (1975) combined X2 test
+	tmp <- c(-2.59, -2.382, -2.17, -1.946, -1.709, -1.458, -1.194,
+			-0.916, -0.625, -0.32, 0, 0.334, 0.681, 1.044, 1.421,
+			1.812, 2.219, 2.641, 3.079, 3.531, 4)
+	s2X2 <- 4 * ncol(x) + 2 * sum(approx(seq(-1, 1, 0.1), tmp,
+				xout = cor(x)[which(as.vector(lower.tri(cor(x))))])$x)
+	EX2 <- 2 * ncol(x)
+	
+	fX2 <- -2 * sum(log(p))
+	pX2 <- 1 - pchisq(q = fX2/(s2X2/(2 * EX2)), df = 2 * EX2^2/s2X2)
+	if (pX2 <= 0 | pX2 >= 1) pX2 <- length(p) * min(p)
 
-	return( pX2 )
+	return(pX2)
+}
+
+#' @title Conditional Independence (CI) local tests of an acyclic graph
+#'
+#' @description P-values of one minimal testable implication (with the
+#' smallest possible conditioning set) is returned per missing edge
+#' given an acyclic graph (DAG or BAP) using the function
+#' \code{\link[dagitty]{impliedConditionalIndependencies}} plus the
+#' function \code{\link[dagitty]{localTests}} from package \code{dagitty}.
+#' Without assuming any particular dependence structure, the p-values of
+#' every CI test, in a DAG (BAP), is then combined using the Bonferroni’s
+#' statistic in an overall test of the fitted model, B = K*min(p1,...,pK),
+#' as reviewed in Vovk & Wang (2020).
+#'
+#' @param graph A directed graph as an igraph object.
+#' @param data A data matrix with subjects as rows and variables as
+#' columns.
+#' @param bap If TRUE, the input graph is trasformend in a BAP, if FALSE
+#' (defult) the input graph is reduced in a DAG.
+#' @param verbose If TRUE, LocalCI results will be showed to
+#' screen (default = TRUE).
+#' @param limit An integer value corresponding to the number of missing
+#' edges of the extracted acyclic graph. Beyond this limit, switch to
+#' Shipley's C-test (Shipley 2000) is enabled to reduce the computational
+#' burden.
+#' By default, \code{limit = 10000}.
+#' @param ... Currently ignored.
+#'
+#' @export
+#'
+#' @return A list of three objects: (i) the DAG used to perform the localCI
+#' test (ii) the list of all d-separation tests over missing edges in the
+#' input graph and (iii) the overall Bonferroni's P-value.
+#'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
+#' @references
+#'
+#' Vovk V, Wang R (2020). Combining p-values via averaging. Biometrika
+#' 107(4): 791-808. <https://doi.org/10.1093/biomet/asaa027>
+#'
+#' Shipley B (2000). A new inferential test for path models based on DAGs.
+#' Structural Equation Modeling, 7(2): 206-218.
+#' <https://doi.org/10.1207/S15328007SEM0702_4>
+#'
+#' @examples
+#'
+#' library(huge)
+#' als.npn <- huge.npn(alsData$exprs)
+#' 
+#' sem <- SEMrun(alsData$graph, als.npn)
+#' B_test <- localCI.test(sem$graph, als.npn, verbose = TRUE)
+#'
+localCI.test<- function(graph, data, bap=FALSE, limit=10000, verbose=TRUE, ...)
+{
+	# Set graph and covariance matrix:
+	nodes<- colnames(data)[colnames(data) %in% V(graph)$name]
+	graph<- induced_subgraph(graph, vids=which(V(graph)$name %in% nodes))
+	dataY<- as.matrix(data[, nodes])
+	df1<- vcount(graph)*(vcount(graph)-1)/2-ecount(as.undirected(graph))
+	if (df1 > limit){
+	 message("too many degree of fredoom, switch to Shipley.test...\n")
+	 CI<- Shipley.test(graph, dataY)
+	 return( list(bap=CI$dag, msep=CI$dsep, mtest=CI$ctest) )
+	}
+
+	# graph to DAG (or BAP) conversion :
+	if (!is_dag(graph)){
+	 cat("WARNING: input graph is not acyclic !\n")
+	 if (bap){
+	  cat(" Applying graph -> BAP conversion...\n")
+	  bap<- graph2dag(graph, dataY, bap=bap) #del all <->
+	 }else{
+	  cat(" Applying graph -> DAG conversion...\n")
+	  bap<- graph2dag(graph, dataY, bap=bap) #del cycles & all <->
+	 }
+	 df2<- vcount(bap)*(vcount(bap)-1)/2-ecount(as.undirected(bap))
+	  cat(" \nDegrees of freedom:\n Input graph  =", 
+             df1, "\n Output graph =", df2, "\n\n")
+	}else{
+	 bap <- graph
+	 df2 <- df1
+	}
+
+	# d-separation local tests (minimal set) & Bonferroni's overall pvalue
+	cat("d-separation test (minimal set) of", df2, "edges...\n")
+	msep<- msep.test(bap=bap, S=cor(dataY), n=nrow(dataY), verbose=FALSE)
+	#Bonferroni's multiple tests procedure: k*min(p1,...,pk) < alpha:
+	mtest<- max(atanh(msep$estimate)^2*(nrow(dataY)-msep[,3]-3))[1]
+	df<- 1
+	pv<- min(p.adjust(msep$p.value, method="bonferroni"))[1]
+	if (verbose) print(data.frame(B_test=mtest, df=df, B_pvalue=round(pv,6)))
+	
+	return( list(bap=bap, msep=msep, mtest=c(mtest, df, pv)) )
+}
+
+msep.test<- function(bap, S, n, verbose, ...)
+{
+	# conversion from igraph to dagitty
+	if (is.dag(bap)) {
+	 dagi<- graph2dagitty(bap, verbose=FALSE)
+	}else{
+	 dagi<- graph2dagitty(bap, verbose=FALSE)
+	 dagi<- dagitty::canonicalize(dagi)$g
+	}
+	if (verbose) plot(dagitty::graphLayout(dagi))
+	
+	imp0<- dagitty::impliedConditionalIndependencies(dagi,
+	 type="missing.edge", max.results=Inf)
+	imp<- Filter(function(x) length(x$Z) <= 10, imp0)
+	XY<- t(sapply(1:length(imp), function(x) imp[[x]][1:2]))
+	K<- sapply(1:length(imp), function(x) length(imp[[x]][3]$Z))
+	del<- which(duplicated(XY[,1:2]) == TRUE)
+	if (length(del)>0) imp<- imp[-del]
+	res<- dagitty::localTests(dagi, type = "cis", tests = imp,
+	 sample.cov=S, sample.nobs=n, max.conditioning.variables=NULL, tol=0.05)
+	if (length(del)>0) {
+	 SET<- cbind(XY[-del,], "|Z|"=K[-del], res)
+	}else{
+	 SET<- cbind(XY, "|Z|"=K, res)
+	}
+	rownames(SET)<- NULL
+	
+	return( SET=na.omit(SET) )
+}
+
+#' @title Parameter Estimates of a fitted SEM
+#'
+#' @description Wrapper of the lavaan parameterEstimates() function
+#' for RICF and CGGM algorithms
+#'
+#' @param fit A RICF or constrained GGM fitted model object.
+#' @param ... Currently ignored.
+#'
+#' @return A data.frame containing the estimated parameters
+#'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
+#' @examples
+#' ricf1 <- SEMrun(sachs$graph, log(sachs$pkc), sachs$group, algo = "ricf")
+#' parameterEstimates(ricf1$fit)
+#'
+#' cggm1 <- SEMrun(sachs$graph, log(sachs$pkc), sachs$group, algo = "cggm")
+#' parameterEstimates(cggm1$fit)
+#'
+#' @export
+parameterEstimates<- function(fit, ...)
+{
+	if (class(fit) == "lavaan"){
+	 est<- lavaan::parameterEstimates(fit)
+	 est$lhs<- gsub("z", "", est$lhs)
+	 est$rhs<- gsub("z", "", est$rhs)
+	 if ("group" %in% colnames(est)){
+	  est<- cbind(est[,-c(4,5)],group=est[,5])
+	 }
+	}
+	else if (class(fit) != "lavaan"){
+	 if (length(fit) != 2){
+	  est<- fit$parameterEstimates
+	  class(est)<- c("lavaan.data.frame" ,"data.frame")
+	 }else{
+	  est1<- fit$Group_1$parameterEstimates
+	  est0<- fit$Group_0$parameterEstimates
+	  group<- c(rep(1, nrow(est0)), rep(2,nrow(est1)))
+	  est<- cbind(rbind(est1,est0),group)
+	 } 
+	}
+	class(est)<- c("lavaan.data.frame" ,"data.frame")
+	return(est)
+}
+
+#' @title RICF model summary
+#'
+#' @description Generate a summary for a RICF solver similar to
+#' lavaan-formatted summary
+#'
+#' @param object A RICF fitted model object.
+#' @param ... Currently ignored.
+#'
+#' @method summary RICF
+#' @return Shown the lavaan-formatted summary to console
+#'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
+#' @seealso \code{\link[SEMgraph]{SEMrun}}.
+#'
+#' @examples
+#' sem1 <- SEMrun(sachs$graph, log(sachs$pkc), sachs$group, algo = "ricf")
+#' summary(sem1$fit)
+#'
+#' @export
+summary.RICF <- function(object, ...)
+{
+	.local <- function(object) {
+		it <- object$ricf$it
+		t <- object$fitIdx[6]
+		n <- object$fitIdx[5]
+		dev <- round(object$fitIdx[1], 3)
+		df <- object$fitIdx[2]
+		srmr <- round(object$fitIdx[3], 3)
+
+		cat(paste0("RICF solver ended normally after ", it, " iterations"),
+		           "\n\n")
+		cat(paste0("  Estimator                                       ML"),
+		           "\n")
+		cat(paste0("  Optimization method                             RICF"),
+		           "\n\n")
+		cat(paste0("  Number of free parameters                       ",
+		           t), "\n\n")
+		cat(paste0("  Number of observations                          ",
+		           n), "\n")
+		cat("\nModel Test User Model\n\n")
+		cat(paste0("  Test statistic (Deviance)                       ",
+		           dev), "\n")
+		cat(paste0("  Degrees of freedom (df)                         ",
+		           df), "\n")
+		cat(paste0("  Deviance/df                                     ",
+		           round(dev/df, 3)), "\n")
+		cat(paste0("  Standardized Root Mean Square Residual (srmr)   ",
+		           srmr), "\n")
+		cat("\nParameter Estimates:\n\n")
+
+		#print(fit$parameterEstimates)
+		K <- c("Regressions:", "Covariances:", "Variances:")
+		L <- object$parameterEstimates
+		reg <- L[which(L$op == "~"),]
+		cov <- L[which(L$op == "~~"),]
+		sel <- which(cov$lhs == cov$rhs)
+		L <- list(reg, cov[-sel,], cov[sel,])
+		for (l in 1:3) {
+			cat(K[l], "\n\n")
+			print(data.frame(lapply(L[[l]], function(y) {
+					if(is.numeric(y)) round(y, 3) else y
+				}
+			)))
+			cat("\n")
+		}
+	}
+	.local(object)
+}
+
+#' @title GGM model summary
+#'
+#' @description Generate a summary for a constrained Gaussian Graphical
+#' Model (GGM) similar to lavaan-formated summary
+#'
+#' @param object A constrained GGM fitted model object.
+#' @param ... Currently ignored.
+#'
+#' @method summary GGM
+#' @return Shown the lavaan-formatted summary to console
+#'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
+#' @seealso \code{\link[SEMgraph]{SEMrun}}.
+#'
+#' @examples
+#' sem0 <- SEMrun(sachs$graph, log(sachs$pkc), algo = "cggm")
+#' summary(sem0$fit)
+#'
+#' @export
+summary.GGM <- function(object, ...)
+{
+	.local <- function(object) {
+		it <- 0
+		t <- object$fitIdx[6]
+		n <- object$fitIdx[5]
+		dev <- round(object$fitIdx[1], 3)
+		df <- object$fitIdx[2]
+		srmr <- round(object$fitIdx[3], 3)
+
+		cat(paste0("GGM (constrained) solver ended normally after ", it,
+		           " iterations"), "\n\n")
+		cat(paste0("  Estimator                                       ML"),
+		           "\n")
+		cat(paste0("  Optimization method                             CGGM"),
+		           "\n\n")
+		cat(paste0("  Number of free parameters                       ",
+		           t), "\n\n")
+		cat(paste0("  Number of observations                          ",
+		           n), "\n")
+		cat("\nModel Test User Model\n\n")
+		cat(paste0("  Test statistic (Deviance)                       ",
+		           dev), "\n")
+		cat(paste0("  Degrees of freedom (df)                         ",
+		           df), "\n")
+		cat(paste0("  Deviance/df                                     ",
+		           round(dev/df, 3)), "\n")
+		cat(paste0("  Standardized Root Mean Square Residual (srmr)   ",
+		           srmr), "\n")
+		cat("\nParameter Estimates:\n\n")
+
+		#print(object$parameterEstimates)
+		K <- c("Regressions:", "Covariances:", "Variances:")
+		L <- object$parameterEstimates
+		reg <- L[which(L$op == "~"),]
+		cov <- L[which(L$op == "~~"),]
+		sel <- which(cov$lhs == cov$rhs)
+		L <- list(reg, cov[-sel,], cov[sel,])
+		for (l in 1:3) {
+			cat(K[l], "\n\n")
+			print(data.frame(lapply(L[[l]], function(y) {
+					if(is.numeric(y)) round(y, 3) else y
+				}
+			)))
+			cat("\n")
+		}
+	}
+	.local(object)
 }

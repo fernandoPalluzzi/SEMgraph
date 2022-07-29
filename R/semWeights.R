@@ -27,47 +27,33 @@
 #' columns to graph nodes.
 #' @param group Binary vector. This vector must be as long as the number
 #' of subjects. Each vector element must be 1 for cases and 0 for control
-#' subjects. By default, \code{group = NULL}.
+#' subjects. By default, \code{group = NULL}. If group is not NULL, also
+#' node weighting is actived, and node weights correspond to the sign
+#' (-1 if z<-2, +1 if z>2, 0 otherwise) and P-value of the z-test = b/SE(b) from simple linear regression
+#' y ~ x (i.e., glm(node ~ group)).
 #' @param method Edge weighting method. It can be one of the following:
 #' \enumerate{
 #' \item "r2z", weight edges of a graph using Fisher's r-to-z transform 
-#' to test the group difference between correlation coefficients of pairs 
-#' of interacting nodes (Fisher, 1915).
+#' (Fisher, 1915) to test the correlation coefficient of pairs 
+#' of interacting nodes, if \code{group == NULL}. Otherwise, the correlation
+#' difference between group will be tested and edge weights correspond to
+#' the sign (-1 if z<-2, +1 if z>2, 0 otherwise) and P-value of the group
+#' difference.
 #' \item "sem", edge weights are defined by a SEM model that implies 
 #' testing the group effect simultaneously on the j-th source node and 
 #' the k-th sink node. 
 #' A new parameter w is defined as the weighted sum of the total effect 
 #' of the group on source and sink nodes, adjusted by node degree centrality, 
-#' and edge weights correspond to the sign and P-value of the 
-#' z-test = w/SE(w). Not available if \code{group == NULL}.
+#' and edge weights correspond to the sign (-1 if z<-2, +1 if z>2, 0 otherwise)
+#' and P-value of the z-test = w/SE(w). Not available if \code{group == NULL}.
 #' \item "cov", edge weights are defined by a new parameter w combining 
 #' the group effect on the source node (mean group difference, adjusted 
 #' by source degree centrality), the sink node (mean group difference, 
 #' adjusted by sink degree centrality), and the source-sink interaction 
-#' (correlation difference). Edge weights correspond to the sign and 
-#' P-value of the z-test = w/SE(w) of the combined difference of the 
-#' group over source node, sink node, and their connection. 
-#' Not available if \code{group == NULL}.
-#' }
-#' @param seed A vector of three cutoffs. By default, \code{seed = "none"} 
-#' and seed calculation is disabled. Suggested cutoff values are 
-#' \code{seed = c(0.05, 0.5, 0.9)}. If these cutoffs are defined, seed 
-#' search is enabled. Nodes can be labeled as either seeds (node 
-#' weight = 1) or non-seeds (node weight = 0), according to three 
-#' alternative importance criteria: perturbed group effect, prototype 
-#' clustering, and closeness node index. The first cutoff is the significance 
-#' level of the group effect over graph nodes. The second is a threshold 
-#' corresponding to the prototype clustering distance measure 
-#' (= 1 - abs(correlation)) cutoff. The third one is the closeness 
-#' percentile, nodes having closeness greater than the q-th percentile 
-#' are labeled as seeds. If the seed argument is enabled, the output 
-#' graph will have three new binary (1: seed, 0: non-seed) vertex 
-#' attributes:
-#' \enumerate{
-#' \item "pvlm", adjusted FDR p-value < alpha seeds from simple linear regression
-#' y ~ x (i.e., lm(node ~ group));
-#' \item "proto", prototype seeds derived from \code{\link[protoclust]{protoclust}};
-#' \item "qi", nodes with \code{\link[igraph]{closeness}} greater than the q-th percentile.
+#' (correlation difference). Edge weights correspond to the sign
+#' (-1 if z<-2, +1 if z>2, 0 otherwise) and P-value of the z-test = w/SE(w)
+#' of the combined difference of the group over source node, sink node, and
+#' their connection. Not available if \code{group == NULL}.
 #' }
 #' @param limit An integer value corresponding to the number of graph 
 #' edges. Beyond this limit, multicore computation is enabled to reduce 
@@ -77,12 +63,6 @@
 #'
 #' @return A weighted graph, as an igraph object.
 #'
-#' @import igraph
-#' @import lavaan
-#' @importFrom stats cov cor pnorm quantile lm runif
-#' @importFrom Matrix sparseMatrix
-#' @importFrom parallel detectCores makeCluster clusterExport stopCluster
-#' @importFrom pbapply pboptions pblapply
 #' @export
 #'
 #' @author Mario Grassi \email{mario.grassi@unipv.it}
@@ -91,6 +71,10 @@
 #' Palluzzi F, Grassi M (2021). SEMgraph: An R Package for Causal Network 
 #' Analysis of High-Throughput Data with Structural Equation Models. 
 #' <arXiv:2103.08332>
+#'
+#' Fisher RA (1915). Frequency Distribution of the Values of the Correlation
+#' Coefficient in Samples from an Indefinitely Large Population. Biometrika,
+#' 10(4), 507–521. <doi:10.2307/2331838>
 #' 
 #' @examples
 #' 
@@ -98,59 +82,66 @@
 #' G <- weightGraph(graph = sachs$graph,
 #'                  data = log(sachs$pkc),
 #'                  group = sachs$group,
-#'                  method = "r2z",
-#'                  seed = c(0.05, 0.5, 0.5))
+#'                  method = "r2z")
 #' 
 #' # New edge attributes
-#' E(G)$pv
-#' E(G)$zsign
+#' head(E(G)$pv); summary(E(G)$pv)
+#' head(E(G)$zsign); table(E(G)$zsign)
 #' 
-#' # New nodes attributes (1: seed, 0: non-seed)
-#' V(G)$pvlm; table(V(G)$pvlm)
-#' V(G)$proto; table(V(G)$proto)
-#' V(G)$qi; table(V(G)$qi)
+#' # New nodes attributes
+#' head(V(G)$pv); summary(V(G)$pv)
+#' head(V(G)$zsign); table(V(G)$zsign)
 #' 
-#' # Reduced graph (using highest closeness nodes)
-#' R <- induced_subgraph(G, vids = V(G)$name[V(G)$qi == 1])
-#' R <- properties(R)[[1]]
-#'
-weightGraph <- function(graph, data, group = NULL, method = "r2z",
-                        seed = "none", limit = 10000, ...)
+weightGraph<- function(graph, data, group = NULL, method = "r2z", limit = 10000, ...) 
 {
-	# Set genes, from-to-matrix (ftm), vertex degree and data
-	nodes<- colnames(data)[colnames(data) %in% V(graph)$name]
-	ig<- induced_subgraph(graph, vids= which(V(graph)$name %in% nodes))
-	degree<- igraph::degree(ig, v=V(ig), mode="all")
-	ftm<- as_data_frame(ig)
-	Y<- scale(data[,nodes])
-
-	if (is.null(group) | method == "r2z") ew <- ew.r2z(ftm, Y, group)
-	if (method == "sem") ew <- ew.sem(ftm, Y, group, degree, limit = limit)
-	if (method == "cov") ew <- ew.cov(ftm, Y, group, degree, limit = limit)
-	if (method == "cfa") ew <- ew.cfa(ftm, Y, group, limit = limit)
-	if (method == "lmi") ew<- ew.lmi(ftm, Y, group, limit=limit)
-
+	nodes <- colnames(data)[colnames(data) %in% V(graph)$name]
+	ig <- induced_subgraph(graph, vids = which(V(graph)$name %in% nodes))
+	ig <- quiet(properties(ig)[[1]])
+	degree <- igraph::degree(ig, v = V(ig), mode = "all")
+	ftm <- as_data_frame(ig)
+	Y <- scale(data[, nodes])
+	if (is.null(group) | method == "r2z")
+		ew <- ew.r2z(ftm, Y, group)
+	if (method == "sem")
+		ew <- ew.sem(ftm, Y, group, degree, limit = limit)
+	if (method == "cov") 
+		ew <- ew.cov(ftm, Y, group, degree, limit = limit)
+	if (method == "cfa")
+		ew <- ew.cfa(ftm, Y, group, limit = limit)
+	if (method == "lmi") 
+		ew <- ew.lmi(ftm, Y, group, limit = limit)
 	zsign <- ew[[1]]
 	pv <- ew[[2]]
-	pv[is.na(pv)] <- runif(sum(is.na(pv)), min = 0.5, max = 1)
-	pv[pv == 0] <- 1*10^-10
-	pv[pv == 1] <- 1-1*10^-10 
-	
+	pv[is.na(pv)] <- runif(n = sum(is.na(pv)), min = 0.05, max = 0.95)
+	pv[pv <= 0] <- 1e-15
+	pv[pv >= 1] <- 1 - 1e-15
 	ftm <- cbind(ftm, zsign, pv)
 	gdf <- graph_from_data_frame(ftm, directed = is.directed(graph))
 	Vattr <- vertex_attr(graph)
-	if(length(Vattr) > 1) {
+	if (length(Vattr) > 1) {
 		idx <- match(V(gdf)$name, Vattr$name)
-		for(i in 2:length(Vattr))
-		gdf <- set_vertex_attr(gdf, names(Vattr)[i], value = Vattr[[i]][idx])
+		for (i in 2:length(Vattr)) gdf <- set_vertex_attr(gdf, 
+			names(Vattr)[i], value = Vattr[[i]][idx])
 	}
-	if (length(seed) == 3) {
-		gdf <- seedweight(gdf, data, group,
-		                  alpha = seed[1],
-		                  h = seed[2],
-		                  q = seed[3])
+	if (!is.null(group)) {
+		graph <- vw.lm(gdf, data[, nodes], group)
 	}
-	return(graph = gdf)
+	else {
+		graph <- gdf
+	}
+	return(graph)
+}
+
+vw.lm<- function(graph, data, group, ...)
+{
+	est<- lapply(1:ncol(data), function(x) lm(data[,x] ~ group))
+	B<- sapply(1:length(est), function(x) summary(est[[x]])$coefficients[2,3])
+	zsign<- ifelse(abs(B) < 2, 0, sign(B))
+	pv<- sapply(1:length(est), function(x) summary(est[[x]])$coefficients[2,4])
+	names(zsign)<- names(pv)<- colnames(data)
+	V(graph)$pv<- pv[V(graph)$name]
+	V(graph)$zsign<- zsign[V(graph)$name]
+	return(graph)
 }
 
 ew.sem <- function(ftm, Y, group, degree, limit, ...)
@@ -165,8 +156,8 @@ ew.sem <- function(ftm, Y, group, degree, limit, ...)
 		 x~ a0*1+a1*group
 		 w:=a1/',dx,' + b1/',dy)
 		#cat(model)
-		try(fit <- lavaan::sem(model, data = df, fixed.x = TRUE))
-		try(res <- lavaan::parameterEstimates(fit))
+		try(fit <- sem(model, data = df, fixed.x = TRUE))
+		try(res <- parameterEstimates(fit))
 		try(res[res$label == "w", -c(1:4)])
 	}
 	
@@ -204,9 +195,9 @@ ew.cov <- function(ftm, Y, group, degree, limit, ...)
 		 x ~~ c(c1,c2)*y
 		 w:= (a2-a1)/', dx, '+(b2-b1)/', dy, '+(c2-c1)')
 		#cat(model)
-		try(fit <- lavaan::sem(model, data = df, group = "group",
+		try(fit <- sem(model, data = df, group = "group",
 		    fixed.x = TRUE))
-		try(res<- lavaan::parameterEstimates(fit))
+		try(res<- parameterEstimates(fit))
 		try(res[res$label == "w", -c(1:5)])
 	}
 	
@@ -245,9 +236,9 @@ ew.cfa <- function(ftm, Y, group, limit, ...)
 		 y1~~',1-a^2,'*y1
 		 y2~~',1-a^2,'*y2')
 		#cat(model)
-		suppressWarnings(try(fit <- lavaan::cfa(model, data = df,
+		suppressWarnings(try(fit <- cfa(model, data = df,
 		                     fixed.x = TRUE)))
-		try(res<- lavaan::parameterEstimates(fit))
+		try(res<- parameterEstimates(fit))
 		try(res[c(3, 6),])
 	}
 	
@@ -342,41 +333,6 @@ ew.r2z <- function(ftm, Y, group, ...)
 		}
     }
 	return (list(zsign, pv))
-}
-
-seedweight <- function(ig, data, group, alpha, h, q, ...)
-{
-	# Set data object
-	Y <- data[, which(colnames(data) %in% V(ig)$name)]
-	D <- as.dist(1 - abs(cor(Y)))
-	
-	# Seed nodes by p_values
-	pv.lm <- function(x) { summary(lm(x~group))$coefficients[2, 4] }
-	if (!is.null(group)) {
-		pvlm <- apply(Y, 2, pv.lm)
-		p.adj <- p.adjust(pvlm, method="BH")
-		seed1 <- V(ig)$name[p.adj < alpha]
-		V(ig)$pvlm <- ifelse(V(ig)$name %in% seed1, 1, 0)
-	} else {
-		V(ig)$pvlm <- 0
-	}
-	
-	# Seed nodes by prototypes
-	#plot(hc <- protoclust::protoclust(D))
-	hc <- protoclust::protoclust(D)
-	#abline(h = h, lty = 1, col = "red")
-	
-	# Cut distance threshold fixed to 0.2 (i.e., 0.8 correlation)
-	cutd <- protoclust::protocut(hc, h = h)
-	seed2 <- hc$labels[cutd$protos]
-	V(ig)$proto <- ifelse(V(ig)$name %in% seed2, 1, 0)
-
-	# Seed nodes by closeness
-	suppressWarnings(qi <- igraph::closeness(ig, mode = "all", weights = NA))
-	seed3 <- V(ig)$name[which(qi > quantile(qi, probs = q))]
-	V(ig)$qi <- ifelse(V(ig)$name %in% seed3, 1, 0)
-	
-	return (ig)
 }
 
 #' @title Active module identification
@@ -514,6 +470,41 @@ activeModule <- function(graph, type, seed, eweight = "none", alpha = 0.05,
 	V(R)$color <- ifelse(V(R)$name %in% seed, "green", "white")
 	
 	return(R)
+}
+
+seedweight <- function(ig, data, group, alpha, h, q, ...)
+{
+	# Set data object
+	Y <- data[, which(colnames(data) %in% V(ig)$name)]
+	D <- as.dist(1 - abs(cor(Y)))
+	
+	# Seed nodes by p_values
+	pv.lm <- function(x) { summary(lm(x~group))$coefficients[2, 4] }
+	if (!is.null(group)) {
+		pvlm <- apply(Y, 2, pv.lm)
+		p.adj <- p.adjust(pvlm, method="BH")
+		seed1 <- V(ig)$name[p.adj < alpha]
+		V(ig)$pvlm <- ifelse(V(ig)$name %in% seed1, 1, 0)
+	} else {
+		V(ig)$pvlm <- 0
+	}
+	
+	# Seed nodes by prototypes
+	#plot(hc <- protoclust::protoclust(D))
+	hc <- protoclust::protoclust(D)
+	#abline(h = h, lty = 1, col = "red")
+	
+	# Cut distance threshold fixed to 0.2 (i.e., 0.8 correlation)
+	cutd <- protoclust::protocut(hc, h = h)
+	seed2 <- hc$labels[cutd$protos]
+	V(ig)$proto <- ifelse(V(ig)$name %in% seed2, 1, 0)
+
+	# Seed nodes by closeness
+	suppressWarnings(qi <- igraph::closeness(ig, mode = "all", weights = NA))
+	seed3 <- V(ig)$name[which(qi > quantile(qi, probs = q))]
+	V(ig)$qi <- ifelse(V(ig)$name %in% seed3, 1, 0)
+	
+	return (ig)
 }
 
 RWR <- function(graph, seed, eweight, algo, top, ...)

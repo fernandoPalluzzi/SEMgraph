@@ -63,16 +63,16 @@ or a bootstrap-based procedure (see \code{\link[boot]{boot}} for details).
 }
 \examples{
 
-# ACE estimation, without group
+# ACE without group, O-set, all effects:
 ace1 <- SEMace(graph = sachs$graph, data = log(sachs$pkc),
-               group = NULL, type="parents", effect="all",
-               method = "BH", alpha = 0.05)
+               group = NULL, type = "optimal", effect = "all",
+               method = "BH", alpha = 0.05, boot = NULL)
 print(ace1)
 
-# ACE with group perturbation
+# ACE with group perturbation, Pa-set, direct effects:
 ace2 <- SEMace(graph = sachs$graph, data = log(sachs$pkc),
-               group = sachs$group, type="optimal", effect="direct",
-               method = "none", alpha = 0.05)
+               group = sachs$group, type = "parents", effect = "direct",
+               method = "none", alpha = 0.05, boot = NULL)
 print(ace2)
 
 }

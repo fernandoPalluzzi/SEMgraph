@@ -51,9 +51,10 @@ The key idea is to first recover the skeleton of the polytree by applying
 the CLE algorithm  to the pairwise sample correlations of the data matrix.
 After the skeleton is recovered, the set of all v-structures can be correctly
 identified via a simple thresholding approach to pairwise sample correlations.
-Finally, the CPDAG of the polytree can be found applying iteratively only
-Rule 1 of Meek (1995). Argument \code{seed} must be specified to analyse a
-subset of nodes (variables) of interest.}}
+CPDAG can be found applying iteratively only Rule 1 of Meek (1995). Finally,
+the CPDAG is trasformed in a tree with the \code{graph2dag()} function.
+Argument \code{seed} must be specified to analyse a subset of nodes
+(variables) of interest.}}
 
 \item{eweight}{Edge weight type for igraph object derived from
 \code{\link[SEMgraph]{weightGraph}} or from user-defined distances. 

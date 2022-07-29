@@ -42,13 +42,14 @@ will not be plotted to screen.}
 \item{...}{Currently ignored.}
 }
 \value{
-A list of 3 igraph objects and 1 data matrix:
+A list of four objects:
 \itemize{
-\item "dag", the output DAG (BAP = dag + guu),
-\item "guu", the bidirected graph of significant covariances,
+\item "dag", the directed acyclic graph (DAG) extracted from input graph,
 \item "gLV", the directed graph of latent variables (LV) underlying
 significant covariances (i.e., the canonical graph, where bidirected
 X <-> Y edges are substituted by directed edges X <- LV -> Y),
+\item "dsep", the data.frame of all d-separation tests over missing edges
+in the DAG 
 \item "data", the adjusted (de-correlated) data matrix.
 }
 }
@@ -58,10 +59,10 @@ matrix by removing latent sources of confounding encoded in them.
 }
 \details{
 SEMbap algorithm makes an exhaustive search of all possible
-missing edges of the mixed acyclic graph (BAP or DAG) via d-separation
+missing edges of the directed acyclic graph (DAG) via d-separation
 P-value screening.
-The d-separation test evaluates if two variables (X, Y) in an acyclic
-graph are conditionally independent for a given conditioning set Z,
+The d-separation test evaluates if two variables (X, Y) in a DAG
+are conditionally independent for a given conditioning set Z,
 The conditioning set Z is represented in a DAG by the union of the
 parent sets of X and Y (Shipley, 2000). A new bow-free covariance is
 added if there is a significant (X, Y) association, after multiple
@@ -79,7 +80,7 @@ by Palluzzi and Grassi (2021).
 # Model fitting
 sem0 <- SEMrun(graph = sachs$graph, data = log(sachs$pkc))
 
-# BAP estimation
+# BAP search
 BAP <- SEMbap(graph = sachs$graph, data = log(sachs$pkc), verbose = TRUE)
 
 # Model fitting (node perturbation) with adjusted data

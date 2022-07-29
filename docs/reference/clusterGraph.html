@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
       </span>
     </div>
 
@@ -60,6 +60,8 @@
     <h2>Arguments</h2>
     <dl><dt>graph</dt>
 <dd><p>An igraph object.</p></dd>
+
+
 <dt>type</dt>
 <dd><p>Topological clustering methods. If <code>type = "tahc"</code>,
 network modules are generated using the tree agglomerative hierarchical
@@ -70,9 +72,11 @@ from <code>igraph</code> package include: "wtc"
 (label propagation method), "lec" (leading eigenvector method), "loc"
 (multi-level optimization), "opc" (optimal community structure), "sgc"
 (spinglass statistical mechanics).</p></dd>
+
+
 <dt>HM</dt>
 <dd><p>Hidden model type. Enables the visualization of the hidden
-model. If set to "none" (default), no HM is visualized.
+model, gHM. If set to "none" (default), no gHM igraph object is saved.
 For each defined hidden module:
 (i) if <code>HM = "LV"</code>, a latent variable (LV) will be defined as
 common unknown cause acting on cluster nodes; (ii) if <code>HM = "CV"</code>,
@@ -81,21 +85,29 @@ variable (CV); (iii) if <code>HM = "UV"</code>, an unmeasured variable (UV)
 is defined, where source nodes of the module (i.e., in-degree = 0)
 act as common regressors influencing the other nodes via an unmeasured
 variable (see also <code><a href="clusterScore.html">clusterScore</a></code>).</p></dd>
+
+
 <dt>size</dt>
 <dd><p>Minimum number of nodes per module. By default, a minimum
 number of 5 nodes is required.</p></dd>
+
+
 <dt>verbose</dt>
-<dd><p>A logical value. If FALSE (default), the processed graphs
+<dd><p>A logical value. If FALSE (default), the gHM igraph
 will not be plotted to screen, saving execution time (they will be
 returned in output anyway).</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Currently ignored.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>If HM is not "none" a list of 3 objects is returned:</p><ol><li><p>"gHM", subgraph containing hidden modules as an igraph object;</p></li>
-<li><p>"membership", cluster membership vector for each node;</p></li>
-<li><p>"gHC", the list of modules as igraph objects.</p></li>
+    
+
+<p>If HM is not "none" a list of 2 objects is returned:</p><ol><li><p>"gHM", subgraph containing hidden modules as an igraph object;</p></li>
+<li><p>"membership", cluster membership vector for each node.</p></li>
 </ol><p>If HM is "none", only the cluster membership vector is returned.</p>
     </div>
     <div id="references">
@@ -132,15 +144,19 @@ Chaos 25(2): 023107. &lt;https://doi.org/10.1063/1.4908014&gt;</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> which.mutual.FALSE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 47 </span>
-<span class="r-in"><span class="va">membership</span> <span class="op">&lt;-</span> <span class="fu">clusterGraph</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">G</span>, type <span class="op">=</span> <span class="st">"wtc"</span>, HM <span class="op">=</span> <span class="st">"LV"</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">clv</span> <span class="op">&lt;-</span> <span class="fu">clusterGraph</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">G</span>, type <span class="op">=</span> <span class="st">"wtc"</span>, HM <span class="op">=</span> <span class="st">"LV"</span><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> modularity = 0.5588502 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Community sizes</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  3  1  4  2 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  4  8  9 11 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">clv</span><span class="op">$</span><span class="va">gHM</span>, l <span class="op">=</span> <span class="st">"fdp"</span><span class="op">)</span></span>
 <span class="r-plt img"><img src="clusterGraph-1.png" alt="" width="700" height="433"></span>
-<span class="r-plt img"><img src="clusterGraph-2.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">clv</span><span class="op">$</span><span class="va">membership</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1  2  4 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  8 11  9 </span>
 <span class="r-in"></span>
 </code></pre></div>
     </div>
@@ -156,7 +172,7 @@ Chaos 25(2): 023107. &lt;https://doi.org/10.1063/1.4908014&gt;</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
       </footer></div>

@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
       </span>
     </div>
 
@@ -68,32 +68,47 @@
     <h2>Arguments</h2>
     <dl><dt>graph</dt>
 <dd><p>Input network as an igraph object.</p></dd>
+
+
 <dt>data</dt>
 <dd><p>A matrix or data.frame. Rows correspond to subjects, and
 columns to graph nodes (variables).</p></dd>
+
+
 <dt>group</dt>
 <dd><p>A binary vector. This vector must be as long as the
 number of subjects. Each vector element must be 1 for cases and 0
 for control subjects. Group specification enables node perturbation
 testing. By default, <code>group = NULL</code>.</p></dd>
+
+
 <dt>membership</dt>
 <dd><p>A vector of cluster membership IDs. If NULL, clusters
 will be automatically generated with <code><a href="clusterGraph.html">clusterGraph</a></code>
 using the edge betweenness clustering ("ebc") algorithm.</p></dd>
+
+
 <dt>map</dt>
 <dd><p>Logical value. If TRUE, the plot of the input graph
 (coloured by cluster membership) will be generated along with independent
 module plots. If the input graph is very large, plotting could be
 computationally intensive (by default, <code>map = FALSE</code>).</p></dd>
+
+
 <dt>verbose</dt>
 <dd><p>Logical value. If TRUE, a plot will be showed for each
 cluster.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Currently ignored.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>List of clusters as igraph objects and fitting results for
+    
+
+<p>List of clusters as igraph objects and fitting results for
 each cluster as a lavaan object.</p>
     </div>
     <div id="author">
@@ -111,8 +126,8 @@ each cluster as a lavaan object.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Conducting the nonparanormal (npn) transformation via shrunkun ECDF....done.</span>
 <span class="r-in"></span>
 <span class="r-in"><span class="va">adjdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMbap.html">SEMbap</a></span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">graph</span>, <span class="va">als.npn</span><span class="op">)</span><span class="op">$</span><span class="va">data</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> d-separation test (basis set) of 420 edges...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  / 0 % elapsed=00s    - 1 % elapsed=00s, remaining~01s \ 2 % elapsed=00s, remaining~00s | 4 % elapsed=00s, remaining~00s / 5 % elapsed=00s, remaining~01s - 6 % elapsed=00s, remaining~00s \ 7 % elapsed=00s, remaining~00s | 8 % elapsed=00s, remaining~00s / 10% elapsed=00s, remaining~00s - 11% elapsed=00s, remaining~00s \ 12% elapsed=00s, remaining~00s | 13% elapsed=00s, remaining~00s / 14% elapsed=00s, remaining~00s - 15% elapsed=00s, remaining~00s \ 17% elapsed=00s, remaining~00s | 18% elapsed=00s, remaining~00s / 19% elapsed=00s, remaining~00s - 20% elapsed=00s, remaining~00s \ 21% elapsed=00s, remaining~00s | 23% elapsed=00s, remaining~00s / 24% elapsed=00s, remaining~00s - 25% elapsed=00s, remaining~00s \ 26% elapsed=00s, remaining~00s | 27% elapsed=00s, remaining~00s / 29% elapsed=00s, remaining~00s - 30% elapsed=00s, remaining~00s \ 31% elapsed=00s, remaining~00s | 32% elapsed=00s, remaining~00s / 33% elapsed=00s, remaining~00s - 35% elapsed=00s, remaining~00s \ 36% elapsed=00s, remaining~00s | 37% elapsed=00s, remaining~00s / 38% elapsed=00s, remaining~00s - 39% elapsed=00s, remaining~00s \ 40% elapsed=00s, remaining~00s | 42% elapsed=00s, remaining~00s / 43% elapsed=00s, remaining~00s - 44% elapsed=00s, remaining~00s \ 45% elapsed=00s, remaining~00s | 46% elapsed=00s, remaining~00s / 48% elapsed=00s, remaining~00s - 49% elapsed=00s, remaining~00s \ 50% elapsed=00s, remaining~00s | 51% elapsed=00s, remaining~00s / 52% elapsed=00s, remaining~00s - 54% elapsed=00s, remaining~00s \ 55% elapsed=00s, remaining~00s | 56% elapsed=00s, remaining~00s / 57% elapsed=00s, remaining~00s - 58% elapsed=00s, remaining~00s \ 60% elapsed=00s, remaining~00s | 61% elapsed=00s, remaining~00s / 62% elapsed=00s, remaining~00s - 63% elapsed=00s, remaining~00s \ 64% elapsed=00s, remaining~00s | 65% elapsed=00s, remaining~00s / 67% elapsed=00s, remaining~00s - 68% elapsed=00s, remaining~00s \ 69% elapsed=00s, remaining~00s | 70% elapsed=00s, remaining~00s / 71% elapsed=00s, remaining~00s - 73% elapsed=00s, remaining~00s \ 74% elapsed=00s, remaining~00s | 75% elapsed=00s, remaining~00s / 76% elapsed=00s, remaining~00s - 77% elapsed=00s, remaining~00s \ 79% elapsed=00s, remaining~00s | 80% elapsed=00s, remaining~00s / 81% elapsed=00s, remaining~00s - 82% elapsed=00s, remaining~00s \ 83% elapsed=00s, remaining~00s | 85% elapsed=00s, remaining~00s / 86% elapsed=00s, remaining~00s - 87% elapsed=00s, remaining~00s \ 88% elapsed=00s, remaining~00s | 89% elapsed=00s, remaining~00s / 90% elapsed=00s, remaining~00s - 92% elapsed=00s, remaining~00s \ 93% elapsed=00s, remaining~00s | 94% elapsed=00s, remaining~00s / 95% elapsed=00s, remaining~00s - 96% elapsed=00s, remaining~00s \ 98% elapsed=00s, remaining~00s | 99% elapsed=00s, remaining~00s / 100% elapsed=00s, remaining~00s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> d-separation test (basis set) of 420 edges...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  / 0 % elapsed=00s    - 1 % elapsed=00s, remaining~01s \ 2 % elapsed=00s, remaining~01s | 4 % elapsed=00s, remaining~01s / 5 % elapsed=00s, remaining~01s - 6 % elapsed=00s, remaining~01s \ 7 % elapsed=00s, remaining~01s | 8 % elapsed=00s, remaining~01s / 10% elapsed=00s, remaining~01s - 11% elapsed=00s, remaining~01s \ 12% elapsed=00s, remaining~01s | 13% elapsed=00s, remaining~01s / 14% elapsed=00s, remaining~01s - 15% elapsed=00s, remaining~01s \ 17% elapsed=00s, remaining~01s | 18% elapsed=00s, remaining~01s / 19% elapsed=00s, remaining~01s - 20% elapsed=00s, remaining~01s \ 21% elapsed=00s, remaining~01s | 23% elapsed=00s, remaining~01s / 24% elapsed=00s, remaining~01s - 25% elapsed=00s, remaining~01s \ 26% elapsed=00s, remaining~01s | 27% elapsed=00s, remaining~01s / 29% elapsed=00s, remaining~01s - 30% elapsed=00s, remaining~01s \ 31% elapsed=00s, remaining~01s | 32% elapsed=00s, remaining~01s / 33% elapsed=01s, remaining~01s - 35% elapsed=01s, remaining~01s \ 36% elapsed=01s, remaining~01s | 37% elapsed=01s, remaining~01s / 38% elapsed=01s, remaining~01s - 39% elapsed=01s, remaining~01s \ 40% elapsed=01s, remaining~01s | 42% elapsed=01s, remaining~01s / 43% elapsed=01s, remaining~01s - 44% elapsed=01s, remaining~01s \ 45% elapsed=01s, remaining~01s | 46% elapsed=01s, remaining~01s / 48% elapsed=01s, remaining~01s - 49% elapsed=01s, remaining~01s \ 50% elapsed=01s, remaining~01s | 51% elapsed=01s, remaining~01s / 52% elapsed=01s, remaining~01s - 54% elapsed=01s, remaining~01s \ 55% elapsed=01s, remaining~01s | 56% elapsed=01s, remaining~01s / 57% elapsed=01s, remaining~01s - 58% elapsed=01s, remaining~01s \ 60% elapsed=01s, remaining~01s | 61% elapsed=01s, remaining~01s / 62% elapsed=01s, remaining~01s - 63% elapsed=01s, remaining~01s \ 64% elapsed=01s, remaining~01s | 65% elapsed=01s, remaining~01s / 67% elapsed=01s, remaining~01s - 68% elapsed=01s, remaining~01s \ 69% elapsed=01s, remaining~00s | 70% elapsed=01s, remaining~00s / 71% elapsed=01s, remaining~00s - 73% elapsed=01s, remaining~00s \ 74% elapsed=01s, remaining~00s | 75% elapsed=01s, remaining~00s / 76% elapsed=01s, remaining~00s - 77% elapsed=01s, remaining~00s \ 79% elapsed=01s, remaining~00s | 80% elapsed=01s, remaining~00s / 81% elapsed=01s, remaining~00s - 82% elapsed=01s, remaining~00s \ 83% elapsed=01s, remaining~00s | 85% elapsed=01s, remaining~00s / 86% elapsed=01s, remaining~00s - 87% elapsed=01s, remaining~00s \ 88% elapsed=01s, remaining~00s | 89% elapsed=01s, remaining~00s / 90% elapsed=01s, remaining~00s - 92% elapsed=01s, remaining~00s \ 93% elapsed=01s, remaining~00s | 94% elapsed=02s, remaining~00s / 95% elapsed=02s, remaining~00s - 96% elapsed=02s, remaining~00s \ 98% elapsed=02s, remaining~00s | 99% elapsed=02s, remaining~00s / 100% elapsed=02s, remaining~00s</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Number of significant local tests: 220 / 420 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"></span>
@@ -124,35 +139,42 @@ each cluster as a lavaan object.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  3  2  1  4 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  4  8  9 11 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   cluster N.nodes N.edges dev_df  srmr pv.act pv.inh</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1     HM1       9       8  1.086 0.061      1      1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2     HM2       8       7  0.826 0.039      1      1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3     HM4      11      25  1.693 0.061      1      1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  HM9999       4       4    NaN 0.000      1      1</span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">parameterEstimates</span><span class="op">(</span><span class="va">clusters</span><span class="op">$</span><span class="va">fit</span><span class="op">$</span><span class="va">HM1</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      lhs op   rhs    est    se      z pvalue ci.lower ci.upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 z10452  ~ z6647 -0.044 0.079 -0.553  0.580   -0.198    0.111</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  z5530  ~ z6647 -0.066 0.079 -0.833  0.405   -0.220    0.089</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  z5532  ~ z6647 -0.017 0.079 -0.218  0.827   -0.172    0.138</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  z5533  ~ z6647 -0.179 0.078 -2.302  0.021   -0.332   -0.027</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  z5534  ~ z6647 -0.066 0.079 -0.838  0.402   -0.221    0.089</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  z5535  ~ z6647 -0.430 0.071 -6.019  0.000   -0.570   -0.290</span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">parameterEstimates</span><span class="op">(</span><span class="va">clusters</span><span class="op">$</span><span class="va">fit</span><span class="op">$</span><span class="va">HM2</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      lhs op  rhs    est    se      z pvalue ci.lower ci.upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 z54205  ~ z572 -0.140 0.071 -1.962  0.050   -0.280    0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 z54205  ~ z581 -0.247 0.071 -3.463  0.001   -0.387   -0.107</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 z54205  ~ z596  0.119 0.073  1.634  0.102   -0.024    0.261</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 z54205  ~ z598 -0.315 0.073 -4.338  0.000   -0.457   -0.173</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5   z836  ~ z842  0.049 0.079  0.620  0.536   -0.106    0.204</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6   z842  ~ z317  0.063 0.079  0.798  0.425   -0.092    0.218</span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">parameterEstimates</span><span class="op">(</span><span class="va">clusters</span><span class="op">$</span><span class="va">fit</span><span class="op">$</span><span class="va">HM4</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op   rhs    est    se      z pvalue ci.lower ci.upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 z1432  ~ z5606  0.440 0.070  6.257  0.000    0.302    0.578</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 z1432  ~ z5608 -0.110 0.070 -1.560  0.119   -0.248    0.028</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 z4741  ~ z1432  0.106 0.078  1.355  0.175   -0.047    0.258</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 z4741  ~ z5600 -0.115 0.076 -1.509  0.131   -0.264    0.034</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 z4741  ~ z5603  0.140 0.076  1.840  0.066   -0.009    0.289</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 z4741  ~ z5630  0.002 0.076  0.028  0.978   -0.147    0.152</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  cluster= 1 of 3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>no non-missing arguments to min; returning Inf</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>no non-missing arguments to min; returning Inf</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  cluster= 2 of 3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>no non-missing arguments to min; returning Inf</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>no non-missing arguments to min; returning Inf</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  cluster= 3 of 3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>no non-missing arguments to min; returning Inf</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>no non-missing arguments to min; returning Inf</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Found 3 clusters with &gt; 5 nodes</span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="parameterEstimates.html">parameterEstimates</a></span><span class="op">(</span><span class="va">clusters</span><span class="op">$</span><span class="va">fit</span><span class="op">$</span><span class="va">HM1</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op  rhs    est    se      z pvalue ci.lower ci.upper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 10452  ~ 6647 -0.044 0.079 -0.553  0.580   -0.198    0.111</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  5530  ~ 6647 -0.066 0.079 -0.833  0.405   -0.220    0.089</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  5532  ~ 6647 -0.017 0.079 -0.218  0.827   -0.172    0.138</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  5533  ~ 6647 -0.179 0.078 -2.302  0.021   -0.332   -0.027</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  5534  ~ 6647 -0.066 0.079 -0.838  0.402   -0.221    0.089</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  5535  ~ 6647 -0.430 0.071 -6.019  0.000   -0.570   -0.290</span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="parameterEstimates.html">parameterEstimates</a></span><span class="op">(</span><span class="va">clusters</span><span class="op">$</span><span class="va">fit</span><span class="op">$</span><span class="va">HM2</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op rhs    est    se      z pvalue ci.lower ci.upper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 54205  ~ 572 -0.140 0.071 -1.962  0.050   -0.280    0.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 54205  ~ 581 -0.247 0.071 -3.463  0.001   -0.387   -0.107</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 54205  ~ 596  0.119 0.073  1.634  0.102   -0.024    0.261</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 54205  ~ 598 -0.315 0.073 -4.338  0.000   -0.457   -0.173</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5   836  ~ 842  0.049 0.079  0.620  0.536   -0.106    0.204</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6   842  ~ 317  0.063 0.079  0.798  0.425   -0.092    0.218</span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="parameterEstimates.html">parameterEstimates</a></span><span class="op">(</span><span class="va">clusters</span><span class="op">$</span><span class="va">fit</span><span class="op">$</span><span class="va">HM4</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    lhs op  rhs    est    se      z pvalue ci.lower ci.upper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 1432  ~ 5606  0.440 0.070  6.257  0.000    0.302    0.578</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 1432  ~ 5608 -0.110 0.070 -1.560  0.119   -0.248    0.028</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 4741  ~ 1432  0.106 0.078  1.355  0.175   -0.047    0.258</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 4741  ~ 5600 -0.115 0.076 -1.509  0.131   -0.264    0.034</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 4741  ~ 5603  0.140 0.076  1.840  0.066   -0.009    0.289</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 4741  ~ 5630  0.002 0.076  0.028  0.978   -0.147    0.152</span>
 <span class="r-in"><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">clusters</span><span class="op">$</span><span class="va">clusters</span><span class="op">$</span><span class="va">HM2</span><span class="op">)</span></span>
 <span class="r-plt img"><img src="extractClusters-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"></span>
@@ -179,7 +201,7 @@ each cluster as a lavaan object.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
       </footer></div>

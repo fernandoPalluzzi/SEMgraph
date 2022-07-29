@@ -4,15 +4,7 @@
 \alias{weightGraph}
 \title{Graph weighting methods}
 \usage{
-weightGraph(
-  graph,
-  data,
-  group = NULL,
-  method = "r2z",
-  seed = "none",
-  limit = 10000,
-  ...
-)
+weightGraph(graph, data, group = NULL, method = "r2z", limit = 10000, ...)
 }
 \arguments{
 \item{graph}{An igraph object.}
@@ -22,49 +14,34 @@ columns to graph nodes.}
 
 \item{group}{Binary vector. This vector must be as long as the number
 of subjects. Each vector element must be 1 for cases and 0 for control
-subjects. By default, \code{group = NULL}.}
+subjects. By default, \code{group = NULL}. If group is not NULL, also
+node weighting is actived, and node weights correspond to the sign
+(-1 if z<-2, +1 if z>2, 0 otherwise) and P-value of the z-test = b/SE(b) from simple linear regression
+y ~ x (i.e., glm(node ~ group)).}
 
 \item{method}{Edge weighting method. It can be one of the following:
 \enumerate{
 \item "r2z", weight edges of a graph using Fisher's r-to-z transform 
-to test the group difference between correlation coefficients of pairs 
-of interacting nodes (Fisher, 1915).
+(Fisher, 1915) to test the correlation coefficient of pairs 
+of interacting nodes, if \code{group == NULL}. Otherwise, the correlation
+difference between group will be tested and edge weights correspond to
+the sign (-1 if z<-2, +1 if z>2, 0 otherwise) and P-value of the group
+difference.
 \item "sem", edge weights are defined by a SEM model that implies 
 testing the group effect simultaneously on the j-th source node and 
 the k-th sink node. 
 A new parameter w is defined as the weighted sum of the total effect 
 of the group on source and sink nodes, adjusted by node degree centrality, 
-and edge weights correspond to the sign and P-value of the 
-z-test = w/SE(w). Not available if \code{group == NULL}.
+and edge weights correspond to the sign (-1 if z<-2, +1 if z>2, 0 otherwise)
+and P-value of the z-test = w/SE(w). Not available if \code{group == NULL}.
 \item "cov", edge weights are defined by a new parameter w combining 
 the group effect on the source node (mean group difference, adjusted 
 by source degree centrality), the sink node (mean group difference, 
 adjusted by sink degree centrality), and the source-sink interaction 
-(correlation difference). Edge weights correspond to the sign and 
-P-value of the z-test = w/SE(w) of the combined difference of the 
-group over source node, sink node, and their connection. 
-Not available if \code{group == NULL}.
-}}
-
-\item{seed}{A vector of three cutoffs. By default, \code{seed = "none"} 
-and seed calculation is disabled. Suggested cutoff values are 
-\code{seed = c(0.05, 0.5, 0.9)}. If these cutoffs are defined, seed 
-search is enabled. Nodes can be labeled as either seeds (node 
-weight = 1) or non-seeds (node weight = 0), according to three 
-alternative importance criteria: perturbed group effect, prototype 
-clustering, and closeness node index. The first cutoff is the significance 
-level of the group effect over graph nodes. The second is a threshold 
-corresponding to the prototype clustering distance measure 
-(= 1 - abs(correlation)) cutoff. The third one is the closeness 
-percentile, nodes having closeness greater than the q-th percentile 
-are labeled as seeds. If the seed argument is enabled, the output 
-graph will have three new binary (1: seed, 0: non-seed) vertex 
-attributes:
-\enumerate{
-\item "pvlm", adjusted FDR p-value < alpha seeds from simple linear regression
-y ~ x (i.e., lm(node ~ group));
-\item "proto", prototype seeds derived from \code{\link[protoclust]{protoclust}};
-\item "qi", nodes with \code{\link[igraph]{closeness}} greater than the q-th percentile.
+(correlation difference). Edge weights correspond to the sign
+(-1 if z<-2, +1 if z>2, 0 otherwise) and P-value of the z-test = w/SE(w)
+of the combined difference of the group over source node, sink node, and
+their connection. Not available if \code{group == NULL}.
 }}
 
 \item{limit}{An integer value corresponding to the number of graph 
@@ -86,27 +63,25 @@ Add data-driven edge and node weights to the input graph.
 G <- weightGraph(graph = sachs$graph,
                  data = log(sachs$pkc),
                  group = sachs$group,
-                 method = "r2z",
-                 seed = c(0.05, 0.5, 0.5))
+                 method = "r2z")
 
 # New edge attributes
-E(G)$pv
-E(G)$zsign
+head(E(G)$pv); summary(E(G)$pv)
+head(E(G)$zsign); table(E(G)$zsign)
 
-# New nodes attributes (1: seed, 0: non-seed)
-V(G)$pvlm; table(V(G)$pvlm)
-V(G)$proto; table(V(G)$proto)
-V(G)$qi; table(V(G)$qi)
-
-# Reduced graph (using highest closeness nodes)
-R <- induced_subgraph(G, vids = V(G)$name[V(G)$qi == 1])
-R <- properties(R)[[1]]
+# New nodes attributes
+head(V(G)$pv); summary(V(G)$pv)
+head(V(G)$zsign); table(V(G)$zsign)
 
 }
 \references{
 Palluzzi F, Grassi M (2021). SEMgraph: An R Package for Causal Network 
 Analysis of High-Throughput Data with Structural Equation Models. 
 <arXiv:2103.08332>
+
+Fisher RA (1915). Frequency Distribution of the Values of the Correlation
+Coefficient in Samples from an Indefinitely Large Population. Biometrika,
+10(4), 507–521. <doi:10.2307/2331838>
 }
 \author{
 Mario Grassi \email{mario.grassi@unipv.it}

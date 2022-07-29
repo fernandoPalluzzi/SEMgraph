@@ -26,8 +26,8 @@ screen (default = TRUE).}
 }
 \value{
 A list of three objects: (i) the DAG used to perform the Shipley
-test (ii) the list of all d-separation tests over missing edges in the
-input graph and (iii) the overall Shipley's' P-value.
+test (ii) the data.frame of all d-separation tests over missing edges in
+the DAG and (iii) the overall Shipley's' P-value.
 }
 \description{
 Compute all the P-values of the d-separation tests

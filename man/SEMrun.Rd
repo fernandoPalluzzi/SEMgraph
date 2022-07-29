@@ -11,6 +11,8 @@ SEMrun(
   fit = 0,
   algo = "lavaan",
   start = NULL,
+  SE = "standard",
+  n_rep = 1000,
   limit = 100,
   ...
 )
@@ -53,10 +55,18 @@ Fixed values may compromise model fitting, and scaling them is a safe
 option to avoid this problem. As a rule of thumb, to our experience,
 \code{start = 0.1} generally performs well with {-1, 0, 1} weights.}
 
+\item{SE}{If "standard" (default), with \code{algo = "lavaan"},
+conventional standard errors are computed based on inverting the observed
+information matrix. If "none", no standard errors are computed.}
+
+\item{n_rep}{Number of randomization replicates (default = 1000),
+for permutation flip or boostrap samples, if \code{algo = "ricf"}.}
+
 \item{limit}{An integer value corresponding to the network size
 (i.e., number of nodes). Beyond this limit, the execution under
-\code{algo = "lavaan"} will be ridirected to \code{algo = "ricf"}, if
-fit is either 0 or 1, or to \code{algo = "ggm"}, if \code{fit = 2}.
+\code{algo = "lavaan"} will run with \code{SE = "none"}, if 
+\code{fit = 0}, or will be ridirected to \code{algo = "ricf"}, if
+\code{fit = 1}, or to \code{algo = "ggm"}, if \code{fit = 2}.
 This redirection is necessary to reduce the computational demand of
 standard error estimation by lavaan. Increasing this number will
 enforce lavaan execution when \code{algo = "lavaan"}.}
@@ -137,17 +147,9 @@ sem0 <- SEMrun(graph = sachs$graph, data = log(sachs$pkc), algo = "lavaan")
 summary(sem0$fit)
 head(parameterEstimates(sem0$fit))
 
-sem0 <- SEMrun(graph = sachs$graph, data = log(sachs$pkc), algo = "ricf")
-summary(sem0$fit)
-head(sem0$fit$parameterEstimates)
-
-sem0 <- SEMrun(graph = sachs$graph, data = log(sachs$pkc), algo = "cggm")
-summary(sem0$fit)
-head(sem0$fit$parameterEstimates)
-
 # Graphs
-gplot(sem0$graph, main = "edge differences")
-plot(sem0$graph, layout = layout.circle, main = "edge differences")
+gplot(sem0$graph, main = "significant edge weights")
+plot(sem0$graph, layout = layout.circle, main = "significant edge weights")
 
 
 #### Model fitting (common model, group effect on nodes)
@@ -161,8 +163,8 @@ print(sem1$gest)
 head(parameterEstimates(sem1$fit))
 
 # Graphs
-gplot(sem1$graph, main = "node differences")
-plot(sem1$graph, layout = layout.circle, main = "node differences")
+gplot(sem1$graph, main = "Between group node differences")
+plot(sem1$graph, layout = layout.circle, main = "Between group node differences")
 
 
 #### Two-group model fitting (group effect on edges)

@@ -2,42 +2,79 @@
 % Please edit documentation in R/semCluster.R
 \name{mergeNodes}
 \alias{mergeNodes}
-\title{Graph nodes merging by a user-defined membership attribute}
+\title{Graph nodes merging by a membership attribute}
 \usage{
-mergeNodes(graph, membership, HM, ...)
+mergeNodes(graph, data, h = 0.5, membership = NULL, HM = NULL, ...)
 }
 \arguments{
-\item{graph}{Network as an igraph object.}
+\item{graph}{network as an igraph object.}
+
+\item{data}{A matrix or data.frame. Rows correspond to subjects, and
+columns to graph nodes.}
+
+\item{h}{Cutting the minimax clustering at height, h = 1 - abs(cor(j,k)),
+yielding a merged node (and a reduced data set) in which every node in the
+cluster has correlation of at least cor(j,k) with the prototype node.
+By default, \code{h = 0.5}, i.e. cor(j,k) = 0.5.}
 
 \item{membership}{Cluster membership. A vector of cluster membership
-identifiers, where vector names correspond to graph node names.
-Topological graph clustering can be done using
-\code{\link[SEMgraph]{clusterGraph}}.}
+identifiers as numeric values, where vector names correspond to graph
+node names. By default, \code{membership = NULL}.}
 
-\item{HM}{Hidden model label. If HM = "LV", a latent variable (LV)
-will be defined as common unknown cause acting on cluster nodes.
-If HM = "CV", cluster nodes will be considered as regressors of a
+\item{HM}{Hidden cluster label. If membership is derived from clusterGraph:
+HM = "LV", a latent variable (LV) will be defined as common unknown cause
+acting on cluster nodes. If HM = "CV", cluster nodes will be considered as regressors of a
 latent composite variable (CV). Finally, if HM = "UV", an unmeasured
 variable (UV) is defined, where source nodes of the module (i.e.,
 in-degree = 0) act as common regressors influencing the other nodes
-via an unmeasured variable.}
+via an unmeasured variable. By default, \code{HM = NULL}}
 
 \item{...}{Currently ignored.}
 }
 \value{
-A network with merged nodes as an igraph object.
+A list of 2 objects is returned:
+\enumerate{
+\item "gLM", A graph with merged nodes as an igraph object;
+\item "membership", cluster membership vector for each node.
+}
 }
 \description{
-Merge groups of graph nodes using a custom membership
-attribute (e.g., cluster membership).
+Merge groups of graph nodes using hierarchical clustering
+with prototypes derived from \code{\link[protoclust]{protoclust}} or 
+custom membership attribute (e.g., cluster membership derived from
+\code{\link[SEMgraph]{clusterGraph}}).
+}
+\details{
+Hierarchical clustering with prototypes (or Minmax linkage) is
+unique in naturally associating a node (the prototypes) with every
+interior node of the dendogram. Thus, for each merge we have a single
+representative data point for the resulting cluster (Bien, Tibshirani, 2011).
+These prototypes can be used to greatly enhance the interpretability of
+merging nodes and data reduction for SEM fitting.
 }
 \examples{
 
-# Clustering ALS graph with WTC method
+# Gene memberships with prototypes with h=0.5
 G <- properties(alsData$graph)[[1]]
-membership <- clusterGraph(graph = G, type = "wtc")
-M <- mergeNodes(G, membership, HM = "LV")
+M <- mergeNodes(G, alsData$exprs, h = 0.5)
 
+# Gene memberships with EBC method and size=10
+m <- clusterGraph(G, type = "ebc", size = 10)
+M <- mergeNodes(G, alsData$exprs, membership = m, HM = "LV")
+
+# Gene memberships defined by user
+c1 <- c("5894", "5576", "5567", "572", "598")
+c2 <- c("6788", "84152", "2915", "836", "5530")
+c3 <- c("5603", "6300", "1432", "5600")
+m <- c(rep(1,5), rep(2,5), rep(3,4))
+names(m) <- c(c1, c2, c3)
+M <- mergeNodes(G, alsData$exprs, membership = m, HM = "CV")
+
+}
+\references{
+Bien J, Tibshirani R (2011). Hierarchical Clustering With Prototypes via
+Minimax Linkage. Journal of the American Statistical Association
+106(495): 1075-1084. <doi:10.1198/jasa.2011.tm10183>
 }
 \seealso{
 \code{\link[SEMgraph]{clusterGraph}}

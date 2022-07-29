@@ -19,7 +19,7 @@ glmnet."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mat
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
       </span>
     </div>
 
@@ -73,17 +73,25 @@ topological order or top-down order search and LASSO-based algorithm, implemente
     <h2>Arguments</h2>
     <dl><dt>graph</dt>
 <dd><p>An igraph object.</p></dd>
+
+
 <dt>data</dt>
 <dd><p>A matrix whith n rows corresponding to subjects, and p columns
 to graph nodes (variables).</p></dd>
+
+
 <dt>LO</dt>
 <dd><p>character for linear order method. If LO="TO" the topological
 order of the input DAG is enabled (default), while LO="TD" the data-driven
 top-down minimum conditional variance method is performed.</p></dd>
+
+
 <dt>beta</dt>
 <dd><p>Numeric value. Minimum absolute LASSO beta coefficient for
 a new interaction to be retained in the final model. By default,
 <code>beta = 0</code>.</p></dd>
+
+
 <dt>lambdas</dt>
 <dd><p>A vector of regularization LASSO lambda values. If lambdas is
 NULL, the <code><a href="https://glmnet.stanford.edu/reference/glmnet.html" class="external-link">glmnet</a></code> default using cross-validation lambdas
@@ -92,6 +100,8 @@ fixing lambdas = sqrt(log(p)/n), as suggested by Janková and van de Geer
 (2015), when LO="TO" or lambdas = 2/sqrt(n) * qnorm(1 - 0.2/(2*p*(p-1))), as suggested by
 Shojaie and Michailidis (2010), when LO="TD". This will both reduce
 computational time and provide the same result at each run.</p></dd>
+
+
 <dt>penalty</dt>
 <dd><p>A logical value. Separate penalty factors can be applied to
 each coefficient. This is a number that multiplies lambda to allow differential
@@ -101,15 +111,22 @@ on the graph edges: 0 (i.e., edge present) and 1 (i.e., missing edge) ensures
 that the input edges will be retained in the final model. If FALSE the
 <code><a href="https://glmnet.stanford.edu/reference/glmnet.html" class="external-link">glmnet</a></code> default is enabled (all weights equal to 1). Note:
 the penalty factors are internally rescaled to sum p (the number of variables).</p></dd>
+
+
 <dt>verbose</dt>
 <dd><p>A logical value. If FALSE (default), the processed graphs
 will not be plotted to screen.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Currently ignored.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A list of 3 igraph objects:</p><ol><li><p>"dag", the estimated DAG;</p></li>
+    
+
+<p>A list of 3 igraph objects:</p><ol><li><p>"dag", the estimated DAG;</p></li>
 <li><p>"dag.new", new estimated connections;</p></li>
 <li><p>"dag.old", connections preserved from the input graph.</p></li>
 </ol></div>
@@ -162,7 +179,7 @@ Assumption. Biometrika, 106(4): 973-980.</p>
 <span class="r-in"><span class="va">G</span> <span class="op">&lt;-</span> <span class="fu">SEMdag</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span>, beta <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> WARNING: input graph is not acyclic !</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Applying graph -&gt; DAG conversion...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> DAG conversion: TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> DAG conversion : TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Node Linear Ordering with TO setting</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"></span>
@@ -172,9 +189,9 @@ Assumption. Biometrika, 106(4): 973-980.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 1.087236  srmr: 0.01240889 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node activation: 0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node activation: 5.093925e-12 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 0.03137157 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Graphs</span></span>
@@ -201,7 +218,7 @@ Assumption. Biometrika, 106(4): 973-980.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
       </footer></div>

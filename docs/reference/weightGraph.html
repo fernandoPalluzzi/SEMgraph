@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
       </span>
     </div>
 
@@ -53,84 +53,79 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">weightGraph</span><span class="op">(</span>
-  <span class="va">graph</span>,
-  <span class="va">data</span>,
-  group <span class="op">=</span> <span class="cn">NULL</span>,
-  method <span class="op">=</span> <span class="st">"r2z"</span>,
-  seed <span class="op">=</span> <span class="st">"none"</span>,
-  limit <span class="op">=</span> <span class="fl">10000</span>,
-  <span class="va">...</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">weightGraph</span><span class="op">(</span><span class="va">graph</span>, <span class="va">data</span>, group <span class="op">=</span> <span class="cn">NULL</span>, method <span class="op">=</span> <span class="st">"r2z"</span>, limit <span class="op">=</span> <span class="fl">10000</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>graph</dt>
 <dd><p>An igraph object.</p></dd>
+
+
 <dt>data</dt>
 <dd><p>A matrix or data.frame. Rows correspond to subjects, and
 columns to graph nodes.</p></dd>
+
+
 <dt>group</dt>
 <dd><p>Binary vector. This vector must be as long as the number
 of subjects. Each vector element must be 1 for cases and 0 for control
-subjects. By default, <code>group = NULL</code>.</p></dd>
+subjects. By default, <code>group = NULL</code>. If group is not NULL, also
+node weighting is actived, and node weights correspond to the sign
+(-1 if z&lt;-2, +1 if z&gt;2, 0 otherwise) and P-value of the z-test = b/SE(b) from simple linear regression
+y ~ x (i.e., glm(node ~ group)).</p></dd>
+
+
 <dt>method</dt>
 <dd><p>Edge weighting method. It can be one of the following:</p><ol><li><p>"r2z", weight edges of a graph using Fisher's r-to-z transform 
-to test the group difference between correlation coefficients of pairs 
-of interacting nodes (Fisher, 1915).</p></li>
+(Fisher, 1915) to test the correlation coefficient of pairs 
+of interacting nodes, if <code>group == NULL</code>. Otherwise, the correlation
+difference between group will be tested and edge weights correspond to
+the sign (-1 if z&lt;-2, +1 if z&gt;2, 0 otherwise) and P-value of the group
+difference.</p></li>
 <li><p>"sem", edge weights are defined by a SEM model that implies 
 testing the group effect simultaneously on the j-th source node and 
 the k-th sink node. 
 A new parameter w is defined as the weighted sum of the total effect 
 of the group on source and sink nodes, adjusted by node degree centrality, 
-and edge weights correspond to the sign and P-value of the 
-z-test = w/SE(w). Not available if <code>group == NULL</code>.</p></li>
+and edge weights correspond to the sign (-1 if z&lt;-2, +1 if z&gt;2, 0 otherwise)
+and P-value of the z-test = w/SE(w). Not available if <code>group == NULL</code>.</p></li>
 <li><p>"cov", edge weights are defined by a new parameter w combining 
 the group effect on the source node (mean group difference, adjusted 
 by source degree centrality), the sink node (mean group difference, 
 adjusted by sink degree centrality), and the source-sink interaction 
-(correlation difference). Edge weights correspond to the sign and 
-P-value of the z-test = w/SE(w) of the combined difference of the 
-group over source node, sink node, and their connection. 
-Not available if <code>group == NULL</code>.</p></li>
+(correlation difference). Edge weights correspond to the sign
+(-1 if z&lt;-2, +1 if z&gt;2, 0 otherwise) and P-value of the z-test = w/SE(w)
+of the combined difference of the group over source node, sink node, and
+their connection. Not available if <code>group == NULL</code>.</p></li>
 </ol></dd>
-<dt>seed</dt>
-<dd><p>A vector of three cutoffs. By default, <code>seed = "none"</code> 
-and seed calculation is disabled. Suggested cutoff values are 
-<code>seed = c(0.05, 0.5, 0.9)</code>. If these cutoffs are defined, seed 
-search is enabled. Nodes can be labeled as either seeds (node 
-weight = 1) or non-seeds (node weight = 0), according to three 
-alternative importance criteria: perturbed group effect, prototype 
-clustering, and closeness node index. The first cutoff is the significance 
-level of the group effect over graph nodes. The second is a threshold 
-corresponding to the prototype clustering distance measure 
-(= 1 - abs(correlation)) cutoff. The third one is the closeness 
-percentile, nodes having closeness greater than the q-th percentile 
-are labeled as seeds. If the seed argument is enabled, the output 
-graph will have three new binary (1: seed, 0: non-seed) vertex 
-attributes:</p><ol><li><p>"pvlm", adjusted FDR p-value &lt; alpha seeds from simple linear regression
-y ~ x (i.e., lm(node ~ group));</p></li>
-<li><p>"proto", prototype seeds derived from <code><a href="https://rdrr.io/pkg/protoclust/man/protoclust.html" class="external-link">protoclust</a></code>;</p></li>
-<li><p>"qi", nodes with <code><a href="https://rdrr.io/pkg/igraph/man/closeness.html" class="external-link">closeness</a></code> greater than the q-th percentile.</p></li>
-</ol></dd>
+
+
 <dt>limit</dt>
 <dd><p>An integer value corresponding to the number of graph 
 edges. Beyond this limit, multicore computation is enabled to reduce 
 the computational burden. 
 By default, <code>limit = 10000</code>.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Currently ignored.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A weighted graph, as an igraph object.</p>
+    
+
+<p>A weighted graph, as an igraph object.</p>
     </div>
     <div id="references">
     <h2>References</h2>
     <p>Palluzzi F, Grassi M (2021). SEMgraph: An R Package for Causal Network 
 Analysis of High-Throughput Data with Structural Equation Models. 
 &lt;arXiv:2103.08332&gt;</p>
+<p>Fisher RA (1915). Frequency Distribution of the Values of the Correlation
+Coefficient in Samples from an Indefinitely Large Population. Biometrika,
+10(4), 507–521. &lt;doi:10.2307/2331838&gt;</p>
     </div>
     <div id="author">
     <h2>Author</h2>
@@ -144,50 +139,31 @@ Analysis of High-Throughput Data with Structural Equation Models.
 <span class="r-in"><span class="va">G</span> <span class="op">&lt;-</span> <span class="fu">weightGraph</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>,</span>
 <span class="r-in">                 data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span>,</span>
 <span class="r-in">                 group <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">group</span>,</span>
-<span class="r-in">                 method <span class="op">=</span> <span class="st">"r2z"</span>,</span>
-<span class="r-in">                 seed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-in">                 method <span class="op">=</span> <span class="st">"r2z"</span><span class="op">)</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># New edge attributes</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">pv</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 4.401098e-01 5.167191e-61 4.742076e-01 5.848183e-07 1.003647e-09</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6] 9.642826e-01 2.910306e-03 6.797804e-01 8.370494e-01 2.164419e-01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11] 5.465880e-01 5.528435e-01 8.129283e-02 8.879150e-02 4.886605e-01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [16] 2.352088e-23 1.495446e-36 3.326762e-14 2.661577e-01 2.661577e-01</span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">zsign</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 0 1 0 1 1 0 1 0 0 0 0 0 0 0 0 1 1 1 0 0</span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">pv</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">pv</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2.661577e-01 8.370494e-01 5.528435e-01 4.401098e-01 4.742076e-01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [6] 1.003647e-09</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      Min.   1st Qu.    Median      Mean   3rd Qu.      Max. </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 0.0000000 0.0000004 0.2412998 0.2952637 0.5031423 0.9642826 </span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">zsign</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">zsign</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0 0 0 0 0 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0  1 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13  7 </span>
 <span class="r-in"></span>
-<span class="r-in"><span class="co"># New nodes attributes (1: seed, 0: non-seed)</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">pvlm</span>; <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">pvlm</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 1 1 1 0 1 1 1 1 1 0 1</span>
+<span class="r-in"><span class="co"># New nodes attributes</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">pv</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">pv</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.721660e-35 1.576567e-06 2.219336e-38 7.635299e-22 8.952626e-95</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [6] 5.688104e-01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      Min.   1st Qu.    Median      Mean   3rd Qu.      Max. </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 0.0000000 0.0000000 0.0000000 0.1076364 0.0000008 0.6151884 </span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">zsign</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">zsign</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1]  1  1 -1 -1 -1  0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0 1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 9 </span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">proto</span>; <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">proto</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 0 1 0 0 1 1 1 1 0 1 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0 1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 6 </span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">qi</span>; <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">qi</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 1 1 1 1 1 0 0 0 0 0 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0 1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 5 </span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Reduced graph (using highest closeness nodes)</span></span>
-<span class="r-in"><span class="va">R</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/igraph/man/subgraph.html" class="external-link">induced_subgraph</a></span><span class="op">(</span><span class="va">G</span>, vids <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">name</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">qi</span> <span class="op">==</span> <span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">R</span> <span class="op">&lt;-</span> <span class="fu"><a href="properties.html">properties</a></span><span class="op">(</span><span class="va">R</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Frequency distribution of graph components</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   n.nodes n.graphs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       5        1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Percent of vertices in the giant component: 100 %</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   is.simple      is.dag is.directed is.weighted </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        TRUE       FALSE        TRUE       FALSE </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> which.mutual.FALSE  which.mutual.TRUE </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                  5                  2 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -1  0  1 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  3  2  6 </span>
 <span class="r-in"></span>
 </code></pre></div>
     </div>
@@ -203,7 +179,7 @@ Analysis of High-Throughput Data with Structural Equation Models.
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
       </footer></div>

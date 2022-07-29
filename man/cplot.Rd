@@ -40,6 +40,8 @@ G <- alsData$graph
 membership <- clusterGraph(graph = G, type = "wtc")
 cplot(G, membership, map = TRUE, verbose = FALSE)
 cplot(G, membership, map = FALSE, verbose = TRUE)
+# The list of cluster graphs !
+cg <- cplot(G, membership); cg
 
 }
 
