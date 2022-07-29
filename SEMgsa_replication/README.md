@@ -25,7 +25,7 @@ summarised as follows:
 
 ## Notes
 1. Set folder SEMgsa_code_data as the current working directory.
-2. Specify a smaller number of iterations by argument “N” to reduce computing time for data simulations.
+2. Specify a smaller number of iterations through the `N` argument to reduce computing time for data simulations.
 
 ## Data source
 The original data used in this research can be downloaded at [**GSE172114**](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE172114).
