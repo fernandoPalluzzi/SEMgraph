@@ -277,7 +277,7 @@ gplot(model3$graph, main="outer")
 
 **Figure 2. ALS improved model (basic strategy).** Data-driven model improvement of the input ALS model.
 
-![alt text](https://github.com/fernandoPalluzzi/SEMgraph/blob/master/docs/figures/Supplementary_Figure2.png)
+![alt text](https://github.com/fernandoPalluzzi/SEMgraph/blob/master/docs/figures/Figure2.png)
 
 ### 2.5. Communities and factor scores.
 
