@@ -6,6 +6,8 @@ The following section offers an overview of **SEMgraph** functionalities. Starti
 2. **Causal effects estimation, model learning, extension, and clusterinng (Amyotrophic Lateral Sclerosis dataset)**
 3. **Gene Set Analysis and perturbed subnetwork/module extraction (Frontotemporal Dementia dataset)**
 
+&nbsp;
+
 ## 1. Supplementary packages
 
 Besides the required packages, SEMgraph suggests the use of org.Hs.eg.db, for gene ID conversion.
@@ -21,6 +23,8 @@ The huge package does it by applying a nonparanormal transform (PMID: 26834510).
 ```r
 install.packages("huge")
 ```
+
+&nbsp;
 
 ## 2. Amyotrophic Lateral Sclerosis (ALS) data analysis.
 
@@ -114,7 +118,7 @@ head(DRN)
 
 # Differentially Regulated Edges (DREs)
 DRE <- sem2$dest[sem2$dest$pvalue < 0.05,]
-nrow(DRE)
+nrow(DRE)PMID: 26834510
 head(DRE)
 
 
@@ -430,8 +434,6 @@ dev.off()
 
 ##--------------------------------------------------------------------##
 ```
-
-
 
 &nbsp;
 
