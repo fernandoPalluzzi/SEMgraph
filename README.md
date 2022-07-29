@@ -61,7 +61,7 @@ The full list of **SEMgraph** functions with examples is available at our websit
 
 - **SEMtree** (forthcoming). Tree-based structure learning methods implemented with graph and data-driven SEM-based algorithms.
 
-- **SEMbap** (forthcoming). Exhaustive search of all possible missing edges of a mixed acyclic graph (BAP or DAG) through bow-free covariance search and d-separation evaluation.
+- **SEMbap** (forthcoming). Exhaustive bow-free search for missing edges of a mixed acyclic graph (BAP or DAG) via d-separation.
 
 &nbsp;
 
