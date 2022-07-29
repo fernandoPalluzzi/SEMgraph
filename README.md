@@ -55,6 +55,16 @@ The full list of **SEMgraph** functions with examples is available at our websit
 
 &nbsp;
 
+## SEMgraph projects
+
+- [**SEMgsa**](). SEM-based gene set analysis tool enabling perturbed pathway and gene finding by exploiting the causal structure of a graph.
+
+- **SEMtree** (forthcoming). Tree-based structure learning methods implemented with graph and data-driven SEM-based algorithms.
+
+- **SEMbap** (forthcoming). Exhaustive search of all possible missing edges of a mixed acyclic graph (BAP or DAG) through bow-free covariance search and d-separation evaluation.
+
+&nbsp;
+
 ## Available datasets
 
 **SEMgraph** offers several datasets to work with, for both training and research. They include (**\*\*** available with the [**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata) expansion):
