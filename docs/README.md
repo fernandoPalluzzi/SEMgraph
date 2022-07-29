@@ -8,7 +8,7 @@ The following section offers an overview of **SEMgraph** functionalities. Starti
 
 &nbsp;
 
-## 1. Supplementary packages
+## 1. Supplementary packages.
 
 Besides the required packages, SEMgraph suggests the use of org.Hs.eg.db, for gene ID conversion.
 SEMgraph uses entrez IDs to avoid special chatacters (such as hyphens or slashes), but it can use official gene symbols as labels.
