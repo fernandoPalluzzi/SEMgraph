@@ -6,17 +6,19 @@ The following section offers an overview of **SEMgraph** functionalities. Starti
 2. **Causal effects estimation, model learning, extension, and clusterinng (Amyotrophic Lateral Sclerosis dataset)**
 3. **Gene Set Analysis and perturbed subnetwork/module extraction (Frontotemporal Dementia dataset)**
 
-## 1. Manual dependencies installation
+## 1. Supplementary packages
+
+Besides the required packages, SEMgraph suggests the use of org.Hs.eg.db, for gene ID conversion.
+SEMgraph uses entrez IDs to avoid special chatacters (such as hyphens or slashes), but it can use official gene symbols as labels.
 
 ```r
-# Besides the required packages, SEMgraph suggests the use of org.Hs.eg.db, for gene ID conversion.
-# SEMgraph uses entrez IDs to avoid special chatacters (such as hyphens or slashes), but it can use official gene symbols as labels.
-
 install.packages("org.Hs.eg.db")
+```
 
-# Sometimes, it could be useful to relax Gaussianity constraints when fitting a SEM.
-# The huge package does it by applying a nonparanormal transform (PMID: 26834510).
+Sometimes, it could be useful to relax Gaussianity constraints when fitting a SEM.
+The huge package does it by applying a nonparanormal transform (PMID: 26834510).
 
+```r
 install.packages("huge")
 ```
 
