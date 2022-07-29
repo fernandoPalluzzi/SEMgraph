@@ -26,7 +26,7 @@ a Completed Partially Directed Acyclic Graph (CPDAG)."><!-- mathjax --><script s
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
       </span>
     </div>
 
@@ -87,11 +87,17 @@ a Completed Partially Directed Acyclic Graph (CPDAG).</p>
     <h2>Arguments</h2>
     <dl><dt>graph</dt>
 <dd><p>An igraph object.</p></dd>
+
+
 <dt>data</dt>
 <dd><p>A matrix or data.frame. Rows correspond to subjects, and
 columns to graph nodes (variables).</p></dd>
+
+
 <dt>seed</dt>
 <dd><p>A vector of seed nodes.</p></dd>
+
+
 <dt>type</dt>
 <dd><p>Tree-based structure learning method. Four algorithms 
 are available:</p><ul><li><p>"ST" (default). Steiner Tree (ST) identification via fast Kou's algorithm 
@@ -119,10 +125,13 @@ The key idea is to first recover the skeleton of the polytree by applying
 the CLE algorithm  to the pairwise sample correlations of the data matrix.
 After the skeleton is recovered, the set of all v-structures can be correctly
 identified via a simple thresholding approach to pairwise sample correlations.
-Finally, the CPDAG of the polytree can be found applying iteratively only
-Rule 1 of Meek (1995). Argument <code>seed</code> must be specified to analyse a
-subset of nodes (variables) of interest.</p></li>
+CPDAG can be found applying iteratively only Rule 1 of Meek (1995). Finally,
+the CPDAG is trasformed in a tree with the <code><a href="graph2dag.html">graph2dag()</a></code> function.
+Argument <code>seed</code> must be specified to analyse a subset of nodes
+(variables) of interest.</p></li>
 </ul></dd>
+
+
 <dt>eweight</dt>
 <dd><p>Edge weight type for igraph object derived from
 <code><a href="weightGraph.html">weightGraph</a></code> or from user-defined distances. 
@@ -138,20 +147,29 @@ If <code>eweight = "pvalue"</code>, weights (p-values) will be transformed
 to the inverse of negative base-10 logarithm. 
 If <code>eweight = "custom"</code>, the algorithm will use the distance 
 measure specified by the user as "weight" edge attribute.</p></dd>
+
+
 <dt>alpha</dt>
 <dd><p>Threshold for rejecting a pair of node being independent in 
 "CPDAG" algorithm. The latter implements a natural v-structure identification 
 procedure by thresholding the pairwise sample correlations over all adjacent 
 pairs of edges with some appropriate threshold. By default, 
 <code>alpha = 0.05</code>.</p></dd>
+
+
 <dt>verbose</dt>
 <dd><p>If TRUE, it shows the output tree (not recommended for large graphs).</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Currently ignored.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>An <code>igraph</code> object. If <code>type = "ST"</code>, seed nodes are 
+    
+
+<p>An <code>igraph</code> object. If <code>type = "ST"</code>, seed nodes are 
 colored in green and connectors in white. If <code>type = "ST"</code> and
 <code>type = "MST"</code>, edges are colored in green if not present in the input
 graph. If <code>type = "CPDAG"</code>, bidirected edges are colored in golden
@@ -202,27 +220,63 @@ Structural Learning and Inverse Correlation Estimation. arXiv:
 <span class="r-in"><span class="co"># graph-based trees</span></span>
 <span class="r-in"><span class="va">seed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">name</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/AnnotationDbi/man/Bimap-envirAPI.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/gorder.html" class="external-link">vcount</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span>, <span class="fl">10</span><span class="op">)</span><span class="op">]</span></span>
 <span class="r-in"><span class="va">tree1</span><span class="op">&lt;-</span> <span class="fu">SEMtree</span><span class="op">(</span><span class="va">graph</span>, <span class="va">data</span>, seed<span class="op">=</span><span class="va">seed</span>, type<span class="op">=</span><span class="st">"ST"</span>, verbose<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
-<span class="r-plt img"><img src="SEMtree-1.png" alt="" width="700" height="433"></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> RICF solver ended normally after 2 iterations </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Frequency distribution of graph components</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 14.64233  srmr: 0.2994201 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   n.nodes n.graphs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      18        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Percent of vertices in the giant component: 100 %</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   is.simple      is.dag is.directed is.weighted </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        TRUE        TRUE        TRUE        TRUE </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> which.mutual.FALSE </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 17 </span>
+<span class="r-plt img"><img src="SEMtree-1.png" alt="" width="700" height="433"></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NLMINB solver ended normally after 7 iterations </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 13.99934  srmr: 0.2803663 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span class="va">tree2</span><span class="op">&lt;-</span> <span class="fu">SEMtree</span><span class="op">(</span><span class="va">graph</span>, <span class="va">data</span>, seed<span class="op">=</span><span class="cn">NULL</span>, type<span class="op">=</span><span class="st">"MST"</span>, verbose<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
-<span class="r-plt img"><img src="SEMtree-2.png" alt="" width="700" height="433"></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> RICF solver ended normally after 2 iterations </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Frequency distribution of graph components</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 11.31452  srmr: 0.309913 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   n.nodes n.graphs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      31        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Percent of vertices in the giant component: 100 %</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   is.simple      is.dag is.directed is.weighted </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        TRUE        TRUE        TRUE        TRUE </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> which.mutual.FALSE </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 30 </span>
+<span class="r-plt img"><img src="SEMtree-2.png" alt="" width="700" height="433"></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NLMINB solver ended normally after 7 iterations </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 10.66829  srmr: 0.2783435 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># data-driven trees</span></span>
 <span class="r-in"><span class="va">V</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/AnnotationDbi/man/Bimap-toTable.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/AnnotationDbi/man/Bimap-toTable.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">name</span><span class="op">]</span></span>
 <span class="r-in"><span class="va">tree3</span><span class="op">&lt;-</span> <span class="fu">SEMtree</span><span class="op">(</span><span class="cn">NULL</span>, <span class="va">data</span>, seed<span class="op">=</span><span class="va">V</span>, type<span class="op">=</span><span class="st">"CAT"</span>, verbose<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Score weighting of 930 edges...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  / 0 % elapsed=00s    - 1 % elapsed=00s, remaining~07s \ 2 % elapsed=00s, remaining~06s | 3 % elapsed=00s, remaining~06s / 4 % elapsed=00s, remaining~06s - 5 % elapsed=00s, remaining~06s \ 6 % elapsed=00s, remaining~06s | 8 % elapsed=00s, remaining~06s / 9 % elapsed=01s, remaining~06s - 10% elapsed=01s, remaining~06s \ 11% elapsed=01s, remaining~05s | 12% elapsed=01s, remaining~05s / 13% elapsed=01s, remaining~05s - 14% elapsed=01s, remaining~05s \ 15% elapsed=01s, remaining~05s | 16% elapsed=01s, remaining~05s / 17% elapsed=01s, remaining~05s - 18% elapsed=01s, remaining~05s \ 19% elapsed=01s, remaining~05s | 20% elapsed=01s, remaining~05s / 22% elapsed=01s, remaining~05s - 23% elapsed=01s, remaining~05s \ 24% elapsed=01s, remaining~05s | 25% elapsed=01s, remaining~04s / 26% elapsed=02s, remaining~04s - 27% elapsed=02s, remaining~04s \ 28% elapsed=02s, remaining~04s | 29% elapsed=02s, remaining~04s / 30% elapsed=02s, remaining~04s - 31% elapsed=02s, remaining~04s \ 32% elapsed=02s, remaining~04s | 33% elapsed=02s, remaining~04s / 34% elapsed=02s, remaining~04s - 35% elapsed=02s, remaining~04s \ 37% elapsed=02s, remaining~04s | 38% elapsed=02s, remaining~04s / 39% elapsed=02s, remaining~04s - 40% elapsed=02s, remaining~04s \ 41% elapsed=02s, remaining~03s | 42% elapsed=02s, remaining~03s / 43% elapsed=03s, remaining~03s - 44% elapsed=03s, remaining~03s \ 45% elapsed=03s, remaining~03s | 46% elapsed=03s, remaining~03s / 47% elapsed=03s, remaining~03s - 48% elapsed=03s, remaining~03s \ 49% elapsed=03s, remaining~03s | 51% elapsed=03s, remaining~03s / 52% elapsed=03s, remaining~03s - 53% elapsed=03s, remaining~03s \ 54% elapsed=03s, remaining~03s | 55% elapsed=03s, remaining~03s / 56% elapsed=03s, remaining~03s - 57% elapsed=03s, remaining~02s \ 58% elapsed=03s, remaining~02s | 59% elapsed=03s, remaining~02s / 60% elapsed=03s, remaining~02s - 61% elapsed=04s, remaining~02s \ 62% elapsed=04s, remaining~02s | 63% elapsed=04s, remaining~02s / 65% elapsed=04s, remaining~02s - 66% elapsed=04s, remaining~02s \ 67% elapsed=04s, remaining~02s | 68% elapsed=04s, remaining~02s / 69% elapsed=04s, remaining~02s - 70% elapsed=04s, remaining~02s \ 71% elapsed=04s, remaining~02s | 72% elapsed=04s, remaining~02s / 73% elapsed=04s, remaining~02s - 74% elapsed=04s, remaining~01s \ 75% elapsed=04s, remaining~01s | 76% elapsed=04s, remaining~01s / 77% elapsed=04s, remaining~01s - 78% elapsed=05s, remaining~01s \ 80% elapsed=05s, remaining~01s | 81% elapsed=05s, remaining~01s / 82% elapsed=05s, remaining~01s - 83% elapsed=05s, remaining~01s \ 84% elapsed=05s, remaining~01s | 85% elapsed=05s, remaining~01s / 86% elapsed=05s, remaining~01s - 87% elapsed=05s, remaining~01s \ 88% elapsed=05s, remaining~01s | 89% elapsed=05s, remaining~01s / 90% elapsed=05s, remaining~01s - 91% elapsed=05s, remaining~00s \ 92% elapsed=05s, remaining~00s | 94% elapsed=05s, remaining~00s / 95% elapsed=05s, remaining~00s - 96% elapsed=06s, remaining~00s \ 97% elapsed=06s, remaining~00s | 98% elapsed=06s, remaining~00s / 99% elapsed=06s, remaining~00s - 100% elapsed=06s, remaining~00s</span>
-<span class="r-plt img"><img src="SEMtree-3.png" alt="" width="700" height="433"></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> RICF solver ended normally after 2 iterations </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  / 0 % elapsed=00s    - 1 % elapsed=00s, remaining~23s \ 2 % elapsed=00s, remaining~21s | 3 % elapsed=01s, remaining~21s / 4 % elapsed=01s, remaining~20s - 5 % elapsed=01s, remaining~21s \ 6 % elapsed=01s, remaining~21s | 8 % elapsed=02s, remaining~21s / 9 % elapsed=02s, remaining~21s - 10% elapsed=02s, remaining~21s \ 11% elapsed=02s, remaining~20s | 12% elapsed=03s, remaining~20s / 13% elapsed=03s, remaining~19s - 14% elapsed=03s, remaining~19s \ 15% elapsed=03s, remaining~19s | 16% elapsed=04s, remaining~18s / 17% elapsed=04s, remaining~18s - 18% elapsed=04s, remaining~18s \ 19% elapsed=04s, remaining~17s | 20% elapsed=04s, remaining~17s / 22% elapsed=05s, remaining~17s - 23% elapsed=05s, remaining~17s \ 24% elapsed=05s, remaining~16s | 25% elapsed=05s, remaining~16s / 26% elapsed=06s, remaining~16s - 27% elapsed=06s, remaining~16s \ 28% elapsed=06s, remaining~15s | 29% elapsed=06s, remaining~15s / 30% elapsed=06s, remaining~15s - 31% elapsed=07s, remaining~15s \ 32% elapsed=07s, remaining~14s | 33% elapsed=07s, remaining~14s / 34% elapsed=07s, remaining~14s - 35% elapsed=08s, remaining~14s \ 37% elapsed=08s, remaining~13s | 38% elapsed=08s, remaining~13s / 39% elapsed=08s, remaining~13s - 40% elapsed=08s, remaining~13s \ 41% elapsed=09s, remaining~12s | 42% elapsed=09s, remaining~12s / 43% elapsed=09s, remaining~12s - 44% elapsed=09s, remaining~12s \ 45% elapsed=10s, remaining~12s | 46% elapsed=10s, remaining~11s / 47% elapsed=10s, remaining~11s - 48% elapsed=10s, remaining~11s \ 49% elapsed=10s, remaining~11s | 51% elapsed=11s, remaining~10s / 52% elapsed=11s, remaining~10s - 53% elapsed=11s, remaining~10s \ 54% elapsed=11s, remaining~10s | 55% elapsed=12s, remaining~09s / 56% elapsed=12s, remaining~09s - 57% elapsed=12s, remaining~09s \ 58% elapsed=12s, remaining~09s | 59% elapsed=12s, remaining~09s / 60% elapsed=13s, remaining~08s - 61% elapsed=13s, remaining~08s \ 62% elapsed=13s, remaining~08s | 63% elapsed=13s, remaining~08s / 65% elapsed=13s, remaining~07s - 66% elapsed=14s, remaining~07s \ 67% elapsed=14s, remaining~07s | 68% elapsed=14s, remaining~07s / 69% elapsed=14s, remaining~06s - 70% elapsed=15s, remaining~06s \ 71% elapsed=15s, remaining~06s | 72% elapsed=15s, remaining~06s / 73% elapsed=15s, remaining~06s - 74% elapsed=15s, remaining~05s \ 75% elapsed=16s, remaining~05s | 76% elapsed=16s, remaining~05s / 77% elapsed=16s, remaining~05s - 78% elapsed=16s, remaining~04s \ 80% elapsed=17s, remaining~04s | 81% elapsed=17s, remaining~04s / 82% elapsed=17s, remaining~04s - 83% elapsed=17s, remaining~04s \ 84% elapsed=17s, remaining~03s | 85% elapsed=18s, remaining~03s / 86% elapsed=18s, remaining~03s - 87% elapsed=18s, remaining~03s \ 88% elapsed=18s, remaining~02s | 89% elapsed=19s, remaining~02s / 90% elapsed=19s, remaining~02s - 91% elapsed=19s, remaining~02s \ 92% elapsed=19s, remaining~02s | 94% elapsed=19s, remaining~01s / 95% elapsed=20s, remaining~01s - 96% elapsed=20s, remaining~01s \ 97% elapsed=20s, remaining~01s | 98% elapsed=20s, remaining~00s / 99% elapsed=21s, remaining~00s - 100% elapsed=21s, remaining~00s</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Frequency distribution of graph components</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 5.694331  srmr: 0.2133885 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   n.nodes n.graphs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      31        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Percent of vertices in the giant component: 100 %</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   is.simple      is.dag is.directed is.weighted </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        TRUE        TRUE        TRUE        TRUE </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> which.mutual.FALSE </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 30 </span>
+<span class="r-plt img"><img src="SEMtree-3.png" alt="" width="700" height="433"></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NLMINB solver ended normally after 1 iterations </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 5.696462  srmr: 0.2143798 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span class="va">tree4</span><span class="op">&lt;-</span> <span class="fu">SEMtree</span><span class="op">(</span><span class="cn">NULL</span>, <span class="va">data</span>, seed<span class="op">=</span><span class="va">V</span>, type<span class="op">=</span><span class="st">"CPDAG"</span>, alpha<span class="op">=</span><span class="fl">0.05</span>, verbose<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -233,10 +287,23 @@ Structural Learning and Inverse Correlation Estimation. arXiv:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  4 -&gt; 30 &lt;- 23 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  23 -&gt; 30 &lt;- 4 </span>
-<span class="r-plt img"><img src="SEMtree-4.png" alt="" width="700" height="433"></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> RICF solver ended normally after 8 iterations </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> DAG conversion : TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Frequency distribution of graph components</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 5.759128  srmr: 0.209403 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   n.nodes n.graphs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      26        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Percent of vertices in the giant component: 83.9 %</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   is.simple      is.dag is.directed is.weighted </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        TRUE        TRUE        TRUE        TRUE </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> which.mutual.FALSE </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 25 </span>
+<span class="r-plt img"><img src="SEMtree-4.png" alt="" width="700" height="433"></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NLMINB solver ended normally after 1 iterations </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 6.214838  srmr: 0.2085179 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># }</span></span>
@@ -255,7 +322,7 @@ Structural Learning and Inverse Correlation Estimation. arXiv:
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
       </footer></div>

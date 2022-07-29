@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
       </span>
     </div>
 
@@ -60,15 +60,22 @@
     <h2>Arguments</h2>
     <dl><dt>dagi</dt>
 <dd><p>A graph as a dagitty object ("dag" or "pdag").</p></dd>
+
+
 <dt>verbose</dt>
 <dd><p>A logical value. If TRUE, the output graph is shown
 (for <code>graph2dagitty</code> only). This argument is FALSE by default.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Currently ignored.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>An igraph object.</p>
+    
+
+<p>An igraph object.</p>
     </div>
     <div id="author">
     <h2>Author</h2>
@@ -78,10 +85,10 @@
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"></span>
-<span class="r-in"><span class="co"># Graph as a dagitty  object to igraph object</span></span>
+<span class="r-in"><span class="co"># Conversion from igraph to dagitty  (and viceversa)</span></span>
 <span class="r-in"><span class="va">dagi</span> <span class="op">&lt;-</span> <span class="fu"><a href="graph2dagitty.html">graph2dagitty</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span class="r-plt img"><img src="dagitty2graph-1.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span class="va">G</span> <span class="op">&lt;-</span> <span class="fu">dagitty2graph</span><span class="op">(</span><span class="va">dagi</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">graph</span> <span class="op">&lt;-</span> <span class="fu">dagitty2graph</span><span class="op">(</span><span class="va">dagi</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span class="r-plt img"><img src="dagitty2graph-2.png" alt="" width="700" height="433"></span>
 <span class="r-in"></span>
 </code></pre></div>
@@ -98,7 +105,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
       </footer></div>

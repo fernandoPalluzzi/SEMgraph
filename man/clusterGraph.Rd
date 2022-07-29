@@ -20,7 +20,7 @@ from \code{\link{igraph}} package include: "wtc"
 (spinglass statistical mechanics).}
 
 \item{HM}{Hidden model type. Enables the visualization of the hidden
-model. If set to "none" (default), no HM is visualized.
+model, gHM. If set to "none" (default), no gHM igraph object is saved.
 For each defined hidden module:
 (i) if \code{HM = "LV"}, a latent variable (LV) will be defined as
 common unknown cause acting on cluster nodes; (ii) if \code{HM = "CV"},
@@ -33,18 +33,17 @@ variable (see also \code{\link[SEMgraph]{clusterScore}}).}
 \item{size}{Minimum number of nodes per module. By default, a minimum
 number of 5 nodes is required.}
 
-\item{verbose}{A logical value. If FALSE (default), the processed graphs
+\item{verbose}{A logical value. If FALSE (default), the gHM igraph
 will not be plotted to screen, saving execution time (they will be
 returned in output anyway).}
 
 \item{...}{Currently ignored.}
 }
 \value{
-If HM is not "none" a list of 3 objects is returned:
+If HM is not "none" a list of 2 objects is returned:
 \enumerate{
 \item "gHM", subgraph containing hidden modules as an igraph object;
-\item "membership", cluster membership vector for each node;
-\item "gHC", the list of modules as igraph objects.
+\item "membership", cluster membership vector for each node.
 }
 If HM is "none", only the cluster membership vector is returned.
 }
@@ -55,7 +54,9 @@ Topological graph clustering methods.
 
 # Clustering ALS graph with WTC method and LV model
 G <- properties(alsData$graph)[[1]]
-membership <- clusterGraph(graph = G, type = "wtc", HM = "LV", verbose = TRUE)
+clv <- clusterGraph(graph = G, type = "wtc", HM = "LV")
+gplot(clv$gHM, l = "fdp")
+table(clv$membership)
 
 }
 \references{

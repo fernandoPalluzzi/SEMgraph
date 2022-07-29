@@ -18,7 +18,7 @@ Model (GGM) similar to lavaan-formated summary"><!-- mathjax --><script src="htt
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
       </span>
     </div>
 
@@ -63,12 +63,17 @@ Model (GGM) similar to lavaan-formated summary</p>
     <h2>Arguments</h2>
     <dl><dt>object</dt>
 <dd><p>A constrained GGM fitted model object.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Currently ignored.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>Shown the lavaan-formatted summary to console</p>
+    
+
+<p>Shown the lavaan-formatted summary to console</p>
     </div>
     <div id="see-also">
     <h2>See also</h2>
@@ -108,24 +113,24 @@ Model (GGM) similar to lavaan-formated summary</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Regressions: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op  rhs    est pvalue</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1   Akt  ~ PIP3 -0.065  0.002</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2   Akt  ~  PKA  0.546  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3   Erk  ~  Mek -0.021  0.030</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4   Erk  ~  PKA  0.456  0.073</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5   Jnk  ~  PKA  0.097  0.633</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6   Jnk  ~  PKC  0.131  0.726</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7   Mek  ~  Raf  0.683  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8   Mek  ~  PKA  0.017  0.178</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9   Mek  ~  PKC -0.005  0.886</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10  P38  ~  PKA  0.007  0.863</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11  P38  ~  PKC  0.645  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12 PIP2  ~ Plcg  0.226  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13 PIP2  ~ PIP3  0.489  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14  PKC  ~ Plcg  0.008  0.872</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15  PKC  ~ PIP2  0.012  0.880</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16 Plcg  ~ PIP3  0.044  0.041</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17  Raf  ~  PKA -0.075  0.398</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18  Raf  ~  PKC -0.019  0.585</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   Mek  ~  Raf  0.683  0.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2   Erk  ~  Mek -0.021  0.030</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  PIP2  ~ Plcg  0.226  0.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   PKC  ~ Plcg  0.008  0.872</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5   PKC  ~ PIP2  0.012  0.880</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  Plcg  ~ PIP3  0.044  0.041</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  PIP2  ~ PIP3  0.489  0.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8   Akt  ~ PIP3 -0.065  0.002</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9   Raf  ~  PKA -0.075  0.398</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10  Mek  ~  PKA  0.017  0.178</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11  Erk  ~  PKA  0.456  0.073</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12  Akt  ~  PKA  0.546  0.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13  P38  ~  PKA  0.007  0.863</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14  Jnk  ~  PKA  0.097  0.633</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15  Raf  ~  PKC -0.019  0.585</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16  Mek  ~  PKC -0.005  0.886</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17  P38  ~  PKC  0.645  0.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18  Jnk  ~  PKC  0.131  0.726</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Covariances: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -135,17 +140,17 @@ Model (GGM) similar to lavaan-formated summary</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Variances: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op  rhs   est pvalue</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1   Akt ~~  Akt 0.691      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2   Erk ~~  Erk 0.790      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3   Jnk ~~  Jnk 0.974      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4   Mek ~~  Mek 0.535      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5   P38 ~~  P38 0.584      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  PIP2 ~~ PIP2 0.663      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7  PIP3 ~~ PIP3 1.000      0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   Raf ~~  Raf 0.985      0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2   Mek ~~  Mek 0.535      0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  Plcg ~~ Plcg 0.984      0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  PIP2 ~~ PIP2 0.663      0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  PIP3 ~~ PIP3 1.000      0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6   Erk ~~  Erk 0.790      0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7   Akt ~~  Akt 0.691      0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 8   PKA ~~  PKA 1.000      0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 9   PKC ~~  PKC 0.999      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10 Plcg ~~ Plcg 0.984      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11  Raf ~~  Raf 0.985      0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10  P38 ~~  P38 0.584      0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11  Jnk ~~  Jnk 0.974      0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"></span>
 </code></pre></div>
@@ -162,7 +167,7 @@ Model (GGM) similar to lavaan-formated summary</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
       </footer></div>

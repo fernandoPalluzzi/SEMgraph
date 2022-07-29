@@ -23,7 +23,7 @@ two nodes) are not allowed."><!-- mathjax --><script src="https://cdnjs.cloudfla
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
       </span>
     </div>
 
@@ -72,6 +72,8 @@ two nodes) are not allowed.</p>
   fit <span class="op">=</span> <span class="fl">0</span>,
   algo <span class="op">=</span> <span class="st">"lavaan"</span>,
   start <span class="op">=</span> <span class="cn">NULL</span>,
+  SE <span class="op">=</span> <span class="st">"standard"</span>,
+  n_rep <span class="op">=</span> <span class="fl">1000</span>,
   limit <span class="op">=</span> <span class="fl">100</span>,
   <span class="va">...</span>
 <span class="op">)</span></code></pre></div>
@@ -81,14 +83,20 @@ two nodes) are not allowed.</p>
     <h2>Arguments</h2>
     <dl><dt>graph</dt>
 <dd><p>An igraph object.</p></dd>
+
+
 <dt>data</dt>
 <dd><p>A matrix whith rows corresponding to subjects, and
 columns to graph nodes (variables).</p></dd>
+
+
 <dt>group</dt>
 <dd><p>A binary vector. This vector must be as long as the
 number of subjects. Each vector element must be 1 for cases and 0
 for control subjects. If <code>NULL</code> (default), group influence will
 not be considered.</p></dd>
+
+
 <dt>fit</dt>
 <dd><p>A numeric value indicating the SEM fitting mode.
 If <code>fit = 0</code> (default), no group effect is considered.
@@ -96,6 +104,8 @@ If <code>fit = 1</code>, a "common" model is used to evaluate group effects
 on graph nodes.
 If <code>fit = 2</code>, a two-group model is used to evaluate group effects
 on graph edges.</p></dd>
+
+
 <dt>algo</dt>
 <dd><p>MLE method used for SEM fitting. If <code>algo = "lavaan"</code>
 (default), the SEM will be fitted using the NLMINB solver from
@@ -105,6 +115,8 @@ via residual iterative conditional fitting (RICF; Drton et al. 2009).
 If <code>algo = "cggm"</code>, model fitting is based on constrained Gaussian
 Graphical Modeling (GGM) and de-sparsified glasso estimator
 (Williams, 2020).</p></dd>
+
+
 <dt>start</dt>
 <dd><p>Starting value of SEM parameters for <code>algo = "lavaan"</code>.
 If start is <code>NULL</code> (default), the algorithm will determine the
@@ -116,20 +128,39 @@ For instance, a scaling factor is useful when weights have fixed values
 Fixed values may compromise model fitting, and scaling them is a safe
 option to avoid this problem. As a rule of thumb, to our experience,
 <code>start = 0.1</code> generally performs well with -1, 0, 1 weights.</p></dd>
+
+
+<dt>SE</dt>
+<dd><p>If "standard" (default), with <code>algo = "lavaan"</code>,
+conventional standard errors are computed based on inverting the observed
+information matrix. If "none", no standard errors are computed.</p></dd>
+
+
+<dt>n_rep</dt>
+<dd><p>Number of randomization replicates (default = 1000),
+for permutation flip or boostrap samples, if <code>algo = "ricf"</code>.</p></dd>
+
+
 <dt>limit</dt>
 <dd><p>An integer value corresponding to the network size
 (i.e., number of nodes). Beyond this limit, the execution under
-<code>algo = "lavaan"</code> will be ridirected to <code>algo = "ricf"</code>, if
-fit is either 0 or 1, or to <code>algo = "ggm"</code>, if <code>fit = 2</code>.
+<code>algo = "lavaan"</code> will run with <code>SE = "none"</code>, if 
+<code>fit = 0</code>, or will be ridirected to <code>algo = "ricf"</code>, if
+<code>fit = 1</code>, or to <code>algo = "ggm"</code>, if <code>fit = 2</code>.
 This redirection is necessary to reduce the computational demand of
 standard error estimation by lavaan. Increasing this number will
 enforce lavaan execution when <code>algo = "lavaan"</code>.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Currently ignored.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A list of 5 objects:</p><ol><li><p>"fit", SEM fitted lavaan, ricf, or ggmncv object,
+    
+
+<p>A list of 5 objects:</p><ol><li><p>"fit", SEM fitted lavaan, ricf, or ggmncv object,
 depending on the MLE method specified by the <code>algo</code> argument;</p></li>
 <li><p>"gest" or "dest", a data.frame of node-specific
 ("gest") or edge-specific ("dest") group effect estimates and P-values;</p></li>
@@ -300,233 +331,19 @@ details, <code><a href="https://rdrr.io/pkg/flip/man/flip.html" class="external-
 <span class="r-out co"><span class="r-pr">#&gt;</span>     zPIP3             0.999    0.034   29.715    0.000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     zPKA              0.999    0.034   29.715    0.000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">parameterEstimates</span><span class="op">(</span><span class="va">sem0</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    lhs op   rhs    est    se      z pvalue ci.lower ci.upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 zAkt  ~ zPIP3 -0.065 0.020 -3.251  0.001   -0.104   -0.026</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 zAkt  ~  zPKA  0.546 0.020 27.454  0.000    0.507    0.585</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 zErk  ~  zMek -0.021 0.021 -0.974  0.330   -0.062    0.021</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 zErk  ~  zPKA  0.456 0.021 21.506  0.000    0.415    0.498</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 zJnk  ~  zPKA  0.093 0.024  3.940  0.000    0.047    0.139</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 zJnk  ~  zPKC  0.128 0.024  5.439  0.000    0.082    0.174</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">sem0</span> <span class="op">&lt;-</span> <span class="fu">SEMrun</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span>, algo <span class="op">=</span> <span class="st">"ricf"</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> RICF solver ended normally after 2 iterations </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 66.93929  srmr: 0.0894731 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sem0</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> RICF solver ended normally after 2 iterations </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Estimator                                       ML </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Optimization method                             RICF </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Number of free parameters                       30 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Number of observations                          1766 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Model Test User Model</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Test statistic (Deviance)                       2409.815 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Degrees of freedom (df)                         36 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Deviance/df                                     66.939 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Standardized Root Mean Square Residual (srmr)   0.089 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Parameter Estimates:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Regressions: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op  rhs    est</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1   Akt  ~ PIP3 -0.065</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2   Akt  ~  PKA  0.546</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3   Erk  ~  Mek -0.021</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4   Erk  ~  PKA  0.456</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5   Jnk  ~  PKA  0.093</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6   Jnk  ~  PKC  0.128</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7   Mek  ~  Raf  0.683</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8   Mek  ~  PKA  0.011</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9   Mek  ~  PKC -0.006</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10  P38  ~  PKA -0.018</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11  P38  ~  PKC  0.646</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12 PIP2  ~ Plcg  0.227</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13 PIP2  ~ PIP3  0.489</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14  PKC  ~ Plcg  0.014</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15  PKC  ~ PIP2  0.020</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16 Plcg  ~ PIP3  0.207</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17  Raf  ~  PKA -0.124</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18  Raf  ~  PKC -0.037</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Covariances: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   lhs op  rhs    est</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 PKA ~~ PIP3 -0.103</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Variances: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op  rhs   est</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1   Akt ~~  Akt 0.691</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2   Erk ~~  Erk 0.790</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3   Jnk ~~  Jnk 0.974</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4   Mek ~~  Mek 0.535</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5   P38 ~~  P38 0.583</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  PIP2 ~~ PIP2 0.663</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7  PIP3 ~~ PIP3 1.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8   PKA ~~  PKA 1.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9   PKC ~~  PKC 0.999</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10 Plcg ~~ Plcg 0.957</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11  Raf ~~  Raf 0.983</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sem0</span><span class="op">$</span><span class="va">fit</span><span class="op">$</span><span class="va">parameterEstimates</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $Reg</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op  rhs          est</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8   Akt  ~ PIP3 -0.064637571</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12  Akt  ~  PKA  0.545827288</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2   Erk  ~  Mek -0.020662182</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11  Erk  ~  PKA  0.456197198</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14  Jnk  ~  PKA  0.092697998</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18  Jnk  ~  PKC  0.127962060</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1   Mek  ~  Raf  0.683280129</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10  Mek  ~  PKA  0.010804652</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16  Mek  ~  PKC -0.005594917</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13  P38  ~  PKA -0.017995367</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17  P38  ~  PKC  0.646469780</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  PIP2  ~ Plcg  0.226646823</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7  PIP2  ~ PIP3  0.489264356</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4   PKC  ~ Plcg  0.014362915</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5   PKC  ~ PIP2  0.019696273</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  Plcg  ~ PIP3  0.207077521</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9   Raf  ~  PKA -0.124349458</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15  Raf  ~  PKC -0.037496729</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $Cov</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    lhs op  rhs        est</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 24 PKA ~~ PIP3 -0.1030054</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $Var</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op  rhs       est</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 26  Akt ~~  Akt 0.6906263</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 25  Erk ~~  Erk 0.7900222</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 30  Jnk ~~  Jnk 0.9735446</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20  Mek ~~  Mek 0.5345122</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 29  P38 ~~  P38 0.5832125</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 22 PIP2 ~~ PIP2 0.6633259</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 23 PIP3 ~~ PIP3 1.0000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 27  PKA ~~  PKA 1.0000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 28  PKC ~~  PKC 0.9992202</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21 Plcg ~~ Plcg 0.9571189</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19  Raf ~~  Raf 0.9825462</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">sem0</span> <span class="op">&lt;-</span> <span class="fu">SEMrun</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span>, algo <span class="op">=</span> <span class="st">"cggm"</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GGM (constrained) solver ended normally after 0 iterations </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 66.86359  srmr: 0.0888077 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sem0</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GGM (constrained) solver ended normally after 0 iterations </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Estimator                                       ML </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Optimization method                             CGGM </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Number of free parameters                       30 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Number of observations                          1766 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Model Test User Model</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Test statistic (Deviance)                       2407.089 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Degrees of freedom (df)                         36 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Deviance/df                                     66.864 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Standardized Root Mean Square Residual (srmr)   0.089 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Parameter Estimates:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Regressions: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op  rhs    est pvalue</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1   Akt  ~ PIP3 -0.065  0.002</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2   Akt  ~  PKA  0.546  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3   Erk  ~  Mek -0.021  0.030</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4   Erk  ~  PKA  0.456  0.073</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5   Jnk  ~  PKA  0.097  0.633</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6   Jnk  ~  PKC  0.131  0.726</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7   Mek  ~  Raf  0.683  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8   Mek  ~  PKA  0.017  0.178</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9   Mek  ~  PKC -0.005  0.886</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10  P38  ~  PKA  0.007  0.863</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11  P38  ~  PKC  0.645  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12 PIP2  ~ Plcg  0.226  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13 PIP2  ~ PIP3  0.489  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14  PKC  ~ Plcg  0.008  0.872</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15  PKC  ~ PIP2  0.012  0.880</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16 Plcg  ~ PIP3  0.044  0.041</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17  Raf  ~  PKA -0.075  0.398</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18  Raf  ~  PKC -0.019  0.585</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Covariances: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    lhs op rhs    est pvalue</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 PIP3 ~~ PKA -0.103  0.379</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Variances: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op  rhs   est pvalue</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1   Akt ~~  Akt 0.691      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2   Erk ~~  Erk 0.790      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3   Jnk ~~  Jnk 0.974      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4   Mek ~~  Mek 0.535      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5   P38 ~~  P38 0.584      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  PIP2 ~~ PIP2 0.663      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7  PIP3 ~~ PIP3 1.000      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8   PKA ~~  PKA 1.000      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9   PKC ~~  PKC 0.999      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10 Plcg ~~ Plcg 0.984      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11  Raf ~~  Raf 0.985      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sem0</span><span class="op">$</span><span class="va">fit</span><span class="op">$</span><span class="va">parameterEstimates</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $Reg</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op  rhs          est        pvalue</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8   Akt  ~ PIP3 -0.064917127  1.813857e-03</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12  Akt  ~  PKA  0.545580110  1.923273e-09</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2   Erk  ~  Mek -0.020537125  3.023840e-02</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11  Erk  ~  PKA  0.455766193  7.336207e-02</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14  Jnk  ~  PKA  0.097276265  6.326038e-01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18  Jnk  ~  PKC  0.131322957  7.262377e-01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1   Mek  ~  Raf  0.683057189 1.006115e-122</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10  Mek  ~  PKA  0.017103153  1.780280e-01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16  Mek  ~  PKC -0.005344735  8.855709e-01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13  P38  ~  PKA  0.007001167  8.628011e-01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17  P38  ~  PKC  0.645274212 3.634077e-109</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  PIP2  ~ Plcg  0.226127321  1.554591e-26</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7  PIP2  ~ PIP3  0.489389920  8.422860e-81</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4   PKC  ~ Plcg  0.008073818  8.717163e-01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5   PKC  ~ PIP2  0.012110727  8.797994e-01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  Plcg  ~ PIP3  0.043672014  4.113091e-02</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9   Raf  ~  PKA -0.074524313  3.979705e-01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15  Raf  ~  PKC -0.019027484  5.848711e-01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $Cov</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op rhs    est    pvalue</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 26 PIP3 ~~ PKA -0.103 0.3792156</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $Var</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op  rhs       est pvalue</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 25  Akt ~~  Akt 0.6906264  1e-09</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 24  Erk ~~  Erk 0.7900224  1e-09</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 30  Jnk ~~  Jnk 0.9735788  1e-09</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20  Mek ~~  Mek 0.5345526  1e-09</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 29  P38 ~~  P38 0.5838350  1e-09</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 22 PIP2 ~~ PIP2 0.6633261  1e-09</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 23 PIP3 ~~ PIP3 1.0000000  1e-09</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 27  PKA ~~  PKA 1.0000000  1e-09</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 28  PKC ~~  PKC 0.9993486  1e-09</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21 Plcg ~~ Plcg 0.9838203  1e-09</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19  Raf ~~  Raf 0.9854853  1e-09</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="parameterEstimates.html">parameterEstimates</a></span><span class="op">(</span><span class="va">sem0</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   lhs op  rhs    est    se      z pvalue ci.lower ci.upper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 Akt  ~ PIP3 -0.065 0.020 -3.251  0.001   -0.104   -0.026</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 Akt  ~  PKA  0.546 0.020 27.454  0.000    0.507    0.585</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 Erk  ~  Mek -0.021 0.021 -0.974  0.330   -0.062    0.021</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 Erk  ~  PKA  0.456 0.021 21.506  0.000    0.415    0.498</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 Jnk  ~  PKA  0.093 0.024  3.940  0.000    0.047    0.139</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 Jnk  ~  PKC  0.128 0.024  5.439  0.000    0.082    0.174</span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Graphs</span></span>
-<span class="r-in"><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">sem0</span><span class="op">$</span><span class="va">graph</span>, main <span class="op">=</span> <span class="st">"edge differences"</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">sem0</span><span class="op">$</span><span class="va">graph</span>, main <span class="op">=</span> <span class="st">"significant edge weights"</span><span class="op">)</span></span>
 <span class="r-plt img"><img src="SEMrun-1.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sem0</span><span class="op">$</span><span class="va">graph</span>, layout <span class="op">=</span> <span class="va">layout.circle</span>, main <span class="op">=</span> <span class="st">"edge differences"</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sem0</span><span class="op">$</span><span class="va">graph</span>, layout <span class="op">=</span> <span class="va">layout.circle</span>, main <span class="op">=</span> <span class="st">"significant edge weights"</span><span class="op">)</span></span>
 <span class="r-plt img"><img src="SEMrun-2.png" alt="" width="700" height="433"></span>
 <span class="r-in"></span>
 <span class="r-in"></span>
@@ -538,9 +355,9 @@ details, <code><a href="https://rdrr.io/pkg/flip/man/flip.html" class="external-
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 61.84434  srmr: 0.0700967 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node activation: 0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node activation: 2.664535e-15 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 0.8332506 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Fitting summaries</span></span>
@@ -649,19 +466,19 @@ details, <code><a href="https://rdrr.io/pkg/flip/man/flip.html" class="external-
 <span class="r-out co"><span class="r-pr">#&gt;</span> 9   PKC  ~ group  0.116 0.024   4.818  0.000    0.069    0.163</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 10 Plcg  ~ group  0.268 0.024  11.359  0.000    0.222    0.314</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 11  Raf  ~ group -0.467 0.022 -21.080  0.000   -0.510   -0.423</span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">parameterEstimates</span><span class="op">(</span><span class="va">sem1</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op   rhs    est    se      z pvalue ci.lower ci.upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  zAkt  ~ group  0.150 0.021  7.057  0.000    0.108    0.192</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  zErk  ~ group  0.179 0.022  8.046  0.000    0.135    0.222</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  zJnk  ~ group  0.333 0.023 14.279  0.000    0.288    0.379</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  zMek  ~ group  0.122 0.020  6.036  0.000    0.082    0.162</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  zP38  ~ group -0.062 0.019 -3.274  0.001   -0.100   -0.025</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 zPIP2  ~ group  0.110 0.021  5.243  0.000    0.069    0.150</span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="parameterEstimates.html">parameterEstimates</a></span><span class="op">(</span><span class="va">sem1</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    lhs op   rhs    est    se      z pvalue ci.lower ci.upper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  Akt  ~ group  0.150 0.021  7.057  0.000    0.108    0.192</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  Erk  ~ group  0.179 0.022  8.046  0.000    0.135    0.222</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  Jnk  ~ group  0.333 0.023 14.279  0.000    0.288    0.379</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  Mek  ~ group  0.122 0.020  6.036  0.000    0.082    0.162</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  P38  ~ group -0.062 0.019 -3.274  0.001   -0.100   -0.025</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 PIP2  ~ group  0.110 0.021  5.243  0.000    0.069    0.150</span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Graphs</span></span>
-<span class="r-in"><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">sem1</span><span class="op">$</span><span class="va">graph</span>, main <span class="op">=</span> <span class="st">"node differences"</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">sem1</span><span class="op">$</span><span class="va">graph</span>, main <span class="op">=</span> <span class="st">"Between group node differences"</span><span class="op">)</span></span>
 <span class="r-plt img"><img src="SEMrun-3.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sem1</span><span class="op">$</span><span class="va">graph</span>, layout <span class="op">=</span> <span class="va">layout.circle</span>, main <span class="op">=</span> <span class="st">"node differences"</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sem1</span><span class="op">$</span><span class="va">graph</span>, layout <span class="op">=</span> <span class="va">layout.circle</span>, main <span class="op">=</span> <span class="st">"Between group node differences"</span><span class="op">)</span></span>
 <span class="r-plt img"><img src="SEMrun-4.png" alt="" width="700" height="433"></span>
 <span class="r-in"></span>
 <span class="r-in"></span>
@@ -674,9 +491,9 @@ details, <code><a href="https://rdrr.io/pkg/flip/man/flip.html" class="external-
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 31.1974  srmr: 0.08159536 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of edge activation: 0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of edge activation: 3.774758e-15 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of edge inhibition: 0.9995853 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of edge inhibition: 0.871612 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Summaries</span></span>
@@ -830,14 +647,14 @@ details, <code><a href="https://rdrr.io/pkg/flip/man/flip.html" class="external-
 <span class="r-out co"><span class="r-pr">#&gt;</span> 16 Plcg  ~ PIP3  0.334 0.045  7.346  0.000   0.245   0.422</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 17  Raf  ~  PKA  0.026 0.048  0.551  0.581  -0.067   0.120</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 18  Raf  ~  PKC  0.083 0.048  1.739  0.082  -0.011   0.176</span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">parameterEstimates</span><span class="op">(</span><span class="va">sem2</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    lhs op   rhs block group    est    se      z pvalue ci.lower ci.upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 zAkt  ~ zPIP3     1     1 -0.035 0.031 -1.129  0.259   -0.097    0.026</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 zAkt  ~  zPKA     1     1  0.404 0.031 12.908  0.000    0.343    0.465</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 zErk  ~  zMek     1     1  0.026 0.032  0.804  0.422   -0.037    0.089</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 zErk  ~  zPKA     1     1  0.351 0.032 10.936  0.000    0.288    0.413</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 zJnk  ~  zPKA     1     1 -0.003 0.034 -0.091  0.927   -0.069    0.063</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 zJnk  ~  zPKC     1     1 -0.202 0.034 -6.021  0.000   -0.268   -0.136</span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="parameterEstimates.html">parameterEstimates</a></span><span class="op">(</span><span class="va">sem2</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   lhs op  rhs    est    se      z pvalue ci.lower ci.upper group</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 Akt  ~ PIP3 -0.035 0.031 -1.129  0.259   -0.097    0.026     1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 Akt  ~  PKA  0.404 0.031 12.908  0.000    0.343    0.465     1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 Erk  ~  Mek  0.026 0.032  0.804  0.422   -0.037    0.089     1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 Erk  ~  PKA  0.351 0.032 10.936  0.000    0.288    0.413     1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 Jnk  ~  PKA -0.003 0.034 -0.091  0.927   -0.069    0.063     1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 Jnk  ~  PKC -0.202 0.034 -6.021  0.000   -0.268   -0.136     1</span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Graphs</span></span>
 <span class="r-in"><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">sem2</span><span class="op">$</span><span class="va">graph</span>, main <span class="op">=</span> <span class="st">"Between group edge differences"</span><span class="op">)</span></span>
@@ -864,7 +681,7 @@ details, <code><a href="https://rdrr.io/pkg/flip/man/flip.html" class="external-
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> which.mutual.FALSE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>               1967 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH 3ae1d51 DNW- 291 1967 -- </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH a0e4e78 DNW- 291 1967 -- </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> + attr: name (v/c), weight (e/n)</span>
 <span class="r-in"></span>
 <span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">huge</span><span class="op">)</span></span>
@@ -878,18 +695,18 @@ details, <code><a href="https://rdrr.io/pkg/flip/man/flip.html" class="external-
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 1.597429  srmr: 0.2617292 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node activation: 0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node activation: 1.224552e-227 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 1.354196e-122 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span class="va">g2</span> <span class="op">&lt;-</span> <span class="fu">SEMrun</span><span class="op">(</span><span class="va">g1</span>, <span class="va">als.npn</span>, <span class="va">alsData</span><span class="op">$</span><span class="va">group</span>, fit <span class="op">=</span> <span class="fl">2</span>, algo <span class="op">=</span> <span class="st">"cggm"</span><span class="op">)</span><span class="op">$</span><span class="va">graph</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> GGM (constrained) solver ended normally after 0 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 0.7447878  srmr: 0.273665 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of edge activation: 0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of edge activation: 2.691819e-22 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of edge inhibition: 7.730652e-07 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of edge inhibition: 4.086134e-23 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># extract the subgraph with between group node and edge differences</span></span>
@@ -975,7 +792,7 @@ details, <code><a href="https://rdrr.io/pkg/flip/man/flip.html" class="external-
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
       </footer></div>

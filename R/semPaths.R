@@ -55,12 +55,6 @@
 #'
 #' @return A data.frame of ACE estimates between network sources and sinks.
 #'
-#' @import igraph
-#' @import lavaan
-#' @import boot
-#' @importFrom stats sd
-#' @importFrom utils flush.console
-#' @importFrom dagitty adjustmentSets
 #' @export
 #'
 #' @author Mario Grassi \email{mario.grassi@unipv.it}
@@ -82,16 +76,16 @@
 #'
 #' @examples
 #'
-#' # ACE estimation, without group
+#' # ACE without group, O-set, all effects:
 #' ace1 <- SEMace(graph = sachs$graph, data = log(sachs$pkc),
-#'                group = NULL, type="parents", effect="all",
-#'                method = "BH", alpha = 0.05)
+#'                group = NULL, type = "optimal", effect = "all",
+#'                method = "BH", alpha = 0.05, boot = NULL)
 #' print(ace1)
 #'
-#' # ACE with group perturbation
+#' # ACE with group perturbation, Pa-set, direct effects:
 #' ace2 <- SEMace(graph = sachs$graph, data = log(sachs$pkc),
-#'                group = sachs$group, type="optimal", effect="direct",
-#'                method = "none", alpha = 0.05)
+#'                group = sachs$group, type = "parents", effect = "direct",
+#'                method = "none", alpha = 0.05, boot = NULL)
 #' print(ace2)
 #'
 SEMace<- function(graph, data, group=NULL, type="parents", effect="all", method="BH", alpha=0.05, boot=NULL, ...)
@@ -110,7 +104,7 @@ SEMace<- function(graph, data, group=NULL, type="parents", effect="all", method=
 	#plot(dagitty::graphLayout(dagy))
 	
 	# Set distance matrix, distance graph from source to target nodes
-	D<- igraph::distances(dag, mode="out", weights=NA)
+	D<- distances(dag, mode="out", weights=NA)
 	D<- ifelse(D == Inf, 0, D) #sum(D>0)
 	if (effect == "all") {
 	 gD<- simplify(graph_from_adjacency_matrix(D, mode="directed", weighted=TRUE))
@@ -142,7 +136,7 @@ SEMace<- function(graph, data, group=NULL, type="parents", effect="all", method=
 	 
 	 # Adjustement Z SET:
 	  if (type == "parents") { #backdoor (Pearl, 1988)
-	  z<- setdiff(V(dag)$name[parents(dag, x)], x)
+	  z<- setdiff(V(dag)$name[SEMgraph::parents(dag, x)], x)
 	 }
 	 if (type == "minimal") { #Perkovic et al (2018)
 	  SET<- dagitty::adjustmentSets(dagy, x, y, type="minimal", effect="total")
@@ -153,8 +147,8 @@ SEMace<- function(graph, data, group=NULL, type="parents", effect="all", method=
 	  #cn<- setdiff(unique(names(unlist(paths))),x)
 	  paths<- dagitty::paths(dagy, from=x, to=y, directed=TRUE)$paths
 	  cn<- setdiff(unique(unlist(strsplit(gsub("->","",paths),"  "))),x)
-	  pa_cn<- V(dag)$name[parents(dag, cn)]
-	  forb<- c(V(dag)$name[descendants(dag, cn)],x)
+	  pa_cn<- V(dag)$name[SEMgraph::parents(dag, cn)]
+	  forb<- c(V(dag)$name[SEMgraph::descendants(dag, cn)],x)
 	  z<- setdiff(pa_cn, forb)
 	 }
  
@@ -182,10 +176,10 @@ SEMace<- function(graph, data, group=NULL, type="parents", effect="all", method=
 boot.lmest<- function(x, y, Z, R,...)
 {
 	# LM fitting y ~ x + Z :
-	#ncpus<- parallel::detectCores(logical = TRUE)
 	est<- function(Z, i) { 
 	 stats::lm.fit(as.matrix(Z[i,-1]),Z[i,1])$coefficients[1]
 	}
+	#ncpus<- parallel::detectCores(logical = FALSE)
 	#xboot<- boot::boot(Z, est, R=1000, parallel="snow", ncpus=ncpus)
 	xboot<- boot::boot(Z, est, R=R)
 	t0<- xboot$t0
@@ -274,9 +268,6 @@ lmest2<- function(x, y, Z, group, boot,...)
 #' as an igraph object ("graph"), and the input graph with a color
 #' attribute mapping the chosen path ("map").
 #'
-#' @import igraph
-#' @import lavaan
-#' @importFrom dagitty paths
 #' @export
 #'
 #' @author Mario Grassi \email{mario.grassi@unipv.it}
@@ -316,8 +307,8 @@ SEMpath <- function(graph, data, group, from, to, path, verbose = FALSE, ...)
 		# Set directed path nodes
 		#paths <- all_simple_paths(ig, from, to, mode = "out")
 		#nodes <- unique(names(unlist(paths)))
-		dag <- graph2dagitty(ig, verbose = FALSE)
-		paths <- dagitty::paths(dag, from, to, directed = TRUE)$paths
+		dagi <- graph2dagitty(graph2dag(ig, data))
+		paths <- dagitty::paths(dagi, from, to, directed = TRUE)$paths
 		nodes <- unique(unlist(strsplit(gsub("->", "", paths), "  ")))
 	}
 
@@ -369,15 +360,8 @@ SEMpath <- function(graph, data, group, from, to, path, verbose = FALSE, ...)
 #' By default, \code{method = "BH"} (i.e., FDR multiple test correction).
 #' @param alpha Significance level for ACE selection (by default,
 #' \code{alpha = 0.05}).
-#' @param verbose Show the significant directed (or shortest) paths
-#' inside the input graph.
 #' @param ... Currently ignored.
 #'
-#' @import lavaan
-#' @import igraph
-#' @importFrom stats approx
-#' @importFrom dagitty paths
-#' @importFrom utils head
 #' @export
 #'
 #' @return A list of 3 objects:
@@ -423,64 +407,76 @@ SEMpath <- function(graph, data, group, from, to, path, verbose = FALSE, ...)
 #' }
 #'
 pathFinder <- function(graph, data, group = NULL, ace = NULL, path = "directed",
-                       method = "BH", alpha = 0.05, verbose = FALSE, ...)
+						method = "BH", alpha = 0.05, ...)
 {
-  if (is.null(ace)) {
-    ace <- SEMace(graph, data, group, method = method, alpha = alpha)
-  }
-  ace <- ace[ace$pvalue < alpha,]
-  ace <- ace[order(ace$pvalue),]
-  sources <- as.character(ace$source)
-  sinks <- as.character(ace$sink)
-  paths <- list()
-  lav <- list()
-  res <- NULL
-  N <- nrow(ace)
-  if (N == 0) return(list(paths = NULL, fit = NULL, dfp = NULL))
-  for (i in 1:N) {
-    fit <- quiet(SEMpath(graph, data, group, from = sources[i],
-                         to = sinks[i],
-                         path = path,
-                         verbose = verbose))
-    if(is.null(fit) | vcount(fit$graph) < 3) next
-    if (!is.null(group) & vcount(fit$graph) > 100) {
-      dev_df <- fit$fit$ricf$dev/fit$fit$ricf$df
-      srmr <- fit$fit$fitIdx$srmr
-      pv1 <- Brown.test(x = fit$dataXY[, -1], p = fit$gest$pvalue,
-                        theta = fit$gest$Stat,
-                        tail = "positive")
-      pv2 <- Brown.test(x = fit$dataXY[, -1], p = fit$gest$pvalue,
-                        theta = fit$gest$Stat,
-                        tail = "negative")
-    } else {
-      dev_df <- fitMeasures(fit$fit, "chisq")/fitMeasures(fit$fit, "df")
-      srmr <- fitMeasures(fit$fit, "srmr")
-      pv1 <- Brown.test(x = fit$dataXY[, -1], p = fit$gest$pvalue,
-                        theta = fit$gest$est,
-                        tail = "positive")
-      pv2 <- Brown.test(x = fit$dataXY[, -1], p = fit$gest$pvalue,
-                        theta = fit$gest$est,
-                        tail = "negative")
-    }
-    
-    dfp <- data.frame(pathId = paste0("P", rownames(ace)[i]),
-                      sink = sinks[i],
-                      op = "<-",
-                      source = sources[i],
-                      N.nodes = vcount(fit$graph),
-                      N.edges = ecount(fit$graph),
-                      dev_df = round(dev_df, 3),
-                      srmr = round(srmr, 3),
-                      pv.act = round(pv1, 6),
-                      pv.inh = round(pv2, 6))
-    
-    res <- rbind(res, dfp)
-    paths[[i]] <- fit$graph
-    lav[[i]] <- fit$fit
-  }
-  cat("\nFound", nrow(res), "significant ACEs with > 2 nodes\n\n")
-  rownames(res) <- NULL
-  names(paths) <-  paste0("P", rownames(ace))
-  names(lav) <-  paste0("P", rownames(ace))
-  return(list(paths = paths, fit = lav, dfp = res))
+	if (is.null(ace)) {
+	ace <- SEMace(graph, data, group, method = method, alpha = alpha)
+	}
+	ace <- ace[ace$pvalue < alpha,]
+	ace <- ace[order(ace$pvalue),]
+	sources <- as.character(ace$source)
+	sinks <- as.character(ace$sink)
+	paths <- list()
+	lav <- list()
+	res <- NULL
+	N <- nrow(ace)
+	if (N == 0) {
+	 return(message("STOP: found 0 significant ACEs !"))
+	}
+	dag <- graph2dag(graph, data)
+
+	for (i in 1:N) { #i=1
+	 cat("\r","ACE=", i, "of", N) 
+	 flush.console()
+	 from <- sources[i]
+	 to <- sinks[i]
+	 if (distances(dag, from, to, mode = "out", weights = NA) == Inf) next
+	 if (distances(dag, from, to, mode = "out", weights = NA) < 2) next
+	 fit <- quiet(SEMpath(dag, data, group, from, to, path, verbose = FALSE))
+	 if (!is.null(group) & vcount(fit$graph) > 100) {
+	  dev_df <- fit$fit$ricf$dev/fit$fit$ricf$df
+	  srmr <- fit$fit$fitIdx$srmr
+	  pv1 <- Brown.test(x = fit$dataXY[, -1], p = fit$gest$pvalue,
+						theta = fit$gest$Stat,
+						tail = "positive")
+	  pv2 <- Brown.test(x = fit$dataXY[, -1], p = fit$gest$pvalue,
+						theta = fit$gest$Stat,
+						tail = "negative")
+	 } else {
+	  dev_df <- fitMeasures(fit$fit, "chisq")/fitMeasures(fit$fit, "df")
+	  srmr <- fitMeasures(fit$fit, "srmr")
+	  pv1 <- Brown.test(x = fit$dataXY[, -1], p = fit$gest$pvalue,
+						theta = fit$gest$est,
+						tail = "positive")
+	  pv2 <- Brown.test(x = fit$dataXY[, -1], p = fit$gest$pvalue,
+						theta = fit$gest$est,
+						tail = "negative")
+	 }
+
+	 dfp <- data.frame(pathId = paste0("P", rownames(ace)[i]),
+					   sink = sinks[i],
+					   op = "<-",
+					   source = sources[i],
+					   n.nodes = vcount(fit$graph),
+					   n.edges = ecount(fit$graph),
+					   dev_df = round(dev_df, 3),
+					   srmr = round(srmr, 3),
+					   V.pv.act = round(pv1, 6),
+					   V.pv.inh = round(pv2, 6))
+
+	 res <- rbind(res, dfp)
+	 paths <- c(paths, list(fit$graph))
+	 lav <- c(lav, list(fit$fit))
+	}
+	
+	if (is.null(res)){
+	 return(message("\nFound 0 significant ACEs with > 2 nodes !"))
+	}else{
+	 cat("\nFound", nrow(res), "significant ACEs with > 2 nodes\n\n")
+	 rownames(res) <- NULL
+	 names(paths) <- res$pathId
+	 names(lav) <- res$pathId
+	}
+	
+	return(list(paths = paths, fit = lav, dfp = res))
 }

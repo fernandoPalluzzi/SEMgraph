@@ -12,7 +12,6 @@ pathFinder(
   path = "directed",
   method = "BH",
   alpha = 0.05,
-  verbose = FALSE,
   ...
 )
 }
@@ -40,9 +39,6 @@ By default, \code{method = "BH"} (i.e., FDR multiple test correction).}
 
 \item{alpha}{Significance level for ACE selection (by default,
 \code{alpha = 0.05}).}
-
-\item{verbose}{Show the significant directed (or shortest) paths
-inside the input graph.}
 
 \item{...}{Currently ignored.}
 }

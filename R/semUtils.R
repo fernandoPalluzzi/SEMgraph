@@ -80,9 +80,6 @@
 #' \item "DEG", a list with DEGs names per pathways.
 #' }
 #'
-#' @import igraph
-#' @import lavaan
-#' @importFrom stats pchisq p.adjust na.omit
 #' @export
 #'
 #' @author Mario Grassi \email{mario.grassi@unipv.it}
@@ -216,8 +213,6 @@ SEMgsa<- function(g=list(), data, group, method = "BH", alpha = 0.05, n_rep = 10
 #'
 #' @return An igraph object.
 #'
-#' @import igraph
-#' @import GGMncv
 #' @export
 #'
 #' @author Mario Grassi \email{mario.grassi@unipv.it}
@@ -276,18 +271,20 @@ SEMdci<- function (graph, data, group, type = "none", method = "BH", alpha = 0.0
 	 for (k in K) {
 		cat("fit cluster =", k, "\n")
 		g <- induced_subgraph(graph, vids = names(C)[C == k])
-		if (vcount(g) > 500) next
-		dest <- quiet(SEMrun(g, data, group, algo = "cggm", fit = 2)$dest)
+		V <- sum(colnames(data) %in% V(g)$name) 
+		if (V < 10 | V > 500) next
+		dest <- quiet(SEMggm2(g, data, group)$dest)
 		dsub <- subset(dest, p.adjust(dest$pvalue, method = method) < alpha)
+		if (is.null(dsub)) next
 		ftm <- data.frame(from = dsub$rhs, to = dsub$lhs)
 		gC <- graph_from_data_frame(ftm)
 		if (ecount(gC) > 0) gL <- c(gL, list(gC))
 	 }
 	 cat("Done.\n")
-	 if (is.null(gL)) return(gD = make_empty_graph(n = vcount(graph)))
+	 if (is.null(gL)) return(gD = make_empty_graph(n = length(K)))
 	 gD <- graph.union(gL)
 	}
-	else if (type == "none"){
+	else if (type == "none") {
 	 dest <- quiet(SEMrun(graph, data, group, algo = "cggm", fit = 2)$dest)
 	 dsub <- subset(dest, p.adjust(dest$pvalue, method = method) < alpha)
 	 ftm <- data.frame(from = dsub$rhs, to = dsub$lhs)
@@ -306,7 +303,6 @@ SEMdci<- function (graph, data, group, type = "none", method = "BH", alpha = 0.0
 #' Nodes will be mapped onto variable names. 
 #' @param ... Currently ignored.
 #'
-#' @import igraph
 #' @export
 #'
 #' @return List of graph components, ordered by decreasing size (the first
@@ -331,7 +327,7 @@ properties<- function (graph, data = NULL, ...)
      ig <- induced_subgraph(graph, vids = which(V(graph)$name %in% nodes))
     }
     
-	ig <- igraph::simplify(ig, remove.loops = TRUE)
+	ig <- simplify(ig, remove.loops = TRUE)
     gcs <- igraph::decompose.graph(ig, min.vertices = 2)
     vsize <- sapply(1:length(gcs), function(x) vcount(gcs[[x]]))
 	names(vsize) <- 1:length(vsize)
@@ -378,9 +374,6 @@ properties<- function (graph, data = NULL, ...)
 #' @param psize Automatic node size (default = 80).
 #' @param ... Currently ignored.
 #'
-#' @import igraph
-#' @importFrom graph nodes edgeNames isDirected nodeRenderInfo edgeRenderInfo graphRenderInfo
-#' @importFrom Rgraphviz layoutGraph renderGraph
 #' @export
 #'
 #' @return gplot returns invisibly the graph object produced by Rgraphviz
@@ -495,8 +488,6 @@ gplot <- function(graph, l = "dot", main = "", cex.main = 1, font.main = 1,
 #' computation time. If FALSE (default), graph plotting will be disabled.
 #' @param ... Currently ignored.
 #'
-#' @import lavaan
-#' @import igraph
 #' @export
 #'
 #' @return An igraph object.
@@ -561,8 +552,6 @@ lavaan2graph<- function (model, directed = TRUE, psi = TRUE, verbose = FALSE, ..
 #' all the input graph nodes will be included in the output model.
 #' @param ... Currently ignored.
 #'
-#' @import lavaan
-#' @import igraph
 #' @export
 #'
 #' @author Mario Grassi \email{mario.grassi@unipv.it}
@@ -619,9 +608,6 @@ graph2lavaan <- function(graph, nodes = V(graph)$name, ...)
 #' (for \code{graph2dagitty} only). This argument is FALSE by default.
 #' @param ... Currently ignored.
 #'
-#' @import lavaan
-#' @import igraph
-#' @importFrom dagitty graphLayout
 #' @export
 #'
 #' @author Mario Grassi \email{mario.grassi@unipv.it}
@@ -688,7 +674,7 @@ dagitty2graph<- function(dagi, verbose = FALSE, ...)
 	b2<- data.frame(from=edges$w[bsel], to=edges$v[bsel])
 	# ftm to graph
 	ftm<- rbind(d1,b1,b2)
-	graph<- igraph::graph_from_data_frame(ftm)
+	graph<- graph_from_data_frame(ftm)
 	if (verbose) gplot(graph)
 	return(graph)
 }
@@ -714,7 +700,6 @@ dagitty2graph<- function(dagi, verbose = FALSE, ...)
 #' a BAP is generated merging the output DAG and the bidirected edges
 #' from the input graph.
 #'
-#' @import igraph
 #' @export
 #'
 #' @return A DAG as an igraph object.
@@ -730,72 +715,70 @@ dagitty2graph<- function(dagi, verbose = FALSE, ...)
 #' gplot(dag, main = "Output DAG")
 #' par(old.par)
 #'
-graph2dag <- function(graph, data, bap = FALSE, time.limit = Inf, ...)
+graph2dag<- function(graph, data, bap = FALSE, time.limit = Inf, ...)
 {
-	if (is_dag(graph)) return(dag = graph)
-
-	# Graph weighting by edge pvalues (r2z)
-	graph <- weightGraph(graph, data, group = NULL, seed = "none")
-	E(graph)$weight <- 1/(-log(E(graph)$pv))
+	if (is_dag(graph)) return(dag=graph)
+	# graph weighting by edge pvalues (r2z)
+	graph <- weightGraph(graph, data)
+	E(graph)$weight <- 1/(-log(E(graph )$pv))
 	ftm <- as_data_frame(graph)
 	wE <- ftm$weight
-	names(wE) <- paste0(ftm[, 1], ":", ftm[, 2])
-
-	# Delete all mutual edges <-> , i.e. <- & ->
-	ig <- graph - E(graph)[which_mutual(graph)]
-	if (is_dag(ig)) {
-		cat("DAG conversion: TRUE\n")
-		if (bap == TRUE) return(bap = graph)
-		return(dag = ig)
+	names(wE) <- paste0(ftm[,1],":",ftm[,2])
+	# delete all mutual edges <-> , i.e. <- & -> 
+	ig <- graph - E(graph)[which_mutual(graph )]
+	if (is_dag(ig) & bap == FALSE) {
+	 cat("DAG conversion : TRUE\n")
+	 return(dag = ig)
 	}
-
-	# Subgraph isomorphism algorithm to detect all cycles of a given length
+	if (is_dag(ig) & bap == TRUE) {
+	 cat("BAP conversion : TRUE\n")
+	 return(bap = graph)
+	}
+	
+	# subgraph isomorphism algorithm to detect all cycles of a given length
+	# time limit: CPU time for the computation, in seconds (defaults=Inf)
 	find.cycles <- function(graph, k, time.limit) {
-		ring <- graph.ring(k, TRUE)
-		subgraph_isomorphisms(ring, graph, "lad", time.limit = time.limit)
+	 ring <- graph.ring(k, TRUE)
+	 subgraph_isomorphisms(ring, graph, "lad", time.limit=time.limit)
 	}
-
-	# Function that identifies the right subisomorphisms to keep
+	# function that identifies the right subisomorphisms to keep
 	subisomorphism_rm_permutation <- function(si) {
-		is_first_min <- function(x) {
-			return(x[1] == min(x))
-		}
-		sel <- lapply(si, is_first_min)
-		return(si[unlist(sel)])
+	 is_first_min <- function(x) { return(x[1] == min(x)) }
+	 sel <- lapply(si, is_first_min)
+	 return(si[unlist(sel)])
+	}
+	# function that search max(weight) edge on each cycle
+	max_edges <- function(x){
+	 Ec <- vector()
+	 for (i in 1:(length(x)-1)) Ec<- c(Ec, paste0(x[i],":",x[i+1]))
+	 Ew <- wE[which(names(wE) %in% Ec)]
+	 return(unlist(strsplit(names(Ew)[which(Ew == max(Ew))],":")))
 	}
 
-	# Function that search max(weight) edge on each cycle
-	max_edges <- function(x) {
-		Ec <- vector()
-		for (i in 1:(length(x)-1)) Ec <- c(Ec, paste0(x[i], ":", x[i + 1]))
-		Ew <- wE[which(names(wE) %in% Ec)]
-		if(length(Ew) == 0) Ew <- wE[1]
-		return(unlist(strsplit(names(Ew)[which(Ew == max(Ew))], ":")))
+	for (k in 3:vcount(ig)){ #k=6
+	 # find all cycles with k vertices(edges)
+	 l <- find.cycles(ig, k, time.limit)
+	 # remove permutations
+	 l <- subisomorphism_rm_permutation(si=l)
+	 # extract the vertices in each cycle
+	 if (length(l) == 0) next
+	 cycles <- lapply(1:length(l), function(x) names(l[[x]]))
+	 # edges with max(weight)
+	 l <- unique(lapply(cycles, max_edges))
+	 E1 <- unlist(lapply(l, function(x) paste0(x[1],"|",x[2])))
+	 E0 <- attr(E(ig), "vnames")
+	 ig <- delete_edges(ig, which(E0 %in% E1))
 	}
-
-	for (k in 3:vcount(graph)) {
-		# Find all cycles with k vertices(edges)
-		l <- find.cycles(ig, k, time.limit)
-		# Remove permutations
-		l <- subisomorphism_rm_permutation(si = l)
-		# Extract the vertices in each cycle
-		if (length(l) == 0) next
-		cycles <- lapply(1:length(l), function(x) names(l[[x]]))
-		# Edges with max(weight)
-		l <- unique(lapply(cycles, max_edges))
-		E1 <- unlist(lapply(l, function(x) paste0(x[1], "|", x[2])))
-		E0 <- attr(E(ig), "vnames")
-		ig <- delete_edges(ig, which(E0 %in% E1))
+	if (bap == FALSE) {
+	 cat("DAG conversion :", is_dag(ig),"\n")
+	 return(dag = ig)
 	}
-	cat("DAG conversion :", is_dag(ig), "\n")
-
-	# Add all mutual edges <-> , i.e. <- & ->
-	if (bap == TRUE) {
-		e <- as_edgelist(graph - E(graph)[!which_mutual(graph)])
-		return(bap = add_edges(ig, as.vector(t(e))))
+    if (bap == TRUE) {
+	 cat("BAP conversion :", is_dag(ig),"\n")
+	 # add all mutual edges <-> , i.e. <- & ->
+	 e <- as_edgelist(graph-E(graph)[!which_mutual(graph)])
+	 return(bap = add_edges(ig, as.vector(t(e))))
 	}
-
-	return(graph = ig)
 }
 
 #' @title Assign edge orientation of an undirected graph
@@ -809,7 +792,6 @@ graph2dag <- function(graph, data, bap = FALSE, time.limit = Inf, ...)
 #' @param dg A directed reference graph.
 #' @param ... Currently ignored.
 #'
-#' @import igraph
 #' @export
 #'
 #' @return A directed graph as an igraph object.
@@ -925,7 +907,6 @@ attrMatch<- function(g1, g2, ...)
 #' is given to edges with P-value < alpha. By default ewidth = c(1, 2).
 #' @param ... Currently ignored.
 #'
-#' @import igraph
 #' @export
 #'
 #' @return An igraph object with vertex and edge color and width attributes.
@@ -997,14 +978,14 @@ colorGraph <- function (est, graph, group, method = "none", alpha = 0.05,
 		                         ewidth[1], ewidth[2])
 
 	} else if (colnames(est)[2] == "Stat") {
-			G <- est[-c(1:3),]
+			G <- est
 			vnames <- gsub("X", "", rownames(G))
 			G$pvalue <- p.adjust(G$pvalue, method = method)
 			Vr <- vnames[G$pvalue < alpha & G$Stat < 0]
 			Va <- vnames[G$pvalue < alpha & G$Stat > 0]
 			V(graph)$color <- ifelse(V(graph)$name %in% Vr, vcolor[1],
 			                         ifelse(V(graph)$name %in% Va,
-			                                vcolor[3], vcolor[2]))
+			                         vcolor[3], vcolor[2]))
 		}
 	}
 	if (is.null(group)) {
@@ -1049,8 +1030,6 @@ colorGraph <- function (est, graph, group, method = "none", alpha = 0.05,
 #' @param c number of columns of the plot layout (default \code{r = 4}).
 #' @param ... Currently ignored.
 #'
-#' @importFrom graphics par hist curve legend
-#' @importFrom stats dnorm
 #' @export
 #'
 #' @return No return value

@@ -19,8 +19,8 @@ Generate a summary for a RICF solver similar to
 lavaan-formatted summary
 }
 \examples{
-sem0 <- SEMrun(sachs$graph, log(sachs$pkc), algo = "ricf")
-summary(sem0$fit)
+sem1 <- SEMrun(sachs$graph, log(sachs$pkc), sachs$group, algo = "ricf")
+summary(sem1$fit)
 
 }
 \seealso{

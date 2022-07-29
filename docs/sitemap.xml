@@ -61,6 +61,9 @@
     <loc>/reference/lavaan2graph.html</loc>
   </url>
   <url>
+    <loc>/reference/localCI.test.html</loc>
+  </url>
+  <url>
     <loc>/reference/mergeNodes.html</loc>
   </url>
   <url>
@@ -71,6 +74,9 @@
   </url>
   <url>
     <loc>/reference/pairwiseMatrix.html</loc>
+  </url>
+  <url>
+    <loc>/reference/parameterEstimates.html</loc>
   </url>
   <url>
     <loc>/reference/pathFinder.html</loc>

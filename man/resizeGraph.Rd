@@ -50,18 +50,17 @@ of connections to be checked against a directed reference network
 }
 \details{
 Typically, the first graph is an estimated causal graph (DAG),
-and the second graph is the output of either \code{\link[SEMgraph]{SEMdag}}
-or \code{\link[SEMgraph]{SEMbap}}.
-In the former we use the new inferred causal structure stored in the
-\code{dag.new} object. In the latter, we use the new inferred covariance
-structure stored in the \code{guu} object. Both directed (causal) edges
-inferred by \code{SEMdag()} and covariances (i.e., bidirected edges)
-added by \code{SEMbap()}, highlight emergent hidden topological
-proprieties, absent in the input graph. Estimated directed edges between
-nodes X and Y are interpreted as either direct links or direct paths
-mediated by hidden connector nodes. Covariances between any two bow-free
-nodes X and Y may hide causal relationships, not explicitly represented
-in the current model. Conversely, directed edges could be redundant or artifact,
+and the second graph is the output of \code{\link[SEMgraph]{SEMdag}} or
+an external covariance graph. In the former we use the new inferred
+causal structure stored in the \code{dag.new} object. In the latter, we
+use the new inferred covariance structure stored in the covariance graph
+object. Both directed (causal) edges and covariances (i.e., bidirected
+edges) highlight emergent hidden topological proprieties, absent in the
+input graph. Estimated directed edges between nodes X and Y
+are interpreted as either direct links or direct paths mediated by hidden
+connector nodes. Covariances between any two bow-free nodes X and Y may
+hide causal relationships, not explicitly represented in the current model.
+Conversely, directed (or bi-directed) edges could be redundant or artifact,
 specific to the observed data and could be deleted.
 Function \code{resizeGraph()} leverage on these concepts to extend/reduce a
 causal model, importing new connectors or deleting estimated edges, if they are
@@ -90,11 +89,33 @@ gplot(dag$dag)
 ext <- resizeGraph(g=list(dag$dag, dag$dag.new), gnet = kegg, d = 2)
 gplot(ext) 
 
-# Extend a graph using the inferred bow-free path diagram (dag+guu):
+# Create a directed graph from correlation matrix, using
+# i) an empty graph as causal graph,
+# ii) a covariance graph,
+# iii) KEGG as reference:
 
-bap <- SEMbap(graph = G, data = als.npn, gnet = kegg, alpha = 0.01)
-ext <- resizeGraph(g=list(bap$dag, bap$guu), gnet = kegg, d = 1, v = FALSE)
-gplot(ext)
+corr2graph<- function(R, n, alpha=5e-6, ...)
+{
+	Z <- qnorm(alpha/2, lower.tail=FALSE)
+thr <- (exp(2*Z/sqrt(n-3))-1)/(exp(2*Z/sqrt(n-3))+1)
+	A <- ifelse(abs(R) > thr, 1, 0)
+	diag(A) <- 0
+	return(graph_from_adjacency_matrix(A, mode="undirected"))
+}
+
+v <- which(colnames(als.npn) \%in\% V(G)$name)
+selectedData <- als.npn[, v]
+G0 <- make_empty_graph(n = ncol(selectedData))
+V(G0)$name <- colnames(selectedData)
+G1 <- corr2graph(R = cor(selectedData), n= nrow(selectedData))
+ext <- resizeGraph(g=list(G0, G1), gnet = kegg, d = 2, v = TRUE)
+
+#Graphs
+old.par <- par(no.readonly = TRUE)
+par(mfrow=c(1,2), mar=rep(1,4))
+plot(G1, layout = layout.circle)
+plot(ext, layout = layout.circle)
+par(old.par)
 
 }
 

@@ -18,7 +18,7 @@ graph components (ordered by decreasing size), without self-loops."><!-- mathjax
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
       </span>
     </div>
 
@@ -62,16 +62,23 @@ graph components (ordered by decreasing size), without self-loops.</p>
     <h2>Arguments</h2>
     <dl><dt>graph</dt>
 <dd><p>Input network as an igraph object.</p></dd>
+
+
 <dt>data</dt>
 <dd><p>An optional data matrix (default data = NULL) whith rows
 corresponding to subjects, and columns to graph nodes (variables).
 Nodes will be mapped onto variable names.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Currently ignored.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>List of graph components, ordered by decreasing size (the first
+    
+
+<p>List of graph components, ordered by decreasing size (the first
 component is the giant one), without self-loops.</p>
     </div>
     <div id="author">
@@ -102,9 +109,9 @@ component is the giant one), without self-loops.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> which.mutual.FALSE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                114 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH 1944dde DNW- 38 114 -- </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH 7848f13 DNW- 38 114 -- </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> + attr: name (v/c), weight (e/n)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> + edges from 1944dde (vertex names):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> + edges from 7848f13 (vertex names):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 5290  -&gt;6517 5290  -&gt;5590 5290  -&gt;2475 5291  -&gt;6517 5291  -&gt;5590</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [6] 5291  -&gt;2475 5293  -&gt;6517 5293  -&gt;5590 5293  -&gt;2475 5295  -&gt;6517</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [11] 5295  -&gt;5590 5295  -&gt;2475 5296  -&gt;6517 5296  -&gt;5590 5296  -&gt;2475</span>
@@ -116,9 +123,9 @@ component is the giant one), without self-loops.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> + ... omitted several edges</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[2]]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH 1944dcd DNW- 7 10 -- </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH 7848f13 DNW- 7 10 -- </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> + attr: name (v/c), weight (e/n)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> + edges from 1944dcd (vertex names):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> + edges from 7848f13 (vertex names):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 2645 -&gt;5313 2645 -&gt;5315 3098 -&gt;5313 3098 -&gt;5315 3099 -&gt;5313 3099 -&gt;5315</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [7] 3101 -&gt;5313 3101 -&gt;5315 80201-&gt;5313 80201-&gt;5315</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -137,7 +144,7 @@ component is the giant one), without self-loops.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
       </footer></div>

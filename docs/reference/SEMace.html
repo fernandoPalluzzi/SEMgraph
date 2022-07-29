@@ -23,7 +23,7 @@ or a bootstrap-based procedure (see boot for details)."><!-- mathjax --><script 
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
       </span>
     </div>
 
@@ -82,40 +82,59 @@ or a bootstrap-based procedure (see <code><a href="https://rdrr.io/pkg/boot/man/
     <h2>Arguments</h2>
     <dl><dt>graph</dt>
 <dd><p>An igraph object.</p></dd>
+
+
 <dt>data</dt>
 <dd><p>A matrix or data.frame. Rows correspond to subjects, and
 columns to graph nodes (variables).</p></dd>
+
+
 <dt>group</dt>
 <dd><p>A binary vector. This vector must be as long as the
 number of subjects. Each vector element must be 1 for cases and 0
 for control subjects. If <code>group = NULL</code> (default), group influence
 will not be considered.</p></dd>
+
+
 <dt>type</dt>
 <dd><p>character Conditioning set Z. If "parents" (default) the
 Pearl's back-door set (Pearl, 1998), "minimal" the dagitty minimal set
 (Perkovic et al, 2018), or "optimal" the O-set with the smallest
 asymptotic variance (Witte et al, 2020) are computed.</p></dd>
+
+
 <dt>effect</dt>
 <dd><p>character X to Y effect. If "all" (default) all effects from
 X to Y, "source2sink" only effects from source X to sink Y, or "direct"
 only direct effects from X to Y are computed.</p></dd>
+
+
 <dt>method</dt>
 <dd><p>Multiple testing correction method. One of the values
 available in <code><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">p.adjust</a></code>.
 By default, <code>method = "BH"</code> (i.e., FDR multiple test correction).</p></dd>
+
+
 <dt>alpha</dt>
 <dd><p>Significance level for ACE selection (by default,
 <code>alpha = 0.05</code>).</p></dd>
+
+
 <dt>boot</dt>
 <dd><p>The number of bootstrap samplings enabling bootstrap
 computation of ACE standard errors. If <code>NULL</code> (default), bootstrap
 is disabled.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Currently ignored.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A data.frame of ACE estimates between network sources and sinks.</p>
+    
+
+<p>A data.frame of ACE estimates between network sources and sinks.</p>
     </div>
     <div id="references">
     <h2>References</h2>
@@ -138,71 +157,66 @@ adjustment in causal graphs. Journal of Machine Learning Research, 21:1-45.
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"></span>
-<span class="r-in"><span class="co"># ACE estimation, without group</span></span>
+<span class="r-in"><span class="co"># ACE without group, O-set, all effects:</span></span>
 <span class="r-in"><span class="va">ace1</span> <span class="op">&lt;-</span> <span class="fu">SEMace</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span>,</span>
-<span class="r-in">               group <span class="op">=</span> <span class="cn">NULL</span>, type<span class="op">=</span><span class="st">"parents"</span>, effect<span class="op">=</span><span class="st">"all"</span>,</span>
-<span class="r-in">               method <span class="op">=</span> <span class="st">"BH"</span>, alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Frequency distribution of path length from X to Y :</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  1  2  3 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20 18  3 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ACE= 1 of 41 ACE= 2 of 41 ACE= 3 of 41 ACE= 4 of 41 ACE= 5 of 41 ACE= 6 of 41 ACE= 7 of 41 ACE= 8 of 41 ACE= 9 of 41 ACE= 10 of 41 ACE= 11 of 41 ACE= 12 of 41 ACE= 13 of 41 ACE= 14 of 41 ACE= 15 of 41 ACE= 16 of 41 ACE= 17 of 41 ACE= 18 of 41 ACE= 19 of 41 ACE= 20 of 41 ACE= 21 of 41 ACE= 22 of 41 ACE= 23 of 41 ACE= 24 of 41 ACE= 25 of 41 ACE= 26 of 41 ACE= 27 of 41 ACE= 28 of 41 ACE= 29 of 41 ACE= 30 of 41 ACE= 31 of 41 ACE= 32 of 41 ACE= 33 of 41 ACE= 34 of 41 ACE= 35 of 41 ACE= 36 of 41 ACE= 37 of 41 ACE= 38 of 41 ACE= 39 of 41 ACE= 40 of 41 ACE= 41 of 41</span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">ace1</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    pathL sink op source    est    se      z pvalue ci.lower ci.upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      3  PKC &lt;-    PKA  0.062 0.024  2.610  0.009    0.016    0.109</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2      1 PIP3 &lt;-    PKA  0.000 0.000  4.869  0.000    0.000    0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3      1  Mek &lt;-    PKA -0.067 0.024 -2.834  0.005   -0.114   -0.021</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4      1  Raf &lt;-    PKA -0.111 0.023 -4.722  0.000   -0.157   -0.065</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5      2 PIP2 &lt;-    PKA  0.050 0.020  2.474  0.013    0.010    0.089</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6      2 Plcg &lt;-    PKA  0.084 0.023  3.591  0.000    0.038    0.130</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7      1  Jnk &lt;-    PKA  0.093 0.024  3.907  0.000    0.046    0.139</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9      1  Akt &lt;-    PKA  0.546 0.020 27.439  0.000    0.507    0.585</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10     1  Erk &lt;-    PKA  0.451 0.021 21.257  0.000    0.410    0.493</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13     1  Jnk &lt;-    PKC  0.133 0.024  5.640  0.000    0.087    0.179</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14     1  P38 &lt;-    PKC  0.645 0.018 35.449  0.000    0.609    0.680</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16     1  PKA &lt;-   PIP3  0.000 0.000  4.628  0.000    0.000    0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18     2  Mek &lt;-   PIP3  0.085 0.024  3.560  0.000    0.038    0.131</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19     2  Raf &lt;-   PIP3  0.155 0.023  6.600  0.000    0.109    0.201</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20     1 PIP2 &lt;-   PIP3  0.541 0.020 26.839  0.000    0.502    0.581</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21     1 Plcg &lt;-   PIP3  0.216 0.023  9.245  0.000    0.170    0.261</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 22     2  Jnk &lt;-   PIP3 -0.077 0.024 -3.250  0.001   -0.124   -0.031</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 24     1  Akt &lt;-   PIP3 -0.065 0.020 -3.249  0.001   -0.104   -0.026</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 25     2  Erk &lt;-   PIP3 -0.063 0.021 -2.988  0.003   -0.105   -0.022</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 26     1  Erk &lt;-    Mek  0.063 0.029  2.176  0.030    0.006    0.119</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 27     1  Mek &lt;-    Raf  0.683 0.018 38.898  0.000    0.649    0.718</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 28     2  Erk &lt;-    Raf -0.081 0.021 -3.784  0.000   -0.122   -0.039</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 31     2  Raf &lt;-   PIP2 -0.088 0.029 -3.089  0.002   -0.144   -0.032</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 36     2  Mek &lt;-   Plcg -0.065 0.024 -2.680  0.007   -0.112   -0.017</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 37     2  Raf &lt;-   Plcg -0.100 0.024 -4.191  0.000   -0.147   -0.053</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 38     1 PIP2 &lt;-   Plcg  0.227 0.020 11.435  0.000    0.188    0.265</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 39     2  Jnk &lt;-   Plcg  0.111 0.024  4.620  0.000    0.064    0.159</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 41     3  Erk &lt;-   Plcg  0.096 0.024  3.968  0.000    0.048    0.143</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># ACE with group perturbation</span></span>
-<span class="r-in"><span class="va">ace2</span> <span class="op">&lt;-</span> <span class="fu">SEMace</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span>,</span>
-<span class="r-in">               group <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">group</span>, type<span class="op">=</span><span class="st">"optimal"</span>, effect<span class="op">=</span><span class="st">"direct"</span>,</span>
-<span class="r-in">               method <span class="op">=</span> <span class="st">"none"</span>, alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span>
+<span class="r-in">               group <span class="op">=</span> <span class="cn">NULL</span>, type <span class="op">=</span> <span class="st">"optimal"</span>, effect <span class="op">=</span> <span class="st">"all"</span>,</span>
+<span class="r-in">               method <span class="op">=</span> <span class="st">"BH"</span>, alpha <span class="op">=</span> <span class="fl">0.05</span>, boot <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> WARNING: input graph is not acyclic!</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Applying graph -&gt; DAG conversion.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> DAG conversion: TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> DAG conversion : TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Frequency distribution of path length from X to Y :</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1  2  3  4 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18 11  6  1 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ACE= 1 of 36 ACE= 2 of 36 ACE= 3 of 36 ACE= 4 of 36 ACE= 5 of 36 ACE= 6 of 36 ACE= 7 of 36 ACE= 8 of 36 ACE= 9 of 36 ACE= 10 of 36 ACE= 11 of 36 ACE= 12 of 36 ACE= 13 of 36 ACE= 14 of 36 ACE= 15 of 36 ACE= 16 of 36 ACE= 17 of 36 ACE= 18 of 36 ACE= 19 of 36 ACE= 20 of 36 ACE= 21 of 36 ACE= 22 of 36 ACE= 23 of 36 ACE= 24 of 36 ACE= 25 of 36 ACE= 26 of 36 ACE= 27 of 36 ACE= 28 of 36 ACE= 29 of 36 ACE= 30 of 36 ACE= 31 of 36 ACE= 32 of 36 ACE= 33 of 36 ACE= 34 of 36 ACE= 35 of 36 ACE= 36 of 36</span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">ace1</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    pathL sink op source    est    se      z pvalue ci.lower ci.upper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      1  Mek &lt;-    PKA -0.074 0.024 -3.119  0.002   -0.121   -0.028</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      1  Raf &lt;-    PKA -0.124 0.024 -5.258  0.000   -0.171   -0.078</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3      1  Jnk &lt;-    PKA  0.093 0.024  3.938  0.000    0.047    0.139</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5      1  Akt &lt;-    PKA  0.546 0.020 27.439  0.000    0.507    0.585</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6      1  Erk &lt;-    PKA  0.458 0.021 21.582  0.000    0.416    0.499</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9      1  Jnk &lt;-    PKC  0.128 0.024  5.436  0.000    0.082    0.174</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10     1  P38 &lt;-    PKC  0.646 0.018 35.484  0.000    0.611    0.682</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13     3  Mek &lt;-   PIP3  0.085 0.024  3.560  0.000    0.038    0.131</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14     3  Raf &lt;-   PIP3  0.155 0.023  6.600  0.000    0.109    0.201</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15     1 PIP2 &lt;-   PIP3  0.536 0.020 26.687  0.000    0.497    0.576</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16     1 Plcg &lt;-   PIP3  0.207 0.023  8.892  0.000    0.161    0.253</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17     3  Jnk &lt;-   PIP3 -0.077 0.024 -3.250  0.001   -0.124   -0.031</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19     1  Akt &lt;-   PIP3 -0.065 0.020 -3.249  0.001   -0.104   -0.026</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20     4  Erk &lt;-   PIP3 -0.063 0.021 -2.988  0.003   -0.105   -0.022</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22     1  Mek &lt;-    Raf  0.683 0.018 38.898  0.000    0.649    0.718</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23     2  Erk &lt;-    Raf -0.081 0.021 -3.784  0.000   -0.122   -0.039</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31     2  Mek &lt;-   Plcg -0.059 0.024 -2.451  0.014   -0.107   -0.012</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32     2  Raf &lt;-   Plcg -0.091 0.024 -3.822  0.000   -0.138   -0.044</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33     1 PIP2 &lt;-   Plcg  0.227 0.020 11.435  0.000    0.188    0.265</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34     2  Jnk &lt;-   Plcg  0.104 0.024  4.317  0.000    0.057    0.151</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 36     3  Erk &lt;-   Plcg  0.057 0.022  2.631  0.009    0.015    0.099</span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co"># ACE with group perturbation, Pa-set, direct effects:</span></span>
+<span class="r-in"><span class="va">ace2</span> <span class="op">&lt;-</span> <span class="fu">SEMace</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span>,</span>
+<span class="r-in">               group <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">group</span>, type <span class="op">=</span> <span class="st">"parents"</span>, effect <span class="op">=</span> <span class="st">"direct"</span>,</span>
+<span class="r-in">               method <span class="op">=</span> <span class="st">"none"</span>, alpha <span class="op">=</span> <span class="fl">0.05</span>, boot <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Frequency distribution of path length from X to Y :</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ACE= 1 of 18 ACE= 2 of 18 ACE= 3 of 18 ACE= 4 of 18 ACE= 5 of 18 ACE= 6 of 18 ACE= 7 of 18 ACE= 8 of 18 ACE= 9 of 18 ACE= 10 of 18 ACE= 11 of 18 ACE= 12 of 18 ACE= 13 of 18 ACE= 14 of 18 ACE= 15 of 18 ACE= 16 of 18 ACE= 17 of 18 ACE= 18 of 18</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ACE= 1 of 20 ACE= 2 of 20 ACE= 3 of 20 ACE= 4 of 20 ACE= 5 of 20 ACE= 6 of 20 ACE= 7 of 20 ACE= 8 of 20 ACE= 9 of 20 ACE= 10 of 20 ACE= 11 of 20 ACE= 12 of 20 ACE= 13 of 20 ACE= 14 of 20 ACE= 15 of 20 ACE= 16 of 20 ACE= 17 of 20 ACE= 18 of 20 ACE= 19 of 20 ACE= 20 of 20</span>
 <span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">ace2</span><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    pathL sink op source d_est  d_se    d_z pvalue d_lower d_upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5      1  Akt &lt;-    PKA 0.341 0.039  8.722  0.000   0.265   0.418</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6      1  Erk &lt;-    PKA 0.242 0.042  5.719  0.000   0.159   0.326</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9      1  Jnk &lt;-    PKC 0.645 0.044 14.523  0.000   0.558   0.732</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10     1  P38 &lt;-    PKC 0.347 0.036  9.739  0.000   0.277   0.417</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11     1 PIP2 &lt;-   PIP3 0.351 0.040  8.715  0.000   0.272   0.430</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12     1 Plcg &lt;-   PIP3 0.309 0.047  6.529  0.000   0.216   0.402</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13     1  Akt &lt;-   PIP3 0.079 0.040  1.994  0.046   0.001   0.158</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18     1 PIP2 &lt;-   Plcg 0.375 0.039  9.715  0.000   0.299   0.450</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      1 PIP3 &lt;-    PKA 0.000 0.000  3.508  0.000   0.000   0.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6      1  Akt &lt;-    PKA 0.341 0.039  8.722  0.000   0.265   0.418</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7      1  Erk &lt;-    PKA 0.242 0.042  5.706  0.000   0.159   0.326</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10     1  Jnk &lt;-    PKC 0.643 0.044 14.506  0.000   0.556   0.730</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11     1  P38 &lt;-    PKC 0.345 0.036  9.684  0.000   0.275   0.415</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12     1  PKA &lt;-   PIP3 0.000 0.000 -3.482  0.000   0.000   0.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13     1 PIP2 &lt;-   PIP3 0.351 0.040  8.693  0.000   0.272   0.431</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14     1 Plcg &lt;-   PIP3 0.321 0.047  6.774  0.000   0.228   0.414</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15     1  Akt &lt;-   PIP3 0.079 0.040  1.994  0.046   0.001   0.158</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20     1 PIP2 &lt;-   Plcg 0.375 0.039  9.715  0.000   0.299   0.450</span>
 <span class="r-in"></span>
 </code></pre></div>
     </div>
@@ -218,7 +232,7 @@ adjustment in causal graphs. Journal of Machine Learning Research, 21:1-45.
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
       </footer></div>
