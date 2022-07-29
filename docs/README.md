@@ -472,8 +472,8 @@ summary(gD)
 
 gC <- properties(gD)
 gC3 <- gC[[3]]
-sem1 <- SEMrun(gC3, pc1.npn, group, fit=1, algo="cggm")
-sem2 <- SEMrun(sem1$graph, pc1.npn, group, fit=2, algo="cggm")
+sem1 <- SEMrun(gC3, pc1.npn, group, fit = 1, algo = "cggm")
+sem2 <- SEMrun(sem1$graph, pc1.npn, group, fit = 2, algo = "cggm")
 
 
 ## Figure 5. DCI perturbed backbone. ---------------------------------##
