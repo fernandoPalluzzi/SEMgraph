@@ -318,6 +318,8 @@ dev.off()
 ##-----------------------------------------------------------------------------##
 ```
 
+&nbsp;
+
 ## 3. Frontotemporal Dementia (FTD) data analysis.
 
 The FTD dataset coming with **SEMdata** is a data matrix of 256 rows (subjects; 150 FTD patients and 150 healthy controls) and 16560 columns (genes) containing the value of the first principal component of DNAme levels, obtained applying a principal component analysis to methylated CpG sites within the promoter region, for each gene (genes with unmethylated CpGs in both conditions were discarded). This dataset was derived from the study by Li Y. *et al.*, 2014 (GEO accession: [GSE53740](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE53740)).
