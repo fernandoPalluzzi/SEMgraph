@@ -6,6 +6,8 @@ The following section offers an overview of **SEMgraph** functionalities. Starti
 2. **Causal effects estimation, model learning, extension, and clusterinng (Amyotrophic Lateral Sclerosis dataset)**
 3. **Gene Set Analysis and perturbed subnetwork/module extraction (Frontotemporal Dementia dataset)**
 
+Please, also visit our website [**HERE**](https://fernandopalluzzi.github.io/SEMgraph/) for a complete list of **SEMgraph** functions and related examples.
+
 &nbsp;
 
 ## 1. Supplementary packages.
