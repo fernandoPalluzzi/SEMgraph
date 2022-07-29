@@ -43,9 +43,12 @@ and pathways for SEMgraph training:
 devtools::install_github("fernandoPalluzzi/SEMdata")
 ```
 
+&nbsp;
+
 ## Getting help
 
-See our website [**HERE**](https://fernandopalluzzi.github.io/SEMgraph/) for help and examples.
+A guided tutorial for **SEMgraph** is available at our [**DOCs page**](https://github.com/fernandoPalluzzi/SEMgraph/edit/master/docs).
+The full list of **SEMgraph** functions with examples is available at our website [**HERE**](https://fernandopalluzzi.github.io/SEMgraph/).
 
 ## Available datasets
 
