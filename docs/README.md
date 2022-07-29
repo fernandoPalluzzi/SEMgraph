@@ -290,7 +290,7 @@ LV <- clusterScore(model$graph, model$data, alsData$group,
                    type = "ebc",
 		   HM = "LV",
 		   size = 5)
-
+				  
 table(LV$membership)
 
 head(parameterEstimates(LV$fit))
@@ -298,12 +298,11 @@ head(parameterEstimates(LV$fit))
 
 # Clustering only (no scores calculation)
 
-C <- clusterGraph(model$graph, type = "ebc", HM = "LV", size = 5, verbose = FALSE)
-
+C <- clusterGraph(model$graph, type = "ebc", HM = "LV", size = 5, verbose = TRUE)
 
 # Cluster plot utility
 
-cg <- cplot(graph = model$graph, membership = LV$membership, verbose=TRUE)
+cg <- cplot(graph = model$graph, membership = LV$membership, verbose = TRUE)
 list(cg)
 gplot(cg$graph)
 
@@ -317,8 +316,17 @@ print(cls$dfc)
 
 ## Figure 3. Edge betweenness clusters (EBC) mapped over the improved model. --##
 
-# Graph plot
-png("Figure3.png", width = 16, height = 8, units = 'in', res = 400)
+# Convert Entrez identifiers to gene symbols
+library(org.Hs.eg.db)
+V(cg$graph)$label <- mapIds(org.Hs.eg.db, V(cg$graph)$name, 'SYMBOL', 'ENTREZID')
+
+# Set node colors
+V(cg$graph)$color[V(cg$graph)$color == 2] <- "lightsalmon"
+V(cg$graph)$color[V(cg$graph)$color == 3] <- "lightgreen"
+V(cg$graph)$color[V(cg$graph)$color == 4] <- "lightyellow"
+
+# Graph plot 3
+pdf("Figure3.pdf", width = 16, height = 8)
 gplot(cg$graph, fontsize = 30)
 dev.off()
 
