@@ -132,7 +132,7 @@ summary(cggm2$fit$Group_1)
 print(cggm2$dest)
 ```
 
-**Figure 1. ALS model fitting.** Estimated group effects on nodes and direct effects.
+**Figure 1. ALS model fitting.** Estimated group effects on nodes and direct effects (red/pink: activation, blue/lightblue: repression).
 
 ![alt text](https://github.com/fernandoPalluzzi/SEMgraph/blob/master/docs/figures/Figure1.png)
 
@@ -271,7 +271,7 @@ gplot(model3$graph, main="outer")
 
 ```
 
-**Figure 2. ALS improved model (basic strategy).** Data-driven model improvement of the input ALS model: (A) added connectors in green; (B) improved model fitting and perturbation evaluation; (C) SOD1-NEFM directed path.
+**Figure 2. ALS improved model (basic strategy).** Data-driven model improvement of the input ALS model: (A) added connectors in green; (B) improved model fitting and perturbation evaluation (red/pink: activation, blue/lightblue: repression); (C) SOD1-NEFM directed path.
 
 ![alt text](https://github.com/fernandoPalluzzi/SEMgraph/blob/master/docs/figures/Figure2.png)
 
@@ -451,6 +451,50 @@ dev.off()
 
 ##--------------------------------------------------------------------##
 ```
+
+### 3.3. Locating differentially connected genes.
+
+
+
+```r
+# Input graph as the union of FTD KEGG pathways
+
+gU <- graph.union(kegg.pathways[j])
+gU <- properties(gU)[[1]]
+summary(gU)
+
+# SEM-based differential causal inference (DCI) with the EBC clustering algorithm
+
+gD <- SEMdci(gU, pc1.npn, group, type = "ebc", method = "BH", alpha = 0.05)
+summary(gD)
+
+# Perturbation evaluation of the 3th component of gD
+
+gC <- properties(gD)
+gC3 <- gC[[3]]
+sem1 <- SEMrun(gC3, pc1.npn, group, fit=1, algo="cggm")
+sem2 <- SEMrun(sem1$graph, pc1.npn, group, fit=2, algo="cggm")
+
+
+## Figure 5. DCI perturbed backbone. ---------------------------------##
+
+# Set node and edge colors
+gC3 <- sem2$graph
+
+# Convert Entrez identifiers to gene symbols
+library(org.Hs.eg.db)
+V(gC3)$label <- mapIds(org.Hs.eg.db, V(gC3)$name, "SYMBOL", "ENTREZID")
+
+png("Figure5.png", width = 16, height = 12, units = 'in', res = 400)
+gplot(gC3, l = "fdp", fontsize = 30)
+dev.off()
+
+##--------------------------------------------------------------------##
+```
+
+**Figure 5. DCI perturbed backbone.** Figure showing the DCI perturbed backbone of the original FTD model (red/pink: activation, blue/lightblue: repression).
+
+![alt text](https://github.com/fernandoPalluzzi/SEMgraph/blob/master/docs/figures/Figure5.png)
 
 &nbsp;
 
