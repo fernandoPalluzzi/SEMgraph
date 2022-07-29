@@ -20,6 +20,8 @@ confounding adjustment.
 together with graph plotting utilities, tracing model architecture 
 modifications and perturbation (i.e., activation or repression) routes.
 
+&nbsp;
+
 ## Installation
 
 The latest stable version can be installed from [**CRAN**](https://CRAN.R-project.org/package=SEMgraph):
