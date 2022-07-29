@@ -330,12 +330,16 @@ V(cg$graph)$color[V(cg$graph)$color == 3] <- "lightgreen"
 V(cg$graph)$color[V(cg$graph)$color == 4] <- "lightyellow"
 
 # Graph plot 3
-pdf("Figure3.pdf", width = 16, height = 8)
+png("Figure3.png", width = 16, height = 8, units = 'in', res = 400)
 gplot(cg$graph, fontsize = 30)
 dev.off()
 
 ##-----------------------------------------------------------------------------##
 ```
+
+**Figure 3. Edge betweenness clusters (EBC) mapped over the improved ALS model.**
+
+![alt text](https://github.com/fernandoPalluzzi/SEMgraph/blob/master/docs/figures/Figure3.png)
 
 &nbsp;
 
