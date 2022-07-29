@@ -214,7 +214,7 @@ path <- SEMpath(model$graph, model$data, alsData$group,
                 path = "directed",
                 verbose = TRUE)
 
-png("Figure2.png", width = 14, height = 12, units = 'in', res = 400)
+pdf("Figure2.pdf", width = 14, height = 9)
 par(mfrow=c(3,1), mar=c(1,1,1,1))
 gplot(model$graph, main = "\nA)  ALS model structure", cex.main = 3, fontsize = 40)
 gplot(pert$graph, main = "\nB)  ALS model perturbation", cex.main = 3, fontsize = 40)
