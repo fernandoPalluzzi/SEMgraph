@@ -454,7 +454,7 @@ dev.off()
 
 ### 3.3. Locating differentially connected genes.
 
-
+The SEMgraph differential causal inference (DCI) module enables the detection of perturbed nodes and edges for large graphs. This module is useful when the aim is to find a perturbed backbone of essential disease-associated nodes nodes.
 
 ```r
 # Input graph as the union of FTD KEGG pathways
