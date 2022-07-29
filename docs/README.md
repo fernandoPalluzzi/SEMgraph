@@ -214,7 +214,7 @@ path <- SEMpath(model$graph, model$data, alsData$group,
                 path = "directed",
                 verbose = TRUE)
 
-pdf("Figure2.pdf", width = 14, height = 19)
+png("Figure2.png", width = 14, height = 9, units = 'in', res = 400)
 par(mfrow=c(3,1), mar=c(1,1,1,1))
 gplot(model$graph, main = "\nA)  ALS model structure", cex.main = 3, fontsize = 40)
 gplot(pert$graph, main = "\nB)  ALS model perturbation", cex.main = 3, fontsize = 40)
@@ -274,6 +274,10 @@ gplot(model2$graph, main="inner")
 gplot(model3$graph, main="outer")
 
 ```
+
+**Figure 2. ALS improved model (basic strategy).** Data-driven model improvement of the input ALS model.
+
+![alt text](https://github.com/fernandoPalluzzi/SEMgraph/blob/master/docs/figures/Supplementary_Figure2.png)
 
 ### 2.5. Communities and factor scores.
 
