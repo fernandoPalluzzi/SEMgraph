@@ -132,6 +132,8 @@ summary(cggm2$fit$Group_1)
 print(cggm2$dest)
 ```
 
+![alt text](https://github.com/fernandoPalluzzi/SEMgraph/blob/master/docs/figures/Figure1.png)
+
 ### 2.3. Total effect estimation as Average Causal Effect (ACE).
 
 Suppose having a path P = X -> M1 -> ... -> Mk -> Y between two nodes X and Y, connected through k mediators. The total effect (TE = DE + IE) is the sum of the direct effect X -> Y, DE = b(X,Y), and the indirect effect through the mediators, IE = b(X,M1)\*b(M1,M2)\*...\*b(Mk,Y).
