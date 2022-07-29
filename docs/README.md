@@ -168,7 +168,6 @@ path <- SEMpath(alsData$graph, data.npn, alsData$group,
 		path = "directed",
 		verbose = TRUE)
 
-
 #  The pathFinder function extracts all directed paths, fits them, and evaluates their perturbation
 
 paths <- pathFinder(alsData$graph, data.npn, alsData$group, ace = ace)
