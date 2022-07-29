@@ -2,51 +2,22 @@
 
 The following section offers an overview of **SEMgraph** functionalities. Starting from model fitting, it will gently introduce functions for model learning, weighting, clustering, and evaluation of causal effects and model perturbation. This section includes:
 
-1. **Manual dependencies installation**
+1. **Supplementary packages installation**
 2. **Causal effects estimation, model learning, extension, and clusterinng (Amyotrophic Lateral Sclerosis dataset)**
 3. **Gene Set Analysis and perturbed subnetwork/module extraction (Frontotemporal Dementia dataset)**
 
 ## 1. Manual dependencies installation
 
 ```r
-# Defining dependency installers
+# Besides the required packages, SEMgraph suggests the use of org.Hs.eg.db, for gene ID conversion.
+# SEMgraph uses entrez IDs to avoid special chatacters (such as hyphens or slashes), but it can use official gene symbols as labels.
 
-installFromCran <- function(pkg) {
-  if (!requireNamespace(pkg, quietly = TRUE))
-    install.packages(pkg)
-}
-
-installFromBioconductor <- function(pkg) {
-  if (!requireNamespace(pkg, quietly = TRUE))
-    BiocManager::install(pkg)
-}
-
-# SEMgraph package
-devtools::install_github("fernandoPalluzzi/SEMgraph")
-
-# SEMdata package
-devtools::install_github("fernandoPalluzzi/SEMdata")
-
-# Required packages
-
-pkgs.cran <- c("BiocManager", "boot", "cate", "corpcor", "dagitty",
-               "flip", "gdata", "ggm", "GGMncv", "glmnet",
-	       "leaps", "mgcv", "pbapply", "protoclust")
-
-pkgs.bioc <- c("graph", "RBGL", "Rgraphviz")
-
-install_1 <- sapply(pkgs.cran, installFromCran)
-install_2 <- sapply(pkgs.cran, installFromBioconductor)
-
-# Installing suggested packages
 install.packages("org.Hs.eg.db")
+
+# Sometimes, it could be useful to relax Gaussianity constraints when fitting a SEM.
+# The huge package does it by applying a nonparanormal transform (PMID: 26834510).
+
 install.packages("huge")
-
-options(warn = -1)
-
-# Library loading
-library(SEMgraph)
-library(SEMdata)
 ```
 
 ## 2. Amyotrophic Lateral Sclerosis (ALS) data analysis.
