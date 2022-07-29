@@ -214,7 +214,7 @@ path <- SEMpath(model$graph, model$data, alsData$group,
                 path = "directed",
                 verbose = TRUE)
 
-png("Figure2.png", width = 14, height = 9, units = 'in', res = 400)
+png("Figure2.png", width = 14, height = 12, units = 'in', res = 400)
 par(mfrow=c(3,1), mar=c(1,1,1,1))
 gplot(model$graph, main = "\nA)  ALS model structure", cex.main = 3, fontsize = 40)
 gplot(pert$graph, main = "\nB)  ALS model perturbation", cex.main = 3, fontsize = 40)
@@ -275,7 +275,7 @@ gplot(model3$graph, main="outer")
 
 ```
 
-**Figure 2. ALS improved model (basic strategy).** Data-driven model improvement of the input ALS model.
+**Figure 2. ALS improved model (basic strategy).** Data-driven model improvement of the input ALS model: (A) added connectors in green; (B) improved model fitting and perturbation evaluation; (C) SOD1-NEFM directed path.
 
 ![alt text](https://github.com/fernandoPalluzzi/SEMgraph/blob/master/docs/figures/Figure2.png)
 
