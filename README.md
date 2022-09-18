@@ -91,8 +91,12 @@ The full list of **SEMgraph** functions with examples is available at our websit
 
 # References
 
+### SEMgraph
+
 Grassi M, Palluzzi F, Tarantino B. **SEMgraph: an R package for causal network inference of high-throughput data with structural equation models**. Bioinformatics, 2022 Aug 30; btac567. https://doi.org/10.1093/bioinformatics/btac567
 
-Grassi M, Tarantino B. **SEMgsa: topology-based pathway enrichment analysis with structural equation models**. BMC Bioinformatics, 2022 Aug 17; 23(1):344. https://doi.org/10.1186/s12859-022-04884-8
-
 Palluzzi F, Grassi M. **SEMgraph: An R Package for Causal Network Analysis of High-Throughput Data with Structural Equation Models**. arXiv, 2022 Jan 3 (4th version); arXiv:2103.08332. https://arxiv.org/abs/2103.08332v4
+
+### Associated tools
+
+Grassi M, Tarantino B. **SEMgsa: topology-based pathway enrichment analysis with structural equation models**. BMC Bioinformatics, 2022 Aug 17; 23(1):344. https://doi.org/10.1186/s12859-022-04884-8
