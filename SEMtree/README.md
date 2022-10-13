@@ -6,6 +6,7 @@
 *R code corresponding author: **Barbara Tarantino** (barbara.tarantino@unipv.it)*
 
 This section contains R code and data for the SEMtree project reproducibility.
+
 The folder structure can be summarised as follows:
 
 ./code/:
