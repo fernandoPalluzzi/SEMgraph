@@ -29,7 +29,3 @@ summarised as follows:
 
 ## Data source
 The original data used in this research can be downloaded at [**GSE172114**](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE172114).
-
-## References
-
-Mario Grassi, Barbara Tarantino. **SEMgsa: topology-based pathway enrichment analysis with structural equation models.** BMC Bioinformatics. 2022 Aug 17;23(1):344. doi: 10.1186/s12859-022-04884-8.

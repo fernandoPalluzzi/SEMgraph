@@ -2,7 +2,7 @@ Package: SEMgraph
 Title: Network Analysis and Causal Inference Through Structural
         Equation Modeling
 Version: 1.1.3
-Date: 2022-07-16
+Date: 2022-10-10
 Authors@R: c(
     person("Mario", "Grassi", role = "aut", email="mario.grassi@unipv.it"),
     person("Fernando", "Palluzzi", role = "aut", email="fernando.palluzzi@gmail.com"),
@@ -11,15 +11,15 @@ Description: Estimate networks and causal relationships in complex systems throu
   Structural Equation Modeling. This package also includes functions to import,
   weight, manipulate, and fit biological network models within the
   Structural Equation Modeling framework described in
-  Palluzzi and Grassi (2021) <arXiv:2103.08332>.
+  Grassi M, Palluzzi F, Tarantino B (2022) <doi:10.1093/bioinformatics/btac567>.
 URL: https://github.com/fernandoPalluzzi/SEMgraph
 Depends: igraph (>= 1.3.0), lavaan (>= 0.5-23), R (>= 4.0)
-Imports: boot (>= 1.3-25), cate (>= 1.0.4), corpcor (>= 1.6.9), dagitty
-        (>= 0.3-0), flip (>= 2.5.0), gdata (>= 2.18.0), ggm (>= 2.3),
-        GGMncv (>= 2.1.0), glmnet (>= 2.0-18), graph (>= 1.56.0), leaps
-        (>= 3.1), mgcv (>= 1.8-39), pbapply (>= 1.4-3), protoclust (>=
-        1.6.3), RBGL (>= 1.68.0), Rgraphviz (>= 2.22.0)
-Suggests: huge, pcalg, SILGGM, org.Hs.eg.db
+Imports: boot (>= 1.3-25), corpcor (>= 1.6.9), dagitty (>= 0.3-0), flip
+        (>= 2.5.0), gdata (>= 2.18.0), ggm (>= 2.3), glmnet (>=
+        2.0-18), graph (>= 1.56.0), leaps (>= 3.1), mgcv (>= 1.8-39),
+        pbapply (>= 1.4-3), protoclust (>= 1.6.3), RBGL (>= 1.68.0),
+        Rgraphviz (>= 2.22.0)
+Suggests: huge
 License: GPL-3
 LazyData: true
 Encoding: UTF-8
@@ -30,4 +30,3 @@ Repository: CRAN
 Author: Mario Grassi [aut],
   Fernando Palluzzi [aut],
   Barbara Tarantino [aut, cre]
-Packaged: 2022-07-26 10:30:43 UTC; Mario Grassi

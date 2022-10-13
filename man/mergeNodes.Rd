@@ -10,7 +10,8 @@ mergeNodes(graph, data, h = 0.5, membership = NULL, HM = NULL, ...)
 \item{graph}{network as an igraph object.}
 
 \item{data}{A matrix or data.frame. Rows correspond to subjects, and
-columns to graph nodes.}
+columns to graph nodes. If \code{membership} is not NULL, is currently
+ignored, \code{data = NULL}.}
 
 \item{h}{Cutting the minimax clustering at height, h = 1 - abs(cor(j,k)),
 yielding a merged node (and a reduced data set) in which every node in the
@@ -56,11 +57,11 @@ merging nodes and data reduction for SEM fitting.
 
 # Gene memberships with prototypes with h=0.5
 G <- properties(alsData$graph)[[1]]
-M <- mergeNodes(G, alsData$exprs, h = 0.5)
+M <- mergeNodes(G, data = alsData$exprs, h = 0.5)
 
 # Gene memberships with EBC method and size=10
 m <- clusterGraph(G, type = "ebc", size = 10)
-M <- mergeNodes(G, alsData$exprs, membership = m, HM = "LV")
+M <- mergeNodes(G, membership = m, HM = "LV")
 
 # Gene memberships defined by user
 c1 <- c("5894", "5576", "5567", "572", "598")
@@ -68,7 +69,7 @@ c2 <- c("6788", "84152", "2915", "836", "5530")
 c3 <- c("5603", "6300", "1432", "5600")
 m <- c(rep(1,5), rep(2,5), rep(3,4))
 names(m) <- c(c1, c2, c3)
-M <- mergeNodes(G, alsData$exprs, membership = m, HM = "CV")
+M <- mergeNodes(G, membership = m, HM = "CV")
 
 }
 \references{

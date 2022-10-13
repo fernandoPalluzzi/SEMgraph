@@ -35,8 +35,6 @@ install.packages("huge")
 **SEMdata** provides the ALS RNA-seq dataset of 139 cases and 21 healthy controls, from Tam O.H. *et al.*, 2019 (GEO accession: [GSE124439](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE124439)). Raw data were pre-processed applying batch effect correction, using the sva R package (Leek et al., 2012), to remove data production center and brain area biases. Using multidimensional scaling-based clustering, ALS-specific and HC-specific clusters were generated. Misclassified samples were blacklisted and removed from the dataset. Since the expression of many genes is significantly different from Gaussian, we apply a nonparanormal transform with the **huge** package, to relax the normality assumption.
 
 ```r
-library(SEMgraph)
-
 # ALS input graph
 summary(alsData$graph)
 
@@ -330,16 +328,12 @@ V(cg$graph)$color[V(cg$graph)$color == 3] <- "lightgreen"
 V(cg$graph)$color[V(cg$graph)$color == 4] <- "lightyellow"
 
 # Graph plot 3
-png("Figure3.png", width = 16, height = 8, units = 'in', res = 400)
+pdf("Figure3.pdf", width = 16, height = 8)
 gplot(cg$graph, fontsize = 30)
 dev.off()
 
 ##-----------------------------------------------------------------------------##
 ```
-
-**Figure 3. Edge betweenness clusters (EBC) mapped over the improved ALS model.**
-
-![alt text](https://github.com/fernandoPalluzzi/SEMgraph/blob/master/docs/figures/Figure3.png)
 
 &nbsp;
 

@@ -8,7 +8,7 @@ SEMtree(
   graph,
   data,
   seed,
-  type = "ST",
+  type = "CAT",
   eweight = NULL,
   alpha = 0.05,
   verbose = FALSE,
@@ -26,46 +26,47 @@ columns to graph nodes (variables).}
 \item{type}{Tree-based structure learning method. Four algorithms 
 are available:
 \itemize{
-\item "ST" (default). Steiner Tree (ST) identification via fast Kou's algorithm 
-(1981) connecting a set of seed nodes (called Terminal vertices) with connector
-nodes (called Steiner vertices) from input graph as defined in \code{graph}
-with minimal total distance on its edges. 
-\item "MST". Minimum Spanning Tree (MST) identification via Prim's algorithm
-(Prim, 1957). The latter finds the subset of edges that includes every vertex
-of the graph (as defined in \code{graph}) such that the sum of the weights 
-of the edges can be minimized. The argument \code{seed} is
-set to NULL (i.e., no seed nodes are needed).
-\item "CAT". Causal additive trees (CAT) algorithm as in Jakobsen et al. 
-(2022). While the previous algorithms rely on the input graph, the "CAT" 
-algorithm is data-driven. The argument \code{graph} is set to NULL 
-(i.e., no input graph is needed). In the first step, a (univariate) generalized
-additive model (GAM) is employed to estimate the conditional
-expectations E[X_{i}|X_{j} = x] for all i != j, then use these to construct edge
-weights as inputs to the Chu–Liu–Edmonds’ algorithm (Chow and Liu, 1968).
-Argument \code{seed} must be specified to analyse a subset of nodes (variables)
-of interest.
+\item "ST". Steiner Tree (ST) identification via fast Kou's algorithm 
+(Kou et al, 1981) connecting a set of seed nodes (called Terminal vertices)
+with connector nodes (called Steiner vertices) from input graph as defined
+in \code{graph} with minimal total distance on its edges. By default the edge
+weights are based on the pairwise correlation, 1-abs(cor(j,k)). If input
+graph has E(graph)$weight=1, and \code{eweight = "custom"}, ST seeks a minimum
+subtree (i.e. subtree with minimal number of edges).
+\item "CAT" (default). Causal additive trees (CAT) algorithm as in Jakobsen et al. 
+(2022). The argument \code{graph} is set to NULL (i.e., no input graph is needed).
+In the first step, a (univariate) generalized additive model (GAM) is employed
+to estimate the residual variances, var(X(j) - [X(j)|X(k)]) for all j != k,
+then use these to construct edge weights as inputs to the Chu–Liu–Edmonds’
+algorithm (Chow and Liu, 1968) to recover the arborescence. Argument \code{seed}
+must be specified to analyse a subset of nodes (variables) of interest.
 \item "CPDAG". CLE algorithm for Skeleton Recovery and CPDAG
 estimation as in Lou et al. (2021). Together with "CAT" algorithm, "CPDAG" is 
 data-driven and the argument \code{graph} is set to NULL.
 The key idea is to first recover the skeleton of the polytree by applying 
-the CLE algorithm  to the pairwise sample correlations of the data matrix.
+the CLE algorithm to the pairwise sample correlations of the data matrix.
 After the skeleton is recovered, the set of all v-structures can be correctly
 identified via a simple thresholding approach to pairwise sample correlations.
-CPDAG can be found applying iteratively only Rule 1 of Meek (1995). Finally,
-the CPDAG is trasformed in a tree with the \code{graph2dag()} function.
+CPDAG can be found applying iteratively only Rule 1 of Meek (1995).
 Argument \code{seed} must be specified to analyse a subset of nodes
-(variables) of interest.}}
+(variables) of interest.
+\item "MST". Minimum Spanning Tree (MST) identification via Prim's algorithm
+(Prim, 1957). The latter finds the subset of edges that includes every vertex
+of the graph (as defined in \code{graph}) such that the sum of the weights 
+of the edges can be minimized. The argument \code{seed} is set to NULL (i.e.,
+no seed nodes are needed), or if argument \code{seed} is not NULL, argument
+\code{graph} is set to NULL to recover the MST of the full graph.}}
 
 \item{eweight}{Edge weight type for igraph object derived from
 \code{\link[SEMgraph]{weightGraph}} or from user-defined distances. 
 This option determines the weight-to-distance transform.
 If set to "NULL" (default), edge weights will be internally computed
-equal to correlation data-driven methods (i.e., Mutual Information). 
+equal to 1 - abs(cor), i.e., 1 - abs(pairwise Pearson's correlation).
 If \code{eweight = "kegg"}, repressing interactions (-1) will be set 
-to 1 (maximum distance), neutral interactions (0) will be set to 0.5, 
-and activating interactions (+1) will be set to 0 (minimum distance).
+to 2 (maximum distance), neutral interactions (0) will be set to 1, 
+and activating interactions (+1) will be set to 1 (minimum distance).
 If \code{eweight = "zsign"}, all significant interactions will be set 
-to 0 (minimum distance), while non-significant ones will be set to 1.
+to 1 (minimum distance), while non-significant ones will be set to 2.
 If \code{eweight = "pvalue"}, weights (p-values) will be transformed 
 to the inverse of negative base-10 logarithm. 
 If \code{eweight = "custom"}, the algorithm will use the distance 
@@ -83,30 +84,29 @@ pairs of edges with some appropriate threshold. By default,
 }
 \value{
 An \code{igraph} object. If \code{type = "ST"}, seed nodes are 
-colored in green and connectors in white. If \code{type = "ST"} and
-\code{type = "MST"}, edges are colored in green if not present in the input
-graph. If \code{type = "CPDAG"}, bidirected edges are colored in golden
+colored in "aquamarine" and connectors in "white". If \code{type = "ST"} and
+\code{type = "MST"}, edges are colored in "green" if not present in the input,
+graph. If \code{type = "CPDAG"}, bidirected edges are colored in "black"
 (if the algorithm is not able to establish the direction of the relationship
 between x and y).
 }
 \description{
 Four tree-based structure learning methods are implemented
-with graph and data-driven algorithms. The graph methods refer to the 
-fast Steiner Tree (ST) Kou's algorithm, and the identification of 
-the Minimum Spanning Tree (MST) with Prim's algorithm. 
-The data-driven methods propose fast and scalable procedures based on 
-Chow-Liu–Edmonds’ algorithm (CLE) to recover the skeleton of the
-polytree. The first method, called Causal Additive Trees (CAT) uses
-pairwise addittive weights as input for CLE algorithm. The second one
-applies CLE algorithm for skeleton recovery and extends the skeleton to
-a Completed Partially Directed Acyclic Graph (CPDAG).
+with graph and data-driven algorithms. A tree ia an acyclic graph with p vertices
+and p-1 edges. The graph method refers to the  Steiner Tree (ST), a tree from an
+undirected graph that connect "seed" with additional nodes in the
+"most compact" way possible. The data-driven methods propose fast and scalable
+procedures based on Chu-Liu–Edmonds’ algorithm (CLE) to recover a tree from a full
+graph. The first method, called Causal Additive Trees (CAT) uses pairwise mutual
+weights as input for CLE algorithm to recover a directed tree (an "arborescence").
+The second one applies CLE algorithm for skeleton recovery and extends the skeleton
+to a tree (a "polytree") represented by a Completed Partially Directed Acyclic Graph
+(CPDAG). Finally, the Minimum Spanning Tree (MST) connecting an undirected graph (or
+on an undirected full graph) with minimal edge weights can be identified.
 }
 \details{
 If the input graph is a directed graph, ST and MST undirected trees are
 converted in directed trees using the \code{\link[SEMgraph]{orientEdges}} function.
-If the input graph is an undirected graph, ST and MST undirected trees are 
-converted in a directed polytree using CAT algorithm with (univariate) linear
-regression for conditional expectation mapped on the output tree.
 }
 \examples{
 

@@ -219,9 +219,9 @@ clusterGraph <- function(graph, type = "wtc", HM = "none", size = 5,
 #' @author Mario Grassi \email{mario.grassi@unipv.it}
 #'
 #' @references
-#' Palluzzi F, Grassi M (2021). SEMgraph: An R Package for Causal Network
+#' Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
 #' Analysis of High-Throughput Data with Structural Equation Models.
-#' <arXiv:2103.08332>
+#' Bioinformatics, 2022;, btac567, https://doi.org/10.1093/bioinformatics/btac567
 #'
 #' @return A list of 3 objects:
 #' \enumerate{
@@ -271,7 +271,7 @@ clusterScore <- function(graph, data, group, HM = "LV", type = "wtc",
 		for(k in 1:length(LX)) {
 			Xk <- subset(names(membership), membership == K[k])
 			Y <- as.matrix(dataY[, which(colnames(dataY) %in% Xk)])
-			fa1 <- cate::factor.analysis(Y = Y, r = 1, method = "ml")$Z
+			fa1 <- factor.analysis(Y = Y, r = 1, method = "ml")$Z
 			LV <- cbind(LV, fa1)
 		}
 		colnames(LV) <- gsub("LX", "LV", LX)
@@ -299,7 +299,7 @@ clusterScore <- function(graph, data, group, HM = "LV", type = "wtc",
 		for(k in 1:length(LY)) {
 			Xk <- subset(names(membership), membership == K[k])
 			Y <- as.matrix(dataY[,which(colnames(dataY) %in% Xk)])
-			pc1 <- cate::factor.analysis(Y = Y, r = 1, method = "pc")$Z
+			pc1 <- factor.analysis(Y = Y, r = 1, method = "pc")$Z
 			CV <- cbind(CV, pc1)
 	}
 	colnames(CV) <- gsub("CY", "CV", LY)
@@ -337,7 +337,7 @@ clusterScore <- function(graph, data, group, HM = "LV", type = "wtc",
 			}
 			Yk <- as.matrix(dataY[, idy])
 			Uk <- Xk%*%solve(t(Xk)%*%Xk)%*%t(Xk)%*%Yk
-			spc1 <- cate::factor.analysis(Y = as.matrix(Uk), r = 1,
+			spc1 <- factor.analysis(Y = as.matrix(Uk), r = 1,
 			                              method = "pc")$Z
 			UV <- cbind(UV, spc1)
 		}
@@ -372,6 +372,196 @@ clusterScore <- function(graph, data, group, HM = "LV", type = "wtc",
 	return(list(fit = fsr, membership = membership, dataHM = dataHM))
 }
 
+#' @title Factor analysis for high dimensional data
+#'
+#' @description Wrapper for Factor Analysis with potentially high dimensional variables 
+#' implement in the "cate" R package (Author: Jingshu Wang [aut], Qingyuan Zhao [aut, cre]
+#' Maintainer: Qingyuan Zhao <qz280@cam.ac.uk>) that is optimized for the high dimensional
+#' problem where the number of samples n is less than the number of variables p.
+#'
+#' @param Y data matrix, a n*p matrix
+#' @param r number of factors (default, r =1)
+#' @param method algorithm to be used (default, method = "pc")
+#'
+#' @details The two methods extracted from "cate" are quasi-maximum likelihood (ml), and
+#' principal component analysis (pc). The ml is iteratively solved the EM algorithm
+#' using the PCA solution as the initial value. See Bai and Li (2012) for more details.
+#'
+#' @return a list of objects
+#' \describe{
+#' \item{Gamma}{estimated factor loadings}
+#' \item{Z}{estimated latent factors}
+#' \item{Sigma}{estimated noise variance matrix}
+#' }
+#'
+#' @references {
+#' Bai, J. and Li, K. (2012). Statistical analysis of factor models of high dimension.
+#' \emph{The Annals of Statistics 40}, 436-465.
+#' }
+#'
+#' @examples
+#' 
+#' library(huge)
+#' als.npn <- huge.npn(alsData$exprs)
+#' 
+#' ## pc
+#' pc<- factor.analysis(Y = als.npn, r = 2, method = "pc")
+#' head(pc$Gamma)
+#' head(pc$Z)
+#' head(pc$Sigma)
+#' 
+#' ## ml
+#' ml <- factor.analysis(Y = als.npn, r = 2, method = "ml")
+#' head(ml$Gamma)
+#' head(ml$Z)
+#' head(ml$Sigma)
+#'
+#' @export
+#'
+factor.analysis <- function(Y, r = 1, method = "pc") {
+
+	if (r == 0) {
+		return(list(Gamma = NULL,
+					Z = NULL,
+					Sigma = apply(Y, 2, function(v) mean(v^2))))
+	}
+	if (method == "pc") {
+		fa.pc(Y, r)
+	} else if (method == "ml") {
+		fa.em(Y, r)
+	}
+}
+
+fa.pc <- function(Y, r) {
+
+	svd.Y <- svd(Y)
+
+	Gamma <- svd.Y$v[, 1:r] %*% diag(svd.Y$d[1:r], r, r) / sqrt(nrow(Y))
+	Z <- sqrt(nrow(Y)) * svd.Y$u[, 1:r]
+
+	Sigma <- apply(Y - Z %*% t(Gamma), 2, function(x) mean(x^2))
+
+	return(list(Gamma = Gamma,
+				Z = Z,
+				Sigma = Sigma))
+}
+
+fa.em <- function(Y, r, tol = 1e-6, maxiter = 1000) {
+
+    ## A Matlab version of this EM algorithm was in
+    ## http://www.mathworks.com/matlabcentral/fileexchange/28906-factor-analysis/content/fa.m
+
+    ## The EM algorithm:
+    ##
+    ## Y = Z Gamma' + E Sigma^{1/2}                        (n * p)
+    ## mle to estimate Gamma (p * r) and Sigma             (p * p)
+
+    ## E step:
+    ## EZ = Y (Gamma Gamma' + Sigma)^{-1} Gamma            (n * r)
+    ## VarZ = I - Gamma' (Gamma Gamma' + Sigma)^{-1} Gamma (r * r)
+    ## EZ'Z = n VarZ + EZ' * EZ                            (r * r)
+
+    ## M step:
+    ## update Gamma: Gamma = (Y' EZ)(EZ'Z)^{-1}
+    ## update Sigma:
+    ## Sigma = 1/n diag(Y'Y - Gamma EZ' Y - Y' EZ' Gamma' + Gamma EZ'Z Gamma')
+
+    ## The log-likelihood (simplified)
+    ## llh <- -log det(Gamma Gamma' + Sigma) - tr((Gamma Gamma' + Sigma)^{-1} S)
+    ##
+
+    ## For details, see http://cs229.stanford.edu/notes/cs229-notes9.pdf
+
+    p <- ncol(Y)
+    n <- nrow(Y)
+
+    ## initialize parameters
+	init <- fa.pc(Y, r)
+    Gamma <- init$Gamma
+	#Gamma <- matrix(runif(p * r), nrow = p)
+    #invSigma <- 1/colMeans(Y^2)
+    invSigma <- 1/init$Sigma
+	#invSigma <- 1/colMeans((Y - sqrt(n) * start.svd$u %*% t(Gamma))^2)
+    llh <- -Inf # log-likelihood
+
+    ## precompute quantitites
+    I <- diag(rep(1, r))
+    ## diagonal of the sample Covariance S
+    #sample.var <- apply(Y, 2, var)
+	sample.var <- colMeans(Y^2)
+
+    ## compute quantities needed
+    tilde.Gamma <- sqrt(invSigma) * Gamma
+    M <- diag(r) + t(tilde.Gamma) %*% tilde.Gamma
+    eigenM <- eigen(M, symmetric = TRUE)
+    YSG <- Y %*% (invSigma * Gamma)
+
+	logdetY <- -sum(log(invSigma)) + sum(log(eigenM$values))
+    B <- 1/sqrt(eigenM$values) * t(eigenM$vectors) %*% t(YSG)
+    logtrY <- sum(invSigma * sample.var) - sum(B^2)/n
+    llh <- -logdetY - logtrY
+
+	converged <- FALSE
+    for (iter in 1:maxiter) {
+
+        ## E step:
+        ## Using Woodbury matrix identity:
+        ## tilde.Gamma = Sigma^{-1/2} Gamma
+        ## VarZ = (I + tilde.Gamma' tilde.Gamma)^{-1}
+        ## EZ = Y Sigma^{-1} Gamma VarZ
+        varZ <- eigenM$vectors %*% (1/eigenM$values * t(eigenM$vectors))
+        EZ <- YSG %*% varZ
+        EZZ <- n * varZ + t(EZ) %*% EZ
+
+        ## M step:
+        eigenEZZ <- eigen(EZZ, symmetric = TRUE)
+        YEZ <- t(Y) %*% EZ
+        ## EZ'Z = G'G
+        G <- sqrt(eigenEZZ$values) * t(eigenEZZ$vectors)
+        ## updating invSigma
+        invSigma <- 1/(sample.var - 2/n * rowSums(YEZ * Gamma) +
+                           1/n * rowSums((Gamma %*% t(G))^2))
+        ## updating Gamma
+        Gamma <- YEZ %*% eigenEZZ$vectors %*%
+            (1/eigenEZZ$values * t(eigenEZZ$vectors))
+
+        ## compute quantities needed
+        tilde.Gamma <- sqrt(invSigma) * Gamma
+        M <- diag(r) + t(tilde.Gamma) %*% tilde.Gamma
+        eigenM <- eigen(M, T)
+        YSG <- Y %*% (invSigma * Gamma)
+
+        ## compute likelihood and check for convergence
+        old.llh <- llh
+        ## Ussing Woodbury matrix identity
+        ## log det(Gamma Gamma' + Sigma) =
+        ## log [det(invSigma^{-1})det(M)]
+        ## tr((Gamma Gamma' + Sigma)^{-1} S) =
+        ## tr(invSigma S) - tr(B'B)/n
+        ## where B = (M')^{-1/2} YSG'
+        logdetY <- -sum(log(invSigma)) + sum(log(eigenM$values))
+        B <- 1/sqrt(eigenM$values) * t(eigenM$vectors) %*% t(YSG)
+        logtrY <- sum(invSigma * sample.var) - sum(B^2)/n
+        llh <- -logdetY - logtrY
+
+        if (abs(llh - old.llh) < tol * abs(llh)) {
+            converged <- TRUE
+            break
+        }
+    }
+
+    # GLS to estimate factor loadings
+    svd.H <- svd(t(Gamma) %*% (invSigma * Gamma))
+    Z <- Y %*% (invSigma * Gamma) %*% (svd.H$u %*% (1/svd.H$d * t(svd.H$v)))
+
+    return(list(Gamma = Gamma,
+                Sigma = 1/invSigma,
+                Z = Z,
+                niter = iter,
+                converged = converged))
+
+}
+
 #' @title Cluster extraction utility
 #'
 #' @description Extract and fit clusters from an input graph.
@@ -396,8 +586,9 @@ clusterScore <- function(graph, data, group, HM = "LV", type = "wtc",
 #'
 #' @export
 #'
-#' @return List of clusters as igraph objects and fitting results for
-#' each cluster as a lavaan object.
+#' @return (i) clusters: list clusters as igraph objects;
+#' (ii) fit: list of fitting results for each cluster as a lavaan object;
+#' (iii) dfc: data.frame of summary results
 #'
 #' @author Fernando Palluzzi \email{fernando.palluzzi@gmail.com}
 #'
@@ -412,6 +603,7 @@ clusterScore <- function(graph, data, group, HM = "LV", type = "wtc",
 #'
 #' # Clusters creation
 #' clusters <- extractClusters(graph = alsData$graph, data = adjdata)
+#' print(clusters$dfc)
 #' head(parameterEstimates(clusters$fit$HM1))
 #' head(parameterEstimates(clusters$fit$HM2))
 #' head(parameterEstimates(clusters$fit$HM4))
@@ -448,8 +640,8 @@ extractClusters<- function(graph, data, group = NULL, membership = NULL, map = F
 		}else{
 		 dev_df <- fitMeasures(fit$fit, "chisq")/fitMeasures(fit$fit, "df")
 		 srmr <- fitMeasures(fit$fit, "srmr")
-		 pv1<- Brown.test(x=fit$dataXY[,-1], p=fit$gest$pvalue, theta=fit$gest$est, tail="positive")
-		 pv2<- Brown.test(x=fit$dataXY[,-1], p=fit$gest$pvalue, theta=fit$gest$est, tail="negative")
+		 pv1<- 1
+		 pv2<- 1
 		}
 		
 		dfc<- data.frame(
@@ -512,33 +704,34 @@ extractClusters<- function(graph, data, group = NULL, membership = NULL, map = F
 #'
 cplot<- function (graph, membership, l = layout.auto, map = FALSE, verbose = FALSE, ...) 
 {
-    V(graph)$M <- 9999
-    V(graph)$M[which(V(graph)$name %in% names(membership))] <- membership
-    V(graph)$color <- V(graph)$M + 1
-	V(graph)$weight <- 1
-    if (map) {
+	V(graph)$M <- 9999
+	V(graph)$M[which(V(graph)$name %in% names(membership))] <- membership
+	V(graph)$color <- V(graph)$M + 1
+	if (map) {
 		verbose <- FALSE
-	    plot(graph, layout = l)
-    }
-    M <- names(table(V(graph)$M))
-    K <- length(table(V(graph)$M))
-    vcol <- as.numeric(M) + 1
-    HM <- lapply(1:K, function(x)
-	       induced_subgraph(graph, names(membership[membership == M[x]])))
-    if ("9999" %in% M) {
-     HM[[K]] <- induced_subgraph(graph, V(graph)$name[V(graph)$M == 9999])
+	    #plot(graph, layout = l)
+		gplot(graph, l = "fdp")
+	}
+	M <- names(table(V(graph)$M))
+	K <- length(table(V(graph)$M))
+	vcol <- as.numeric(M) + 1
+	HM <- lapply(1:K, function(x)
+			induced_subgraph(graph, names(membership[membership == M[x]])))
+	if ("9999" %in% M) {
+	 HM[[K]] <- induced_subgraph(graph, V(graph)$name[V(graph)$M == 9999])
 	}
 	names(HM) <- paste0("HM", M)
-    d <- igraph::degree(graph, mode = "all") * 2 + 1
-    if (verbose) {
-        glv <- lapply(1:K, function(x) {
-                plot(HM[[x]], vertex.color = vcol[x], vertex.size = d[V(HM[[x]])$name], 
-                 layout = l, main = paste0("Hidden Module ", 
-                  M[x]))
-            Sys.sleep(3)
-        })
-    }
-    return(invisible(c(list(graph = graph), HM)))
+	d <- igraph::degree(graph, mode = "all") * 2 + 1
+	if (verbose) {
+		glv <- lapply(1:K, function(x) {
+				gH <- HM[[x]]
+				E(gH)$weight <- 1
+				plot(gH, vertex.color = vcol[x], vertex.size = d[V(HM[[x]])$name], 
+				 layout = l, main = paste0("Hidden Module ", M[x]))
+			Sys.sleep(1)
+		})
+	}
+	return(invisible(c(list(graph = graph), HM)))
 }
 
 #' @title Graph nodes merging by a membership attribute
@@ -549,7 +742,8 @@ cplot<- function (graph, membership, l = layout.auto, map = FALSE, verbose = FAL
 #' \code{\link[SEMgraph]{clusterGraph}}).
 #' @param graph network as an igraph object.
 #' @param data A matrix or data.frame. Rows correspond to subjects, and
-#' columns to graph nodes.
+#' columns to graph nodes. If \code{membership} is not NULL, is currently
+#' ignored, \code{data = NULL}.
 #' @param h Cutting the minimax clustering at height, h = 1 - abs(cor(j,k)),
 #' yielding a merged node (and a reduced data set) in which every node in the
 #' cluster has correlation of at least cor(j,k) with the prototype node.
@@ -595,11 +789,11 @@ cplot<- function (graph, membership, l = layout.auto, map = FALSE, verbose = FAL
 #'
 #' # Gene memberships with prototypes with h=0.5
 #' G <- properties(alsData$graph)[[1]]
-#' M <- mergeNodes(G, alsData$exprs, h = 0.5)
+#' M <- mergeNodes(G, data = alsData$exprs, h = 0.5)
 #'
 #' # Gene memberships with EBC method and size=10
 #' m <- clusterGraph(G, type = "ebc", size = 10)
-#' M <- mergeNodes(G, alsData$exprs, membership = m, HM = "LV")
+#' M <- mergeNodes(G, membership = m, HM = "LV")
 #'
 #' # Gene memberships defined by user
 #' c1 <- c("5894", "5576", "5567", "572", "598")
@@ -607,21 +801,20 @@ cplot<- function (graph, membership, l = layout.auto, map = FALSE, verbose = FAL
 #' c3 <- c("5603", "6300", "1432", "5600")
 #' m <- c(rep(1,5), rep(2,5), rep(3,4))
 #' names(m) <- c(c1, c2, c3)
-#' M <- mergeNodes(G, alsData$exprs, membership = m, HM = "CV")
+#' M <- mergeNodes(G, membership = m, HM = "CV")
 #'
 mergeNodes<- function(graph, data, h = 0.5, membership = NULL, HM = NULL, ...)
 {
-	# Set graph and membership object :
-	nodes <- colnames(data)[colnames(data) %in% V(graph)$name]
-	graph <- induced_subgraph(graph, vids= which(V(graph)$name %in% nodes))
-	if(is.numeric(membership)){
+	# Set membership object :
+	if (is.numeric(membership)){
 	 nodes <- names(membership)
+	 if (is.null(HM)) HM <- "HM"
 	 membership <- paste0(HM, membership)
 	 names(membership) <- nodes
 	}else{
-	 membership <- prototype(data=data[,nodes], h=h, size=3)
+	 membership <- prototype(graph, data, h=h, size=3)
 	}
-
+	
 	LM<- NULL
 	for ( i in 1:length(table(membership)) ) {
 	 m<- names(table(membership))[i]
@@ -629,45 +822,45 @@ mergeNodes<- function(graph, data, h = 0.5, membership = NULL, HM = NULL, ...)
 	 LM<- c(LM, list(LMi))
 	}
 	names(LM)<- names(table(membership))
-		
+
 	# visualize graph object :
-	gLM<- as_graphnel(graph)
+	gLM<- as_graphnel(graph_from_edgelist(as_edgelist(graph)))
 	for ( i in 1:length(LM) ) {
 	 gLMi<- graph::combineNodes(LM[[i]], gLM, names(LM)[i], mean)
 	 gLM<- gLMi
 	}
-	
+
 	ig<- graph_from_graphnel(gLM)
 	if( length(V(ig)$color) == 0 ) V(ig)$color<- "white"
-	if( length(HM) == 1){
-	  V(ig)$color[substr(V(ig)$name,2,2)=="V"]<- "pink"
-	} else{
-	  V(ig)$color[substr(V(ig)$name,1,1)=="p"]<- "green"
-	}
-	vcol<- V(ig)$color
-	names(vcol)<- V(ig)$name
+	V(ig)$color[substr(V(ig)$name,1,2) == HM] <- "pink"
+	V(ig)$color[substr(V(ig)$name,1,1) == "p"] <- "pink"
 	V(ig)$name <- gsub("p", "", V(ig)$name)
 	gplot(ig)
-	
+
 	return(list(gLM=ig, membership=membership))
 }
 
-prototype<- function(data, h, size, ...)
+prototype<- function(graph, data, h, size, ...)
 {
+	# Set graph & data objects
+	nodes <- colnames(data)[colnames(data) %in% V(graph)$name]
+	Y <- data[,nodes] #colnames(Y); head(Y)
+	ig <- induced_subgraph(graph, vids= which(V(graph)$name %in% nodes))
+	D <- as.dist(1-abs(cor(Y)))
+
 	# hierarchical clustering with prototypes
-	D <- as.dist(1-abs(cor(data)))
 	hc <- protoclust::protoclust(D)
 	plot(hc);abline(h=h, lty=1, col="red")
 	cutd <- protoclust::protocut(hc, k=NULL, h=h)
 	protos <- hc$labels[cutd$protos]
-	cln <- sort(cutd$cl)
-	
+	cln <- sort(cutd$cl) # as.numeric(cln); names(cln)
+
 	# cluster membership with nodes > size
 	nrep <- as.numeric(table(cln))
 	cl <- unlist(lapply(1:length(protos), function(x) rep(paste0("p",protos[x]), nrep[x])))
 	names(cl) <- names(cln)
 	csize <- names(table(cl))[table(cl) >= size]
-	cl <- cl[cl %in% csize]
-		
+	cl <- cl[cl %in% csize] # table(cl)
+
 	return(membership = cl)
 }

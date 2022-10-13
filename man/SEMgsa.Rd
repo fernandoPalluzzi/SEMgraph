@@ -104,6 +104,11 @@ GSA$DEG
 }
 
 }
+\references{
+Grassi, M., Tarantino, B. SEMgsa: topology-based pathway enrichment analysis with
+structural equation models. BMC Bioinformatics 23, 344 (2022).
+https://doi.org/10.1186/s12859-022-04884-8
+}
 \author{
 Mario Grassi \email{mario.grassi@unipv.it}
 }

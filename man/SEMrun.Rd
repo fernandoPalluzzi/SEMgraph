@@ -110,9 +110,7 @@ of parameter estimates. Beta coefficients (i.e., direct effects) are
 estimated from directed interactions and residual covariances (psi
 coefficients) from bidirected, undirected, or mutual interactions.
 If a group variable is given, exogenous group effects on nodes (gamma
-coefficients) will be estimated. This will also lead to the estimation
-of a set of aggregated group effects, if \code{algo = "ricf"} (see
-\code{\link[SEMgraph]{SEMgsa}}).
+coefficients) or edges (delta coefficients) will be estimated.
 By default, maximum likelihood parameter estimates and P-values for
 parameter sets are computed by conventional z-test (= estimate/SE),
 and fits it through the \code{\link[lavaan]{lavaan}} function, via
@@ -143,7 +141,7 @@ than \code{\link[lavaan]{lavaan}} in case of large input graphs.
 
 #### Model fitting (no group effect)
 
-sem0 <- SEMrun(graph = sachs$graph, data = log(sachs$pkc), algo = "lavaan")
+sem0 <- SEMrun(graph = sachs$graph, data = log(sachs$pkc))
 summary(sem0$fit)
 head(parameterEstimates(sem0$fit))
 
@@ -200,8 +198,6 @@ g2 <- g2 - E(g2)[-which(E(g2)$color != "gray50")]
 g <- properties(g2)[[1]]
 
 # plot graph
-library(org.Hs.eg.db)
-V(g)$label <- mapIds(org.Hs.eg.db, V(g)$name, 'SYMBOL', 'ENTREZID')
 E(g)$color<- E(g2)$color[E(g2) \%in\% E(g)]
 gplot(g, l = "fdp", main="node and edge group differences")
 
@@ -230,19 +226,13 @@ Journal of Machine Learning Research, 10(Oct): 2329-2348.
 Larson JL and Owen AB (2015). Moment based gene set tests. BMC
 Bioinformatics, 16: 132. <https://doi.org/10.1186/s12859-015-0571-7>
 
-Palluzzi F, Grassi M (2021). SEMgraph: An R Package for Causal Network
+Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
 Analysis of High-Throughput Data with Structural Equation Models.
-<arXiv:2103.08332>
-
-Williams D (2020). GGMncv: Gaussian Graphical Models with Non-Convex
-Penalties. R package version 1.1.0.
-<https://CRAN.R-project.org/package=GGMncv/>
+Bioinformatics, 2022;, btac567, https://doi.org/10.1093/bioinformatics/btac567
 }
 \seealso{
-See \code{\link[ggm]{fitAncestralGraph}} for RICF algorithm
-details, \code{\link[flip]{flip}} for randomization P-values, and
-\code{\link[GGMncv]{constrained}} for constrained GGM, and
-\code{\link[GGMncv]{inference}} for de-sparsified P-values.
+See \code{\link[ggm]{fitAncestralGraph}} and \code{\link[ggm]{fitConGraph}}
+for RICF algorithm and constrained GGM algorithm details, respectively.
 }
 \author{
 Mario Grassi \email{mario.grassi@unipv.it}

@@ -73,7 +73,7 @@ The selected covariance between pairs of nodes (X, Y) is
 interpreted as the effect of a latent variable (LV) acting on both X
 and Y; i.e., the LV is an unobserved confounder. These LVs are then
 removed by conditioning them out from the observed data, as suggested 
-by Palluzzi and Grassi (2021).
+by Grassi, Palluzzi and Tarantino (2022).
 }
 \examples{
 
@@ -96,9 +96,9 @@ Brito C and Pearl J (2002). A New Identification Condition for
 Recursive Models With Correlated Errors.
 Structural Equation Modeling, 9(4): 459-474.
 
-Palluzzi F, Grassi M (2021). SEMgraph: An R Package for Causal Network
+Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
 Analysis of High-Throughput Data with Structural Equation Models.
-<arXiv:2103.08332>
+Bioinformatics, 2022;, btac567, https://doi.org/10.1093/bioinformatics/btac567
 }
 \author{
 Mario Grassi \email{mario.grassi@unipv.it}
