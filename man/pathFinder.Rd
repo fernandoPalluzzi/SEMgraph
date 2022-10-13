@@ -77,15 +77,8 @@ paths <- pathFinder(graph = alsData$graph, data = adjData,
                     ace = ace)
 
 print(paths$dfp)
-head(parameterEstimates(paths$fit$P61))
-gplot(paths$paths$P61)
-
-path61 <- SEMpath(graph = alsData$graph, data = adjData,
-                  group = alsData$group,
-                  from = "1616",
-                  to = "4741",
-                  path = "directed",
-                  verbose = TRUE)
+head(parameterEstimates(paths$fit[[1]]))
+gplot(paths$paths[[1]])
 
 }
 

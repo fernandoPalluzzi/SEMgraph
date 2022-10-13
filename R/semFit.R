@@ -83,9 +83,7 @@
 #' estimated from directed interactions and residual covariances (psi
 #' coefficients) from bidirected, undirected, or mutual interactions.
 #' If a group variable is given, exogenous group effects on nodes (gamma
-#' coefficients) will be estimated. This will also lead to the estimation
-#' of a set of aggregated group effects, if \code{algo = "ricf"} (see
-#' \code{\link[SEMgraph]{SEMgsa}}).
+#' coefficients) or edges (delta coefficients) will be estimated.
 #' By default, maximum likelihood parameter estimates and P-values for
 #' parameter sets are computed by conventional z-test (= estimate/SE),
 #' and fits it through the \code{\link[lavaan]{lavaan}} function, via
@@ -167,24 +165,18 @@
 #' Larson JL and Owen AB (2015). Moment based gene set tests. BMC
 #' Bioinformatics, 16: 132. <https://doi.org/10.1186/s12859-015-0571-7>
 #'
-#' Palluzzi F, Grassi M (2021). SEMgraph: An R Package for Causal Network
+#' Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
 #' Analysis of High-Throughput Data with Structural Equation Models.
-#' <arXiv:2103.08332>
+#' Bioinformatics, 2022;, btac567, https://doi.org/10.1093/bioinformatics/btac567
 #'
-#' Williams D (2020). GGMncv: Gaussian Graphical Models with Non-Convex
-#' Penalties. R package version 1.1.0.
-#' <https://CRAN.R-project.org/package=GGMncv/>
-#'
-#' @seealso See \code{\link[ggm]{fitAncestralGraph}} for RICF algorithm
-#' details, \code{\link[flip]{flip}} for randomization P-values, and
-#' \code{\link[GGMncv]{constrained}} for constrained GGM, and
-#' \code{\link[GGMncv]{inference}} for de-sparsified P-values.
+#' @seealso See \code{\link[ggm]{fitAncestralGraph}} and \code{\link[ggm]{fitConGraph}}
+#' for RICF algorithm and constrained GGM algorithm details, respectively.
 #'
 #' @examples
 #'
 #' #### Model fitting (no group effect)
 #'
-#' sem0 <- SEMrun(graph = sachs$graph, data = log(sachs$pkc), algo = "lavaan")
+#' sem0 <- SEMrun(graph = sachs$graph, data = log(sachs$pkc))
 #' summary(sem0$fit)
 #' head(parameterEstimates(sem0$fit))
 #'
@@ -241,8 +233,6 @@
 #' g <- properties(g2)[[1]]
 #'
 #' # plot graph
-#' library(org.Hs.eg.db)
-#' V(g)$label <- mapIds(org.Hs.eg.db, V(g)$name, 'SYMBOL', 'ENTREZID')
 #' E(g)$color<- E(g2)$color[E(g2) %in% E(g)]
 #' gplot(g, l = "fdp", main="node and edge group differences")
 #'
@@ -745,7 +735,7 @@ boot.RICF <- function(A, Z, group, L, R, ...)
 	 D <- est(Zi[group == 1,]) - est(Zi[group == 0,])
 	}
 
-	message(paste0("Model randomization with B = ", R, " bootstrap samples ..."))
+	message(paste0("Model randomization with B = ", R, " bootstrap samples ...\n\n"))
 	ncpus<- parallel::detectCores(logical = FALSE)
 	if (is.null(group)){
 	 xboot<- boot::boot(Z, est, R, parallel="snow", ncpus=ncpus)
@@ -798,204 +788,180 @@ parameterEstimates.RICF <- function(object, ...)
 	return(est)
 }
 
-SEMggm <- function(graph, data, group = NULL, method = "none",
-                   alpha = 0.05, ...)
+SEMggm<- function(graph, data, group = NULL, method = "none", alpha = 0.05, ...) 
 {
-	# Set data objects
-	nodes <- colnames(data)[colnames(data) %in% V(graph)$name]
-	dataY <- data[,nodes]
-	if (is.null(group)) {
-		dataXY <- dataY
-	} else {
-		dataXY <- cbind(group, dataY)
-	}
-	n <- nrow(dataXY)
-	p <- ncol(dataXY)
-	if (corpcor::is.positive.definite(cor(dataXY)[1:p, 1:p])) {
-	 covXY <- cor(dataXY)[1:p, 1:p]
-	} else {
+	# Set data objects :
+	nodes<- colnames(data)[colnames(data) %in% V(graph)$name]
+	dataY<- data[,nodes]
+	if (is.null(group)){
+     dataXY <- dataY
+    }else{ dataXY <- cbind(group, dataY)}
+	n<- nrow(dataXY)
+	p<- ncol(dataXY)
+	if( corpcor::is.positive.definite(cor(dataXY)[1:p,1:p]) ){
+	 covXY<- cor(dataXY)[1:p,1:p]
+	}else{ 
 	 covXY<- corpcor::cor.shrink(dataXY,verbose=TRUE)
 	 if (attributes(covXY)$lambda > 0.5) message(
 	  "WARNING: lambda > 0.5, correlation matrix is 'shrinked' near the identity matrix !\n")
 	 covXY<- covXY[1:p,1:p]
 	}
 
-	# Set graph objects
-	ig <- induced_subgraph(graph, vids = which(V(graph)$name %in% nodes))
-	adj <- as_adj(as.undirected(ig), sparse = FALSE)[nodes, nodes]
-	E(ig)$weight <- ifelse(which_mutual(ig), 100, 1)
-	dadj <- as_adj(ig, attr = "weight", sparse = FALSE)[nodes, nodes]
-	if (!is.null(group)) {
-		adj <- cbind(c(0, rep(1, p - 1)), rbind(rep(1, p - 1), adj))
-		colnames(adj)[1] <- rownames(adj)[1] <- "group"
-		dadj <- cbind(rep(0, p), rbind(rep(1, p - 1), dadj))
-		colnames(dadj)[1] <- rownames(dadj)[1] <- "group"
+	# Set graph objects :
+	ig<- induced_subgraph(graph, vids= which(V(graph)$name %in% nodes))
+	E(ig)$weight<- ifelse(which_mutual(ig), 100, 1)
+	dadj<- as_adj(ig, attr="weight", sparse=FALSE)[nodes,nodes]
+	diag(dadj) <- 100
+	adj<- as_adj(as.undirected(ig), sparse=FALSE)[nodes,nodes]
+	if( !is.null(group) ){
+	 adj<- cbind(c(0,rep(1, p-1)), rbind(rep(1, p-1),adj))
+	 colnames(adj)[1]<- rownames(adj)[1]<- "group"
+	 dadj<- cbind(rep(0, p), rbind(rep(1, p-1),dadj))
+	 colnames(dadj)[1]<- rownames(dadj)[1]<- "group"
 	}
-
-	# Constrained GGM
-	cggm <- GGMncv::constrained(covXY, adj)
-	Sigma <- cggm$Sigma
-	Theta <- cggm$Theta
-	rownames(Sigma) <- colnames(Sigma) <- colnames(dataXY)
-	rownames(Theta) <- colnames(Theta) <- colnames(dataXY)
-	fit <- list(Theta = Theta, n = n, R = covXY)
-	class(fit) <- c("ggmncv", "default")
-
-	# Beta, Psi & Sigma matrices
-	betas <- function(Theta) {
-		-1*sapply(1:p, function(x) Theta[x,]/Theta[x, x])
-	}
-	B <- ifelse(dadj == 1, betas(Theta), 0)
-	O <- ifelse(dadj == 100, t(diag(p) - B)%*%Sigma%*%(diag(p) - B), 0)
-	diag(O) <- apply(scale(dataXY) %*% (diag(p) - B), 2, var)
-	#Sigma <- solve(diag(p) - B)%*%O%*%t(solve(diag(p) - B))
-	cat(paste0("GGM (constrained) solver ended normally after ", 0,
-	           " iterations"), "\n\n")
-	df <- p*(p + 1)/2 - (sum(B != 0) + (sum(O != 0) - p)/2 + p)
-	idx <- fitIndices(n, df, covXY, Sigma, Theta)
-	cat("deviance/df:", idx[1]/idx[2], " srmr:", round(idx[3], 7), "\n\n")
-
-	# Edge pvalues based on the de-sparsified precision matrix
-	dggm <- suppressWarnings(
-		GGMncv::inference(fit, method = method, alpha = alpha))
-		#dggm <- GGMncv::inference(fit, method = method, alpha = alpha)
-		pvB <- ifelse(dadj == 1, dggm$pval_corrected, 0)
-		rownames(pvB) <- colnames(pvB) <- colnames(dataXY)
-		pvO <- ifelse(dadj == 100, dggm$pval_corrected, 0)
-		rownames(pvO) <- colnames(pvO) <- colnames(dataXY)
-
-	est <- parameterEstimates.GGM(object = list(B = B, O = O, pvB = pvB,
-	                              pvO = pvO))
-	if (!is.null(group)) {
-		Reg<- est[which(est$op == "~"),]
-		gest<- Reg[Reg$rhs == "group",]
-		class(gest)<- c("lavaan.data.frame" ,"data.frame")
-		pval1 <- Brown.test(x = dataY, p = gest$pvalue, theta = gest$est,
-		                    tail = "positive")
-		pval2 <- Brown.test(x = dataY, p = gest$pvalue, theta = gest$est,
-		                    tail = "negative")
-		cat("Brown's combined P-value of node activation:", pval1, "\n\n")
-		cat("Brown's combined P-value of node inhibition:", pval2, "\n\n")
-	} else {
-		gest <- NULL
-	}
-
-	# Output objects
-	fit <- list(cggm = fit, Beta = B, Psi = O, fitIdx = idx,
-	            parameterEstimates = est)
-	ig <- colorGraph(est = est, graph = ig, group = group, alpha = 0.05)
-	if (is.null(group)) dataXY <- cbind(group = rep(NA, n), dataXY)
-	class(fit) <- "GGM"
-
-	return(list(fit = fit, gest = gest, model = NULL, graph = ig,
-	            dataXY = dataXY))
-}
-
-SEMggm2 <- function(graph, data, group, method = "none", alpha = 0.05, ...)
-{
-	# Set graph and data objects
-	nodes <- colnames(data)[colnames(data) %in% V(graph)$name]
-	ig <- induced_subgraph(graph, vids = which(V(graph)$name %in% nodes))
-	E(ig)$weight <- ifelse(which_mutual(ig), 100, 1)
-	dadj <- as_adj(ig, attr="weight", sparse=FALSE)[nodes,nodes]#dim(dadj)
-	dataY <- data[,nodes]
-	data1 <- dataY[group == 1,]
-	data0 <- dataY[group == 0,]
-	n1 <- nrow(data1)
-	n0 <- nrow(data0)
-	n <- n1 + n0
-	p <- ncol(dataY)
-
-	# Constrained GGM for group = 1
-	cggm1 <- quiet(SEMggm(graph, data1, group = NULL, method = method,
-	                      alpha = alpha))
-	fit1 <- cggm1$fit$cggm
-
-	# Constrained GGM for group = 0
-	cggm0 <- quiet(SEMggm(graph, data0, group = NULL, method = method,
-	                      alpha = alpha))
-	fit0 <- cggm0$fit$cggm
-
-	# Two-group fit indices
-	cat(paste0("GGM (constrained) solver ended normally after ", 0,
-	           " iterations"), "\n\n")
-	srmr <- (n1/n)*cggm1$fit$fitIdx[3] + (n0/n)*cggm0$fit$fitIdx[3]
-	dev <- cggm1$fit$fitIdx[1] + cggm0$fit$fitIdx[1]
-	df <- cggm1$fit$fitIdx[2] + cggm0$fit$fitIdx[2]
-	cat("deviance/df:", dev/df , " srmr:", round(srmr, 7), "\n\n")
-
-	# Edge differences based on the de-sparsified precision matrix
-	dggms<- suppressWarnings(
-		GGMncv::compare_edges(fit1, fit0, method = method, alpha = alpha))
-	#dggms <- GGMncv::compare_edges(fit1, fit0, method = method, alpha = alpha)
-	d_est <- cggm1$fit$Beta - cggm0$fit$Beta
-	d_pv <- ifelse(dadj == 1, dggms$pvals_corrected, 0)
-	rownames(d_pv) <- colnames(d_pv) <- colnames(dataY)
-
-	if (sum(d_est) != 0) {
-		est <- parameterEstimates.GGM(object = list(B = d_est, O = diag(p),
-		                               pvB = d_pv, pvO = diag(p)))
-		dest <- est[which(est$op == "~"),]
-		colnames(dest)[4] <- "d_est"
-		class(dest)<- c("lavaan.data.frame" ,"data.frame")
-		pval1 <- Brown.test(x = dataY, p = dest$pvalue, theta = dest$d_est,
-		                    tail = "positive")
-		pval2 <- Brown.test(x = dataY, p = dest$pvalue, theta = dest$d_est,
-		                    tail = "negative")
-		cat("Brown's combined P-value of edge activation:", pval1, "\n\n")
-		cat("Brown's combined P-value of edge inhibition:", pval2, "\n\n")
-		ig <- colorGraph(est = dest, graph = ig, group = NULL, alpha = 0.05)
-	} else {
-		dest <- NULL
-	}
-
-	# Output objects
-	fit <- list(Group_0 = cggm0$fit, Group_1 = cggm1$fit)
-	dataXY <- cbind(c(rep(1, n1), rep(0, n0)), rbind(data1, data0))
-
-	return(list(fit = fit, dest = dest, model = NULL, graph = ig,
-	            dataXY = dataXY))
-}
-
-parameterEstimates.GGM <- function(object, ...)
-{
-	# Convert into a vector the output of parameter estimates
-	B <- gdata::unmatrix(object$B, byrow = TRUE)
-	B <- B[which(B != 0)]
-	O <- ifelse(lower.tri(object$O, diag = TRUE), object$O, 0)
-	rownames(O) <- colnames(O) <- rownames(object$O)
-	O <- gdata::unmatrix(O, byrow = TRUE)
-	O <- O[which(O != 0)]
-	P <- c(B, O)
-
-	# Convert into a vector the output of p-values	
-	PvB <- gdata::unmatrix(object$pvB, byrow = TRUE)
-	PvB <- PvB[which(PvB != 0)]
-	PvO <- ifelse(lower.tri(object$pvO, diag = TRUE), object$pvO, 0)
-	rownames(PvO) <- colnames(PvO) <- rownames(object$pvO)
-	diag(PvO) <- ifelse(diag(PvO) == 0, 1E-9, diag(PvO))
-	PvO <- gdata::unmatrix(PvO, byrow = TRUE)
-	PvO <- PvO[which(PvO != 0)]
-	Pv <- c(PvB, PvO)
-	Pv <- Pv[names(P)]
-
-	est <- NULL
-	for(j in 1:length(P)) {
-		s <- strsplit(names(P)[j], ":")
-		lhs <- s[[1]][2]
-		rhs <- s[[1]][1]
-		if (j <= length(B)) {
-			est <- rbind(est, data.frame(lhs, op = "~", rhs, est = P[j],
-			             pvalue = Pv[j],
-			             stringsAsFactors = FALSE))
-		} else {
-			est <- rbind(est, data.frame(lhs, op = "~~", rhs, est = P[j],
-			             pvalue = Pv[j],
-			             stringsAsFactors = FALSE))
-		}
-	}
-	rownames(est) <- NULL
 	
+	# constrained GGM 
+	cggm<- ggm::fitConGraph(amat=adj, S=covXY, n=n)
+	Sigma<- cggm$Shat
+	Theta<- solve(cggm$Shat)
+	#cggm<- GGMncv::constrained(covXY, adj)
+	#Sigma<- cggm$Sigma
+	#Theta<- cggm$Theta
+	rownames(Sigma)<- colnames(Sigma) <- colnames(dataXY)
+	rownames(Theta)<- colnames(Theta) <- colnames(dataXY)	
+	
+	# Beta, Psi & Sigma matrices:
+	betas<- function(Theta){
+	 sapply(1:p, function(x) Theta[x,]/Theta[x,x]) * -1
+	}
+	Beta<- ifelse(dadj == 1, betas(Theta), 0)
+	Psi<- ifelse(dadj == 100, Sigma, 0)
+	diag(Psi)<- apply(scale(dataXY) %*% (diag(p)- Beta), 2, var)
+	df<- p*(p+1)/2 - (sum(Beta != 0) + (sum(Psi != 0)-p)/2 + p)
+	cat(paste0("GGM (constrained) solver ended normally after ", 0, " iterations"),"\n\n")
+	idx<- fitIndices(n, df, covXY, Sigma, Theta)
+	cat("deviance/df:", idx[1]/idx[2], " srmr:", round(idx[3],7), "\n\n")
+
+	est <- parameterEstimates.GGM(dadj, Beta, Psi, Theta, R=covXY, n=n)
+	if (!is.null(group)) {
+	 gest<- est[est$op == "~" & est$rhs == "group",]
+	 pval1<- Brown.test(x=dataY, p=gest$pvalue, theta=gest$est, tail="positive")
+	 pval2<- Brown.test(x=dataY, p=gest$pvalue, theta=gest$est, tail="negative")
+	 cat("Brown's combined P-value of node activation:", pval1, "\n\n")
+     cat("Brown's combined P-value of node inhibition:", pval2, "\n\n")
+	}else{gest<- NULL}
+	
+	# output objects:
+	Reg <- est[which(est$op == "~"),]
+	ig<- colorGraph(est=Reg, graph=ig, group=group, alpha=0.05)
+	if (is.null(group)) dataXY<- cbind(group=rep(NA, n), dataXY)
+	fit<- list(Theta=Theta, Beta=Beta, Psi=Psi, fitIdx=idx, parameterEstimates=est)
+	class(fit)<- "GGM"
+	
+	return( list(fit=fit, gest=gest, model=NULL, graph=ig, dataXY=dataXY) )	
+}
+
+SEMggm2<- function(graph, data, group, method = "none", alpha = 0.05, ...) 
+{
+	# Set graph and data objects:
+	nodes<- colnames(data)[colnames(data) %in% V(graph)$name]
+	ig<- induced_subgraph(graph, vids= which(V(graph)$name %in% nodes))
+	E(ig)$weight<- ifelse(which_mutual(ig), 100, 1)
+	dadj<- as_adj(ig, attr="weight", sparse=FALSE)[nodes,nodes]
+	dataY<- data[,nodes]
+	data1<- dataY[group == 1,]
+	data0<- dataY[group == 0,]
+	n1<- nrow(data1)
+	n0<- nrow(data0)
+	n<- n1 + n0
+	p<- ncol(dataY)
+		
+	# constrained GGM for group = 1
+	cggm1<- quiet(SEMggm(graph, data1, group=NULL, method = method, alpha = alpha))
+	est1<- parameterEstimates(cggm1$fit)
+	# constrained GGM for group = 0
+	cggm0<- quiet(SEMggm(graph, data0, group=NULL, method = method, alpha = alpha))
+	est0<- parameterEstimates(cggm0$fit)
+	# two-group fit indices
+	cat(paste0("GGM (constrained) solver ended normally after ", 0, " iterations"),"\n\n")
+	srmr<- (n1/n)*cggm1$fit$fitIdx[3] + (n0/n)*cggm0$fit$fitIdx[3]
+	dev<- cggm1$fit$fitIdx[1] + cggm0$fit$fitIdx[1]
+	df<- cggm1$fit$fitIdx[2] + cggm0$fit$fitIdx[2]
+	cat("deviance/df:", dev/df , " srmr:", round(srmr,7), "\n\n")
+		
+	# Edge differences based on the de-sparsified precision matrix	
+	est1<- est1[est1$op == "~",] #case
+	est0<- est0[est0$op == "~",] #control
+	d_omega<- est1$omega - est0$omega #case - control
+	d_est <- est1$est - est0$est
+	if (sum(d_est) != 0) {
+	 d_se<- sqrt(est1$se^2 + est0$se^2)
+	 d_z<- d_omega/d_se
+	 pvalue<- 2*(1-pnorm(abs(d_z)))
+	 d_lower<- d_omega - 1.96*d_se
+	 d_upper<- d_omega + 1.96*d_se
+	 pval1<- Brown.test(x=dataY, p=pvalue, theta=d_est, tail="positive")
+	 pval2<- Brown.test(x=dataY, p=pvalue, theta=d_est, tail="negative")
+	 cat("Brown's combined P-value of edge activation:", pval1, "\n\n")
+     cat("Brown's combined P-value of edge inhibition:", pval2, "\n\n")
+	 dest<- cbind(est0[,1:3], d_est, d_omega, d_se, d_z, pvalue, d_lower, d_upper)
+	 class(dest)<- c("lavaan.data.frame" ,"data.frame")
+	 ig<- colorGraph(est=dest, graph=ig, group=NULL, alpha=0.05)
+	}else{ dest<- NULL }
+
+	# output objects :
+	fit<- list(Group_1 = cggm1$fit, Group_0 = cggm0$fit)
+	dataXY<- cbind(c(rep(1,n1),rep(0,n0)),rbind(data1,data0))
+		
+	return( list(fit=fit, dest=dest, model=NULL, graph=ig, dataXY=dataXY) )	
+}
+
+parameterEstimates.GGM <- function(dadj, Beta, Psi, Theta, R, n, ...)
+{
+	# Convert into a vector the output of parameter estimates	
+	A <- gdata::unmatrix(dadj, byrow=TRUE)
+	B <- gdata::unmatrix(Beta, byrow=TRUE)
+	B <- na.omit(ifelse(A == 1, B, NA))
+	O <- ifelse(lower.tri(Psi, diag=TRUE), Psi, 0)
+	rownames(O)<-colnames(O)<- rownames(Psi)
+    O <- gdata::unmatrix(O, byrow=TRUE)
+	O <- O[-which(O == 0)]
+	
+	L <- NULL
+	P <- c(B,O)
+	for(j in 1:length(P)) {
+	 s<- strsplit(names(P)[j],":")
+	 lhs<- s[[1]][2]
+	 rhs<- s[[1]][1]
+	 if(j <= length(B)){ 
+	  L<- rbind(L, data.frame(lhs, op= "~", rhs))
+	 }else{
+	  L<- rbind(L, data.frame(lhs, op= "~~", rhs))}
+	}
+	
+	# Equation 7 in
+	# Jankova, J., & Van De Geer, S. (2015). Confidence intervals for high-dimensional
+	# inverse covariance estimation. Electronic Journal of Statistics, 9(1), 1205-1229.
+	Tstar <- 2 * Theta - Theta %*% R %*% Theta
+	Tstar <- gdata::unmatrix(Tstar, byrow=TRUE)
+	Bstar <- Tstar[names(Tstar) %in% names(B)]
+	Ostar <- Tstar[names(Tstar) %in% names(O)]
+	# standard error
+	sds <- sqrt((tcrossprod(diag(Theta)) + Theta^2))
+	sds <- gdata::unmatrix(sds, byrow=TRUE)
+	Bse <- sds[names(sds) %in% names(B)]/sqrt(n)
+	Ose <- sds[names(sds) %in% names(O)]/sqrt(n)
+	# z test
+	z <- c(Bstar,Ostar)/c(Bse,Ose)
+
+	est <- data.frame(L, est = c(B,O),
+	 omega = c(Bstar,Ostar), se = c(Bse,Ose), z = z,
+	 pvalue = 2*(1-pnorm(abs(z))),
+	 ci.lower = (c(Bstar,Ostar) - 1.96*c(Bse,Ose)),
+	 ci.upper = (c(Bstar,Ostar) + 1.96*c(Bse,Ose)))
+	rownames(est) <- NULL
+	#class(est) <- c("lavaan.data.frame" ,"data.frame")
+
 	return(est)
 }
 
@@ -1217,23 +1183,29 @@ msep.test<- function(bap, S, n, verbose, ...)
 #' @export
 parameterEstimates<- function(fit, ...)
 {
-	if (class(fit) == "lavaan"){
-	 est<- lavaan::parameterEstimates(fit)
-	 est$lhs<- gsub("z", "", est$lhs)
-	 est$rhs<- gsub("z", "", est$rhs)
+	if (inherits(fit, "lavaan")){
+	 est <- lavaan::parameterEstimates(fit)
+	 est$lhs <- gsub("z", "", est$lhs)
+	 est$rhs <- gsub("z", "", est$rhs)
 	 if ("group" %in% colnames(est)){
-	  est<- cbind(est[,-c(4,5)],group=est[,5])
+	  est <- cbind(est[,-c(4,5)], group=est[,5])
 	 }
 	}
-	else if (class(fit) != "lavaan"){
+	else if (!inherits(fit, "lavaan")){
 	 if (length(fit) != 2){
-	  est<- fit$parameterEstimates
-	  class(est)<- c("lavaan.data.frame" ,"data.frame")
+	  est0<- fit$parameterEstimates
+	  sel<- which(est0$lhs == "group")
+	  if(length(sel) != 1){
+	   est <- est0
+	  }else{
+	   est <- est0[-sel,]
+	   est <- rbind(est, est0[sel,])
+	  }
 	 }else{
-	  est1<- fit$Group_1$parameterEstimates
-	  est0<- fit$Group_0$parameterEstimates
-	  group<- c(rep(1, nrow(est0)), rep(2,nrow(est1)))
-	  est<- cbind(rbind(est1,est0),group)
+	  est0 <- fit$Group_0$parameterEstimates
+	  est1 <- fit$Group_1$parameterEstimates
+	  group <- c(rep(1, nrow(est0)), rep(2,nrow(est1)))
+	  est <- cbind(rbind(est0,est1),group)
 	 } 
 	}
 	class(est)<- c("lavaan.data.frame" ,"data.frame")

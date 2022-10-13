@@ -84,6 +84,12 @@
 #'
 #' @author Mario Grassi \email{mario.grassi@unipv.it}
 #'
+#' @references
+#'
+#' Grassi, M., Tarantino, B. SEMgsa: topology-based pathway enrichment analysis with
+#' structural equation models. BMC Bioinformatics 23, 344 (2022).
+#' https://doi.org/10.1186/s12859-022-04884-8
+#' 
 #' @examples
 #'
 #' \dontrun{
@@ -120,12 +126,13 @@ SEMgsa<- function(g=list(), data, group, method = "BH", alpha = 0.05, n_rep = 10
 	res.tbl <- NULL
 	DEG <- list()
 		
-	for (k in 1:K){ #k=1
+	for (k in 1:K){
 	 cat( "k =", k, gs[k], "\n" )
 	 ig <- simplify(g[[k]], remove.loops = TRUE)
+	 if (length(E(ig)$weight) == 0) E(ig)$weight <- 1
 	 adj <- as.matrix(get.adjacency(ig, attr = "weight"))
 	 adj <- colSums(adj)
-	 nodes <- ifelse(adj >= 1, 1, ifelse(adj == 0, 0, -1)) #table(nodes)
+	 nodes <- ifelse(adj >= 1, 1, ifelse(adj == 0, 0, -1))
 	 status <- ifelse(sum(nodes) >= 1, 1, ifelse(sum(nodes) == 0, 0, -1))
 	 
 	 # RICF fitting:
@@ -177,11 +184,10 @@ SEMgsa<- function(g=list(), data, group, method = "BH", alpha = 0.05, n_rep = 10
 
 #' @title SEM-based differential causal inference (DCI)
 #'
-#' @description Creates a network with perturbed edges obtained from 
-#' the output of \code{\link[SEMgraph]{SEMrun}} with two-group and CGGM
-#' solver, comparable to the algorithm 2 in Belyaeva et al (2021), or of
-#' \code{\link[SEMgraph]{SEMace}}, comparable to the procedure in
-#' Jablonski et al (2022).
+#' @description Creates a network with perturbed edges obtained from the
+#' output of \code{\link[SEMgraph]{SEMace}}, comparable to the procedure in
+#' Jablonski et al (2022), or of \code{\link[SEMgraph]{SEMrun}} with two-group
+#' and CGGM solver, comparable to the algorithm 2 in Belyaeva et al (2021). 
 #' To increase the efficiency of computations for large graphs, users can
 #' select to break the network structure into clusters, and select the
 #' topological clustering method (see \code{\link[SEMgraph]{clusterGraph}}).
@@ -196,15 +202,16 @@ SEMgsa<- function(g=list(), data, group, method = "BH", alpha = 0.05, n_rep = 10
 #' of subjects. Each vector element must be 1 for cases and 0 for control
 #' subjects.
 #' @param type  Average Causal Effect (ACE) with two-group, "parents" (back-door)
-#' adjustement set, and "direct" effects (\code{type = "ace"}), or a topological
-#' clustering methods (default \code{type = "none"}). If \code{type = "tahc"},
-#' network modules are generated using the tree agglomerative hierarchical
-#' clustering method. Other non-tree clustering methods from igraph package
-#' include: "wtc" (walktrap community structure with short random walks),
-#' "ebc" (edge betweeness clustering), "fgc" (fast greedy method), "lbc"
-#' (label propagation method), "lec" (leading eigenvector method), "loc"
-#' (multi-level optimization), "opc" (optimal community structure), "sgc"
-#' (spinglass statistical mechanics).
+#' adjustement set, and "direct" effects (\code{type = "ace"}, default), or
+#' CGGM solver with two-group using a clustering method.
+#' If \code{type = "tahc"}, network modules are generated using the tree
+#' agglomerative hierarchical clustering method. Other non-tree clustering
+#' methods from igraph package include: "wtc" (walktrap community structure
+#' with short random walks), "ebc" (edge betweeness clustering), "fgc"
+#' (fast greedy method), "lbc" (label propagation method), "lec" (leading
+#' eigenvector method), "loc" (multi-level optimization), "opc" (optimal
+#' community structure), "sgc" (spinglass statistical mechanics), "none"
+#' (no breaking network structure into clusters).
 #' @param method Multiple testing correction method. One of the values
 #' available in \code{\link[stats]{p.adjust}}. By default, method is set
 #' to "BH" (i.e., FDR multiple test correction).
@@ -254,7 +261,7 @@ SEMgsa<- function(g=list(), data, group, method = "BH", alpha = 0.05, n_rep = 10
 #'
 #' }
 #'
-SEMdci<- function (graph, data, group, type = "none", method = "BH", alpha = 0.05, ...) 
+SEMdci<- function (graph, data, group, type = "ace", method = "BH", alpha = 0.05, ...) 
 {
 	if (type == "ace") {
 	 dest <- SEMace(graph, data, group,
@@ -1024,7 +1031,7 @@ colorGraph <- function (est, graph, group, method = "none", alpha = 0.05,
 #' the function displays a histogram with normal curve superposition.
 #'
 #' @param x A matrix or data.frame (n x p) of continuous data.
-#' @param y A matrix or data.frame (n x p) of continuous data matched with x.
+#' @param y A matrix or data.frame (n x q) of continuous data.
 #' @param size number of rows to be sampled (default \code{s = nrow(z)}).
 #' @param r number of rows of the plot layout (default \code{r = 4}).
 #' @param c number of columns of the plot layout (default \code{r = 4}).
@@ -1051,7 +1058,6 @@ pairwiseMatrix<- function (x, y = NULL, size = nrow(x), r = 4, c = 4, ...)
 	 p <- sample(1:ncol(x), size = r * c)
 	}
     n <- sample(1:nrow(x), size = size)
-    vnames <- colnames(x)
     if (is.null(y)) {
         xx <- x[, vnames]
 		old.par <- par(no.readonly = TRUE)
@@ -1064,6 +1070,7 @@ pairwiseMatrix<- function (x, y = NULL, size = nrow(x), r = 4, c = 4, ...)
 		on.exit(par(old.par))
     }
     else {
+		vnames <- intersect(colnames(x), colnames(y))
         xx <- x[, vnames]
 		yy <- y[, vnames]
 		old.par <- par(no.readonly = TRUE)

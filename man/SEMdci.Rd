@@ -4,7 +4,7 @@
 \alias{SEMdci}
 \title{SEM-based differential causal inference (DCI)}
 \usage{
-SEMdci(graph, data, group, type = "none", method = "BH", alpha = 0.05, ...)
+SEMdci(graph, data, group, type = "ace", method = "BH", alpha = 0.05, ...)
 }
 \arguments{
 \item{graph}{Input network as an igraph object.}
@@ -17,15 +17,16 @@ of subjects. Each vector element must be 1 for cases and 0 for control
 subjects.}
 
 \item{type}{Average Causal Effect (ACE) with two-group, "parents" (back-door)
-adjustement set, and "direct" effects (\code{type = "ace"}), or a topological
-clustering methods (default \code{type = "none"}). If \code{type = "tahc"},
-network modules are generated using the tree agglomerative hierarchical
-clustering method. Other non-tree clustering methods from igraph package
-include: "wtc" (walktrap community structure with short random walks),
-"ebc" (edge betweeness clustering), "fgc" (fast greedy method), "lbc"
-(label propagation method), "lec" (leading eigenvector method), "loc"
-(multi-level optimization), "opc" (optimal community structure), "sgc"
-(spinglass statistical mechanics).}
+adjustement set, and "direct" effects (\code{type = "ace"}, default), or
+CGGM solver with two-group using a clustering method.
+If \code{type = "tahc"}, network modules are generated using the tree
+agglomerative hierarchical clustering method. Other non-tree clustering
+methods from igraph package include: "wtc" (walktrap community structure
+with short random walks), "ebc" (edge betweeness clustering), "fgc"
+(fast greedy method), "lbc" (label propagation method), "lec" (leading
+eigenvector method), "loc" (multi-level optimization), "opc" (optimal
+community structure), "sgc" (spinglass statistical mechanics), "none"
+(no breaking network structure into clusters).}
 
 \item{method}{Multiple testing correction method. One of the values
 available in \code{\link[stats]{p.adjust}}. By default, method is set
@@ -39,11 +40,10 @@ to "BH" (i.e., FDR multiple test correction).}
 An igraph object.
 }
 \description{
-Creates a network with perturbed edges obtained from 
-the output of \code{\link[SEMgraph]{SEMrun}} with two-group and CGGM
-solver, comparable to the algorithm 2 in Belyaeva et al (2021), or of
-\code{\link[SEMgraph]{SEMace}}, comparable to the procedure in
-Jablonski et al (2022).
+Creates a network with perturbed edges obtained from the
+output of \code{\link[SEMgraph]{SEMace}}, comparable to the procedure in
+Jablonski et al (2022), or of \code{\link[SEMgraph]{SEMrun}} with two-group
+and CGGM solver, comparable to the algorithm 2 in Belyaeva et al (2021). 
 To increase the efficiency of computations for large graphs, users can
 select to break the network structure into clusters, and select the
 topological clustering method (see \code{\link[SEMgraph]{clusterGraph}}).

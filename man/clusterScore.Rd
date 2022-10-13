@@ -86,9 +86,9 @@ table(C$membership)
 
 }
 \references{
-Palluzzi F, Grassi M (2021). SEMgraph: An R Package for Causal Network
+Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
 Analysis of High-Throughput Data with Structural Equation Models.
-<arXiv:2103.08332>
+Bioinformatics, 2022;, btac567, https://doi.org/10.1093/bioinformatics/btac567
 }
 \seealso{
 See \code{\link[SEMgraph]{clusterGraph}} and \code{\link[SEMgraph]{cplot}}

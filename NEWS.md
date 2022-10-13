@@ -1,18 +1,21 @@
 ## Version 1.1.3 Release Notes
 
-* Added new parameterEstimates() function for parameter estimates output
-of a fitted SEM for RICF and CGGM algorithms similar to lavaan.
-
-* Updating summary.RICF() and summary.GGM() functions with parameterEstimates()
-(and hidden functions SEMricf(), SEMricf2(), SEMggm(), and SEMggm2(), ...)
+* Added in SEMrun() function the argumet SE = c("standard" or "none"), if
+algo = "lavaan".
 
 * Added in SEMrun() function the bootstrap resampling of SE (95% CI), and
 new argoment n_rep = 1000 (default) to set the bootstrap samples or permutation
-flip, if algo = "ricf" and the argumet SE = c("standard" or "none"), if
-algo = "lavaan".
+flip, if algo = "ricf".
 
-* Fixed bugs in cplot, colorGraph, SEMtree, and others.
+* Added in SEMrun() function the de-sparsified SE (95% CI) of omega parameters 
+(the elements of the precision matrix), if algo = "cggm".
 
+* Added new parameterEstimates() function for parameter estimates output
+of a fitted SEM for RICF and CGGM algorithms similar to lavaan.
+
+* Updating summary.RICF() and summary.GGM() functions with parameterEstimates().
+
+* Various fixed bugs
 
 ## Version 1.1.2 Release Notes
 
@@ -48,7 +51,6 @@ to the sign and P-value of the z-test = b/SE(b) from glm(node ~ group).
 
 * Various fixed bugs
 
-
 ## Version 1.1.0 Release Notes
 
 * Major release with significant changes:
@@ -81,7 +83,6 @@ by the top-n ranking nodes.
 
 * Various fixed bugs
 
-
 ## Version 1.0.3 Release Notes
 
 * First stable version on CRAN
@@ -93,7 +94,6 @@ by the top-n ranking nodes.
 * Added pkgdown website
 
 * Various fixed bugs
-
 
 ## Version 1.0.0 Release Notes
 
