@@ -5,9 +5,8 @@
 
 *R code corresponding author: **Barbara Tarantino** (barbara.tarantino@unipv.it)*
 
-This project contains the following data and files that can be used to
-reproduce the analysis of the manuscript. The folder structure can be
-summarised as follows:
+This section contains R code and data for the SEMtree project reproducibility.
+The folder structure can be summarised as follows:
 
 ./code/:
     
