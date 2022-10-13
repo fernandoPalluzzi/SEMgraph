@@ -1,0 +1,34 @@
+Disease	Disease_id	Gene	Gene_id	UniProt	Gene_Full_Name	Protein_Class	N_diseases_g	DSI_g	DPI_g	pLI	Score_gda	EL_gda	EI_gda	N_PMIDs	N_SNPs_gda	First_Ref	Last_Ref
+Coronavirus Infections	C0206750	CXCL1	2919	P09341	C-X-C motif chemokine ligand 1	Signaling	315	0.449	0.923	0.11845	0.2		1.0	1	0	2007	2007
+Coronavirus Infections	C0206750	CXCL2	2920	P19875	C-X-C motif chemokine ligand 2	Signaling	186	0.513	0.885	3.6079e-07	0.2		1.0	1	0	2007	2007
+Coronavirus Infections	C0206750	SFTPD	6441	P35247	surfactant protein D	Surfactant	194	0.5	0.846	7.4927e-05	0.2		1.0	1	0	2009	2009
+Coronavirus Infections	C0206750	SARS2	54938	Q9NP81	seryl-tRNA synthetase 2, mitochondrial	Enzyme	117	0.57	0.692	9.77e-10	0.07		0.857	7	0	2004	2019
+Coronavirus Infections	C0206750	SARS1	6301	P49591	seryl-tRNA synthetase 1	Enzyme	137	0.558	0.769	0.99925	0.07		0.857	7	0	2004	2019
+Coronavirus Infections	C0206750	TMPRSS2	7113	O15393	transmembrane serine protease 2	Enzyme	69	0.615	0.5	2.4044e-10	0.02		1.0	2	0	2017	2019
+Coronavirus Infections	C0206750	MBL2	4153	P11226	mannose binding lectin 2	Receptor	563	0.39	0.846	0.0026836	0.02		1.0	2	0	2005	2015
+Coronavirus Infections	C0206750	MBL3P	50639		mannose-binding lectin family member 3, pseudogene		152	0.518	0.769		0.01		1.0	1	0	2015	2015
+Coronavirus Infections	C0206750	MX1	4599	P20591	MX dynamin like GTPase 1	Enzyme modulator	71	0.599	0.731	3.4206e-18	0.01		1.0	1	0	2010	2010
+Coronavirus Infections	C0206750	MAPK3	5595	P27361	mitogen-activated protein kinase 3	Kinase	647	0.379	0.885	0.036884	0.01		1.0	1	0	2019	2019
+Coronavirus Infections	C0206750	MCL1	4170	Q07820	MCL1 apoptosis regulator, BCL2 family member	Signaling	375	0.43	0.808	0.96349	0.01		1.0	1	0	2012	2012
+Coronavirus Infections	C0206750	AICDA	57379	Q9GZX7	activation induced cytidine deaminase	Enzyme	265	0.463	0.885	9.2098e-06	0.01		1.0	1	0	2019	2019
+Coronavirus Infections	C0206750	ACE2	59272	Q9BYF1	angiotensin I converting enzyme 2	Enzyme	253	0.477	0.769	0.99769	0.01		1.0	1	0	2009	2009
+Coronavirus Infections	C0206750	CCL2	6347	P13500	C-C motif chemokine ligand 2	Signaling	1157	0.321	0.962	0.60786	0.01		1.0	1	0	2015	2015
+Coronavirus Infections	C0206750	TYRP1	7306	P17643	tyrosinase related protein 1	Enzyme	200	0.507	0.846	6.557e-25	0.01		1.0	1	0	2014	2014
+Coronavirus Infections	C0206750	VTN	7448	P04004	vitronectin		178	0.509	0.769	1.5014e-10	0.01		1.0	1	0	2020	2020
+Coronavirus Infections	C0206750	XPC	7508	Q01831	XPC complex subunit, DNA damage recognition and repair factor	Nucleic acid binding	211	0.504	0.808	3.6866e-11	0.01		1.0	1	0	2011	2011
+Coronavirus Infections	C0206750	CDSN	1041	Q15517	corneodesmosin		101	0.585	0.731	0.46391	0.01		1.0	1	0	2020	2020
+Coronavirus Infections	C0206750	MIR30A	407029		microRNA 30a		218	0.478	0.808		0.01		1.0	1	0	2018	2018
+Coronavirus Infections	C0206750	MASP2	10747	O00187	mannan binding lectin serine peptidase 2	Enzyme	86	0.582	0.692	3.0428e-14	0.01		1.0	1	0	2009	2009
+Coronavirus Infections	C0206750	SEC23IP	11196	Q9Y6Y8	SEC23 interacting protein	Enzyme	4	0.931	0.115	1.9318e-05	0.01		1.0	1	0	2011	2011
+Coronavirus Infections	C0206750	CISH	1154	Q9NSE2	cytokine inducible SH2 containing protein	Enzyme modulator	195	0.5	0.808	0.00053852	0.01		1.0	1	0	2018	2018
+Coronavirus Infections	C0206750	CRP	1401	P02741	C-reactive protein		1483	0.299	0.962	0.0036969	0.01		1.0	1	0	2017	2017
+Coronavirus Infections	C0206750	ACE	1636	P12821	angiotensin I converting enzyme	Enzyme	1082	0.328	0.923	1.0344e-37	0.01		0.0	1	0	2005	2005
+Coronavirus Infections	C0206750	DPP4	1803	P27487	dipeptidyl peptidase 4	Enzyme	451	0.42	0.808	7.2797e-09	0.01		1.0	1	0	2019	2019
+Coronavirus Infections	C0206750	EGFR	1956	P00533	epidermal growth factor receptor	Kinase	1394	0.295	0.885	0.36837	0.01		1.0	1	0	2017	2017
+Coronavirus Infections	C0206750	ERN1	2081	O75460	endoplasmic reticulum to nucleus signaling 1	Kinase	163	0.513	0.808	0.99027	0.01		1.0	1	0	2018	2018
+Coronavirus Infections	C0206750	IFNL3	282617	Q8IZI9	interferon lambda 3		175	0.506	0.808	2.4233e-08	0.01		1.0	1	0	2019	2019
+Coronavirus Infections	C0206750	HLA-B	3106	P01889	major histocompatibility complex, class I, B		706	0.379	0.885	3.8642e-05	0.01		1.0	1	0	2003	2003
+Coronavirus Infections	C0206750	IFN1@	3438		interferon, type 1, cluster		109	0.565	0.731		0.01		1.0	1	0	2019	2019
+Coronavirus Infections	C0206750	IFNG	3458	P01579	interferon gamma		1519	0.288	0.962	0.47156	0.01		1.0	1	0	2019	2019
+Coronavirus Infections	C0206750	IL18	3606	Q14116	interleukin 18		750	0.365	0.923	0.030717	0.01		1.0	1	0	2017	2017
+Coronavirus Infections	C0206750	TBPL1	9519	P62380	TATA-box binding protein like 1	Transcription factor	198	0.506	0.846	0.37902	0.01		1.0	1	0	2014	2014
