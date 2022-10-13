@@ -5,7 +5,7 @@
 
 *Code corresponding author: **Barbara Tarantino** (barbara.tarantino@unipv.it)*
 
-This folder contains the following data and files that can be used to
+This project contains the following data and files that can be used to
 reproduce the analysis of the manuscript. The folder structure can be
 summarised as follows:
 
