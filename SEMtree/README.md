@@ -52,8 +52,8 @@ The folder structure can be summarised as follows:
     WalktrapGMl
 
 ## Notes
-1. Set folder SEMtree_code_data as the current working directory.
-2. Specify a smaller number of iterations by argument “seed_vec” to reduce computing time for data simulations.
+1. Set SEMtree_code_data as the current working directory.
+2. To reduce computing time for data simulations, reduce the number of iterations through the argument “seed_vec”.
 
 ## Data source
 The original data used in this research can be downloaded at [**GSE172114**](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE172114).
