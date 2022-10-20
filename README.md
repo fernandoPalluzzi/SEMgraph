@@ -20,6 +20,8 @@ confounding adjustment.
 together with graph plotting utilities, tracing model architecture 
 modifications and perturbation (i.e., activation or repression) routes.
 
+![alt text](https://github.com/fernandoPalluzzi/SEMgraph/blob/master/docs/figures/SEMgraph_workflow.png)
+
 &nbsp;
 
 ## Installation
