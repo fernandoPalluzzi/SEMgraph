@@ -22,7 +22,7 @@ modifications and perturbation (i.e., activation or repression) routes.
 
 <p align="center">
     <img src="https://github.com/fernandoPalluzzi/SEMgraph/blob/master/docs/figures/SEMgraph_workflow.png" width=80% height=80%>
-<\p>
+</p>
 
 &nbsp;
 
