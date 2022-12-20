@@ -48,8 +48,7 @@
 #' Fisher information matrix. If \code{algo = "ricf"}, the model is fitted
 #' via residual iterative conditional fitting (RICF; Drton et al. 2009).
 #' If \code{algo = "cggm"}, model fitting is based on constrained Gaussian
-#' Graphical Modeling (GGM) and de-sparsified glasso estimator
-#' (Williams, 2020).
+#' Graphical Modeling (CGGM; Hastie et al. 2009, p. 446).
 #' @param start Starting value of SEM parameters for \code{algo = "lavaan"}.
 #' If start is \code{NULL} (default), the algorithm will determine the
 #' starting values. If start is a numeric value, it will be used as a
@@ -69,7 +68,7 @@
 #' (i.e., number of nodes). Beyond this limit, the execution under
 #' \code{algo = "lavaan"} will run with \code{SE = "none"}, if 
 #' \code{fit = 0}, or will be ridirected to \code{algo = "ricf"}, if
-#' \code{fit = 1}, or to \code{algo = "ggm"}, if \code{fit = 2}.
+#' \code{fit = 1}, or to \code{algo = "cggm"}, if \code{fit = 2}.
 #' This redirection is necessary to reduce the computational demand of
 #' standard error estimation by lavaan. Increasing this number will
 #' enforce lavaan execution when \code{algo = "lavaan"}.
@@ -162,12 +161,16 @@
 #' Journal of Machine Learning Research, 10(Oct): 2329-2348.
 #' <https://www.jmlr.org/papers/volume10/drton09a/drton09a.pdf>
 #'
-#' Larson JL and Owen AB (2015). Moment based gene set tests. BMC
-#' Bioinformatics, 16: 132. <https://doi.org/10.1186/s12859-015-0571-7>
+#' Jankova J, van de Geer S (2015). Confidence intervals for high-dimensional
+#' inverse covariance estimation. Electronic Journal of Statistics,
+#' 9(1): 1205-1229. <https://doi.org/10.1214/15-EJS1031>
+#'
+#' Hastie T, Tibshirani R, Friedman J. (2009). The Elements of Statistical
+#' Learning (2nd ed.). Springer Verlag: New York. ISBN: 978-0-387-84858-7
 #'
 #' Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
 #' Analysis of High-Throughput Data with Structural Equation Models.
-#' Bioinformatics, 2022;, btac567, https://doi.org/10.1093/bioinformatics/btac567
+#' Bioinformatics, 38 (20), 4829–4830 <https://doi.org/10.1093/bioinformatics/btac567>
 #'
 #' @seealso See \code{\link[ggm]{fitAncestralGraph}} and \code{\link[ggm]{fitConGraph}}
 #' for RICF algorithm and constrained GGM algorithm details, respectively.
@@ -393,12 +396,12 @@ SEMfit <- function(graph, data, group = NULL, start = NULL, fit = 0,
 					SE = "standard", limit = 100,...)
 {
 	# Change SEM fitting if n.nodes > limit
-	if (vcount(graph) > limit & fit == 0) {
+	if (vcount(graph) > limit & is.null(group)) {
 		message("WARNING: very large input graph (>", limit, " nodes) !
 		 SEs are not computed...\n")
 		SE <- "none"
 	}
-	if (vcount(graph) > limit & fit == 1) {
+	if (vcount(graph) > limit & !is.null(group)) {
 		message("WARNING: very large input graph (>", limit, " nodes) !
 		 RICF solver activated...\n")
 		return(fit = SEMricf(graph = graph, data = data, group = group))
@@ -455,12 +458,12 @@ SEMfit <- function(graph, data, group = NULL, start = NULL, fit = 0,
 	}
 
 	est <- parameterEstimates(fit)
-	if (!is.null(group)) {
+	if (!is.null(group) & SE != "none") {
 		gest <- est[1:(p - 1),]
 		gest$lhs <- sub("z", "", gest$lhs)
-		pval1 <- Brown.test(x = dataY, p = gest$pvalue, theta = gest$est,
+		pval1 <- Brown.test(p = gest$pvalue, x = dataY, theta = gest$est,
 		                    tail = "positive")
-		pval2 <- Brown.test(x = dataY, p = gest$pvalue, theta = gest$est,
+		pval2 <- Brown.test(p = gest$pvalue, x = dataY, theta = gest$est,
 		                    tail = "negative")
 		cat("Brown's combined P-value of node activation:", pval1, "\n\n")
 		cat("Brown's combined P-value of node inhibition:", pval2, "\n\n")
@@ -557,16 +560,12 @@ SEMfit2 <- function(graph, data, group, start = NULL, SE = "standard",
 		pvalue <- 2*(1-pnorm(abs(d_est/d_se)))
 		d_lower <- d_est - 1.96*d_se
 		d_upper <- d_est + 1.96*d_se
-		pval1 <- Brown.test(x = dataY, p = pvalue, theta = d_est,
-		                    tail = "positive")
-		pval2 <- Brown.test(x = dataY, p = pvalue, theta = d_est,
-		                    tail = "negative")
+		pval1 <- Brown.test(p = pvalue, x = NULL, theta = d_est, tail = "positive")
+		pval2 <- Brown.test(p = pvalue, x = NULL, theta = d_est, tail = "negative")
 		cat("Brown's combined P-value of edge activation:", pval1, "\n\n")
 		cat("Brown's combined P-value of edge inhibition:", pval2, "\n\n")
-
 		# Output objects
-		dest <- cbind(est0[, 1:3], d_est, d_se, d_z = d_est/d_se, pvalue,
-					  d_lower, d_upper)
+		dest <- cbind(est0[, 1:3], d_est, d_se, d_z = d_est/d_se, pvalue, d_lower, d_upper)
 		dest$lhs <- sub("z", "", dest$lhs)
 		dest$rhs <- sub("z", "", dest$rhs)
 		class(dest)<- c("lavaan.data.frame" ,"data.frame")
@@ -624,21 +623,20 @@ SEMricf<- function (graph, data, group = NULL, random.x = FALSE, n_rep = 1000, .
 	
 	if (!is.null(group) & n_rep != 0) {
 	 gest <- flip.RICF(fit = fit, data = dataY, group = group, n_rep = n_rep)
-	 pval1 <- Brown.test(x = dataY, p = gest[[1]][,4],
+	 pval1 <- Brown.test(p = gest[[1]][,4], x = dataY,
 		theta = gest[[1]][,2], tail = "positive")
-	 pval2 <- Brown.test(x = dataY, p = gest[[1]][,4],
+	 pval2 <- Brown.test(p = gest[[1]][,4], x = dataY, 
 		theta = gest[[1]][,2], tail = "negative")
 	 cat("Brown's combined P-value of node activation:", pval1, "\n\n")
 	 cat("Brown's combined P-value of node inhibition:", pval2, "\n\n")
 	 ig <- colorGraph(est = gest[[1]], ig, group, alpha = 0.05)
 	 pval <- c(pval1, pval2)
 	}
-	
 	if (is.null(group) & n_rep != 0) {
-	 est <- boot.RICF(A, dataXY, group, est, n_rep)
-	 ig <- colorGraph(est, graph=ig, group=group, alpha=0.05)
-	 dataXY <- cbind(group = rep(NA, n), dataXY)
+	 est <- boot.RICF(A, dataXY, group=NULL, est, n_rep)
+	 ig <- colorGraph(est, ig, group=NULL, alpha=0.05)
 	}
+	if (is.null(group)) dataXY<- cbind(group=rep(NA, n), dataXY)
 	
 	fit <- list(ricf = fit, fitIdx = idx, parameterEstimates = est)
 	class(fit) <- "RICF"
@@ -683,8 +681,8 @@ SEMricf2 <- function(graph, data, group, random.x = FALSE, n_rep = 1000, ...)
 	 A<- ifelse(abs(fit1$fit$ricf$Bhat) > 0, 1, 0)
 	 diag(A)<- 0
 	 dest<- boot.RICF(t(A), dataY, group, dest, R=n_rep)
-	 pval1<- Brown.test(x=dataY, p=dest$pvalue, theta=dest$d_est, tail="positive")
-	 pval2<- Brown.test(x=dataY, p=dest$pvalue, theta=dest$d_est, tail="negative")
+	 pval1<- Brown.test(p=dest$pvalue, x=NULL, theta=dest$d_est, tail="positive")
+	 pval2<- Brown.test(p=dest$pvalue, x=NULL, theta=dest$d_est, tail="negative")
 	 cat("Brown's combined P-value of edge activation:", pval1, "\n\n")
      cat("Brown's combined P-value of edge inhibition:", pval2, "\n\n")
 	 ig<- colorGraph(est=dest, graph=ig, group=NULL, alpha=0.05)
@@ -845,12 +843,12 @@ SEMggm<- function(graph, data, group = NULL, method = "none", alpha = 0.05, ...)
 	est <- parameterEstimates.GGM(dadj, Beta, Psi, Theta, R=covXY, n=n)
 	if (!is.null(group)) {
 	 gest<- est[est$op == "~" & est$rhs == "group",]
-	 pval1<- Brown.test(x=dataY, p=gest$pvalue, theta=gest$est, tail="positive")
-	 pval2<- Brown.test(x=dataY, p=gest$pvalue, theta=gest$est, tail="negative")
+	 pval1<- Brown.test(p=gest$pvalue, x=dataY, theta=gest$est, tail="positive")
+	 pval2<- Brown.test(p=gest$pvalue, x=dataY, theta=gest$est, tail="negative")
 	 cat("Brown's combined P-value of node activation:", pval1, "\n\n")
      cat("Brown's combined P-value of node inhibition:", pval2, "\n\n")
 	}else{gest<- NULL}
-	
+
 	# output objects:
 	Reg <- est[which(est$op == "~"),]
 	ig<- colorGraph(est=Reg, graph=ig, group=group, alpha=0.05)
@@ -900,8 +898,8 @@ SEMggm2<- function(graph, data, group, method = "none", alpha = 0.05, ...)
 	 pvalue<- 2*(1-pnorm(abs(d_z)))
 	 d_lower<- d_omega - 1.96*d_se
 	 d_upper<- d_omega + 1.96*d_se
-	 pval1<- Brown.test(x=dataY, p=pvalue, theta=d_est, tail="positive")
-	 pval2<- Brown.test(x=dataY, p=pvalue, theta=d_est, tail="negative")
+	 pval1<- Brown.test(p=pvalue, x=NULL, theta=d_est, tail="positive")
+	 pval2<- Brown.test(p=pvalue, x=NULL, theta=d_est, tail="negative")
 	 cat("Brown's combined P-value of edge activation:", pval1, "\n\n")
      cat("Brown's combined P-value of edge inhibition:", pval2, "\n\n")
 	 dest<- cbind(est0[,1:3], d_est, d_omega, d_se, d_z, pvalue, d_lower, d_upper)
@@ -1004,7 +1002,7 @@ fitIndices <- function(n, df, S, Sigma, Theta = NULL, ...)
 	return(c(dev = dev, df = df, srmr = SRMR, rmsea = RMSEA, n = n, t = t))
 }
 
-Brown.test <- function (x, p, theta = NULL, tail = "both", ...)
+Brown.test <- function (p, x = NULL, theta = NULL, tail = "both", ...)
 {
 	# from two-sided to one-sided (positive or negative) tests
 	del <- which(is.na(p) | p <= 0 | p >= 1)
@@ -1018,7 +1016,7 @@ Brown.test <- function (x, p, theta = NULL, tail = "both", ...)
 	#Fisher's (1932, 4th ed.) combined X2 test
 	if (is.null(x)) {
 	 pX2<- 1 - pchisq(q = -2 * sum(log(p)), df = 2 * length(p))
-	 if (pX2 <= 0 | pX2 >= 1) pX2 <- length(p) * min(p)
+	 if (pX2 == 0) pX2 <- max(0, min(length(p)*min(p),1))
 	 return(pX2)
 	}
 	
@@ -1030,9 +1028,17 @@ Brown.test <- function (x, p, theta = NULL, tail = "both", ...)
 				xout = cor(x)[which(as.vector(lower.tri(cor(x))))])$x)
 	EX2 <- 2 * ncol(x)
 	
+	# X2-correction, "c" = s2X2/(2 * 2 * k)
+	# df-correction, "f" = 2 * (2 * k)^2 /s2X2
 	fX2 <- -2 * sum(log(p))
-	pX2 <- 1 - pchisq(q = fX2/(s2X2/(2 * EX2)), df = 2 * EX2^2/s2X2)
-	if (pX2 <= 0 | pX2 >= 1) pX2 <- length(p) * min(p)
+	c <- s2X2/(2 * EX2)
+	f <- 2 * EX2^2/s2X2
+	if (f > 2 * length(p)) {
+        f <- 2 * length(p)
+        c <- 1.0
+    }
+	pX2 <- 1 - pchisq(q = fX2/c, df = f)
+	if (pX2 == 0) pX2 <- max(0, min(length(p)*min(p),1))
 
 	return(pX2)
 }
@@ -1065,9 +1071,9 @@ Brown.test <- function (x, p, theta = NULL, tail = "both", ...)
 #'
 #' @export
 #'
-#' @return A list of three objects: (i) the DAG used to perform the localCI
-#' test (ii) the list of all d-separation tests over missing edges in the
-#' input graph and (iii) the overall Bonferroni's P-value.
+#' @return A list of three objects: (i) "dag": the DAG used to perform the localCI
+#' test (ii) "msep": the list of all m-separation tests over missing edges in the
+#' input graph and (iii) "mtest":the overall Bonferroni's P-value.
 #'
 #' @author Mario Grassi \email{mario.grassi@unipv.it}
 #'
