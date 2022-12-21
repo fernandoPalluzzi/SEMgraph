@@ -33,9 +33,8 @@ a new interaction to be retained in the final model. By default,
 NULL, the \code{\link[glmnet]{glmnet}} default using cross-validation lambdas
 is enabled. If lambdas is NA (default), the tuning-free scheme is enabled by
 fixing lambdas = sqrt(log(p)/n), as suggested by Janková and van de Geer
-(2015), when LO="TO" or lambdas = 2/sqrt(n) * qnorm(1 - 0.2/(2*p*(p-1))), as suggested by
-Shojaie and Michailidis (2010), when LO="TD". This will both reduce
-computational time and provide the same result at each run.}
+(2015) and many others. This will both reduce computational time and provide
+the same result at each run.}
 
 \item{penalty}{A logical value. Separate penalty factors can be applied to
 each coefficient. This is a number that multiplies lambda to allow differential

@@ -25,9 +25,9 @@ screen (default = TRUE).}
 \item{...}{Currently ignored.}
 }
 \value{
-A list of three objects: (i) the DAG used to perform the Shipley
-test (ii) the data.frame of all d-separation tests over missing edges in
-the DAG and (iii) the overall Shipley's' P-value.
+A list of three objects: (i) "dag":  the DAG used to perform the Shipley
+test (ii) "dsep": the data.frame of all d-separation tests over missing edges in
+the DAG and (iii) "ctest": the overall Shipley's' P-value.
 }
 \description{
 Compute all the P-values of the d-separation tests

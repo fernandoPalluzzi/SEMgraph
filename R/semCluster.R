@@ -213,15 +213,14 @@ clusterGraph <- function(graph, type = "wtc", HM = "none", size = 5,
 #'
 #' @seealso
 #' See \code{\link[SEMgraph]{clusterGraph}} and \code{\link[SEMgraph]{cplot}}
-#' for graph clustering, and \code{\link[cate]{factor.analysis}} for
-#' factor analysis.
+#' for graph clustering.
 #'
 #' @author Mario Grassi \email{mario.grassi@unipv.it}
 #'
 #' @references
 #' Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
 #' Analysis of High-Throughput Data with Structural Equation Models.
-#' Bioinformatics, 2022;, btac567, https://doi.org/10.1093/bioinformatics/btac567
+#' Bioinformatics, 38 (20), 4829–4830 <https://doi.org/10.1093/bioinformatics/btac567>
 #'
 #' @return A list of 3 objects:
 #' \enumerate{
@@ -263,18 +262,18 @@ clusterScore <- function(graph, data, group, HM = "LV", type = "wtc",
 		if (length(LX) == 0) return(list(fit = NA, M = NA, dataHM = NA))
 		gLM <- LX[[1]]
 		membership <- LX[[2]]
-		LX <- V(gLM)$name[substr(V(gLM)$name, 1, 1) == "L"]
+		#LX <- V(gLM)$name[substr(V(gLM)$name, 1, 1) == "L"]
 
 		# Latent Variables(LV) model
 		K <- as.numeric(names(table(membership)))
 		LV <- NULL
-		for(k in 1:length(LX)) {
+		for(k in 1:length(K)) {
 			Xk <- subset(names(membership), membership == K[k])
 			Y <- as.matrix(dataY[, which(colnames(dataY) %in% Xk)])
 			fa1 <- factor.analysis(Y = Y, r = 1, method = "ml")$Z
 			LV <- cbind(LV, fa1)
 		}
-		colnames(LV) <- gsub("LX", "LV", LX)
+		colnames(LV) <- paste0("LV", K)
 		rownames(LV) <- rownames(dataY)
 		dataLC <- cbind(group, LV)
 
@@ -291,18 +290,18 @@ clusterScore <- function(graph, data, group, HM = "LV", type = "wtc",
 		if (length(LY) == 0) return(list(fit = NA, M = NA, dataHM = NA))
 		gLM <- LY[[1]]
 		membership <- LY[[2]]
-		LY <- V(gLM)$name[substr(V(gLM)$name, 1, 1) == "C"]
+		#LY <- V(gLM)$name[substr(V(gLM)$name, 1, 1) == "C"]
 
 		# Composite Variables(CV) model
 		K <- as.numeric(names(table(membership)))
 		CV <- NULL
-		for(k in 1:length(LY)) {
+		for(k in 1:length(K)) {
 			Xk <- subset(names(membership), membership == K[k])
 			Y <- as.matrix(dataY[,which(colnames(dataY) %in% Xk)])
 			pc1 <- factor.analysis(Y = Y, r = 1, method = "pc")$Z
 			CV <- cbind(CV, pc1)
 	}
-	colnames(CV) <- gsub("CY", "CV", LY)
+	colnames(CV) <- paste0("CV", K)
 	rownames(CV) <- rownames(dataY)
 	dataLC <- cbind(group, CV)
 
@@ -381,7 +380,7 @@ clusterScore <- function(graph, data, group, HM = "LV", type = "wtc",
 #'
 #' @param Y data matrix, a n*p matrix
 #' @param r number of factors (default, r =1)
-#' @param method algorithm to be used (default, method = "pc")
+#' @param method algorithm to be used, "pc" (default) or "ml"
 #'
 #' @details The two methods extracted from "cate" are quasi-maximum likelihood (ml), and
 #' principal component analysis (pc). The ml is iteratively solved the EM algorithm
@@ -394,10 +393,15 @@ clusterScore <- function(graph, data, group, HM = "LV", type = "wtc",
 #' \item{Sigma}{estimated noise variance matrix}
 #' }
 #'
-#' @references {
-#' Bai, J. and Li, K. (2012). Statistical analysis of factor models of high dimension.
-#' \emph{The Annals of Statistics 40}, 436-465.
-#' }
+#' @references
+#'
+#' Jushan Bai and Kunpeng Li (2012). Statistical Analysis of Factor Models of High
+#' Dimension. The Annals of Statistics, 40 (1), 436-465
+#' <https://doi.org/10.1214/11-AOS966> 
+#' 
+#' Jingshu Wang and Qingyuan Zhao (2020). cate: High Dimensional Factor Analysis
+#' and Confounder Adjusted Testing and Estimation. R package version 1.1.1.
+#' <https://CRAN.R-project.org/package=cate>
 #'
 #' @examples
 #' 

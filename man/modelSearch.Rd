@@ -107,8 +107,8 @@ as a list of 2 objects:
 \description{
 Four model search strategies are implemented combining
 \code{SEMdag()}, \code{SEMbap()}, and \code{resizeGraph()} functions.
-All strategies estimate a graph adjusting (de-correlate) the data matrix 
-and re-sized the output DAG.
+All strategies estimate a new graph by 1) adjusting (BAP deconfounding) the
+the data matrix and 2) re-sizing the output DAG.
 }
 \details{
 Search strategies can be ordered by decreasing conservativeness

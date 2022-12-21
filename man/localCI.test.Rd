@@ -27,9 +27,9 @@ screen (default = TRUE).}
 \item{...}{Currently ignored.}
 }
 \value{
-A list of three objects: (i) the DAG used to perform the localCI
-test (ii) the list of all d-separation tests over missing edges in the
-input graph and (iii) the overall Bonferroni's P-value.
+A list of three objects: (i) "dag": the DAG used to perform the localCI
+test (ii) "msep": the list of all m-separation tests over missing edges in the
+input graph and (iii) "mtest":the overall Bonferroni's P-value.
 }
 \description{
 P-values of one minimal testable implication (with the

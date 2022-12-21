@@ -123,7 +123,7 @@ par(old.par)
 \references{
 Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
 Analysis of High-Throughput Data with Structural Equation Models.
-Bioinformatics, 2022;, btac567, https://doi.org/10.1093/bioinformatics/btac567
+Bioinformatics, 38 (20), 4829–4830 <https://doi.org/10.1093/bioinformatics/btac567>
 }
 \author{
 Mario Grassi \email{mario.grassi@unipv.it}
