@@ -7,6 +7,8 @@
 SEMbap(
   graph,
   data,
+  group = NULL,
+  dalgo = "cggm",
   method = "BH",
   alpha = 0.05,
   limit = 30000,
@@ -19,6 +21,43 @@ SEMbap(
 
 \item{data}{A matrix whith rows corresponding to subjects, and
 columns to graph nodes (variables).}
+
+\item{group}{A binary vector. This vector must be as long as the
+number of subjects. Each vector element must be 1 for cases and 0
+for control subjects. If \code{NULL} (default), confouding within group
+will not be considered.}
+
+\item{dalgo}{Deconfounding method. Five algorithms are available: 
+\itemize{
+\item "cggm" (default). The "cggm" algorithm make un exhaustive search of
+missing edges with significant covariance (see details). The inverse of
+the selected covariance matrix (i.e. the precision matrix, W) is fitted by
+a constrained gaussian graphical model (cggm), and a de-correlated data
+matrix, Z is obtained multiplying the data matrix, X rightward by the
+square root of the estimated precision matrix, Z=XW^(1/2) as suggested by
+Grassi, Palluzzi and Tarantino (2022).
+\item "glpc". Similarly to "cggm", "glpc" algorithm first makes an 
+exhaustive search of missing with significant covariance (see details).
+Once obtained the adjacency matrix of the covariances, Graph-Laplacian PCA
+(gLPCA) algorithm learns a low dimensional representation of the observed
+data matrix that incorporates graph structures (Jiang et al., 2013).
+Then, the DAG is extended by including the confounding  proxies, i.e. LVs,
+as additional source nodes defined by last q principal component scores
+of gLPCA and these LV scores are added to the data matrix, Z=cbind(LV,X). 
+\item "ml". The procedure of "ml" algorithm is analogous to add additional 
+source nodes to DAG as in "glpc" algorithm, but confounding proxies are
+the q factor scores extracted via Factor Analysis (FA) with quasi-maximum
+likelihood estimates, iteratively solved by Expectation-Maximization (EM)
+algorithm using the PCA solution as the initial value (Bai and Li, 2012).
+\item "trim". Ćevid et al. (2020) suggest multiplying the data matrix, X
+leftward by a well selected spectrum transformation matrix, F which modifies
+the singular values of X, while keeping its singular vectors intact, Z=FX.
+Trim transform limits all singular values to be at most some costant (t),
+usually their median is a good choice of t.
+\item "pcss". This procedure is analogous to applying a spectral transformation,
+Z=FX but the new matrix of singular values is obtained by mapping the first
+q singular values to 0 (Ćevid et al., 2020).
+}}
 
 \item{method}{Multiple testing correction method. One of the values
 available in \code{\link[stats]{p.adjust}}. By default, \code{method}
@@ -44,61 +83,92 @@ will not be plotted to screen.}
 \value{
 A list of four objects:
 \itemize{
-\item "dag", the directed acyclic graph (DAG) extracted from input graph,
-\item "gLV", the directed graph of latent variables (LV) underlying
-significant covariances (i.e., the canonical graph, where bidirected
-X <-> Y edges are substituted by directed edges X <- LV -> Y),
+\item "dag", the directed acyclic graph (DAG) extracted from input graph.
+If (dalgo = "glpc" or "ml"), the DAG also includes LVs as source nodes.
 \item "dsep", the data.frame of all d-separation tests over missing edges
-in the DAG 
-\item "data", the adjusted (de-correlated) data matrix.
+in the DAG. If (dalgo != "cggm" or "glpc"), dsep dataframe is equal to NULL.
+\item "adj", the adjacency matrix of selected covariances; i.e, the 
+missing edges selected after multiple testing correction. If (dalgo != "cggm"
+or "glpc"), adj matrix is equal to NULL.
+\item "data", the adjusted (de-correlated) data matrix or if (dalgo = "glpc",
+or "ml"), the combined data matrix, where the first columns represent LVs
+scores and the other columns are the raw data.
 }
 }
 \description{
-Search for new bow-free covariances and adjust the data
-matrix by removing latent sources of confounding encoded in them.
+\code{SEMbap()} function implements different deconfounding
+methods to adjust the data matrix by removing latent sources of confounding
+encoded in them. The selected methods are either based on: (i) Bow-free
+Acyclic Paths (BAP) search, (ii) LVs proxies as additional source nodes of
+the data matrix, X or (iii) spectral transformation of X.
 }
 \details{
-SEMbap algorithm makes an exhaustive search of all possible
-missing edges of the directed acyclic graph (DAG) via d-separation
-P-value screening.
-The d-separation test evaluates if two variables (X, Y) in a DAG
-are conditionally independent for a given conditioning set Z,
-The conditioning set Z is represented in a DAG by the union of the
-parent sets of X and Y (Shipley, 2000). A new bow-free covariance is
-added if there is a significant (X, Y) association, after multiple
-testing correction. If the input graph is not acyclic, a warning message
-will be raised, and a cycle-breaking algorithm will be applied (see
-\code{\link[SEMgraph]{graph2dag}} for details).
-The selected covariance between pairs of nodes (X, Y) is
-interpreted as the effect of a latent variable (LV) acting on both X
-and Y; i.e., the LV is an unobserved confounder. These LVs are then
-removed by conditioning them out from the observed data, as suggested 
-by Grassi, Palluzzi and Tarantino (2022).
+Missing edges in causal network inference using a directed acyclic
+graph (DAG) are frequently hidden by unmeasured confounding variables.
+A Bow-free Acyclic Paths (BAP) search is performed with d-separation tests
+between all pairs of variables with missing connection in the input DAG,
+adding a bidirected edge (i.e., bow-free covariance) to the DAG when there
+is an association between them. The d-separation test evaluates if two
+variables (Y1, Y2) in a DAG are conditionally independent for a given
+conditioning set, C represented in a DAG by the union of the parent sets
+of Y1 and Y2 (Shipley, 2000). A new bow-free covariance is added if there
+is a significant (Y1, Y2) association at a significance level \code{alpha},
+after multiple testing correction. The selected covariance between pairs of
+nodes is interpreted as the effect of a latent variable (LV) acting on both
+nodes; i.e., the LV is an unobserved confounder. BAP-based algorithms
+adjust (or de-correlate) the observed data matrix by conditioning out the
+latent triggers responsible for the nuisance edges. For LV algorithms the
+number of hidden proxies, q is determined through scree plot rules: look
+the eigenvalues, i.e., singular values^2, at the knee point (if dalgo =
+"glpc" or "ml") or look at the first eingenvalue cluster (if dalgo = "pcss").
+If the input graph is not acyclic, a warning message will be raised, and a
+cycle-breaking algorithm will be applied (see \code{\link[SEMgraph]{graph2dag}}
+for details).
 }
 \examples{
 
 # Model fitting
 sem0 <- SEMrun(graph = sachs$graph, data = log(sachs$pkc))
+sem1 <- SEMrun(graph = sachs$graph, data = log(sachs$pkc), group = sachs$group)
 
-# BAP search
-BAP <- SEMbap(graph = sachs$graph, data = log(sachs$pkc), verbose = TRUE)
+# BAP search with default method (dalgo="bap")
+bap <- SEMbap(graph = sachs$graph, data = log(sachs$pkc), verbose = TRUE)
+#gplot(bap$dag)
 
-# Model fitting (node perturbation) with adjusted data
-sem1 <- SEMrun(graph = sachs$graph, data = BAP$data, group = sachs$group)
+# Model fitting with de-correlated data
+sem0 <- SEMrun(graph = bap$dag, data = bap$data)
+
+# BAP search within group with gLPCA scores
+glpc <- SEMbap(graph = sachs$graph, data = log(sachs$pkc), group = sachs$group, 
+               dalgo= "glpc", verbose = FALSE)
+gplot(glpc$dag)
+
+# Model fitting (node perturbation) with gLPCA scores
+sem1 <- SEMrun(graph = glpc$dag, data = glpc$data, group = sachs$group)
 
 }
 \references{
 Shipley B (2000). A new inferential test for path models based on DAGs.
-Structural Equation Modeling, 7(2): 206-218.
+Structural Equation Modeling, 7(2), 206-218.
 <https://doi.org/10.1207/S15328007SEM0702_4>
-
-Brito C and Pearl J (2002). A New Identification Condition for
-Recursive Models With Correlated Errors.
-Structural Equation Modeling, 9(4): 459-474.
 
 Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
 Analysis of High-Throughput Data with Structural Equation Models.
-Bioinformatics, 2022;, btac567, https://doi.org/10.1093/bioinformatics/btac567
+Bioinformatics, 38(20), 4829–4830.
+<https://doi.org/10.1093/bioinformatics/btac567>
+
+Jiang B, Ding C, Bin L, Tang J (2013). Graph-Laplacian PCA: 
+Closed-Form Solution and Robustness. IEEE Conference on Computer
+Vision and Pattern Recognition, 3492-3498. 
+<https://doi.org/10.1109/CVPR.2013.448>
+
+Jushan Bai and Kunpeng Li (2012). Statistical Analysis of Factor Models of High
+Dimension. The Annals of Statistics, 40 (1), 436-465
+<https://doi.org/10.1214/11-AOS966> 
+
+Ćevid D,  Bühlmann P, Meinshausen N (2020). Spectral deconfounding via
+perturbed sparse linear models. J. Mach. Learn. Res, 21 (232), 1-41.
+<http://jmlr.org/papers/v21/19-545.html>
 }
 \author{
 Mario Grassi \email{mario.grassi@unipv.it}

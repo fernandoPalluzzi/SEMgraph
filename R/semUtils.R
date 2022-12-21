@@ -1059,6 +1059,7 @@ pairwiseMatrix<- function (x, y = NULL, size = nrow(x), r = 4, c = 4, ...)
 	}
     n <- sample(1:nrow(x), size = size)
     if (is.null(y)) {
+		vnames <- colnames(x)
         xx <- x[, vnames]
 		old.par <- par(no.readonly = TRUE)
 		par(mfrow = c(r, c), mar = rep(3, 4))
@@ -1093,6 +1094,7 @@ pairwiseMatrix<- function (x, y = NULL, size = nrow(x), r = 4, c = 4, ...)
 #' @param nodes the nodes in the graph of which to get the ancestry.
 #'
 #' @references
+#'
 #' Rina Foygel Barber, Mathias Drton and Luca Weihs (2019). SEMID:
 #' Identifiability of Linear Structural Equation Models. R package
 #' version 0.3.2. <https://CRAN.R-project.org/package=SEMID/>

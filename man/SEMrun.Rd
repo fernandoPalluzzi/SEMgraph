@@ -41,8 +41,7 @@ on graph edges.}
 Fisher information matrix. If \code{algo = "ricf"}, the model is fitted
 via residual iterative conditional fitting (RICF; Drton et al. 2009).
 If \code{algo = "cggm"}, model fitting is based on constrained Gaussian
-Graphical Modeling (GGM) and de-sparsified glasso estimator
-(Williams, 2020).}
+Graphical Modeling (CGGM; Hastie et al. 2009, p. 446).}
 
 \item{start}{Starting value of SEM parameters for \code{algo = "lavaan"}.
 If start is \code{NULL} (default), the algorithm will determine the
@@ -66,7 +65,7 @@ for permutation flip or boostrap samples, if \code{algo = "ricf"}.}
 (i.e., number of nodes). Beyond this limit, the execution under
 \code{algo = "lavaan"} will run with \code{SE = "none"}, if 
 \code{fit = 0}, or will be ridirected to \code{algo = "ricf"}, if
-\code{fit = 1}, or to \code{algo = "ggm"}, if \code{fit = 2}.
+\code{fit = 1}, or to \code{algo = "cggm"}, if \code{fit = 2}.
 This redirection is necessary to reduce the computational demand of
 standard error estimation by lavaan. Increasing this number will
 enforce lavaan execution when \code{algo = "lavaan"}.}
@@ -223,12 +222,16 @@ Estimated in Recursive Linear Models with Correlated Errors.
 Journal of Machine Learning Research, 10(Oct): 2329-2348.
 <https://www.jmlr.org/papers/volume10/drton09a/drton09a.pdf>
 
-Larson JL and Owen AB (2015). Moment based gene set tests. BMC
-Bioinformatics, 16: 132. <https://doi.org/10.1186/s12859-015-0571-7>
+Jankova J, van de Geer S (2015). Confidence intervals for high-dimensional
+inverse covariance estimation. Electronic Journal of Statistics,
+9(1): 1205-1229. <https://doi.org/10.1214/15-EJS1031>
+
+Hastie T, Tibshirani R, Friedman J. (2009). The Elements of Statistical
+Learning (2nd ed.). Springer Verlag: New York. ISBN: 978-0-387-84858-7
 
 Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
 Analysis of High-Throughput Data with Structural Equation Models.
-Bioinformatics, 2022;, btac567, https://doi.org/10.1093/bioinformatics/btac567
+Bioinformatics, 38 (20), 4829–4830 <https://doi.org/10.1093/bioinformatics/btac567>
 }
 \seealso{
 See \code{\link[ggm]{fitAncestralGraph}} and \code{\link[ggm]{fitConGraph}}

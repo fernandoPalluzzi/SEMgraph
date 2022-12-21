@@ -16,9 +16,8 @@ columns to graph nodes.}
 of subjects. Each vector element must be 1 for cases and 0 for control
 subjects. By default, \code{group = NULL}. If group is not NULL, also
 node weighting is actived, and node weights correspond to the sign
-(-1 if z <= 2, +1 if z > 2, 0 otherwise) and P-value of the
-z-test = b/SE(b) from simple linear regression y ~ x
-(i.e., glm(node ~ group)).}
+(-1 if z<-2, +1 if z>2, 0 otherwise) and P-value of the z-test = b/SE(b)
+from simple linear regression y ~ x (i.e., glm(node ~ group)).}
 
 \item{method}{Edge weighting method. It can be one of the following:
 \enumerate{
@@ -26,29 +25,27 @@ z-test = b/SE(b) from simple linear regression y ~ x
 (Fisher, 1915) to test the correlation coefficient of pairs 
 of interacting nodes, if \code{group == NULL}. Otherwise, the correlation
 difference between group will be tested and edge weights correspond to
-the sign (-1 if z <= 2, +1 if z > 2, 0 otherwise) and P-value of the group
+the sign (-1 if z<-2, +1 if z>2, 0 otherwise) and P-value of the group
 correlation difference.
 \item "sem", edge weights are defined by a SEM model that implies 
 testing the group effect simultaneously on the source node and the sink mode.
 A new parameter w is defined as the weighted sum of the total effect 
 of the group on source and sink nodes, adjusted by node degree centrality, 
-and edge weights correspond to the sign (-1 if z <= 2, +1 if z > 2, 
-0 otherwise) and P-value of the z-test = w/SE(w). 
-Not available if \code{group == NULL}.
+and edge weights correspond to the sign (-1 if z<-2, +1 if z>2, 0 otherwise)
+and P-value of the z-test = w/SE(w). Not available if \code{group == NULL}.
 \item "cov", edge weights are defined by a new parameter w combining 
 the group effect on the source node (mean group difference, adjusted 
 by source degree centrality), the sink node (mean group difference, 
 adjusted by sink degree centrality), and the source-sink interaction 
 (correlation difference). Edge weights correspond to the sign
-(-1 if z <= 2, +1 if z > 2, 0 otherwise) and P-value of the 
-z-test = w/SE(w) of the combined difference of the group over 
-source node, sink node, and their connection. 
-Not available if \code{group == NULL}.
+(-1 if z<-2, +1 if z>2, 0 otherwise) and P-value of the z-test = w/SE(w)
+of the combined difference of the group over source node, sink node, and
+their connection. Not available if \code{group == NULL}.
 \item "cfa", edge weights are defined by a CFA1 model that implies 
-testing the group effect, w on a latent variable (LV) with observed 
-indicators two interacting nodes, fixing loading coefficients and residual
+testing the group effect, w on a latent variable (LV) with observed indicators
+two interacting nodes, fixing loading coefficients and residual
 variances for model identification. Edge weights correspond to the sign
-(-1 if z <= 2, +1 if z > 2, 0 otherwise) and P-value of the z-test = w/SE(w)
+(-1 if z<-2, +1 if z>2, 0 otherwise) and P-value of the z-test = w/SE(w)
 of the group effect on the LV. Not available if \code{group == NULL}.
 }}
 
@@ -85,7 +82,7 @@ head(V(G)$zsign); table(V(G)$zsign)
 \references{
 Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
 Analysis of High-Throughput Data with Structural Equation Models.
-Bioinformatics, 2022;, btac567, https://doi.org/10.1093/bioinformatics/btac567
+Bioinformatics, 38 (20), 4829–4830 <https://doi.org/10.1093/bioinformatics/btac567>
 
 Fisher RA (1915). Frequency Distribution of the Values of the Correlation
 Coefficient in Samples from an Indefinitely Large Population. Biometrika,

@@ -11,7 +11,7 @@ factor.analysis(Y, r = 1, method = "pc")
 
 \item{r}{number of factors (default, r =1)}
 
-\item{method}{algorithm to be used (default, method = "pc")}
+\item{method}{algorithm to be used, "pc" (default) or "ml"}
 }
 \value{
 a list of objects
@@ -51,8 +51,11 @@ head(ml$Sigma)
 
 }
 \references{
-{
-Bai, J. and Li, K. (2012). Statistical analysis of factor models of high dimension.
-\emph{The Annals of Statistics 40}, 436-465.
-}
+Jushan Bai and Kunpeng Li (2012). Statistical Analysis of Factor Models of High
+Dimension. The Annals of Statistics, 40 (1), 436-465
+<https://doi.org/10.1214/11-AOS966> 
+
+Jingshu Wang and Qingyuan Zhao (2020). cate: High Dimensional Factor Analysis
+and Confounder Adjusted Testing and Estimation. R package version 1.1.1.
+<https://CRAN.R-project.org/package=cate>
 }
