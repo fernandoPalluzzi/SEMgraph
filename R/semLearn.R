@@ -1273,7 +1273,7 @@ SEMtree <- function(graph, data, seed, type = "CAT", eweight = NULL, alpha = 0.0
 	   ug <- as.undirected(graph, edge.attr.comb = eattr) 
 	   T <- mst(ug, weights = E(ug)$weight, algorithm = "prim")
 	 }
-	 if (is.directed(graph)) T <- orientEdges(ug=T, dg=graph) 
+	 if (is.directed(graph) & !is.directed(T)) T <- orientEdges(ug=T, dg=graph) 
 	 T <- quiet(properties(T)[[1]])
 	 V(T)$color <- ifelse(V(T)$name %in% seed, "aquamarine", "white")
 	 E1 <- attr(E(T), "vnames")
