@@ -1,5 +1,5 @@
 #  SEMgraph library
-#  Copyright (C) 2019-2021 Mario Grassi; Fernando Palluzzi; Barbara Tarantino 
+#  Copyright (C) 2019-2023 Mario Grassi; Fernando Palluzzi; Barbara Tarantino 
 #  e-mail: <mario.grassi@unipv.it>
 #  University of Pavia, Department of Brain and Behavioral Sciences
 #  Via Bassi 21, 27100 Pavia, Italy
@@ -1273,7 +1273,7 @@ SEMtree <- function(graph, data, seed, type = "CAT", eweight = NULL, alpha = 0.0
 	   ug <- as.undirected(graph, edge.attr.comb = eattr) 
 	   T <- mst(ug, weights = E(ug)$weight, algorithm = "prim")
 	 }
-	 if (is.directed(graph) & !is.directed(T)) T <- orientEdges(ug=T, dg=graph) 
+	 if (is.directed(graph) & !is.directed(T)) T <- orientEdges(ug=T, dg=graph)
 	 T <- quiet(properties(T)[[1]])
 	 V(T)$color <- ifelse(V(T)$name %in% seed, "aquamarine", "white")
 	 E1 <- attr(E(T), "vnames")
