@@ -533,61 +533,6 @@ RWR <- function(graph, seed, eweight, algo, top, ...)
   return(graph = induced_subgraph(graph, top))
 }
 
-SteinerTree <- function(graph, seed, eweight, ...)
-{
-  # Define graph, edge weights, and distance matrix
-  E(graph)$weight <- eweight
-  D <- igraph::distances(graph, v = seed, to = seed,
-                         mode = "all",
-                         weights = eweight)
-  
-  # Step 1: complete undirected distance graph Gd for terminal nodes
-  Gd <- graph_from_adjacency_matrix(D, mode = "undirected", weighted = TRUE)
-  Gd <- Gd - igraph::edges(E(Gd)[which(E(Gd)$weight == Inf)])
-  
-  # Step 2: MST T1 of the complete distance graph Gd
-  T1 <- minimum.spanning.tree(Gd, weights = NULL, algorithm = "prim")
-  
-  # Step 3: for each edge in T1, replace it with the shortest path in ig
-  edge_list <- as_edgelist(T1)
-  N <- nrow(edge_list)
-  subgraph <- vector()
-  
-  for (n in 1:N) {
-    i <- edge_list[n, 1]
-    j <- edge_list[n, 2]
-    
-    # Extract from ig all nodes of the shortest paths between edges of T1
-    path <- shortest_paths(graph, from = V(graph)[i], to = V(graph)[j],
-                           mode = "all",
-                           weights = eweight,
-                           output = "both")
-    vpath <- V(graph)$name[path$vpath[[1]]]
-    subgraph <- igraph::union(subgraph, vpath)
-  }
-  
-  # Step 4: MST Ts of the extracted (induced) sub-graph Gs of ig
-  Gs <- induced_subgraph(graph, unique(subgraph))
-  Ts <- minimum.spanning.tree(Gs, weights = NULL, algorithm = "prim")
-  
-  # Step 5: Pruning non-seed genes with degree=1 (one at time) from Ts
-  St <- Ts
-  idx <- ifelse(V(St)$name %in% seed == TRUE, FALSE, TRUE)
-  i <- 1
-  I <- length(V(St)[idx]) + 1
-  while(i < I) {
-    K <- igraph::degree(St, v = V(St), mode = "all")
-    todel <- names(which(K == 1))
-    todel <- todel[which(!todel %in% seed)]
-    if(length(todel) > 0) {
-      St <- igraph::delete.vertices(St, todel)
-    }
-    i <- i + 1
-  }
-  
-  return(St)
-}
-
 USPG <- function(graph, seed, eweight, alpha, limit, ...)
 {
   # Define graph, edge weights, and distance matrix
