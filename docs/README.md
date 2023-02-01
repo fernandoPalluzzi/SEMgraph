@@ -120,7 +120,7 @@ head(DRN)
 
 # Differentially Regulated Edges (DREs)
 DRE <- sem2$dest[sem2$dest$pvalue < 0.05,]
-nrow(DRE)PMID: 26834510
+nrow(DRE)
 head(DRE)
 
 
