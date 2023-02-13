@@ -757,11 +757,13 @@ cplot<- function (graph, membership, l = layout.auto, map = FALSE, verbose = FAL
 #' node names. By default, \code{membership = NULL}.
 #' @param HM Hidden cluster label. If membership is derived from clusterGraph:
 #' HM = "LV", a latent variable (LV) will be defined as common unknown cause
-#' acting on cluster nodes. If HM = "CV", cluster nodes will be considered as regressors of a
-#' latent composite variable (CV). Finally, if HM = "UV", an unmeasured
-#' variable (UV) is defined, where source nodes of the module (i.e.,
+#' acting on cluster nodes. If HM = "CV", cluster nodes will be considered as
+#' regressors of a latent composite variable (CV). Finally, if HM = "UV", an
+#' unmeasured variable (UV) is defined, where source nodes of the module (i.e.,
 #' in-degree = 0) act as common regressors influencing the other nodes
 #' via an unmeasured variable. By default, \code{HM = NULL}
+#' @param verbose A logical value. If FALSE (default), the merged graphs will
+#' not be plotted to screen.
 #' @param ... Currently ignored.
 #'
 #' @details Hierarchical clustering with prototypes (or Minmax linkage) is
@@ -793,11 +795,11 @@ cplot<- function (graph, membership, l = layout.auto, map = FALSE, verbose = FAL
 #'
 #' # Gene memberships with prototypes with h=0.5
 #' G <- properties(alsData$graph)[[1]]
-#' M <- mergeNodes(G, data = alsData$exprs, h = 0.5)
+#' M <- mergeNodes(G, data = alsData$exprs, h = 0.5, verbose=TRUE)
 #'
 #' # Gene memberships with EBC method and size=10
 #' m <- clusterGraph(G, type = "ebc", size = 10)
-#' M <- mergeNodes(G, membership = m, HM = "LV")
+#' M <- mergeNodes(G, membership = m, HM = "LV", verbose=TRUE)
 #'
 #' # Gene memberships defined by user
 #' c1 <- c("5894", "5576", "5567", "572", "598")
@@ -805,9 +807,9 @@ cplot<- function (graph, membership, l = layout.auto, map = FALSE, verbose = FAL
 #' c3 <- c("5603", "6300", "1432", "5600")
 #' m <- c(rep(1,5), rep(2,5), rep(3,4))
 #' names(m) <- c(c1, c2, c3)
-#' M <- mergeNodes(G, membership = m, HM = "CV")
+#' M <- mergeNodes(G, membership = m, HM = "CV", verbose=TRUE)
 #'
-mergeNodes<- function(graph, data, h = 0.5, membership = NULL, HM = NULL, ...)
+mergeNodes<- function(graph, data, h=0.5, membership=NULL, HM=NULL, verbose=FALSE, ...)
 {
 	# Set membership object :
 	if (is.numeric(membership)){
@@ -839,7 +841,7 @@ mergeNodes<- function(graph, data, h = 0.5, membership = NULL, HM = NULL, ...)
 	V(ig)$color[substr(V(ig)$name,1,2) == HM] <- "pink"
 	V(ig)$color[substr(V(ig)$name,1,1) == "p"] <- "pink"
 	V(ig)$name <- gsub("p", "", V(ig)$name)
-	gplot(ig)
+	if (verbose) gplot(ig)
 
 	return(list(gLM=ig, membership=membership))
 }
@@ -973,281 +975,281 @@ prototype<- function(graph, data, h, size, ...)
 activeModule <- function(graph, type, seed, eweight = "none", alpha = 0.05,
                          top = 100, limit = 10000, ...)
 {
-  if (length(eweight) == 1) {
-    if (eweight == "kegg") eweight <- (1 - E(graph)$weight)/2
-    else if (eweight == "zsign") eweight <- 1 - abs(E(graph)$zsign)
-    else if (eweight == "pvalue") eweight <- 1/(-log10(E(graph)$pv))
-    else if (eweight == "custom") eweight <- E(graph)$weight
-    else if (eweight == "none") eweight <- rep(1, ecount(graph))
-  }
-  
-  if (length(seed) == 1) {
-    if (seed == "pvlm") seed <- V(graph)$name[V(graph)$pvlm == 1]
-    else if (seed == "proto") seed <- V(graph)$name[V(graph)$proto == 1]
-    else if (seed == "qi") seed <- V(graph)$name[V(graph)$qi == 1]
-  } else {
-    seed <- seed[seed %in% V(graph)$name]
-  }
-  
-  if (type == "kou" & length(seed) != 0) {
-    R <- SteinerTree(graph, seed = seed, eweight = eweight)
-    
-  } else if (type == "usp" & length(seed) != 0) {
-    R <- USPG(graph, seed = seed, eweight = eweight, alpha = alpha, limit = limit)
-    
-  } else if (type == "rwr" & length(seed) != 0) {
-    R <- RWR(graph, seed = seed, eweight = eweight, algo = "rwr", top = top)
-    
-  } else if (type == "hdi" & length(seed) != 0) {
-    R <- RWR(graph, seed = seed, eweight = eweight, algo = "hdi", top = top)
-  }
-  V(R)$color <- ifelse(V(R)$name %in% seed, "green", "white")
-  
-  return(R)
+	if (length(eweight) == 1) {
+	 if (eweight == "kegg") eweight <- (1 - E(graph)$weight)/2
+	 else if (eweight == "zsign") eweight <- 1 - abs(E(graph)$zsign)
+	 else if (eweight == "pvalue") eweight <- 1/(-log10(E(graph)$pv))
+	 else if (eweight == "custom") eweight <- E(graph)$weight
+	 else if (eweight == "none") eweight <- rep(1, ecount(graph))
+	}
+
+	if (length(seed) == 1) {
+	 if (seed == "pvlm") seed <- V(graph)$name[V(graph)$pvlm == 1]
+	 else if (seed == "proto") seed <- V(graph)$name[V(graph)$proto == 1]
+	 else if (seed == "qi") seed <- V(graph)$name[V(graph)$qi == 1]
+	} else {
+	 seed <- seed[seed %in% V(graph)$name]
+	}
+
+	if (type == "kou" & length(seed) != 0) {
+	 R <- SteinerTree(graph, seed = seed, eweight = eweight)
+
+	} else if (type == "usp" & length(seed) != 0) {
+	 R <- USPG(graph, seed = seed, eweight = eweight, alpha = alpha, limit = limit)
+
+	} else if (type == "rwr" & length(seed) != 0) {
+	 R <- RWR(graph, seed = seed, eweight = eweight, algo = "rwr", top = top)
+
+	} else if (type == "hdi" & length(seed) != 0) {
+	 R <- RWR(graph, seed = seed, eweight = eweight, algo = "hdi", top = top)
+	}
+	V(R)$color <- ifelse(V(R)$name %in% seed, "green", "white")
+
+	return(R)
 }
 
 seedweight <- function(ig, data, group, alpha, h, q, ...)
 {
-  # Set data object
-  Y <- data[, which(colnames(data) %in% V(ig)$name)]
-  D <- as.dist(1 - abs(cor(Y)))
-  
-  # Seed nodes by p_values
-  pv.lm <- function(x) { summary(lm(x~group))$coefficients[2, 4] }
-  if (!is.null(group)) {
-    pvlm <- apply(Y, 2, pv.lm)
-    p.adj <- p.adjust(pvlm, method="BH")
-    seed1 <- V(ig)$name[p.adj < alpha]
-    V(ig)$pvlm <- ifelse(V(ig)$name %in% seed1, 1, 0)
-  } else {
-    V(ig)$pvlm <- 0
-  }
-  
-  # Seed nodes by prototypes
-  #plot(hc <- protoclust::protoclust(D))
-  hc <- protoclust::protoclust(D)
-  #abline(h = h, lty = 1, col = "red")
-  
-  # Cut distance threshold fixed to 0.2 (i.e., 0.8 correlation)
-  cutd <- protoclust::protocut(hc, h = h)
-  seed2 <- hc$labels[cutd$protos]
-  V(ig)$proto <- ifelse(V(ig)$name %in% seed2, 1, 0)
-  
-  # Seed nodes by closeness
-  suppressWarnings(qi <- igraph::closeness(ig, mode = "all", weights = NA))
-  seed3 <- V(ig)$name[which(qi > quantile(qi, probs = q))]
-  V(ig)$qi <- ifelse(V(ig)$name %in% seed3, 1, 0)
-  
-  return (ig)
+	# Set data object
+	Y <- data[, which(colnames(data) %in% V(ig)$name)]
+	D <- as.dist(1 - abs(cor(Y)))
+
+	# Seed nodes by p_values
+	pv.lm <- function(x) { summary(lm(x~group))$coefficients[2, 4] }
+	if (!is.null(group)) {
+		pvlm <- apply(Y, 2, pv.lm)
+		p.adj <- p.adjust(pvlm, method="BH")
+		seed1 <- V(ig)$name[p.adj < alpha]
+		V(ig)$pvlm <- ifelse(V(ig)$name %in% seed1, 1, 0)
+	} else {
+		V(ig)$pvlm <- 0
+	}
+
+	# Seed nodes by prototypes
+	#plot(hc <- protoclust::protoclust(D))
+	hc <- protoclust::protoclust(D)
+	#abline(h = h, lty = 1, col = "red")
+
+	# Cut distance threshold fixed to 0.2 (i.e., 0.8 correlation)
+	cutd <- protoclust::protocut(hc, h = h)
+	seed2 <- hc$labels[cutd$protos]
+	V(ig)$proto <- ifelse(V(ig)$name %in% seed2, 1, 0)
+
+	# Seed nodes by closeness
+	suppressWarnings(qi <- igraph::closeness(ig, mode = "all", weights = NA))
+	seed3 <- V(ig)$name[which(qi > quantile(qi, probs = q))]
+	V(ig)$qi <- ifelse(V(ig)$name %in% seed3, 1, 0)
+
+	return (ig)
 }
 
 RWR <- function(graph, seed, eweight, algo, top, ...)
 {
-  E(graph)$weight <- eweight
-  W <- as_adjacency_matrix(graph, attr = "weight", sparse = FALSE)
-  p0 <- ifelse(V(graph)$name %in% seed, 1, 0)
-  q <- 1-top/vcount(graph)
-  
-  if (algo == "rwr") {
-    pt <- diffusr::random.walk(p0 = p0, W, r = 0.5)
-    score <- pt$p.inf
-    #score <- rowSums(pt$transition.matrix)
-    top <- rownames(W)[score > quantile(score, q)]
-  } else {
-    #ht <- heat.diffusion(h0 = pval, W, t = 0.5)
-    ht <- diffusr::heat.diffusion(h0 = p0, W, t = 0.5)
-    top <- rownames(W)[ht > quantile(ht, q)]
-  }
-  
-  return(graph = induced_subgraph(graph, top))
+	E(graph)$weight <- eweight
+	W <- as_adjacency_matrix(graph, attr = "weight", sparse = FALSE)
+	p0 <- ifelse(V(graph)$name %in% seed, 1, 0)
+	q <- 1-top/vcount(graph)
+
+	if (algo == "rwr") {
+		pt <- diffusr::random.walk(p0 = p0, W, r = 0.5)
+		score <- pt$p.inf
+		#score <- rowSums(pt$transition.matrix)
+		top <- rownames(W)[score > quantile(score, q)]
+	} else {
+		#ht <- heat.diffusion(h0 = pval, W, t = 0.5)
+		ht <- diffusr::heat.diffusion(h0 = p0, W, t = 0.5)
+		top <- rownames(W)[ht > quantile(ht, q)]
+	}
+
+	return(graph = induced_subgraph(graph, top))
 }
 
 USPG <- function(graph, seed, eweight, alpha, limit, ...)
 {
-  # Define graph, edge weights, and distance matrix
-  E(graph)$weight <- eweight
-  if (is.null(E(graph)$pv)) E(graph)$pv <- rep(0, ecount(graph))
-  D <- igraph::distances(graph, v = seed, to = seed, mode = "all",
-                         weights = eweight)
-  
-  # Complete directed distance graph for terminal nodes
-  Gd <- graph_from_adjacency_matrix(D, mode = "undirected", weighted = TRUE)
-  Gd <- Gd - igraph::edges(E(Gd)[which(E(Gd)$weight == Inf)])
-  #plot(as_graphnel(Gd)); Gd; E(Gd)$weight
-  
-  # For each edge in Gd, replace it with the shortest path
-  ftm <- as_edgelist(Gd)
-  N <- nrow(ftm)
-  if (alpha == 1) alpha <- N
-  
-  local <- function(x) {
-    i <- x[[1]]
-    j <- x[[2]]
-    
-    # Extract nodes from the shortest paths between edges of Gd
-    path <- shortest_paths(graph, from = V(graph)[i], to = V(graph)[j],
-                           mode = "all", weights = E(graph)$weight,
-                           output = "both")
-    vpath <- V(graph)$name[path$vpath[[1]]]
-    r <- length(vpath) - 1
-    pvalue <- E(graph)$pv[path$epath[[1]]]
-    
-    # Fisher's combined significance test of the shortest path
-    ppath <- 1 - pchisq(-2*sum(log(pvalue)), df = 2*length(pvalue))
-    ppath[is.na(ppath)] <- 0.5
-    if (ppath < alpha/N) {
-      ftm <- lapply(1:r, function(x) {
-        data.frame(from = vpath[x], to = vpath[x + 1])
-      })
-    } else {
-      ftm <- NULL
-    }
-    do.call(rbind, lapply(ftm, as.data.frame))
-  }
-  
-  x <- split(ftm, f = seq(nrow(ftm)))
-  message("Edge weigthing of ", length(x), " edges ...")
-  op <- pbapply::pboptions(type = "timer", style = 2)
-  
-  if (length(x) > limit) {
-    n_cores <- parallel::detectCores()/2
-    cl <- parallel::makeCluster(n_cores)
-    parallel::clusterExport(cl, c("local", "graph", "alpha", "N"),
-                            envir = environment())
-    ftm <- pbapply::pblapply(x, local, cl = cl)
-    parallel::stopCluster(cl)
-  } else {
-    est <- pbapply::pblapply(x, local, cl = NULL)
-  }
-  ftm <- do.call(rbind, lapply(est, as.data.frame))
-  
-  # Merging the shortest paths
-  if( !is.null(ftm) ) {
-    del <- which(duplicated(ftm) == TRUE)
-    if(length(del) > 0) ftm <- ftm[-del,]
-    Gs <- simplify(graph_from_data_frame(ftm, directed = FALSE))
-    if(is.directed(graph)) Gs <- orientEdges(ug = Gs, dg = graph)
-  } else {
-    Gs <- make_empty_graph(0)
-  }
-  
-  return(Gs)
+	# Define graph, edge weights, and distance matrix
+	E(graph)$weight <- eweight
+	if (is.null(E(graph)$pv)) E(graph)$pv <- rep(0, ecount(graph))
+	D <- igraph::distances(graph, v = seed, to = seed, mode = "all",
+	                       weights = eweight)
+
+	# Complete directed distance graph for terminal nodes
+	Gd <- graph_from_adjacency_matrix(D, mode = "undirected", weighted = TRUE)
+	Gd <- Gd - igraph::edges(E(Gd)[which(E(Gd)$weight == Inf)])
+	#plot(as_graphnel(Gd)); Gd; E(Gd)$weight
+
+	# For each edge in Gd, replace it with the shortest path
+	ftm <- as_edgelist(Gd)
+	N <- nrow(ftm)
+	if (alpha == 1) alpha <- N
+
+	local <- function(x) {
+		i <- x[[1]]
+		j <- x[[2]]
+
+		# Extract nodes from the shortest paths between edges of Gd
+		path <- shortest_paths(graph, from = V(graph)[i], to = V(graph)[j],
+		                       mode = "all", weights = E(graph)$weight,
+		                       output = "both")
+		vpath <- V(graph)$name[path$vpath[[1]]]
+		r <- length(vpath) - 1
+		pvalue <- E(graph)$pv[path$epath[[1]]]
+
+		# Fisher's combined significance test of the shortest path
+		ppath <- 1 - pchisq(-2*sum(log(pvalue)), df = 2*length(pvalue))
+		ppath[is.na(ppath)] <- 0.5
+		if (ppath < alpha/N) {
+			ftm <- lapply(1:r, function(x) {
+						data.frame(from = vpath[x], to = vpath[x + 1])
+					})
+		} else {
+			ftm <- NULL
+		}
+		do.call(rbind, lapply(ftm, as.data.frame))
+	}
+
+	x <- split(ftm, f = seq(nrow(ftm)))
+	message("Edge weigthing of ", length(x), " edges ...")
+	op <- pbapply::pboptions(type = "timer", style = 2)
+
+	if (length(x) > limit) {
+		n_cores <- parallel::detectCores()/2
+		cl <- parallel::makeCluster(n_cores)
+		parallel::clusterExport(cl, c("local", "graph", "alpha", "N"),
+		                        envir = environment())
+		ftm <- pbapply::pblapply(x, local, cl = cl)
+		parallel::stopCluster(cl)
+	} else {
+		est <- pbapply::pblapply(x, local, cl = NULL)
+	}
+	ftm <- do.call(rbind, lapply(est, as.data.frame))
+
+	# Merging the shortest paths
+	if( !is.null(ftm) ) {
+		del <- which(duplicated(ftm) == TRUE)
+		if(length(del) > 0) ftm <- ftm[-del,]
+		Gs <- simplify(graph_from_data_frame(ftm, directed = FALSE))
+		if(is.directed(graph)) Gs <- orientEdges(ug = Gs, dg = graph)
+	} else {
+		Gs <- make_empty_graph(0)
+	}
+
+	return(Gs)
 }
 
 TMFG <- function(cormat, ...)
 {
-  n <- ncol(cormat)
-  cormat <- abs(cormat)
-  in_v <- matrix(nrow = nrow(cormat), ncol = 1)
-  ou_v <- matrix(nrow = nrow(cormat), ncol = 1)
-  tri <- matrix(nrow = ((2 * n) - 4), ncol = 3)
-  separators <- matrix(nrow = n - 4, ncol = 3)
-  s <- rowSums(cormat*(cormat > mean(matrix(unlist(cormat),nrow = 1)))*1)
-  in_v[1:4] <- order(s, decreasing = TRUE)[1:4]
-  ou_v <- setdiff(1:nrow(in_v), in_v)
-  tri[1,] <- in_v[1:3,]
-  tri[2,] <- in_v[2:4,]
-  tri[3,] <- in_v[c(1, 2, 4),]
-  tri[4,] <- in_v[c(1, 3, 4),]
-  
-  S <- matrix(nrow = (3 * nrow(cormat) - 6), ncol = 3)
-  if (cormat[in_v[1], in_v[2]] > cormat[in_v[2], in_v[1]]) {
-    S[1,] <- c(in_v[1], in_v[2], 1)
-  } else {
-    S[1, ] <- c(in_v[2], in_v[1], 1)
-  }
-  
-  if (cormat[in_v[1], in_v[3]] > cormat[in_v[3], in_v[1]]) {
-    S[2,] <- c(in_v[1], in_v[3], 1)
-  } else {
-    S[2,] <- c(in_v[3], in_v[1], 1)
-  }
-  
-  if (cormat[in_v[1], in_v[4]] > cormat[in_v[4], in_v[1]]) {
-    S[3,] <- c(in_v[1], in_v[4], 1)
-  } else {
-    S[3,] <- c(in_v[4], in_v[1], 1)
-  }
-  
-  if (cormat[in_v[2], in_v[3]] > cormat[in_v[3], in_v[2]]) {
-    S[4,] <- c(in_v[2], in_v[3], 1)
-  } else {
-    S[4,] <- c(in_v[3], in_v[2], 1)
-  }
-  
-  if (cormat[in_v[2], in_v[4]] > cormat[in_v[4], in_v[2]]) {
-    S[5,] <- c(in_v[2], in_v[4], 1)
-  } else {
-    S[5,] <- c(in_v[4], in_v[2], 1)
-  }
-  
-  if (cormat[in_v[3], in_v[4]] > cormat[in_v[4], in_v[3]]) {
-    S[6,] <- c(in_v[3], in_v[4], 1)
-  } else {
-    S[6,] <- c(in_v[4], in_v[3], 1)
-  }
-  
-  gain <- matrix(-Inf, nrow = n, ncol = (2 * (n - 2)))
-  gain[ou_v, 1] <- rowSums(cormat[ou_v, (tri[1,])])
-  gain[ou_v, 2] <- rowSums(cormat[ou_v, (tri[2,])])
-  gain[ou_v, 3] <- rowSums(cormat[ou_v, (tri[3,])])
-  gain[ou_v, 4] <- rowSums(cormat[ou_v, (tri[4,])])
-  ntri <- 4
-  gij <- matrix(nrow = 1, ncol = ncol(gain))
-  v <- matrix(nrow = 1, ncol = ncol(gain))
-  ve <- array()
-  tr <- 0
-  for (e in 5:n) {
-    if (length(ou_v) == 1) {
-      ve <- ou_v
-      v <- 1
-      w <- 1
-      tr <- which.max(gain[ou_v,])
+    n <- ncol(cormat)
+    cormat <- abs(cormat)
+    in_v <- matrix(nrow = nrow(cormat), ncol = 1)
+    ou_v <- matrix(nrow = nrow(cormat), ncol = 1)
+    tri <- matrix(nrow = ((2 * n) - 4), ncol = 3)
+    separators <- matrix(nrow = n - 4, ncol = 3)
+    s <- rowSums(cormat*(cormat > mean(matrix(unlist(cormat),nrow = 1)))*1)
+    in_v[1:4] <- order(s, decreasing = TRUE)[1:4]
+    ou_v <- setdiff(1:nrow(in_v), in_v)
+    tri[1,] <- in_v[1:3,]
+    tri[2,] <- in_v[2:4,]
+    tri[3,] <- in_v[c(1, 2, 4),]
+    tri[4,] <- in_v[c(1, 3, 4),]
+
+    S <- matrix(nrow = (3 * nrow(cormat) - 6), ncol = 3)
+    if (cormat[in_v[1], in_v[2]] > cormat[in_v[2], in_v[1]]) {
+		S[1,] <- c(in_v[1], in_v[2], 1)
     } else {
-      for (q in 1:ncol(gain)) {
-        gij[, q] <- max(gain[ou_v, q])
-        v[, q] <- which.max(gain[ou_v, q])
-        tr <- which.max(gij)
-      }
-      ve <- ou_v[v[tr]]
-      w <- v[tr]
+		S[1, ] <- c(in_v[2], in_v[1], 1)
     }
-    ou_v <- ou_v[-w]
-    in_v[e] <- ve
-    for (u in 1:length(tri[tr, ])) {
-      cou <- 6 + ((3 * (e - 5)) + u)
-      S[cou, ] <- cbind(ve, tri[tr, u], 1)
+
+    if (cormat[in_v[1], in_v[3]] > cormat[in_v[3], in_v[1]]) {
+		S[2,] <- c(in_v[1], in_v[3], 1)
+    } else {
+		S[2,] <- c(in_v[3], in_v[1], 1)
     }
-    separators[e - 4, ] <- tri[tr, ]
-    tri[ntri + 1, ] <- cbind(rbind(tri[tr, c(1, 3)]), ve)
-    tri[ntri + 2, ] <- cbind(rbind(tri[tr, c(2, 3)]), ve)
-    tri[tr, ] <- cbind(rbind(tri[tr, c(1, 2)]), ve)
-    gain[ve, ] <- 0
-    gain[ou_v, tr] <- rowSums(cormat[ou_v, tri[tr, ], drop = FALSE])
-    gain[ou_v, ntri + 1] <- rowSums(cormat[ou_v, tri[ntri + 1, ],
-                                           drop = FALSE])
-    gain[ou_v, ntri + 2] <- rowSums(cormat[ou_v, tri[ntri + 2, ],
-                                           drop = FALSE])
-    ntri <- ntri + 2
-  }
-  cliques <- rbind(in_v[1:4], (cbind(separators, in_v[5:ncol(cormat)])))
-  L <- S
-  L[, 1] <- S[, 2]
-  L[, 2] <- S[, 1]
-  K <- rbind(S, L)
-  x <- as.matrix(Matrix::sparseMatrix(i = K[, 1], j = K[, 2], x = K[, 3]))
-  diag(x) <- 1
-  for (r in 1:nrow(x)) for (z in 1:ncol(x)) {
-    if (x[r, z] == 1) {
-      x[r, z] <- cormat[r, z]
+
+    if (cormat[in_v[1], in_v[4]] > cormat[in_v[4], in_v[1]]) {
+		S[3,] <- c(in_v[1], in_v[4], 1)
+    } else {
+		S[3,] <- c(in_v[4], in_v[1], 1)
     }
-  }
-  colnames(x) <- colnames(cormat)
-  x <- as.data.frame(x)
-  row.names(x) <- colnames(x)
-  x <- as.matrix(x)
-  x <- x - diag(nrow(x))
-  gtmf <- graph_from_adjacency_matrix(x, mode = "undirected", weighted = TRUE)
-  
-  return(list(graph = gtmf, separators = separators, cliques = cliques))
+
+    if (cormat[in_v[2], in_v[3]] > cormat[in_v[3], in_v[2]]) {
+		S[4,] <- c(in_v[2], in_v[3], 1)
+    } else {
+		S[4,] <- c(in_v[3], in_v[2], 1)
+    }
+
+    if (cormat[in_v[2], in_v[4]] > cormat[in_v[4], in_v[2]]) {
+		S[5,] <- c(in_v[2], in_v[4], 1)
+    } else {
+		S[5,] <- c(in_v[4], in_v[2], 1)
+    }
+
+    if (cormat[in_v[3], in_v[4]] > cormat[in_v[4], in_v[3]]) {
+            S[6,] <- c(in_v[3], in_v[4], 1)
+    } else {
+            S[6,] <- c(in_v[4], in_v[3], 1)
+    }
+
+	 gain <- matrix(-Inf, nrow = n, ncol = (2 * (n - 2)))
+    gain[ou_v, 1] <- rowSums(cormat[ou_v, (tri[1,])])
+    gain[ou_v, 2] <- rowSums(cormat[ou_v, (tri[2,])])
+    gain[ou_v, 3] <- rowSums(cormat[ou_v, (tri[3,])])
+    gain[ou_v, 4] <- rowSums(cormat[ou_v, (tri[4,])])
+    ntri <- 4
+    gij <- matrix(nrow = 1, ncol = ncol(gain))
+    v <- matrix(nrow = 1, ncol = ncol(gain))
+    ve <- array()
+    tr <- 0
+    for (e in 5:n) {
+		if (length(ou_v) == 1) {
+			ve <- ou_v
+			v <- 1
+			w <- 1
+			tr <- which.max(gain[ou_v,])
+        } else {
+			for (q in 1:ncol(gain)) {
+				gij[, q] <- max(gain[ou_v, q])
+				v[, q] <- which.max(gain[ou_v, q])
+				tr <- which.max(gij)
+            }
+            ve <- ou_v[v[tr]]
+            w <- v[tr]
+        }
+        ou_v <- ou_v[-w]
+        in_v[e] <- ve
+        for (u in 1:length(tri[tr, ])) {
+            cou <- 6 + ((3 * (e - 5)) + u)
+            S[cou, ] <- cbind(ve, tri[tr, u], 1)
+        }
+        separators[e - 4, ] <- tri[tr, ]
+        tri[ntri + 1, ] <- cbind(rbind(tri[tr, c(1, 3)]), ve)
+        tri[ntri + 2, ] <- cbind(rbind(tri[tr, c(2, 3)]), ve)
+        tri[tr, ] <- cbind(rbind(tri[tr, c(1, 2)]), ve)
+        gain[ve, ] <- 0
+        gain[ou_v, tr] <- rowSums(cormat[ou_v, tri[tr, ], drop = FALSE])
+        gain[ou_v, ntri + 1] <- rowSums(cormat[ou_v, tri[ntri + 1, ],
+                                        drop = FALSE])
+        gain[ou_v, ntri + 2] <- rowSums(cormat[ou_v, tri[ntri + 2, ],
+                                        drop = FALSE])
+        ntri <- ntri + 2
+    }
+   	cliques <- rbind(in_v[1:4], (cbind(separators, in_v[5:ncol(cormat)])))
+    L <- S
+    L[, 1] <- S[, 2]
+    L[, 2] <- S[, 1]
+    K <- rbind(S, L)
+    x <- as.matrix(Matrix::sparseMatrix(i = K[, 1], j = K[, 2], x = K[, 3]))
+    diag(x) <- 1
+    for (r in 1:nrow(x)) for (z in 1:ncol(x)) {
+        if (x[r, z] == 1) {
+            x[r, z] <- cormat[r, z]
+        }
+    }
+    colnames(x) <- colnames(cormat)
+    x <- as.data.frame(x)
+    row.names(x) <- colnames(x)
+    x <- as.matrix(x)
+	x <- x - diag(nrow(x))
+	gtmf <- graph_from_adjacency_matrix(x, mode = "undirected", weighted = TRUE)
+
+	return(list(graph = gtmf, separators = separators, cliques = cliques))
 }
