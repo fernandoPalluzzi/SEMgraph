@@ -4,7 +4,15 @@
 \alias{mergeNodes}
 \title{Graph nodes merging by a membership attribute}
 \usage{
-mergeNodes(graph, data, h = 0.5, membership = NULL, HM = NULL, ...)
+mergeNodes(
+  graph,
+  data,
+  h = 0.5,
+  membership = NULL,
+  HM = NULL,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{graph}{network as an igraph object.}
@@ -24,11 +32,14 @@ node names. By default, \code{membership = NULL}.}
 
 \item{HM}{Hidden cluster label. If membership is derived from clusterGraph:
 HM = "LV", a latent variable (LV) will be defined as common unknown cause
-acting on cluster nodes. If HM = "CV", cluster nodes will be considered as regressors of a
-latent composite variable (CV). Finally, if HM = "UV", an unmeasured
-variable (UV) is defined, where source nodes of the module (i.e.,
+acting on cluster nodes. If HM = "CV", cluster nodes will be considered as
+regressors of a latent composite variable (CV). Finally, if HM = "UV", an
+unmeasured variable (UV) is defined, where source nodes of the module (i.e.,
 in-degree = 0) act as common regressors influencing the other nodes
 via an unmeasured variable. By default, \code{HM = NULL}}
+
+\item{verbose}{A logical value. If FALSE (default), the merged graphs will
+not be plotted to screen.}
 
 \item{...}{Currently ignored.}
 }
@@ -57,11 +68,11 @@ merging nodes and data reduction for SEM fitting.
 
 # Gene memberships with prototypes with h=0.5
 G <- properties(alsData$graph)[[1]]
-M <- mergeNodes(G, data = alsData$exprs, h = 0.5)
+M <- mergeNodes(G, data = alsData$exprs, h = 0.5, verbose=TRUE)
 
 # Gene memberships with EBC method and size=10
 m <- clusterGraph(G, type = "ebc", size = 10)
-M <- mergeNodes(G, membership = m, HM = "LV")
+M <- mergeNodes(G, membership = m, HM = "LV", verbose=TRUE)
 
 # Gene memberships defined by user
 c1 <- c("5894", "5576", "5567", "572", "598")
@@ -69,7 +80,7 @@ c2 <- c("6788", "84152", "2915", "836", "5530")
 c3 <- c("5603", "6300", "1432", "5600")
 m <- c(rep(1,5), rep(2,5), rep(3,4))
 names(m) <- c(c1, c2, c3)
-M <- mergeNodes(G, membership = m, HM = "CV")
+M <- mergeNodes(G, membership = m, HM = "CV", verbose=TRUE)
 
 }
 \references{

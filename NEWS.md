@@ -1,3 +1,16 @@
+## Version 1.1.4 Release Notes
+
+* SEMbap() function changes. Now the function implements new deconfounding
+methods to adjust the data matrix by removing latent sources of confounding
+encoded in them. The selected methods are based on: (i) Bow-free Acyclic 
+Paths (BAP) search, (ii) LVs proxies as additional source nodes of
+the data matrix Y or (iii) spectral transformation of Y.
+
+* Output dsep data.frame in Shipley.test() in SEMbap() functions 
+has the same format of the localCI.test() function.
+
+* Various fixed bugs
+
 ## Version 1.1.3 Release Notes
 
 * Added in SEMrun() function the argumet SE = c("standard" or "none"), if
