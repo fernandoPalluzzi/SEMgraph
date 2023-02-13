@@ -25,58 +25,61 @@
 #' methods to adjust the data matrix by removing latent sources of confounding
 #' encoded in them. The selected methods are either based on: (i) Bow-free
 #' Acyclic Paths (BAP) search, (ii) LVs proxies as additional source nodes of
-#' the data matrix, X or (iii) spectral transformation of X. 
+#' the data matrix, Y or (iii) spectral transformation of Y. 
 #' 
 #' @param graph An igraph object.
-#' @param data A matrix whith rows corresponding to subjects, and
+#' @param data A matrix whith rows corresponding to subjects, and    or \code{\link[SILGGM]{SILGGM}}
 #' columns to graph nodes (variables).
 #' @param group A binary vector. This vector must be as long as the
 #' number of subjects. Each vector element must be 1 for cases and 0
 #' for control subjects. If \code{NULL} (default), confouding within group
 #' will not be considered.
-#' @param dalgo Deconfounding method. Five algorithms are available: 
+#' @param dalgo Deconfounding method. Six algorithms are available: 
 #' \itemize{
-#' \item "cggm" (default). The "cggm" algorithm make un exhaustive search of
-#' missing edges with significant covariance (see details). The inverse of
-#' the selected covariance matrix (i.e. the precision matrix, W) is fitted by
-#' a constrained gaussian graphical model (cggm), and a de-correlated data
-#' matrix, Z is obtained multiplying the data matrix, X rightward by the
-#' square root of the estimated precision matrix, Z=XW^(1/2) as suggested by
-#' Grassi, Palluzzi and Tarantino (2022).
-#' \item "glpc". Similarly to "cggm", "glpc" algorithm first makes an 
-#' exhaustive search of missing with significant covariance (see details).
-#' Once obtained the adjacency matrix of the covariances, Graph-Laplacian PCA
-#' (gLPCA) algorithm learns a low dimensional representation of the observed
-#' data matrix that incorporates graph structures (Jiang et al., 2013).
-#' Then, the DAG is extended by including the confounding  proxies, i.e. LVs,
-#' as additional source nodes defined by last q principal component scores
-#' of gLPCA and these LV scores are added to the data matrix, Z=cbind(LV,X). 
-#' \item "ml". The procedure of "ml" algorithm is analogous to add additional 
-#' source nodes to DAG as in "glpc" algorithm, but confounding proxies are
-#' the q factor scores extracted via Factor Analysis (FA) with quasi-maximum
-#' likelihood estimates, iteratively solved by Expectation-Maximization (EM)
-#' algorithm using the PCA solution as the initial value (Bai and Li, 2012).
-#' \item "trim". Ćevid et al. (2020) suggest multiplying the data matrix, X
-#' leftward by a well selected spectrum transformation matrix, F which modifies
-#' the singular values of X, while keeping its singular vectors intact, Z=FX.
-#' Trim transform limits all singular values to be at most some costant (t),
-#' usually their median is a good choice of t.
-#' \item "pcss". This procedure is analogous to applying a spectral transformation,
-#' Z=FX but the new matrix of singular values is obtained by mapping the first
-#' q singular values to 0 (Ćevid et al., 2020).
+#' \item "cggm_dsep" (default). The algorithm make: (i) exhaustive search
+#' of bow-free significant covariances (see details) through  
+#' \code{\link[SEMgraph]{Shipley.test}} function; (ii) estimation of the inverse
+#' of the selected covariance matrix (i.e. the precision matrix, W) through
+#' \code{\link[ggm]{fitConGraph}} function; (iii) obtain the de-correlated data
+#' matrix, Z by multiplying the data matrix, Y rightward by the square root of
+#' the estimated precision matrix, Z=YW^(1/2) as suggested by Grassi, Palluzzi
+#' and Tarantino (2022).
+#' \item "glpc_dsep". The algorithm first makes an exhaustive search of bow-free
+#' significant covariances through \code{\link[SEMgraph]{Shipley.test}} function.
+#' Once obtained the adjacency matrix, Graph-Laplacian PCA (gLPCA) algorithm learns
+#' a low dimensional representation of the observed data matrix that incorporates
+#' graph structure (Jiang et al., 2013). Then, the DAG is extended by including the
+#' confounding proxies, i.e. LVs, as additional source nodes defined by last q
+#' principal component scores of gLPCA and these LV scores are added to the data
+#' matrix, Z=cbind(LV,Y).
+#' \item "pc". The procedure add additional source nodes to DAG as in "glpc*"
+#' algorithms, but confounding proxies are the q principal component scores
+#' extracted by Spectral decomposition (SVD) selecting only graph nodes and
+#' without graph edge information and bow-free covariance search.
+#' \item "trim" or "pcss". Ćevid et al. (2020) suggest multiplying the data
+#' matrix, Y leftward by a well selected spectrum transformation matrix, T
+#' which modifies the singular values of Y, while keeping its singular vectors
+#' intact, Z=TY. Trim transform limits all singular values to be at most some
+#' costant (t), where t = median of the singuar values. While, PCSS trasform
+#' set equal to zero the first q singular values, and kep the others intact.
 #' }
 #' @param method Multiple testing correction method. One of the values
 #' available in \code{\link[stats]{p.adjust}}. By default, \code{method}
 #' is set to "BH" (i.e., Benjamini-Hochberg multiple test correction).
 #' @param alpha Significance level for false discovery rate (FDR) used
-#' for Shipley's local d-separation tests. This argument is used to
+#' for d-separation or CI tests. This argument is used to
 #' control data de-correlation. A higher \code{alpha} level includes more
 #' hidden covariances, thus considering more sources of confounding.
-#' If \code{alpha = 0}, data de-correlation is disabled.
-#' By default, \code{alpha = 0.05}.
+#' If \code{alpha = 0}, data de-correlation is disabled. By default,
+#' \code{alpha = 0.05}.
+#' @param hcount The number of latent (or hidden) variables. By default
+#' \code{hcount="auto"}, the hidden count is determined with a
+#' permutation method (see details). Currently ignored if (dalgo ="cggm*"
+#' or "trim").
 #' @param limit An integer value corresponding to the number of missing
-#' edges of the extracted acyclic graph. Beyond this limit, multicore
-#' computation is enabled to reduce the computational burden.
+#' edges tolerance. Beyond this limit, multicore computation is enabled to
+#' reduce the computational burden of the exaustive BAP search of the
+#' \code{\link[SEMgraph]{Shipley.test}} procedure.
 #' By default, \code{limit = 30000}.
 #' @param verbose A logical value. If FALSE (default), the processed graphs
 #' will not be plotted to screen.
@@ -84,22 +87,30 @@
 #'
 #' @details Missing edges in causal network inference using a directed acyclic
 #' graph (DAG) are frequently hidden by unmeasured confounding variables.
-#' A Bow-free Acyclic Paths (BAP) search is performed with d-separation tests
-#' between all pairs of variables with missing connection in the input DAG,
-#' adding a bidirected edge (i.e., bow-free covariance) to the DAG when there
-#' is an association between them. The d-separation test evaluates if two
-#' variables (Y1, Y2) in a DAG are conditionally independent for a given
-#' conditioning set, C represented in a DAG by the union of the parent sets
-#' of Y1 and Y2 (Shipley, 2000). A new bow-free covariance is added if there
-#' is a significant (Y1, Y2) association at a significance level \code{alpha},
-#' after multiple testing correction. The selected covariance between pairs of
-#' nodes is interpreted as the effect of a latent variable (LV) acting on both
-#' nodes; i.e., the LV is an unobserved confounder. BAP-based algorithms
-#' adjust (or de-correlate) the observed data matrix by conditioning out the
-#' latent triggers responsible for the nuisance edges. For LV algorithms the
-#' number of hidden proxies, q is determined through scree plot rules: look
-#' the eigenvalues, i.e., singular values^2, at the knee point (if dalgo =
-#' "glpc" or "ml") or look at the first eingenvalue cluster (if dalgo = "pcss").
+#' A Bow-free Acyclic Paths (BAP) search is performed with d-separation or
+#' Conditional Independence (CI) tests between all pairs of variables with
+#' missing connection in the input DAG, adding a bidirected edge (i.e.,
+#' bow-free covariance) to the DAG when there is an association between them.
+#' The d-separation test evaluates if two variables (Y1, Y2) in a DAG are
+#' conditionally independent for a given conditioning set, C represented in a
+#' DAG by the union of the parent sets of Y1 and Y2 (Shipley, 2000). The CI
+#' test (Jankova and van de Geer, 2015) evaluates if two variables (Y1, Y2) in
+#' an undirected graph are independent given the set = "rest" (the other
+#' variables excluding Y1 and Y2).
+#' A new bow-free covariance is added if there is a significant (Y1, Y2)
+#' association at a significance level \code{alpha}, after multiple testing
+#' correction. The selected covariance between pairs of nodes is interpreted
+#' as the effect of a latent variable (LV) acting on both nodes; i.e., the LV
+#' is an unobserved confounder. BAP-based algorithms adjust (or de-correlate)
+#' the observed data matrix by conditioning out the latent triggers responsible
+#' for the nuisance edges.
+#' For "pc" algorithm the number of hidden proxies, q is determined by a permutation
+#' method. It compares the singular values to what they would be if the variables
+#' were independent, which is estimated by permuting the columns of the data matrix,
+#' Y and selects components if their singular values are larger than those of the
+#' permuted data (for a review see Dobriban, 2020).
+#' While for "glpc*" algorithms, q is determined by the number of clusters by
+#' spectral clustering through \code{\link[igraph]{cluster_leading_eigen}} function.
 #' If the input graph is not acyclic, a warning message will be raised, and a
 #' cycle-breaking algorithm will be applied (see \code{\link[SEMgraph]{graph2dag}}
 #' for details).
@@ -107,14 +118,15 @@
 #' @return A list of four objects:
 #' \itemize{
 #' \item "dag", the directed acyclic graph (DAG) extracted from input graph.
-#' If (dalgo = "glpc" or "ml"), the DAG also includes LVs as source nodes.
-#' \item "dsep", the data.frame of all d-separation tests over missing edges
-#' in the DAG. If (dalgo != "cggm" or "glpc"), dsep dataframe is equal to NULL.
-#' \item "adj", the adjacency matrix of selected covariances; i.e, the 
-#' missing edges selected after multiple testing correction. If (dalgo != "cggm"
-#' or "glpc"), adj matrix is equal to NULL.
-#' \item "data", the adjusted (de-correlated) data matrix or if (dalgo = "glpc",
-#' or "ml"), the combined data matrix, where the first columns represent LVs
+#' If (dalgo = "glpc*" or "pc"), the DAG also includes LVs as source nodes.
+#' \item "dsep", the data.frame of all d-separation tests or the conditional
+#' independence (CI) tests over missing edges in the DAG. If (dalgo = "pc"
+#' or "trim"), dsep dataframe is equal to NULL.
+#' \item "adj", the adjacency matrix of selected bow-free covariances; i.e, the 
+#' missing edges selected after multiple testing correction. If (dalgo = "pc"
+#' or "trim"), adj matrix is equal to NULL.
+#' \item "data", the adjusted (de-correlated) data matrix or if (dalgo = "glpc*",
+#' or "pc"), the combined data matrix, where the first columns represent LVs
 #' scores and the other columns are the raw data.
 #' }
 #'
@@ -124,85 +136,104 @@
 #'
 #' @references
 #'
-#' Shipley B (2000). A new inferential test for path models based on DAGs.
-#' Structural Equation Modeling, 7(2), 206-218.
-#' <https://doi.org/10.1207/S15328007SEM0702_4>
-#'
 #' Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
 #' Analysis of High-Throughput Data with Structural Equation Models.
 #' Bioinformatics, 38(20), 4829–4830.
 #' <https://doi.org/10.1093/bioinformatics/btac567>
+#'
+#' Shipley B (2000). A new inferential test for path models based on DAGs.
+#' Structural Equation Modeling, 7(2), 206-218.
+#' <https://doi.org/10.1207/S15328007SEM0702_4>
+#'
+#' Jankova J, van de Geer S. (2015) Confidence intervals for high-dimensional
+#' inverse covariance estimation. Electronic Journal of Statistics, 9, 1205-1229.
+#' <https://doi.org/10.1214/15-EJS1031>
 #' 
 #' Jiang B, Ding C, Bin L, Tang J (2013). Graph-Laplacian PCA: 
 #' Closed-Form Solution and Robustness. IEEE Conference on Computer
 #' Vision and Pattern Recognition, 3492-3498. 
 #' <https://doi.org/10.1109/CVPR.2013.448>
 #' 
-#' Jushan Bai and Kunpeng Li (2012). Statistical Analysis of Factor Models of High
-#' Dimension. The Annals of Statistics, 40 (1), 436-465
-#' <https://doi.org/10.1214/11-AOS966> 
-#' 
 #' Ćevid D,  Bühlmann P, Meinshausen N (2020). Spectral deconfounding via
 #' perturbed sparse linear models. J. Mach. Learn. Res, 21 (232), 1-41.
 #' <http://jmlr.org/papers/v21/19-545.html>
 #'
+#' Dobriban E (2020). Permuatation methods for Factor Analysis and PCA.
+#' Ann. Statist. 48(5): 2824-2847
+#' <https://doi.org/10.1214/19-AOS1907>
+#'
 #' @examples
 #'
-#' # Model fitting
-#' sem0 <- SEMrun(graph = sachs$graph, data = log(sachs$pkc))
-#' sem1 <- SEMrun(graph = sachs$graph, data = log(sachs$pkc), group = sachs$group)
+#' #Set parameters
+#' graph <- sachs$graph
+#' data <- log(sachs$pkc)
+#' group <-sachs$group
 #'
-#' # BAP search with default method (dalgo="bap")
-#' bap <- SEMbap(graph = sachs$graph, data = log(sachs$pkc), verbose = TRUE)
+#' # BAP search with CGGM and d-separation test (default)
+#' bap <- SEMbap(graph, data, verbose = TRUE)
 #' #gplot(bap$dag)
 #'
-#' # Model fitting with de-correlated data
-#' sem0 <- SEMrun(graph = bap$dag, data = bap$data)
-#'
-#' # BAP search within group with gLPCA scores
-#' glpc <- SEMbap(graph = sachs$graph, data = log(sachs$pkc), group = sachs$group, 
-#'                dalgo= "glpc", verbose = FALSE)
+#' # BAP search with gLPCA scores and CI test
+#' glpc <- SEMbap(graph, data, dalgo = "glpc_ci")
 #' gplot(glpc$dag)
 #'
-#' # Model fitting (node perturbation) with gLPCA scores
-#' sem1 <- SEMrun(graph = glpc$dag, data = glpc$data, group = sachs$group)
+#' # Model fitting (with node-perturbation)
+#' sem1 <- SEMrun(graph, data, group)
+#' bap1 <- SEMrun(bap$dag, bap$data, group)
+#' glpc1 <- SEMrun(glpc$dag, glpc$data, group)
 #'
-SEMbap <- function(graph, data, group=NULL, dalgo="cggm", method="BH",
-				   alpha=0.05, limit=30000, verbose=FALSE, ...)
+SEMbap <- function(graph, data, group=NULL, dalgo="cggm_dsep",
+					method="BH", alpha=0.05, hcount="auto",
+					limit=30000, verbose=FALSE, ...)
 {
 	# Set graph and data objects:
 	nodes<- colnames(data)[colnames(data) %in% V(graph)$name]
-	graph<- induced_subgraph(graph, vids= which(V(graph)$name %in% nodes))
-	dataY<- as.matrix(data[,nodes])
-	dag<- graph2dag(graph, dataY)
-
-	if (dalgo == "cggm" | dalgo == "glpc") {
-	  # d-separation local tests (B_U):
-	  dsep<- Shipley.test(dag, dataY, limit=limit, verbose=FALSE)$dsep
-	  d_sep<- subset(dsep, p.adjust(dsep$p.value, method = method) < alpha)
-	  guu<- graph_from_data_frame(d_sep[,1:2], directed=FALSE)
+	graph<- induced_subgraph(graph, vids=which(V(graph)$name %in% nodes))
+	dag<- graph2dag(graph, data, bap=FALSE) #del cycles & all <->
+	A0<- ifelse(as_adj(as.undirected(dag), sparse=FALSE) == 1, TRUE, FALSE)
+	dataY<- as.matrix(data[, colnames(A0)])
+	s<- round(sqrt(nrow(dataY))/log(ncol(dataY)))
+	df<- vcount(dag)*(vcount(dag)-1)/2 - ecount(dag)
+	
+	if (substr(dalgo,1,4) == "cggm" | substr(dalgo,1,4) == "glpc") {
+	  if (substr(dalgo,6,9) == "dsep") {
+	   dsep <- Shipley.test(dag, dataY, limit=limit, verbose=FALSE)$dsep
+	   d_sep <- subset(dsep, p.adjust(dsep[,5], method = method) < alpha)
+	  }else if (substr(dalgo,6,7) == "ci") {
+	   cat("Conditional Independence (CI) test. Use method pcalg ...\n")
+	   nc <- parallel::detectCores(logical = FALSE)
+	   ske<- pcalg::skeleton(suffStat=list(C=cor(dataY), n=nrow(dataY)),
+		 indepTest=pcalg::gaussCItest, alpha=alpha, labels=colnames(dataY),
+		 method="stable.fast", fixedGaps=A0, fixedEdges=NULL, numCores=nc)
+	   dsep <- NULL
+	   d_sep<- as_data_frame(graph_from_graphnel(ske@graph))
+	  }
+	  guu <- graph_from_data_frame(d_sep[,c(1,2)], directed = FALSE)
 	  if (ecount(guu) > 0) {
-	   guu<- difference(guu, as.undirected(dag))
-	   cat("Number of significant local tests:", nrow(d_sep), "/", nrow(dsep),"\n\n")
+	   adj <- as_adj(guu, type = "both", attr = NULL, sparse = FALSE)
+	   d <- max(igraph::degree(guu))
+	   cls <- length(cluster_leading_eigen(guu))
+	   #cls <- count_components(guu)
+	   cat("Number of significant covariances  :", nrow(d_sep), "/", df,"\n")
+	   cat("Number of clusters/number of nodes :", cls, "/", vcount(guu),"\n")
+	   cat("Max nodes degree(d)/Sparsity idx(s):", d, "/", s, "\n\n")
 	  }else{
 	   return(message("NULL covariance graph: ALL adjusted pvalues > ", alpha, "!"))
 	  }
 
 	  # Set the complete adjacency matrix of guu
-	  Adj <- as_adj(as.undirected(dag), type = "both", sparse = FALSE)
-	  adj <- as_adj(guu, type = "both", sparse = FALSE)
-	  idx <- which(rownames(Adj) %in% rownames(adj) == FALSE)
+	  idx <- which(V(dag)$name %in% rownames(adj) == FALSE)
 	  if (length(idx) > 0) {
 	    R <- matrix(0, length(idx), ncol(adj))
 	    C <- matrix(0, nrow(adj), length(idx))
 	    D <- matrix(0, length(idx), length(idx))
 	    adj <- rbind(cbind(D,R), cbind(C,adj))
-	    rownames(adj)[1:length(idx)] <- rownames(Adj)[idx]
-	    colnames(adj)[1:length(idx)] <- rownames(Adj)[idx]
+	    rownames(adj)[1:length(idx)] <- V(dag)$name[idx]
+	    colnames(adj)[1:length(idx)] <- V(dag)$name[idx]
 	  } #colnames(adj)
 
+	  # Covariance and latent variables graphs (guu, gLV)
 	  if (verbose) {
-	   # Covariance and latent variables graphs (guu, gLV)
 	   ftm<- as_edgelist(as.undirected(guu))
 	   ftmLV<- NULL
 	   V(guu)$color<- "white"
@@ -210,26 +241,27 @@ SEMbap <- function(graph, data, group=NULL, dalgo="cggm", method="BH",
 	   gLV<- graph_from_data_frame(ftmLV, directed=TRUE)
 	   V(gLV)$color<- ifelse(substr(V(gLV)$name,1,1)=="L","yellow","white")
 
-	   plot(guu, main="extended covariance graph (guu)")
+	   plot(guu, main="bow-free covariance graph (guu)")
 	   Sys.sleep(3)
-	   plot(gLV, main="extended latent variables graph (gLV)")
-	   Sys.sleep(3)
+	   plot(gLV, main="bow-free latent variables graph (gLV)")
+	   #Sys.sleep(3)
+	   #gplot(graph.union(g=list(dag,gLV)), main="BAP graph (dag+gLV)")
 	  }
 
-	  if (dalgo == "cggm")
- 	   Z <- estimatePsi(adj, dataY, group=group, dalgo="cggm")
-	  if (dalgo == "glpc") {
-	   Z<- estimateLV(adj, dataY, group=group, dalgo="glpc")
-	   dag <- hiddenGraph(dag, Z)
+	  if (substr(dalgo,1,4) == "cggm")
+ 	   Z <- estimatePsi(adj, dataY, group)
+	  if (substr(dalgo,1,4) == "glpc") {
+	   Z <- estimateLV(adj, dataY, group, dalgo="glpc", hcount=cls, beta=0.75)
+	   dag <- map_hidden_dag(dag, Z)
 	  }
 	}
 
-	else if (dalgo == "pc" | dalgo == "ml"){
-	 Z <- estimateLV(adj=as_adj(dag), dataY, group=group, dalgo=dalgo)
-	 dag <- hiddenGraph(dag, Z)
+	else if (dalgo == "pc" | dalgo == "fa"){
+	 Z <- estimateLV(A0, dataY, group, dalgo=dalgo, hcount=hcount)
+	 dag <- map_hidden_dag(dag, Z)
 	 dsep <- adj <- NULL
 	}else{
-	 Z <- estimateFX(adj=as_adj(dag), dataY, group=group, dalgo=dalgo)
+	 Z <- estimateFX(A0, dataY, group, dalgo=dalgo, hcount=hcount)
 	 dsep <- adj <- NULL
 	}
 
@@ -239,7 +271,7 @@ SEMbap <- function(graph, data, group=NULL, dalgo="cggm", method="BH",
 	return( list(dag=dag, dsep=dsep, adj=adj, data=Z) )
 }
 
-estimatePsi <- function(adj, data, group, dalgo, ...)
+estimatePsi <- function(adj, data, group, ...)
 {
 	# Set data objects
 	if (is.null(group)){
@@ -249,43 +281,34 @@ estimatePsi <- function(adj, data, group, dalgo, ...)
 	 Y_1 <- data[group == 1, which(colnames(data) %in% colnames(adj))]
 	}
 
-	# Estimate deconfounding data via covariance/precision matrix
-
 	estimate_Psi <- function(X)
 	{
 	 X <- scale(X)
-	 p <- ncol(X)
+	 adj<- ifelse(adj != 0, 1, 0)
+	 pcor <- adj*cor(X[, colnames(adj)])
+	 diag(pcor) <- 1
 	 
-	 if (dalgo == "lavaan") {
-	   diag(adj)[rowSums(adj) == 0] <- 1
-	   ug<- graph_from_adjacency_matrix(adj, mode="undirected")#plot(ug)
-	   sem0<- quiet(SEMrun(graph=ug, data=X, algo="lavaan", SE="none"))
-	   wi<- inspect(sem0$fit, "est")$theta[1:p,1:p]
-	   colnames(wi)<- rownames(wi)<- gsub("z", "", colnames(wi))
-	   wi<- wi[rownames(adj),colnames(adj)]
-	 }
-	 if (dalgo == "cggm") { #HTF
-	   S <- cov(X[, colnames(adj)])
-	   wi <- ggm::fitConGraph(adj, S, n=nrow(X))$Shat
-	   colnames(wi) <- rownames(wi) <- colnames(adj)
-	 }
-	 #if (verbose) image(solve(wi) != 0, main=dalgo)
+	 # Fitting a concentration graph model with HTF procedure
+	 S <- cov(X[, colnames(adj)])
+	 w <- tryCatch(ggm::fitConGraph(adj, S, n=nrow(X))$Shat,
+                        error = function(err) pcor)
+	 colnames(w) <- rownames(w) <- colnames(adj)
 
-	 if(!corpcor::is.positive.definite(wi)){
-	   wi<- corpcor::cov.shrink(wi, verbose = FALSE)
-	   #wi<- corpcor::cor.shrink(wi, verbose = TRUE)
-	   #wi<- corpcor::make.positive.definite(wi)
+	 if (!corpcor::is.positive.definite(w)){
+	   w <- corpcor::cov.shrink(w, verbose = FALSE)
+	   #w<- corpcor::cor.shrink(w, verbose = TRUE)
+	   #w<- corpcor::make.positive.definite(w)
 	 }
-	 E<- eigen(wi) # Eigenvalues-eigenvectors of w
+	 E<- eigen(w) # Eigenvalues-eigenvectors of w
 	 #R<- E$vectors%*%diag(sqrt(E$values))%*%t(E$vectors) #dim(R)
-	 #sum(wi - R %*% R)
+	 #sum(w - R %*% R)
 	 R<- E$vectors%*%diag(1/sqrt(E$values))%*%t(E$vectors) #dim(R)
-	 #sum(solve(wi) - R %*% R)
+	 #sum(solve(w) - R %*% R)
 	 colnames(R) <- rownames(R) <- colnames(adj)
 	 X <- X[, colnames(adj)]
 	 return( as.matrix(X)%*%R )
 	}
-	
+
 	if (is.null(group)){
      Z <- estimate_Psi(Y)
 	}else{
@@ -297,17 +320,17 @@ estimatePsi <- function(adj, data, group, dalgo, ...)
 	return(data = Z)
 }
 
-estimateFX <- function(adj, data, group, dalgo, ...)
+estimateFX <- function(adj, data, group, dalgo, hcount, ...)
 {
 	# Set data objects
 	K <- 0
 	if (is.null(group)){
 	 Y <- data[, which(colnames(data) %in% colnames(adj))]
-	 if (dalgo == "pcss") K<- screePlot(Y, method="cluster")
+	 if (dalgo == "pcss") K<- estimate_latent_count(Y, method=hcount)
 	}else{
 	 Y_0 <- data[group == 0, which(colnames(data) %in% colnames(adj))]
 	 Y_1 <- data[group == 1, which(colnames(data) %in% colnames(adj))]
-	 if (dalgo == "pcss") K <- screePlot(rbind(Y_0, Y_1), method="cluster")
+	 if (dalgo == "pcss") K <- estimate_latent_count(rbind(Y_0, Y_1), method=hcount)
 	}
 
 	# Estimate deconfounding data via svd(X, nu, nv)
@@ -342,6 +365,20 @@ estimateFX <- function(adj, data, group, dalgo, ...)
 	 }
     
      if (dalgo == "pcss") {
+	  #E <- eigen(cov(X))
+      #V <- E$vectors[,1:q]
+      #Y<- X%*%(diag(p)-V%*%t(V))
+      #colnames(Y)<- colnames(X)
+      #return(Y)
+      #if (p < n) {
+      # V <- svd(X, nu = 0, nv = q)$v # round(t(V)%*%V,6)
+      #  Y <- X%*%(diag(p)-V%*%t(V))
+      #}else{
+      #U <- svd(X, nu = q, nv = 0)$u # round(t(U)%*%U,6)
+      # Y <- (diag(n)-U%*%t(U))%*%X
+      #}
+	  #colnames(Y) <- colnames(X)
+      #return(Y)
 	  x <- svd(X, nv = 0)
 	  if (q == 0) return(X)
 	  U <- sqrt(n)*x$u #round(t(U)%*%U,6)
@@ -361,21 +398,21 @@ estimateFX <- function(adj, data, group, dalgo, ...)
 	return(data = Z)
 }
 
-estimateLV <- function(adj, data, group, dalgo, ...)
+estimateLV <- function(adj, data, group, dalgo, hcount, beta, ...)
 {
 	# Set data objects
 	if (is.null(group)){
 	 Y <- data[, which(colnames(data) %in% colnames(adj))]
-	 K <- screePlot(Y, method="knee")
+	 if (is.character(hcount)) hcount <- estimate_latent_count(Y, method=hcount)
 	}else{
 	 Y_0 <- data[group == 0, which(colnames(data) %in% colnames(adj))]
 	 Y_1 <- data[group == 1, which(colnames(data) %in% colnames(adj))]
-	 K <- screePlot(rbind(Y_0, Y_1), method="knee")
+	 if (is.character(hcount)) hcount <- estimate_latent_count(rbind(Y_0, Y_1), method=hcount)
 	}
 
 	# Estimate latent variables via svd(X, nu, nv)
 
-	estimate_LV <- function(X, q)
+	estimate_LV <- function(X, q, b)
 	{
 	 X <- scale(X)
 	 n <- nrow(X)
@@ -389,10 +426,11 @@ estimateLV <- function(adj, data, group, dalgo, ...)
 	  return(cbind(LV,X))
 	 }
 
-	 if (dalgo == "ml") {
+	 if (dalgo == "fa") {
 	  x <- svd(X, nv = 0)
 	  if (q == 0) return(X)
 	  LV <- factor.analysis(X, r=q, method="ml")$Z
+	  LV <- scale (LV)
 	  colnames(LV) <- paste0("LV", seq_len(q))
 	  return(cbind(LV,X))
 	 }
@@ -402,17 +440,18 @@ estimateLV <- function(adj, data, group, dalgo, ...)
 	  E <- eigen(S)
 	  e1 <- E$values[1] # e1
 	  
-	  dj <- rowSums(adj, na.rm = FALSE)
+	  adj<- S*adj #signed Adjacency
+	  dj <- rowSums(abs(adj), na.rm = FALSE)
 	  D <- diag(dj)
-	  L <- D - adj
+	  L <- D - adj #signed Laplacian
 	  E <- eigen(L)
-	  f1 <- E$values[1] # f1
+	  f1 <- E$values[1]
 
-	  one <-rep(1,p)
+	  one <- rep(1,p)
 	  I <- diag(one)
 	  if (sum(D) == 0) {
 	   b <- 0; f1 <- 1
-	  }else{b <- 0.5}
+	  }
 
 	  G <- (1-b)*(I-S/e1) + b*(L/f1 + one%*%t(one)/p)
 	  E <- eigen(G)
@@ -430,65 +469,121 @@ estimateLV <- function(adj, data, group, dalgo, ...)
 	}
 	
 	if (is.null(group)){
-	 Z <- estimate_LV(Y, q=K)
+	 Z <- estimate_LV(Y, q=hcount, b=beta)
 	}else{
 	 Z <- rbind(
-	  estimate_LV(Y_0, q=K),
-	  estimate_LV(Y_1, q=K))
+	  estimate_LV(Y_0, q=hcount, b=beta),
+	  estimate_LV(Y_1, q=hcount, b=beta))
 	}
 
 	return(data = Z)
 }
 
-screePlot <- function(X, method, ...)
+estimate_latent_count <- function(X, method, seed = 1, ...)
 {
-	ev <- svd(X, nu = 0, nv = 0)$d^2
-	
-	if (method == "knee") {
-	 # look at the knee point of a scree plot
-	 scree <- ev
-	 scree <- scree[seq_len(round(length(scree) / 2))]
-	 values <- seq(length(scree))
+	n <- nrow(X)
+	p <- ncol(X)
+	r <- min(n-1,p)
+	svdX <- svd(scale(X), nu=0, nv=r)
+		
+	if (method == "auto") {
+	# Parallel analys by N permutation (Dobriban, 2020)
+	 permutation_thresholding <- function(X, quantile = 0.99, seed = 1)
+	 {
+		N <- 50
+		X <- scale(X)
+		X <- X[, !is.na(apply(X, 2, sum))]
+		X <- X[, sort(apply(X, 2, sd),
+					index.return = TRUE,
+					decreasing = TRUE)$ix[seq_len(min(1000, ncol(X)))]]
+		r <- min(dim(X))
+		
+		evals <- matrix(0, nrow = N, ncol = r)
+		set.seed(seed)
+		for (i in seq_len(N)) {
+		 X_perm <- apply(X, 2, function(xx) sample(xx))
+		 evals[i, ] <- svd(X_perm, nu = 0, nv = 0)$d[seq_len(r)]
+		}
+		thresholds <- apply(
+		 evals, 2,
+		 function(xx) quantile(xx, probs = quantile)
+		)
 
-	 d1 <- diff(scree) / diff(values) # first derivative
+		# limit number of confounders to at most 10 LVs
+		limit <- ifelse(r > 10, 10, r)
+		# last which crosses the threshold
+		crosses <- (svd(X, nu = 0, nv = 0)$d > thresholds)#[1:limit]
+		return(max(which(c(TRUE, crosses)) - 1))
+	 }
+	 q <- permutation_thresholding(X, seed = seed)
+	 idx <- ceiling(q)
+	}
+		
+	if (method == "knee") {
+	# Screening at the knee point (Raiche et al, 2013)
+	 ev <- svdX$d / sqrt(n)
+	 ev <- ev[seq_len(round(length(ev) / 2))]
+	 values <- seq(length(ev))
+
+	 d1 <- diff(ev) / diff(values) # first derivative
 	 d2 <- diff(d1) / diff(values[-1]) # second derivative
 	 idx <- which.max(abs(d2))
 	}
+	
+	if (method == "ED") {
+	# Screening at the Empirical Distribution (ED) (Onatsky, 2010) 
+	 ev <- svdX$d^2 / n
+	 rmax <- round(3 * sqrt(r))
+	 j <- rmax + 1
+     diffs <- ev - c(ev[-1], 0)
 
-	if (method == "cluster") {
-	 # look at the first cluster of k-means clustering
-	 scree <- ev
-	 clust <- kmeans(
-		scree,
-		centers = c(
-		 scree[1],
-		 scree[2],
-		 scree[round(length(scree) / 2 + 1)],
-		 scree[length(scree)]
-		)
-	 )$cluster
-	 idx <- sum(clust == clust[1])
+	 for (i in 1:10) { #i=1
+		y <- ev[j:(j+4)]
+		x <- ((j-1):(j+3))^(2/3)
+		lm.coef <- lm(y ~ x)
+		delta <- 2 * abs(lm.coef$coef[2])
+		idx <- which(diffs[1:rmax] > delta)
+		hatr <- ifelse(length(idx) == 0, 0, max(idx))
+		newj <- hatr + 1
+		if (newj == j) break
+		j <- newj
 	}
-
+	 idx <- hatr
+    }
+	
+	if (method == "IC") {
+	# Screening at min(Information Criteria)(Bai and Ng, 2003)
+	 V <- svdX$v
+	 M <- ifelse(r > 10, 10, r)
+	 K_losses <- c()
+	 for (K in 1:M){ #K=1
+	  Vk <- V[,1:K]
+	  #css <- t(Vk %*% (t(Vk) %*% t(X)))
+	  css <- X%*%Vk%*%t(Vk)
+	  loss <- log(sum(X - css)^2/(n*p)) # log likelihood
+	  loss <- loss + K*((p+n)/(p*n))*log((p*n)/(p+n)) # penalizer
+	  K_losses <- rbind(K_losses, loss)
+	 }
+	 idx <- which(K_losses == min(K_losses))
+	}
+	
 	# visualize the scree plot
-	r <- length(ev)
-	plot(c(1:r), ev[1:r])
-	abline(h=ev[idx]-0.006, lty=2)
+	ev <- svdX$d^2/n
+	plot(c(1:r), ev[1:r], type = "p", ylab = "Eigenvalue",
+	 xlab= "Number of principal components", cex = 1.1,
+	 cex.lab=1.3, cex.axis=1.3, cex.main=1.3, cex.sub=1.3)
+	abline(h = ev[idx] - 0.005, lty = 2, col = "red")
 	pve <- round(cumsum(ev[1:idx])[idx]/sum(ev),2)
 	#logger::log_info("Estimated {idx} latent confounders")
-	message(paste0("Estimated ",idx," (", pve,") latent confounders"))
+	message(paste0("Estimated ", idx," (", 100*pve,"%) latent confounders"))
 
 	return(idx)
 }
 
-hiddenGraph <- function(graph, data, cg=NULL, EntrezID=FALSE, verbose=FALSE, ...)
+map_hidden_dag <- function(graph, data, cg=NULL, verbose=FALSE, ...)
 {
 	VH <- colnames(data)[grepl("LV",colnames(data))]
 	gH <- graph + igraph::vertices(VH)
-	if (EntrezID) {
-	 V(gH)$label <- mapIds(org.Hs.eg.db, V(gH)$name, 'SYMBOL', 'ENTREZID')
-	 V(gH)$label[is.na(V(gH)$label)] <- VH
-	}
 	E <- NULL
 	 for(v in 1:length(VH)){
 	  if (!is.null(cg)) graph<- cg[[v]]
@@ -573,7 +668,9 @@ Shipley.test<- function(graph, data, MCX2=FALSE, limit=30000, verbose=TRUE,...)
 	}
 
 	# d-separation local tests (B_U) & Shipley's overall pvalue
+	cat("d-separation test (basis set) of", df2, "edges...\n")
 	dsep<- dsep.test(dag=dag, S=cov(dataY), n=nrow(dataY), limit=limit)
+	colnames(dsep)[c(3,6,7)]<- c("|Z|", "2.5%", "97.5%")
 	#Combining p-values with Fisher's procedure:
 	X2<- -2 * sum(log(dsep$p.value + 1E-16))
 	df<- 2 * nrow(dsep)
@@ -587,9 +684,9 @@ Shipley.test<- function(graph, data, MCX2=FALSE, limit=30000, verbose=TRUE,...)
 	return( list(dag=dag, dsep=dsep, ctest=c(X2, df, pv)) )
 }
 
-dsep.test <- function(dag, S, n, limit, ...)
+dsep.test<- function(dag, S, n, limit, ...)
 {
- 	# d-sep (basis set) testing of a DAG
+	# d-sep (basis set) testing of a DAG
 	A <- ifelse(as_adj(as.undirected(dag), sparse=FALSE) == 1, 0, 1)
 	ug <- graph_from_adjacency_matrix(A, mode="undirected", diag=FALSE)
 	M <- attr(E(ug), "vnames")
@@ -602,20 +699,20 @@ dsep.test <- function(dag, S, n, limit, ...)
 	 dsep <- union(pa.r, pa.s)
      dsep <- setdiff(dsep, ed)
 	 B <- c(ed, dsep)
-	 if(length(B) > (n-3)) return(rep(NA,4))
-	 p.value <- pcor.test(S, B, n, H0=0.05)
-	 set <- paste(B[-c(1:2)], collapse=",")
-	 return(data.frame(X=B[1], Y=B[2], SET=set, p.value))
+	 pcor <- pcor.test(S, B, n, H0=0.05)
+	 #set <- paste(B[-c(1:2)], collapse=",")
+	 return(data.frame(X=B[1], Y=B[2], pcor))
 	}
 
-	message("d-separation test (basis set) of ", length(M), " edges...")
+	#message("d-separation test (basis set) of ", length(M), " edges...")
 	op<- pbapply::pboptions(type = "timer", style = 2)
 	df<- vcount(dag)*(vcount(dag)-1)/2 - ecount(dag)
 	if ( df > limit ){
-	 n_cores <- parallel::detectCores(logical = FALSE)
+	 n_cores <- parallel::detectCores()
 	 cl <- parallel::makeCluster(n_cores)
-	 parallel::clusterExport(cl, c("local", "dag", "S", "n"),
-							 envir = environment())
+	 #cl <- parallel::makeCluster(3)
+	 parallel::clusterExport(cl,
+	  c("local", "dag", "S", "n"),  envir = environment())
 	 SET<- pbapply::pblapply(M, local, cl=cl)
 	 parallel::stopCluster(cl)
 	}else{
@@ -623,15 +720,21 @@ dsep.test <- function(dag, S, n, limit, ...)
 	}
 	SET<- do.call(rbind, lapply(SET, as.data.frame))
 
-	return(SET = na.omit(SET))
+	return( SET=na.omit(SET) )
 }
 
 pcor.test<- function(S, B, n, H0, ...)
 {
 	#Set objects
+	s <- round(sqrt(n)/log(ncol(S)))
+	q <- length(B)-2
+	#if (length(B) > (n-3)) {
+	if (q >= s) {
+	 pcor<- cbind(K=NA, estimate=NA, p.value=NA, lower=NA, upper=NA)
+	 return(pcor)
+	}
 	k <- solve(S[B,B])
     r <- -k[1,2]/sqrt(k[1,1]*k[2,2])
-	q <- length(B)-2
 	if( H0 == 0 ) {
 	#Test null H0: r=abs(r(X,Y|Z))=0
 	 df <- n - 2 - q
@@ -643,7 +746,10 @@ pcor.test<- function(S, B, n, H0, ...)
 	 se <-  1/sqrt(n - 3 - q)
 	 pval <- pchisq((z/se)^2, df=1, ncp=(atanh(H0)/se)^2, lower.tail=FALSE)
 	}
-	return(pval)
+	lower<- (exp(2*(z - 1.96*se))-1)/(exp(2*(z - 1.96*se))+1)
+	upper<- (exp(2*(z + 1.96*se))-1)/(exp(2*(z + 1.96*se))+1)
+	pcor<- cbind(K=q, estimate=r, p.value=pval, lower, upper)
+	return( pcor )
 }
 
 MCX2 <- function (model.df, n.obs, model.chi.square, n.sim = 10000, ...)
@@ -1273,7 +1379,7 @@ SEMtree <- function(graph, data, seed, type = "CAT", eweight = NULL, alpha = 0.0
 	   ug <- as.undirected(graph, edge.attr.comb = eattr) 
 	   T <- mst(ug, weights = E(ug)$weight, algorithm = "prim")
 	 }
-	 if (is.directed(graph) & !is.directed(T)) T <- orientEdges(ug=T, dg=graph)
+	 if (is.directed(graph) & !is.directed(T)) T <- orientEdges(ug=T, dg=graph) 
 	 T <- quiet(properties(T)[[1]])
 	 V(T)$color <- ifelse(V(T)$name %in% seed, "aquamarine", "white")
 	 E1 <- attr(E(T), "vnames")

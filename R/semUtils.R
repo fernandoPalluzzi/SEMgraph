@@ -788,6 +788,117 @@ graph2dag<- function(graph, data, bap = FALSE, time.limit = Inf, ...)
 	}
 }
 
+#' @title Correlation matrix to graph
+#'
+#' @description Convert a correlation matrix to an igraph object.
+#' @param R Correlation matrix.
+#' @param n Sample size (i.e., the number of subjects).
+#' @param alpha Significance level used to compute the correlation threshold.
+#' By default, \code{alpha = 0.05}.
+#' @param method Multiple testing correction method. One of the values
+#' available in \code{\link[stats]{p.adjust}}. By default,
+#' \code{method = "none"} (i.e., no multiple test correction).
+#' See \code{\link[stats]{p.adjust}} for other correction methods.
+#' @param type Graph building method. If \code{type} is either
+#' \code{"marg"} or \code{"cond"}, marginal or conditional correlation
+#' tests will be used, respectively.
+#' If \code{type = "mst"}, input correlations are converted to distances
+#' and a minimum spanning tree is generated from the distance matrix,
+#' using Prim's algorithm (Prim, 1957).
+#' If \code{type = "tmfg"}, a triangulate maximally graph is generated
+#' from the given correlation matrix (Massara et al., 2016).
+#' @param ... Currently ignored.
+#'
+#' @import lavaan
+#' @import igraph
+#' @export
+#'
+#' @references
+#'
+#' Palluzzi F, Grassi M (2021). SEMgraph: An R Package for Causal Network
+#' Analysis of High-Throughput Data with Structural Equation Models.
+#' <arXiv:2103.08332>
+#'
+#' Massara GP, Di Matteo T and Aste T (2009). Network Filtering for Big
+#' Data: Triangulated Maximally Filtered Graph.
+#' Journal of complex Networks, 5(2): 161--178.
+#' <https://doi.org/10.1093/comnet/cnw015>
+#'
+#' Prim RC (1957). Shortest connection networks and some generalizations.
+#' Bell System Technical Journal, 36(6):1389--1401.
+#' <https://doi.org/10.1002/j.1538-7305.1957.tb01515.x>
+#'
+#' @return An igraph object.
+#'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
+#' @examples
+#'
+#' # Graphs creation
+#' C1 <- corr2graph(R = cor(log(sachs$pkc)), n = nrow(sachs$pkc),
+#'                  type = "marg",
+#'                  method = "BH")
+#' C2 <- corr2graph(R = cor(log(sachs$pkc)), n = nrow(sachs$pkc),
+#'                  type = "cond",
+#'                  method = "BH")
+#' C3 <- corr2graph(R = cor(log(sachs$pkc)), n = nrow(sachs$pkc),
+#'                  type = "mst",
+#'                  method = "BH")
+#' C4 <- corr2graph(R = cor(log(sachs$pkc)), n = nrow(sachs$pkc),
+#'                  type = "tmfg",
+#'                  method = "BH")
+#'
+#' # Graphs plots
+#' old.par <- par(no.readonly = TRUE)
+#' par(mfrow=c(2,2), mar= rep(2, 4))
+#' plot(C1, layout=layout.circle, main= "marg"); box(col="gray")
+#' plot(C2, layout=layout.circle, main= "cond"); box(col="gray")
+#' plot(C3, layout=layout.circle, main= "mst"); box(col="gray")
+#' plot(C4, layout=layout.circle, main= "tmfg"); box(col="gray")
+#' par(old.par)
+#' 
+corr2graph <- function(R, n, type = "marg", method = "none",
+                       alpha = 0.05, ...)
+{
+  # Set correlation matrix
+  p <- nrow(R)
+  q <- 0
+  if (type == "cond") {
+    q <- p - 2
+    if (corpcor::is.positive.definite(R)) {
+      K <- corpcor::cor2pcor(R)
+      rownames(K) <- colnames(K) <- rownames(R)
+    } else {
+      K <- corpcor::pcor.shrink(R, verbose = TRUE)[1:p, 1:p]
+    }
+  } else {
+    K <- R
+  }
+  
+  if (type == "marg" | type == "cond") {
+    # select the correlation threshold
+    z <- abs(atanh(K[lower.tri(K)]))/sqrt(1/(n - 3 - q))
+    p.adj <- p.adjust(2*(1 - pnorm(z)), method = method)
+    Z <- min(z[which(p.adj < alpha)])
+    #Z <- qnorm(alpha/2, lower.tail = FALSE)
+    thr <- (exp(2*Z/sqrt(n - 3 - q)) - 1)/(exp(2*Z/sqrt(n - 3 - q)) + 1)
+    A0 <- ifelse(abs(K) > thr, 1, 0)
+    diag(A0) <- 0
+    del <- which(colSums(A0) == 0)
+    if (length(del) > 0) A <- A0[-del, -del] else A <- A0
+    ug <- graph_from_adjacency_matrix(A, mode = "undirected")
+  }
+  if (type == "mst") {
+    D <- diag(p) - K^2
+    gA <- graph_from_adjacency_matrix(D, mode = "undirected",
+                                      weighted = TRUE)
+    ug <- igraph::mst(gA, algorithm = "prim")
+  }
+  if (type == "tmfg") ug <- TMFG(K)$graph
+  
+  return(graph = ug)
+}
+
 #' @title Assign edge orientation of an undirected graph
 #'
 #' @description Assign edge orientation of an undirected graph

@@ -134,7 +134,7 @@
 #' @importFrom mgcv gam
 #' @importFrom stats approx as.dist coefficients cor cov
 #'             cutree dchisq dnorm formula hclust lm lm.fit
-#' 			   na.omit p.adjust pchisq pnorm pt qchisq
+#' 			   median na.omit p.adjust pchisq pnorm pt qchisq
 #'             qnorm quantile rnorm runif sd var
 #' @importFrom utils flush.console
 #' @export
