@@ -269,7 +269,7 @@ gsa.extract <- function(gsa, reference = reactome.pathways, lcc = TRUE,
                       & gsa$gsa$No.nodes < max.size + 1
                       & gsa$gsa$No.DEGs > min.drns - 1
                       & gsa$gsa$pNa < act.alpha
-                      & gsa$gsa$pNi < gsa$gsa$inh.alpha
+                      & gsa$gsa$pNi < inh.alpha
                       & gsa$gsa$ADJP < adj.alpha,]
   
   pathways <- rownames(pathways)
