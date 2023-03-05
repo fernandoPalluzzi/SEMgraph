@@ -9,6 +9,12 @@ the data matrix Y or (iii) spectral transformation of Y.
 * Output dsep data.frame in Shipley.test() in SEMbap() functions 
 has the same format of the localCI.test() function.
 
+* New model.learn() and extractClusters() functions
+
+* Correlation to graph utility
+
+* Mediation analysis utility
+
 * Various fixed bugs
 
 ## Version 1.1.3 Release Notes

@@ -1566,6 +1566,281 @@ CPDAG <- function(data, alpha, verbose = FALSE, ...)
 	return(CPDAG)
 }
 
+#' @title Data-driven model learning
+#'
+#' @description Data-driven model structure learning based on the linear 
+#' order provided by the input graph.
+#'
+#' @param graph Input network as an igraph object.
+#' @param data A matrix or data.frame. Rows correspond to subjects, and
+#' columns to graph nodes (variables).
+#' @param group A binary vector. This vector must be as long as the number of 
+#' subjects. Each vector element must be 1 for cases and 0 for control subjects. 
+#' If NULL (default), group influence will not be considered.
+#' @param method Linear order method. If \code{method = "TO"}, the topological order 
+#' of the input DAG is enabled (default). If code{method = "TD"} a data-driven 
+#' top-down minimum conditional variance method is performed.
+#' @param beta Numeric value corresponding to the minimum LASSO beta coefficient 
+#' needed for a new interaction to be retained in the final model (default = 0).
+#' Increasing \code{beta} values decrease output model density and generally 
+#' increase the number of output clusters.
+#' @param dag.only A logical value. If FALSE (default), inferred connections 
+#' will be added to the input graph. If TRUE, only inferred connections will 
+#' be retained in the output. In this case, the output network will be a 
+#' directed acyclic graph. See \code{\link[SEMgraph]{SEMdag}} for details.
+#' @param cluster Graph clustering method. Basic clustering methods are taken 
+#' from the igraph package, including: "wtc" (default value; walktrap community 
+#' structure with short random walks), "ebc" (edge betweenness clustering), 
+#' "fgc" (fast greedy method), "lbc" (label propagation method), "lec" (leading 
+#' eigenvector method), "loc" (multi-level optimization), "opc" (optimal 
+#' communiy structure), "sgc" (spinglass statistical mechanics). 
+#' If type = "tahc", network modules are generated using the tree agglomerative 
+#' hierarchical clustering method (Yu et al., 2015).
+#' Clustering can be disabled by setting \code{cluster = NULL}.
+#' @param hidden Hidden model type. For each defined hidden module: 
+#' (i) if HM = "LV", a latent variable (LV) will be defined as common unknown 
+#' cause acting on cluster nodes; (ii) if HM = "CV", cluster nodes will be 
+#' considered as regressors of a latent composite variable (CV); 
+#' (iii) if HM = "UV", an unmeasured variable (UV) model will be generated for 
+#' each module, where source nodes (i.e., in-degree = 0) act as common 
+#' regressors influencing the other nodes via an unmeasured variable. 
+#' By default, HM is set to "LV" (i.e., the latent variable model).
+#' @param min.clust Minimum size for a cluster to be fitted (default = 5). 
+#' Ignored if \code{cluster = NULL}.
+#' @param edge.weights Logical value. If TRUE, the resulting network is 
+#' weighted using the r2z method (see \code{\link[SEMgraph]{weightGraph}}).
+#' @param ... Currently ignored.
+#'
+#' @export
+#'
+#' @return A list of two objects:
+#' \enumerate{
+#' \item "model", The output model as an igraph object;
+#' \item "clusters", A list containing model clustering results.
+#' It includes tree more objects:
+#' \itemize{
+#' \item "membership", A vector reporting cluster membership for each node;
+#' \item "fit", hidden model fitting as a lavaan object;
+#' \item "dataHM", data matrix containing cluster scores (hidden variables) 
+#' alongside the original data variables.
+#' }
+#' }
+#'
+#' @author Fernando Palluzzi \email{fernando.palluzzi@gmail.com}
+#' 
+#' @references
+#'
+#' Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
+#' Analysis of High-Throughput Data with Structural Equation Models.
+#' Bioinformatics, 38 (20), 4829–4830 <https://doi.org/10.1093/bioinformatics/btac567>
+#' 
+#' Tibshirani R, Bien J, Friedman J, Hastie T, Simon N, Taylor J,
+#' Tibshirani RJ (2012). Strong rules for discarding predictors in
+#' lasso type problems. Royal Statistical Society: Series B
+#' (Statistical Methodology), 74(2): 245-266.
+#' <https://doi.org/10.1111/j.1467-9868.2011.01004.x>
+#' 
+#' Shojaie A, Michailidis G (2010). Penalized likelihood methods for
+#' estimation of sparse high-dimensional directed acyclic graphs.
+#' Biometrika, 97(3): 519-538. <https://doi.org/10.1093/biomet/asq038>
+#'
+#' Jankova J, van de Geer S (2015). Confidence intervals for high-dimensional
+#' inverse covariance estimation. Electronic Journal of Statistics,
+#' 9(1): 1205-1229. <https://doi.org/10.1214/15-EJS1031>
+#'
+#' Peters J, Bühlmann P (2014). Identifiability of Gaussian structural equation
+#' models with equal error variances. Biometrika, 101(1):219–228.
+#' 
+#' Chen W, Drton M, Wang YS (2019). On Causal Discovery with an Equal-Variance
+#' Assumption. Biometrika, 106(4): 973-980.
+#'
+#' @seealso \code{\link[SEMgraph]{SEMdag}} for data-driven DAG learning details.
+#'
+#' @examples
+#'
+#' library(huge)
+#' als.npn <- huge.npn(alsData$exprs)
+#'
+#' # Model learning
+#' model <- model.learn(graph = alsData$graph, data = als.npn,
+#'                      group = alsData$group, method = "TO",
+#'                      beta = 0)
+#'
+model.learn <- function(graph, data, group = NULL, method = "TO", beta = 0,
+                        dag.only = FALSE, cluster = "wtc", hidden = "LV",
+                        min.clust = 5, edge.weights = TRUE) {
+  
+  model <- SEMdag(graph, data, LO = method, beta = beta)
+  
+  if (!dag.only) {
+    model <- graph.union(graph, model$dag)
+    model <- properties(model)[[1]]
+  }
+  if (edge.weights) {
+	message("\nModel weighting ...\n")
+	model <- weightGraph(model, data, group = group)
+	message("Done.\n")
+  }
+  if (!is.null(cluster)) {
+    message("\nModel clustering ...\n")
+    model.clust <- clusterScore(model, data, group, type = cluster, HM = hidden,
+                                size = min.clust, verbose = FALSE)
+  } else {
+    model.clust <- NULL
+  }
+  
+  return(list(model = model, clusters = model.clust))
+}
+
+#' @title Cluster extraction and fitting
+#'
+#' @description Extract and fit clusters from an input graph.
+#'
+#' @param graph Input network as an igraph object.
+#' @param data A matrix or data.frame. Rows correspond to subjects, and
+#' columns to graph nodes (variables).
+#' @param membership A vector of cluster membership IDs. The membership 
+#' vector can be generated using the \code{\link[SEMgraph]{clusterScore}}, 
+#' \code{\link[SEMgraph]{clusterGraph}}, or \code{\link[SEMgraph]{model.learn}} 
+#' functions.
+#' @param group A binary vector. This vector must be as long as the
+#' number of subjects. Each vector element must be 1 for cases and 0
+#' for control subjects. Group specification enables node perturbation
+#' testing. By default, \code{group = NULL}.
+#' @param n Number of randomization replicates (default = 2000), for 
+#' permutation flip or boostrap sampling, if algo = "ricf".
+#' @param fitting.method MLE method used for SEM fitting. 
+#' If algo = "lavaan" (default), the SEM will be fitted using the NLMINB solver 
+#' from lavaan R package, with standard errors derived from the expected 
+#' Fisher information matrix. If algo = "ricf", the model is fitted via residual 
+#' iterative conditional fitting (RICF; Drton et al. 2009). If algo = "cggm", 
+#' model fitting is based on constrained Gaussian Graphical Modeling 
+#' (CGGM; Hastie et al. 2009, p. 446).
+#' @param size Minimum size for a cluster to be fitted (default = 5). 
+#' Use \code{size = 0} to enforce model fitting for every cluster.
+#' @param ... Currently ignored.
+#'
+#' @export
+#'
+#' @return A list of three objects:
+#' \enumerate{
+#' \item "clusters", A list of clusters as igraph objects;
+#' \item "estimates", A data.frame containing model estimates for each cluster;
+#' \item "fit.indices", A data.frame containing fitting indices for each cluster.
+#' }
+#'
+#' @author Fernando Palluzzi \email{fernando.palluzzi@gmail.com}
+#' 
+#' @references
+#'
+#' Yves Rosseel (2012). lavaan: An R Package for Structural Equation
+#' Modeling. Journal of Statistical Software, 48(2): 1-36.
+#' <https://www.jstatsoft.org/v48/i02/>
+#'
+#' Drton M, Eichler M, Richardson TS (2009). Computing Maximum Likelihood
+#' Estimated in Recursive Linear Models with Correlated Errors.
+#' Journal of Machine Learning Research, 10(Oct): 2329-2348.
+#' <https://www.jmlr.org/papers/volume10/drton09a/drton09a.pdf>
+#'
+#' Jankova J, van de Geer S (2015). Confidence intervals for high-dimensional
+#' inverse covariance estimation. Electronic Journal of Statistics,
+#' 9(1): 1205-1229. <https://doi.org/10.1214/15-EJS1031>
+#'
+#' Hastie T, Tibshirani R, Friedman J. (2009). The Elements of Statistical
+#' Learning (2nd ed.). Springer Verlag: New York. ISBN: 978-0-387-84858-7
+#'
+#' Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
+#' Analysis of High-Throughput Data with Structural Equation Models.
+#' Bioinformatics, 38 (20), 4829–4830 <https://doi.org/10.1093/bioinformatics/btac567>
+#'
+#' Fortunato S, Hric D. Community detection in networks: A user guide (2016).
+#' Phys Rep; 659: 1-44. <https://dx.doi.org/10.1016/j.physrep.2016.09.002>
+#'
+#' Yu M, Hillebrand A, Tewarie P, Meier J, van Dijk B, Van Mieghem P,
+#' Stam CJ (2015). Hierarchical clustering in minimum spanning trees.
+#' Chaos 25(2): 023107. <https://doi.org/10.1063/1.4908014>
+#'
+#' @seealso See \code{\link[SEMgraph]{clusterScore}} and 
+#' \code{\link[SEMgraph]{clusterGraph}} for network clustering.
+#' See \code{\link[SEMgraph]{model.learn}} for data-driven model learning and 
+#' clustering.
+#' See \code{\link[SEMgraph]{SEMrun}} for general model fitting.
+#'
+#' @examples
+#'
+#' \donttest{
+#'
+#' library(huge)
+#' als.npn <- huge.npn(alsData$exprs)
+#'
+#' # Cluster creation
+#' clusters <- clusterScore(graph = alsData$graph, data = als.npn,
+#'                          group = alsData$group,
+#'                          type = "wtc")
+#'
+#' # Clusters extraction and fitting with the RICF algorithm
+#' fit <- extractClusters(graph = alsData$graph, data = als.npn,
+#'                        membership = clusters$membership,
+#'                        group = alsData$group,
+#'                        fitting.method = "ricf")
+#'
+#' # Extracting differentially regulated nodes
+#' DRNs <- rownames(fit$estimates)[fit$estimates$pvalue < 0.05]
+#' length(DRNs)
+#'
+#' # Map cluster 1 on the input graph
+#' g <- alsData$graph
+#' c <- fit$clusters[[1]]
+#' V(g)$color <- ifelse(V(g)$name %in% V(c)$name, "gold", "white")
+#' gplot(g)
+#'
+#' }
+#'
+extractClusters <- function (graph, data, membership, group = NULL, n = 2000,
+                             fitting.method = "lavaan", size = 5, ...)
+{
+  
+  clusters <- list()
+  model.estimates <- data.frame()
+  clust.fit <- data.frame(id = numeric(), devdfr = numeric(), srmr = numeric(),
+                          rmsea = numeric(), nobs = numeric(), npar = numeric())
+  
+  cluster.names <- names(table(membership))
+  m <- length(cluster.names)
+  
+  for (i in 1:m) {
+    
+    cluster <- induced_subgraph(graph,
+                                vids = names(membership[membership == i]))
+    n.nodes <- length(V(cluster)$name)
+    clusters[[i]] <- cluster
+    
+    if (n.nodes > size) {
+      message(paste0("\nFitting cluster ", i, " of ", m, " (cluster size: ",
+                     n.nodes, ")", " ..."))
+      fit <-  suppressWarnings(SEMrun(cluster, data, group,
+                                      algo = fitting.method, n_rep = n))
+      if (is.null(group)) {
+        est <- parameterEstimates(fit$fit)
+      } else {
+        est <- fit$gest
+      }
+      est$cluster <- cluster.names[i]
+      model.estimates <- rbind(model.estimates, est)
+      cfit <- c(cluster.names[i], fit$fit$fitIdx[1]/fit$fit$fitIdx[2],
+                fit$fit$fitIdx[3], fit$fit$fitIdx[4], fit$fit$fitIdx[5],
+                fit$fit$fitIdx[6])
+      clust.fit[nrow(clust.fit) + 1,] <- cfit
+      message("Done.")
+    } else {
+      warning(paste0("Cluster #", cluster.names[i], " too small. Skipped."))
+    }
+  }
+  
+  return(list(clusters = clusters, estimates = model.estimates,
+              fit.indices = clust.fit))
+}
+
 #' @title Optimal model search strategies
 #'
 #' @description Four model search strategies are implemented combining
