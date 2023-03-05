@@ -282,7 +282,8 @@ gsa.extract <- function(gsa, reference = reactome.pathways, lcc = TRUE,
   seeds <- unique(unlist(gsa$DEG[names(gsa$DEG) %in% pathways]))
   names(seeds) <- NULL
   
-  cat(paste0("# Differentially regulated nodes (seeds): ", length(seeds), "\n"))
+  message(paste0("\n# Differentially regulated nodes (seeds): ",
+                 length(seeds), "\n"))
   
   return(list(gsa.seeds = seeds, gsa.net = gsa.net))
 }
