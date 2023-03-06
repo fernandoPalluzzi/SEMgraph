@@ -1677,9 +1677,9 @@ model.learn <- function(graph, data, group = NULL, method = "TO", beta = 0,
     model <- properties(model)[[1]]
   }
   if (edge.weights) {
-	message("\nModel weighting ...\n")
+	message("\nModel weighting ...")
 	model <- weightGraph(model, data, group = group)
-	message("Done.\n")
+	message("Done.")
   }
   if (!is.null(cluster)) {
     message("\nModel clustering ...\n")
@@ -1701,21 +1701,35 @@ model.learn <- function(graph, data, group = NULL, method = "TO", beta = 0,
 #' columns to graph nodes (variables).
 #' @param membership A vector of cluster membership IDs. The membership 
 #' vector can be generated using the \code{\link[SEMgraph]{clusterScore}}, 
-#' \code{\link[SEMgraph]{clusterGraph}}, or \code{\link[SEMgraph]{model.learn}} 
-#' functions.
+#' \code{\link[SEMgraph]{clusterGraph}}, or 
+#' \code{\link[SEMgraph]{model.learn}} functions.
 #' @param group A binary vector. This vector must be as long as the
 #' number of subjects. Each vector element must be 1 for cases and 0
-#' for control subjects. Group specification enables node perturbation
-#' testing. By default, \code{group = NULL}.
-#' @param n Number of randomization replicates (default = 2000), for 
-#' permutation flip or boostrap sampling, if algo = "ricf".
+#' for control subjects. If not NULL, edges will be weighted accounting
+#' for the correlation difference between cases (1) and controls (0). 
+#' By default, \code{group = NULL}.
 #' @param fitting.method MLE method used for SEM fitting. 
-#' If algo = "lavaan" (default), the SEM will be fitted using the NLMINB solver 
-#' from lavaan R package, with standard errors derived from the expected 
-#' Fisher information matrix. If algo = "ricf", the model is fitted via residual 
-#' iterative conditional fitting (RICF; Drton et al. 2009). If algo = "cggm", 
-#' model fitting is based on constrained Gaussian Graphical Modeling 
-#' (CGGM; Hastie et al. 2009, p. 446).
+#' If \code{fitting.method = "lavaan"} (default), the SEM will be fitted 
+#' using the NLMINB solver from lavaan R package, with standard errors 
+#' derived from the expected Fisher information matrix. 
+#' If \code{fitting.method = "ricf"}, the model is fitted via residual 
+#' iterative conditional fitting (RICF; Drton et al. 2009). 
+#' If \code{fitting.method = "cggm"}, model fitting is based on 
+#' constrained Gaussian Graphical Modeling (CGGM; Hastie et al. 2009, p. 446).
+#' @param se If "standard" (default), with \code{fitting.method = "lavaan"}, 
+#' conventional standard errors are computed based on inverting the 
+#' observed information matrix. If "none", no standard errors are computed.
+#' @param n Number of randomization replicates (default = 2000), for 
+#' permutation flip or boostrap sampling, if \code{fitting.method = "ricf"}.
+#' @param limit An integer value corresponding to the network size 
+#' (i.e., number of nodes). Beyond this limit, the execution under
+#' \code{fitting.method = "lavaan"} will run with \code{SE = "none"}, 
+#' if \code{fit = 0}; it will be ridirected to 
+#' \code{fitting.method = "ricf"}, if \code{fit = 1}; or to 
+#' \code{fitting.method = "cggm"}, if \code{fit = 2}.
+#' This redirection is necessary to reduce the computational demand of 
+#' standard error estimation by lavaan. Increasing this number will 
+#' enforce lavaan execution when \code{fitting.method = "lavaan"}.
 #' @param size Minimum size for a cluster to be fitted (default = 5). 
 #' Use \code{size = 0} to enforce model fitting for every cluster.
 #' @param ... Currently ignored.
@@ -1796,8 +1810,9 @@ model.learn <- function(graph, data, group = NULL, method = "TO", beta = 0,
 #'
 #' }
 #'
-extractClusters <- function (graph, data, membership, group = NULL, n = 2000,
-                             fitting.method = "lavaan", size = 5, ...)
+extractClusters <- function (graph, data, membership, group = NULL,
+                             fitting.method = "lavaan", se = "standard",
+                             limit = 100, n = 2000, size = 5, ...)
 {
   
   clusters <- list()
@@ -1819,7 +1834,9 @@ extractClusters <- function (graph, data, membership, group = NULL, n = 2000,
       message(paste0("\nFitting cluster ", i, " of ", m, " (cluster size: ",
                      n.nodes, ")", " ..."))
       fit <-  suppressWarnings(SEMrun(cluster, data, group,
-                                      algo = fitting.method, n_rep = n))
+                                      algo = fitting.method,
+                                      n_rep = n, SE = se,
+                                      limit = limit))
       if (is.null(group)) {
         est <- parameterEstimates(fit$fit)
       } else {
@@ -1831,7 +1848,6 @@ extractClusters <- function (graph, data, membership, group = NULL, n = 2000,
                 fit$fit$fitIdx[3], fit$fit$fitIdx[4], fit$fit$fitIdx[5],
                 fit$fit$fitIdx[6])
       clust.fit[nrow(clust.fit) + 1,] <- cfit
-      message("Done.")
     } else {
       warning(paste0("Cluster #", cluster.names[i], " too small. Skipped."))
     }
