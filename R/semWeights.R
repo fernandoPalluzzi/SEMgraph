@@ -103,7 +103,7 @@ weightGraph<- function(graph, data, group = NULL, method = "r2z", limit = 10000,
 	ig <- induced_subgraph(graph, vids = which(V(graph)$name %in% nodes))
 	ig <- quiet(properties(ig)[[1]])
 	degree <- igraph::degree(ig, v = V(ig), mode = "all")
-	ftm <- as_data_frame(ig)
+	ftm <- igraph::as_data_frame(ig)
 	Y <- scale(data[, nodes])
 	if (is.null(group) | method == "r2z")
 		ew <- ew.r2z(ftm, Y, group)

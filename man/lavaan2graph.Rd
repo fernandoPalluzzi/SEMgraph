@@ -28,13 +28,13 @@ An igraph object.
 }
 \description{
 Convert a model, specified using lavaan syntax,
-to a graph object in either igraph or dagitty format.
+to an igraph object.
 }
 \examples{
 
 # Writing path diagram in lavaan syntax
 
-model<-'
+model<-"
 #path model
 Jnk ~ PKA + PKC
 P38 ~ PKA + PKC
@@ -45,12 +45,10 @@ Raf ~ PKA + PKC
 PKC ~ PIP2 + Plcg
 PIP2 ~ PIP3 + Plcg
 Plcg ~ PIP3
-#PKA ~ 1
-#PIP3 ~ 1
 
-# (co)variances
-# PIP2 ~~ PIP3
-'
+#(co)variances
+PKA ~~ PIP3
+"
 
 # Graph with covariances
 G0 <- lavaan2graph(model, psi = TRUE)

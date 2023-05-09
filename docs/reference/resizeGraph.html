@@ -22,7 +22,7 @@ of connections to be checked against a directed reference network
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -63,7 +63,7 @@ of connections to be checked against a directed reference network
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">resizeGraph</span><span class="op">(</span>g <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">gnet</span>, d <span class="op">=</span> <span class="fl">2</span>, v <span class="op">=</span> <span class="cn">TRUE</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">resizeGraph</span><span class="op">(</span>g <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">gnet</span>, d <span class="op">=</span> <span class="fl">2</span>, v <span class="op">=</span> <span class="cn">TRUE</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -79,7 +79,7 @@ p-values, as an edge attribute <code>E(gnet)$pv</code>. Then, connections in
 <code>graph2</code> will be checked by known connections from the reference network,
 intercepted by the minimum-weighted shortest path found among the equivalent
 ones by the Dijkstra algorithm, as implemented in the <span class="pkg">igraph</span> function
-<code><a href="https://rdrr.io/pkg/igraph/man/distances.html" class="external-link">all_shortest_paths()</a></code>.</p></dd>
+<code><a href="https://r.igraph.org/reference/distances.html" class="external-link">all_shortest_paths()</a></code>.</p></dd>
 
 
 <dt>d</dt>
@@ -123,18 +123,20 @@ will not be plotted to screen, saving execution time (for large graphs)</p></dd>
     <div id="details">
     <h2>Details</h2>
     <p>Typically, the first graph is an estimated causal graph (DAG),
-and the second graph is the output of <code><a href="SEMdag.html">SEMdag</a></code> or
-an external covariance graph. In the former we use the new inferred
-causal structure stored in the <code>dag.new</code> object. In the latter, we
-use the new inferred covariance structure stored in the covariance graph
-object. Both directed (causal) edges and covariances (i.e., bidirected
-edges) highlight emergent hidden topological proprieties, absent in the
-input graph. Estimated directed edges between nodes X and Y
-are interpreted as either direct links or direct paths mediated by hidden
-connector nodes. Covariances between any two bow-free nodes X and Y may
-hide causal relationships, not explicitly represented in the current model.
-Conversely, directed (or bi-directed) edges could be redundant or artifact,
-specific to the observed data and could be deleted.
+and the second graph is the output of either <code><a href="SEMdag.html">SEMdag</a></code>
+or <code><a href="SEMbap.html">SEMbap</a></code>. Alternatively, the first graph is an
+empthy graph, and the second graph is a external covariance graph.
+In the former we use the new inferred causal structure stored in the
+<code>dag.new</code> object. In the latter, we use the new inferred covariance
+structure stored in the <code>guu</code> object. Both directed (causal) edges
+inferred by <code><a href="SEMdag.html">SEMdag()</a></code> and covariances (i.e., bidirected edges)
+added by <code><a href="SEMbap.html">SEMbap()</a></code>, highlight emergent hidden topological
+proprieties, absent in the input graph. Estimated directed edges between
+nodes X and Y are interpreted as either direct links or direct paths
+mediated by hidden connector nodes. Covariances between any two bow-free
+nodes X and Y may hide causal relationships, not explicitly represented
+in the current model. Conversely, directed edges could be redundant or
+artifact, specific to the observed data and could be deleted.
 Function <code>resizeGraph()</code> leverage on these concepts to extend/reduce a
 causal model, importing new connectors or deleting estimated edges, if they are
 present or absent in a given reference network. The whole process may lead to
@@ -145,9 +147,9 @@ and their possible closure into circuits.</p>
     </div>
     <div id="references">
     <h2>References</h2>
-    <p>Palluzzi F, Grassi M (2021). SEMgraph: An R Package for Causal Network
+    <p>Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
 Analysis of High-Throughput Data with Structural Equation Models.
-&lt;arXiv:2103.08332&gt;</p>
+Bioinformatics, 38 (20), 4829–4830 &lt;https://doi.org/10.1093/bioinformatics/btac567&gt;</p>
     </div>
     <div id="author">
     <h2>Author</h2>
@@ -156,13 +158,13 @@ Analysis of High-Throughput Data with Structural Equation Models.
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"></span>
-<span class="r-in"><span class="co"># \donttest{</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Extract the "Protein processing in endoplasmic reticulum" pathway:</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">g</span> <span class="op">&lt;-</span> <span class="va">kegg.pathways</span><span class="op">[[</span><span class="st">"Protein processing in endoplasmic reticulum"</span><span class="op">]</span><span class="op">]</span></span>
-<span class="r-in"><span class="va">G</span> <span class="op">&lt;-</span> <span class="fu"><a href="properties.html">properties</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>; <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Extract the "Protein processing in endoplasmic reticulum" pathway:</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="va">kegg.pathways</span><span class="op">[[</span><span class="st">"Protein processing in endoplasmic reticulum"</span><span class="op">]</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">G</span> <span class="op">&lt;-</span> <span class="fu"><a href="properties.html">properties</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>; <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Frequency distribution of graph components</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   n.nodes n.graphs</span>
@@ -178,68 +180,68 @@ Analysis of High-Throughput Data with Structural Equation Models.
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> which.mutual.FALSE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 34 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH 78a3419 DNW- 26 34 -- </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH 1a74caf DNW- 26 34 -- </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> + attr: name (v/c), weight (e/n)</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Extend a graph using new inferred DAG edges (dag+dag.new):</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">huge</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">als.npn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/huge/man/huge.npn.html" class="external-link">huge.npn</a></span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">exprs</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Extend a graph using new inferred DAG edges (dag+dag.new):</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">huge</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">als.npn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/huge/man/huge.npn.html" class="external-link">huge.npn</a></span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">exprs</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Conducting the nonparanormal (npn) transformation via shrunkun ECDF....done.</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">dag</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMdag.html">SEMdag</a></span><span class="op">(</span>graph <span class="op">=</span> <span class="va">G</span>, data <span class="op">=</span> <span class="va">als.npn</span>, beta <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">dag</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMdag.html">SEMdag</a></span><span class="op">(</span>graph <span class="op">=</span> <span class="va">G</span>, data <span class="op">=</span> <span class="va">als.npn</span>, beta <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> WARNING: input graph is not acyclic !</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Applying graph -&gt; DAG conversion...</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> DAG conversion : TRUE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Node Linear Ordering with TO setting</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">dag</span><span class="op">$</span><span class="va">dag</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">dag</span><span class="op">$</span><span class="va">dag</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="resizeGraph-1.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span class="va">ext</span> <span class="op">&lt;-</span> <span class="fu">resizeGraph</span><span class="op">(</span>g<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">dag</span><span class="op">$</span><span class="va">dag</span>, <span class="va">dag</span><span class="op">$</span><span class="va">dag.new</span><span class="op">)</span>, gnet <span class="op">=</span> <span class="va">kegg</span>, d <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="va">ext</span> <span class="op">&lt;-</span> <span class="fu">resizeGraph</span><span class="op">(</span>g<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">dag</span><span class="op">$</span><span class="va">dag</span>, <span class="va">dag</span><span class="op">$</span><span class="va">dag.new</span><span class="op">)</span>, gnet <span class="op">=</span> <span class="va">kegg</span>, d <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  edge set= 1 of 46 edge set= 2 of 46 edge set= 3 of 46 edge set= 4 of 46 edge set= 5 of 46 edge set= 6 of 46 edge set= 7 of 46 edge set= 8 of 46 edge set= 9 of 46 edge set= 10 of 46 edge set= 11 of 46 edge set= 12 of 46 edge set= 13 of 46 edge set= 14 of 46 edge set= 15 of 46 edge set= 16 of 46 edge set= 17 of 46 edge set= 18 of 46 edge set= 19 of 46 edge set= 20 of 46 edge set= 21 of 46 edge set= 22 of 46 edge set= 23 of 46 edge set= 24 of 46 edge set= 25 of 46 edge set= 26 of 46 edge set= 27 of 46 edge set= 28 of 46 edge set= 29 of 46 edge set= 30 of 46 edge set= 31 of 46 edge set= 32 of 46 edge set= 33 of 46 edge set= 34 of 46 edge set= 35 of 46 edge set= 36 of 46 edge set= 37 of 46 edge set= 38 of 46 edge set= 39 of 46 edge set= 40 of 46 edge set= 41 of 46 edge set= 42 of 46 edge set= 43 of 46 edge set= 44 of 46 edge set= 45 of 46 edge set= 46 of 46</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n. edges to be evaluated: 46 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n. edges selected from interactome: 16 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">ext</span><span class="op">)</span> </span>
+<span class="r-in"><span><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">ext</span><span class="op">)</span> </span></span>
 <span class="r-plt img"><img src="resizeGraph-2.png" alt="" width="700" height="433"></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Create a directed graph from correlation matrix, using</span></span>
-<span class="r-in"><span class="co"># i) an empty graph as causal graph,</span></span>
-<span class="r-in"><span class="co"># ii) a covariance graph,</span></span>
-<span class="r-in"><span class="co"># iii) KEGG as reference:</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">corr2graph</span><span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">R</span>, <span class="va">n</span>, <span class="va">alpha</span><span class="op">=</span><span class="fl">5e-6</span>, <span class="va">...</span><span class="op">)</span></span>
-<span class="r-in"><span class="op">{</span></span>
-<span class="r-in">  <span class="va">Z</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">qnorm</a></span><span class="op">(</span><span class="va">alpha</span><span class="op">/</span><span class="fl">2</span>, lower.tail<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">thr</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fl">2</span><span class="op">*</span><span class="va">Z</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="va">n</span><span class="op">-</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">/</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fl">2</span><span class="op">*</span><span class="va">Z</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="va">n</span><span class="op">-</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">+</span><span class="fl">1</span><span class="op">)</span></span>
-<span class="r-in">  <span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">R</span><span class="op">)</span> <span class="op">&gt;</span> <span class="va">thr</span>, <span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span></span>
-<span class="r-in">  <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
-<span class="r-in">  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/graph_from_adjacency_matrix.html" class="external-link">graph_from_adjacency_matrix</a></span><span class="op">(</span><span class="va">A</span>, mode<span class="op">=</span><span class="st">"undirected"</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"><span class="op">}</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">v</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">als.npn</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">name</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">selectedData</span> <span class="op">&lt;-</span> <span class="va">als.npn</span><span class="op">[</span>, <span class="va">v</span><span class="op">]</span></span>
-<span class="r-in"><span class="va">G0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/igraph/man/make_empty_graph.html" class="external-link">make_empty_graph</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">selectedData</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G0</span><span class="op">)</span><span class="op">$</span><span class="va">name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">selectedData</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">G1</span> <span class="op">&lt;-</span> <span class="fu">corr2graph</span><span class="op">(</span>R <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">selectedData</span><span class="op">)</span>, n<span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">selectedData</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">ext</span> <span class="op">&lt;-</span> <span class="fu">resizeGraph</span><span class="op">(</span>g<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">G0</span>, <span class="va">G1</span><span class="op">)</span>, gnet <span class="op">=</span> <span class="va">kegg</span>, d <span class="op">=</span> <span class="fl">2</span>, v <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Create a directed graph from correlation matrix, using</span></span></span>
+<span class="r-in"><span><span class="co"># i) an empty graph as causal graph,</span></span></span>
+<span class="r-in"><span><span class="co"># ii) a covariance graph,</span></span></span>
+<span class="r-in"><span><span class="co"># iii) KEGG as reference:</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">corr2graph</span><span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">R</span>, <span class="va">n</span>, <span class="va">alpha</span><span class="op">=</span><span class="fl">5e-6</span>, <span class="va">...</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">Z</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">qnorm</a></span><span class="op">(</span><span class="va">alpha</span><span class="op">/</span><span class="fl">2</span>, lower.tail<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">thr</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fl">2</span><span class="op">*</span><span class="va">Z</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="va">n</span><span class="op">-</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">/</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fl">2</span><span class="op">*</span><span class="va">Z</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="va">n</span><span class="op">-</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">+</span><span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">R</span><span class="op">)</span> <span class="op">&gt;</span> <span class="va">thr</span>, <span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">0</span></span></span>
+<span class="r-in"><span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/graph_from_adjacency_matrix.html" class="external-link">graph_from_adjacency_matrix</a></span><span class="op">(</span><span class="va">A</span>, mode<span class="op">=</span><span class="st">"undirected"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">v</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">als.npn</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://r.igraph.org/reference/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">name</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">selectedData</span> <span class="op">&lt;-</span> <span class="va">als.npn</span><span class="op">[</span>, <span class="va">v</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">G0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/make_empty_graph.html" class="external-link">make_empty_graph</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">selectedData</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://r.igraph.org/reference/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G0</span><span class="op">)</span><span class="op">$</span><span class="va">name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">selectedData</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">G1</span> <span class="op">&lt;-</span> <span class="fu">corr2graph</span><span class="op">(</span>R <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">selectedData</span><span class="op">)</span>, n<span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">selectedData</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ext</span> <span class="op">&lt;-</span> <span class="fu">resizeGraph</span><span class="op">(</span>g<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">G0</span>, <span class="va">G1</span><span class="op">)</span>, gnet <span class="op">=</span> <span class="va">kegg</span>, d <span class="op">=</span> <span class="fl">2</span>, v <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  edge set= 1 of 130 edge set= 2 of 130 edge set= 3 of 130 edge set= 4 of 130 edge set= 5 of 130 edge set= 6 of 130 edge set= 7 of 130 edge set= 8 of 130 edge set= 9 of 130 edge set= 10 of 130 edge set= 11 of 130 edge set= 12 of 130 edge set= 13 of 130 edge set= 14 of 130 edge set= 15 of 130 edge set= 16 of 130 edge set= 17 of 130 edge set= 18 of 130 edge set= 19 of 130 edge set= 20 of 130 edge set= 21 of 130 edge set= 22 of 130 edge set= 23 of 130 edge set= 24 of 130 edge set= 25 of 130 edge set= 26 of 130 edge set= 27 of 130 edge set= 28 of 130 edge set= 29 of 130 edge set= 30 of 130 edge set= 31 of 130 edge set= 32 of 130 edge set= 33 of 130 edge set= 34 of 130 edge set= 35 of 130 edge set= 36 of 130 edge set= 37 of 130 edge set= 38 of 130 edge set= 39 of 130 edge set= 40 of 130 edge set= 41 of 130 edge set= 42 of 130 edge set= 43 of 130 edge set= 44 of 130 edge set= 45 of 130 edge set= 46 of 130 edge set= 47 of 130 edge set= 48 of 130 edge set= 49 of 130 edge set= 50 of 130 edge set= 51 of 130 edge set= 52 of 130 edge set= 53 of 130 edge set= 54 of 130 edge set= 55 of 130 edge set= 56 of 130 edge set= 57 of 130 edge set= 58 of 130 edge set= 59 of 130 edge set= 60 of 130 edge set= 61 of 130 edge set= 62 of 130 edge set= 63 of 130 edge set= 64 of 130 edge set= 65 of 130 edge set= 66 of 130 edge set= 67 of 130 edge set= 68 of 130 edge set= 69 of 130 edge set= 70 of 130 edge set= 71 of 130 edge set= 72 of 130 edge set= 73 of 130 edge set= 74 of 130 edge set= 75 of 130 edge set= 76 of 130 edge set= 77 of 130 edge set= 78 of 130 edge set= 79 of 130 edge set= 80 of 130 edge set= 81 of 130 edge set= 82 of 130 edge set= 83 of 130 edge set= 84 of 130 edge set= 85 of 130 edge set= 86 of 130 edge set= 87 of 130 edge set= 88 of 130 edge set= 89 of 130 edge set= 90 of 130 edge set= 91 of 130 edge set= 92 of 130 edge set= 93 of 130 edge set= 94 of 130 edge set= 95 of 130 edge set= 96 of 130 edge set= 97 of 130 edge set= 98 of 130 edge set= 99 of 130 edge set= 100 of 130 edge set= 101 of 130 edge set= 102 of 130 edge set= 103 of 130 edge set= 104 of 130 edge set= 105 of 130 edge set= 106 of 130 edge set= 107 of 130 edge set= 108 of 130 edge set= 109 of 130 edge set= 110 of 130 edge set= 111 of 130 edge set= 112 of 130 edge set= 113 of 130 edge set= 114 of 130 edge set= 115 of 130 edge set= 116 of 130 edge set= 117 of 130 edge set= 118 of 130 edge set= 119 of 130 edge set= 120 of 130 edge set= 121 of 130 edge set= 122 of 130 edge set= 123 of 130 edge set= 124 of 130 edge set= 125 of 130 edge set= 126 of 130 edge set= 127 of 130 edge set= 128 of 130 edge set= 129 of 130 edge set= 130 of 130</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n. edges to be evaluated: 130 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n. edges selected from interactome: 72 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co">#Graphs</span></span>
-<span class="r-in"><span class="va">old.par</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>no.readonly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>, mar<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">G1</span>, layout <span class="op">=</span> <span class="va">layout.circle</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ext</span>, layout <span class="op">=</span> <span class="va">layout.circle</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">#Graphs</span></span></span>
+<span class="r-in"><span><span class="va">old.par</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>no.readonly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>, mar<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">4</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">G1</span>, layout <span class="op">=</span> <span class="va">layout.circle</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ext</span>, layout <span class="op">=</span> <span class="va">layout.circle</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="resizeGraph-3.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">old.par</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># }</span></span>
-<span class="r-in"></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">old.par</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -254,7 +256,7 @@ Analysis of High-Throughput Data with Structural Equation Models.
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

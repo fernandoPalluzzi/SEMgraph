@@ -20,7 +20,7 @@ perturbation."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/li
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -59,16 +59,16 @@ perturbation.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">pathFinder</span><span class="op">(</span>
-  <span class="va">graph</span>,
-  <span class="va">data</span>,
-  group <span class="op">=</span> <span class="cn">NULL</span>,
-  ace <span class="op">=</span> <span class="cn">NULL</span>,
-  path <span class="op">=</span> <span class="st">"directed"</span>,
-  method <span class="op">=</span> <span class="st">"BH"</span>,
-  alpha <span class="op">=</span> <span class="fl">0.05</span>,
-  <span class="va">...</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">pathFinder</span><span class="op">(</span></span>
+<span>  <span class="va">graph</span>,</span>
+<span>  <span class="va">data</span>,</span>
+<span>  group <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  ace <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  path <span class="op">=</span> <span class="st">"directed"</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"BH"</span>,</span>
+<span>  alpha <span class="op">=</span> <span class="fl">0.05</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -130,78 +130,52 @@ By default, <code>method = "BH"</code> (i.e., FDR multiple test correction).</p>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"></span>
-<span class="r-in"><span class="co"># \donttest{</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Find and evaluate significantly perturbed paths</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">huge</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">als.npn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/huge/man/huge.npn.html" class="external-link">huge.npn</a></span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">exprs</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Find and evaluate significantly perturbed paths</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">huge</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">als.npn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/huge/man/huge.npn.html" class="external-link">huge.npn</a></span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">exprs</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Conducting the nonparanormal (npn) transformation via shrunkun ECDF....done.</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">adjData</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMbap.html">SEMbap</a></span><span class="op">(</span>graph <span class="op">=</span> <span class="va">alsData</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="va">als.npn</span><span class="op">)</span><span class="op">$</span><span class="va">data</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> d-separation test (basis set) of 420 edges...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  / 0 % elapsed=00s    - 1 % elapsed=00s, remaining~01s \ 2 % elapsed=00s, remaining~01s | 4 % elapsed=00s, remaining~01s / 5 % elapsed=00s, remaining~01s - 6 % elapsed=00s, remaining~01s \ 7 % elapsed=00s, remaining~01s | 8 % elapsed=00s, remaining~01s / 10% elapsed=00s, remaining~01s - 11% elapsed=00s, remaining~01s \ 12% elapsed=00s, remaining~01s | 13% elapsed=00s, remaining~01s / 14% elapsed=00s, remaining~01s - 15% elapsed=00s, remaining~01s \ 17% elapsed=00s, remaining~01s | 18% elapsed=00s, remaining~01s / 19% elapsed=00s, remaining~01s - 20% elapsed=00s, remaining~01s \ 21% elapsed=00s, remaining~01s | 23% elapsed=00s, remaining~01s / 24% elapsed=00s, remaining~01s - 25% elapsed=00s, remaining~01s \ 26% elapsed=00s, remaining~01s | 27% elapsed=00s, remaining~01s / 29% elapsed=00s, remaining~01s - 30% elapsed=00s, remaining~01s \ 31% elapsed=00s, remaining~01s | 32% elapsed=00s, remaining~01s / 33% elapsed=01s, remaining~01s - 35% elapsed=01s, remaining~01s \ 36% elapsed=01s, remaining~01s | 37% elapsed=01s, remaining~01s / 38% elapsed=01s, remaining~01s - 39% elapsed=01s, remaining~01s \ 40% elapsed=01s, remaining~01s | 42% elapsed=01s, remaining~01s / 43% elapsed=01s, remaining~01s - 44% elapsed=01s, remaining~01s \ 45% elapsed=01s, remaining~01s | 46% elapsed=01s, remaining~01s / 48% elapsed=01s, remaining~01s - 49% elapsed=01s, remaining~01s \ 50% elapsed=01s, remaining~01s | 51% elapsed=01s, remaining~01s / 52% elapsed=01s, remaining~01s - 54% elapsed=01s, remaining~01s \ 55% elapsed=01s, remaining~01s | 56% elapsed=01s, remaining~01s / 57% elapsed=01s, remaining~01s - 58% elapsed=01s, remaining~01s \ 60% elapsed=01s, remaining~01s | 61% elapsed=01s, remaining~01s / 62% elapsed=01s, remaining~01s - 63% elapsed=01s, remaining~01s \ 64% elapsed=01s, remaining~01s | 65% elapsed=01s, remaining~01s / 67% elapsed=01s, remaining~01s - 68% elapsed=01s, remaining~01s \ 69% elapsed=01s, remaining~00s | 70% elapsed=01s, remaining~00s / 71% elapsed=01s, remaining~00s - 73% elapsed=01s, remaining~00s \ 74% elapsed=01s, remaining~00s | 75% elapsed=01s, remaining~00s / 76% elapsed=01s, remaining~00s - 77% elapsed=01s, remaining~00s \ 79% elapsed=01s, remaining~00s | 80% elapsed=01s, remaining~00s / 81% elapsed=01s, remaining~00s - 82% elapsed=01s, remaining~00s \ 83% elapsed=01s, remaining~00s | 85% elapsed=01s, remaining~00s / 86% elapsed=01s, remaining~00s - 87% elapsed=01s, remaining~00s \ 88% elapsed=01s, remaining~00s | 89% elapsed=01s, remaining~00s / 90% elapsed=01s, remaining~00s - 92% elapsed=01s, remaining~00s \ 93% elapsed=02s, remaining~00s | 94% elapsed=02s, remaining~00s / 95% elapsed=02s, remaining~00s - 96% elapsed=02s, remaining~00s \ 98% elapsed=02s, remaining~00s | 99% elapsed=02s, remaining~00s / 100% elapsed=02s, remaining~00s</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Number of significant local tests: 220 / 420 </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">adjData</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMbap.html">SEMbap</a></span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">graph</span>, <span class="va">als.npn</span><span class="op">)</span><span class="op">$</span><span class="va">data</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Bow-free covariances search. Use method: cggm ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Number of bow-free covariances / df : 220 / 420 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Max parent set(S) / Sparsity idx(s) : 10 / 4 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Number of clusters / number of nodes: 2 / 31 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">ace</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMace.html">SEMace</a></span><span class="op">(</span>graph <span class="op">=</span> <span class="va">alsData</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="va">adjData</span>,</span>
-<span class="r-in">              group <span class="op">=</span> <span class="va">alsData</span><span class="op">$</span><span class="va">group</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">paths</span> <span class="op">&lt;-</span> <span class="fu">pathFinder</span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">graph</span>, <span class="va">adjData</span>,</span></span>
+<span class="r-in"><span>                    group <span class="op">=</span> <span class="va">alsData</span><span class="op">$</span><span class="va">group</span>,</span></span>
+<span class="r-in"><span>                    ace <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Frequency distribution of path length from X to Y :</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  1  2  3  4  5 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 45 21 16 12  6 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  ACE= 1 of 100 ACE= 2 of 100 ACE= 3 of 100 ACE= 4 of 100 ACE= 5 of 100 ACE= 6 of 100 ACE= 7 of 100 ACE= 8 of 100 ACE= 9 of 100 ACE= 10 of 100 ACE= 11 of 100 ACE= 12 of 100 ACE= 13 of 100 ACE= 14 of 100 ACE= 15 of 100 ACE= 16 of 100 ACE= 17 of 100 ACE= 18 of 100 ACE= 19 of 100 ACE= 20 of 100 ACE= 21 of 100 ACE= 22 of 100 ACE= 23 of 100 ACE= 24 of 100 ACE= 25 of 100 ACE= 26 of 100 ACE= 27 of 100 ACE= 28 of 100 ACE= 29 of 100 ACE= 30 of 100 ACE= 31 of 100 ACE= 32 of 100 ACE= 33 of 100 ACE= 34 of 100 ACE= 35 of 100 ACE= 36 of 100 ACE= 37 of 100 ACE= 38 of 100 ACE= 39 of 100 ACE= 40 of 100 ACE= 41 of 100 ACE= 42 of 100 ACE= 43 of 100 ACE= 44 of 100 ACE= 45 of 100 ACE= 46 of 100 ACE= 47 of 100 ACE= 48 of 100 ACE= 49 of 100 ACE= 50 of 100 ACE= 51 of 100 ACE= 52 of 100 ACE= 53 of 100 ACE= 54 of 100 ACE= 55 of 100 ACE= 56 of 100 ACE= 57 of 100 ACE= 58 of 100 ACE= 59 of 100 ACE= 60 of 100 ACE= 61 of 100 ACE= 62 of 100 ACE= 63 of 100 ACE= 64 of 100 ACE= 65 of 100 ACE= 66 of 100 ACE= 67 of 100 ACE= 68 of 100 ACE= 69 of 100 ACE= 70 of 100 ACE= 71 of 100 ACE= 72 of 100 ACE= 73 of 100 ACE= 74 of 100 ACE= 75 of 100 ACE= 76 of 100 ACE= 77 of 100 ACE= 78 of 100 ACE= 79 of 100 ACE= 80 of 100 ACE= 81 of 100 ACE= 82 of 100 ACE= 83 of 100 ACE= 84 of 100 ACE= 85 of 100 ACE= 86 of 100 ACE= 87 of 100 ACE= 88 of 100 ACE= 89 of 100 ACE= 90 of 100 ACE= 91 of 100 ACE= 92 of 100 ACE= 93 of 100 ACE= 94 of 100 ACE= 95 of 100 ACE= 96 of 100 ACE= 97 of 100 ACE= 98 of 100 ACE= 99 of 100 ACE= 100 of 100</span>
-<span class="r-in"><span class="va">ace</span> <span class="op">&lt;-</span> <span class="va">ace</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">ace</span><span class="op">$</span><span class="va">pvalue</span><span class="op">)</span>,<span class="op">]</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">ace</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    pathL sink op source  d_est  d_se    d_z pvalue d_lower d_upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12     1 5534 &lt;-   6647  0.723 0.199  3.633  0.000   0.333   1.112</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 61     4 4741 &lt;-   1616 -1.088 0.262 -4.144  0.000  -1.602  -0.573</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 24     2  842 &lt;-    596  0.614 0.183  3.356  0.001   0.255   0.973</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">paths</span> <span class="op">&lt;-</span> <span class="fu">pathFinder</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">alsData</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="va">adjData</span>,</span>
-<span class="r-in">                    group <span class="op">=</span> <span class="va">alsData</span><span class="op">$</span><span class="va">group</span>,</span>
-<span class="r-in">                    ace <span class="op">=</span> <span class="va">ace</span><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  ACE= 1 of 3 ACE= 2 of 3 ACE= 3 of 3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Found 2 significant ACEs with &gt; 2 nodes</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">paths</span><span class="op">$</span><span class="va">dfp</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">paths</span><span class="op">$</span><span class="va">dfp</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   pathId sink op source n.nodes n.edges dev_df  srmr V.pv.act V.pv.inh</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1    P61 4741 &lt;-   1616       9      15  2.250 0.065 0.000000 0.036180</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2    P24  842 &lt;-    596       3       2  0.368 0.015 0.242459 0.611958</span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="parameterEstimates.html">parameterEstimates</a></span><span class="op">(</span><span class="va">paths</span><span class="op">$</span><span class="va">fit</span><span class="op">$</span><span class="va">P61</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 P16168 4741 &lt;-   1616       9      15  2.250 0.065 0.000000 0.035968</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  P5962  842 &lt;-    596       3       2  0.369 0.015 0.242861 0.611600</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="parameterEstimates.html">parameterEstimates</a></span><span class="op">(</span><span class="va">paths</span><span class="op">$</span><span class="va">fit</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    lhs op   rhs    est    se      z pvalue ci.lower ci.upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 1432  ~ group -0.017 0.072 -0.238  0.812   -0.157    0.123</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 1616  ~ group  0.104 0.079  1.328  0.184   -0.050    0.259</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 4217  ~ group  0.062 0.077  0.802  0.422   -0.089    0.213</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 4741  ~ group  0.444 0.073  6.110  0.000    0.302    0.587</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 5600  ~ group -0.296 0.076 -3.910  0.000   -0.445   -0.148</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 5603  ~ group  0.003 0.079  0.032  0.974   -0.153    0.158</span>
-<span class="r-in"><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">paths</span><span class="op">$</span><span class="va">paths</span><span class="op">$</span><span class="va">P61</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 1432  ~ group -0.017 0.072 -0.240  0.810   -0.157    0.123</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 1616  ~ group  0.105 0.079  1.329  0.184   -0.050    0.259</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 4217  ~ group  0.062 0.077  0.800  0.424   -0.089    0.212</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 4741  ~ group  0.444 0.073  6.108  0.000    0.302    0.587</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 5600  ~ group -0.296 0.076 -3.911  0.000   -0.445   -0.148</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 5603  ~ group  0.003 0.079  0.032  0.975   -0.153    0.158</span>
+<span class="r-in"><span><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">paths</span><span class="op">$</span><span class="va">paths</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="pathFinder-1.png" alt="" width="700" height="433"></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">path61</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMpath.html">SEMpath</a></span><span class="op">(</span>graph <span class="op">=</span> <span class="va">alsData</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="va">adjData</span>,</span>
-<span class="r-in">                  group <span class="op">=</span> <span class="va">alsData</span><span class="op">$</span><span class="va">group</span>,</span>
-<span class="r-in">                  from <span class="op">=</span> <span class="st">"1616"</span>,</span>
-<span class="r-in">                  to <span class="op">=</span> <span class="st">"4741"</span>,</span>
-<span class="r-in">                  path <span class="op">=</span> <span class="st">"directed"</span>,</span>
-<span class="r-in">                  verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span class="r-plt img"><img src="pathFinder-2.png" alt="" width="700" height="433"></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Path: 1616 -&gt; 4741 size- 9 15 --</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NLMINB solver ended normally after 6 iterations </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 2.250185  srmr: 0.0648899 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node activation: 5.277655e-07 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 0.03962176 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># }</span></span>
-<span class="r-in"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -216,7 +190,7 @@ By default, <code>method = "BH"</code> (i.e., FDR multiple test correction).</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

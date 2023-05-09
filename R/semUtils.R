@@ -138,9 +138,8 @@ SEMgsa<- function(g=list(), data, group, method = "BH", alpha = 0.05, n_rep = 10
 	 # RICF fitting:
 	 fit <- NULL
 	 err <- paste(" ValueError: Model converged = FALSE for k =",k,"\n")
-	 tryCatch(fit <- quiet(SEMricf(
-	 					 ig, data, group, random.x = FALSE, n_rep)),
-	 					 error = function(c) cat(err))
+	 tryCatch(fit <- quiet(SEMricf(ig, data, group, n_rep)),
+	 					    error = function(c) cat(err))
 	 if (length(fit[[1]]) == 0) {
 	  res.tbl<- rbind(res.tbl, rep(NA,6))
 	  colnames(res.tbl) <- c("No.nodes","No.DEGs","pert","pNa","pNi","PVAL")
@@ -345,65 +344,73 @@ gsa.extract <- function(gsa, reference = reactome.pathways, lcc = TRUE,
 #'
 #' \dontrun{
 #'
+#' #load SEMdata package for ALS data with 17K genes:
+#' #devtools::install_github("fernandoPalluzzi/SEMdata")
+#' #library(SEMdata)
+#'
 #' # Nonparanormal(npn) transformation
 #' library(huge)
-#' als.npn <- huge.npn(alsData$exprs)
+#' data.npn<- huge.npn(alsData$exprs)
+#' dim(data.npn) #160 17695
 #'
-# Extract the "MAPK signaling pathway"
-#' g <- kegg.pathways[["MAPK signaling pathway"]]
-#' G <- properties(g)[[1]]; summary(G)
+#' # Extract KEGG interactome (max component)
+#' KEGG<- properties(kegg)[[1]]
+#' summary(KEGG)
 #'
-#' # Create ALS network with perturbed edges using edge betweeness clustering
-#' gU<- SEMdci(G, als.npn, alsData$group, type="ebc", method="BH", alpha=0.2)
-#' gcU<- properties(gU)
+#' # KEGG modules with ALS perturbed edges using fast gready clustering
+#' gD<- SEMdci(KEGG, data.npn, alsData$group, type="fgc")
+#' summary(gD)
+#' gcD<- properties(gD)
 #'
 #' old.par <- par(no.readonly = TRUE)
-#' par(mfrow=c(2,2), mar=rep(1,4))
-#' gplot(gcU[[1]], l="fdp") # max component
-#' gplot(gcU[[2]], l="fdp") # 2nd cpmponent
-#' gplot(gcU[[3]], l="fdp") # 3rd component 
-#' gplot(gcU[[4]], l="fdp") # 4th component
+#' par(mfrow=c(2,2), mar=rep(2,4))
+#' gplot(gcD[[1]], l="fdp", main="max component")
+#' gplot(gcD[[2]], l="fdp", main="2nd component")
+#' gplot(gcD[[3]], l="fdp", main="3rd component")
+#' gplot(gcD[[4]], l="fdp", main="4th component")
 #' par(old.par)
 #'
 #' }
 #'
 SEMdci<- function (graph, data, group, type = "ace", method = "BH", alpha = 0.05, ...) 
 {
-	if (type == "ace") {
-	 dest <- SEMace(graph, data, group,
-					type = "parents", effect = "direct",
-					method = method, alpha = alpha,
-					boot = NULL)
-	 ftm <- data.frame(from = dest$source, to = dest$sink)
-	 return(gD = graph_from_data_frame(ftm))
-	}
-	if (type != "none") {
-	 C <- clusterGraph(graph, type = type, size = 10)
-	 K <- as.numeric(names(table(C)))
-	 gL <- NULL
-	 for (k in K) {
-		cat("fit cluster =", k, "\n")
-		g <- induced_subgraph(graph, vids = names(C)[C == k])
-		V <- sum(colnames(data) %in% V(g)$name) 
-		if (V < 10 | V > 500) next
-		dest <- quiet(SEMggm2(g, data, group)$dest)
-		dsub <- subset(dest, p.adjust(dest$pvalue, method = method) < alpha)
-		if (is.null(dsub)) next
-		ftm <- data.frame(from = dsub$rhs, to = dsub$lhs)
-		gC <- graph_from_data_frame(ftm)
-		if (ecount(gC) > 0) gL <- c(gL, list(gC))
-	 }
-	 cat("Done.\n")
-	 if (is.null(gL)) return(gD = make_empty_graph(n = length(K)))
-	 gD <- graph.union(gL)
-	}
-	else if (type == "none") {
-	 dest <- quiet(SEMrun(graph, data, group, algo = "cggm", fit = 2)$dest)
-	 dsub <- subset(dest, p.adjust(dest$pvalue, method = method) < alpha)
-	 ftm <- data.frame(from = dsub$rhs, to = dsub$lhs)
-	 gD <- graph_from_data_frame(ftm)
-	}
-	return(gD)
+    if (type == "ace") {
+        dest <- SEMace(graph, data, group, type = "parents", 
+            effect = "direct", method = method, alpha = alpha, 
+            boot = NULL)
+        ftm <- data.frame(from = dest$source, to = dest$sink)
+        return(gD = graph_from_data_frame(ftm))
+    }
+    if (type != "none") {
+        C <- clusterGraph(graph, type = type, size = 10)
+        K <- as.numeric(names(table(C)))
+        gL <- NULL
+        for (k in 1:length(K)) {
+            cat("fit cluster =", K[k], "\n")
+            V <- names(C)[C == K[k]][names(C)[C == K[k]] %in% colnames(data)]
+            g <- simplify(induced_subgraph(graph, vids = V))
+            if (vcount(g) > 500 | ecount(g) < 9) next
+			dest <- tryCatch(quiet(SEMggm2(g, data, group)$dest),
+                             error = function(err) NULL)
+			if (is.null(dest)) next
+			dsub <- subset(dest, p.adjust(dest$pvalue, method = method) < alpha)
+            if (nrow(dsub) == 0) next
+            ftm <- data.frame(from = dsub$rhs, to = dsub$lhs)
+            gC <- graph_from_data_frame(ftm)
+            if (ecount(gC) > 0) gL <- c(gL, list(gC))
+        }
+        cat("Done.\n")
+        if (is.null(gL)) 
+            return(gD = make_empty_graph(n = length(K)))
+        gD <- graph.union(gL)
+    }
+    else if (type == "none") {
+        dest <- quiet(SEMggm2(g, data, group)$dest)
+        dsub <- subset(dest, p.adjust(dest$pvalue, method = method) < alpha)
+        ftm <- data.frame(from = dsub$rhs, to = dsub$lhs)
+        gD <- graph_from_data_frame(ftm)
+    }
+    return(gD)
 }
 
 #' @title Graph properties summary and graph decomposition
@@ -588,7 +595,7 @@ gplot <- function(graph, l = "dot", main = "", cex.main = 1, font.main = 1,
 #' @title lavaan model to graph
 #'
 #' @description Convert a model, specified using lavaan syntax,
-#' to a graph object in either igraph or dagitty format.
+#' to an igraph object.
 #' @param model Model specified using lavaan syntax.
 #' @param directed Logical value. If TRUE (default), edge directions from
 #' the model will be preserved. If FALSE, the resulting graph will
@@ -611,7 +618,7 @@ gplot <- function(graph, l = "dot", main = "", cex.main = 1, font.main = 1,
 #'
 #' # Writing path diagram in lavaan syntax
 #'
-#' model<-'
+#' model<-"
 #' #path model
 #' Jnk ~ PKA + PKC
 #' P38 ~ PKA + PKC
@@ -622,12 +629,10 @@ gplot <- function(graph, l = "dot", main = "", cex.main = 1, font.main = 1,
 #' PKC ~ PIP2 + Plcg
 #' PIP2 ~ PIP3 + Plcg
 #' Plcg ~ PIP3
-#' #PKA ~ 1
-#' #PIP3 ~ 1
 #'
-#' # (co)variances
-#' # PIP2 ~~ PIP3
-#' '
+#' #(co)variances
+#' PKA ~~ PIP3
+#' "
 #'
 #' # Graph with covariances
 #' G0 <- lavaan2graph(model, psi = TRUE)
@@ -647,9 +652,9 @@ lavaan2graph<- function (model, directed = TRUE, psi = TRUE, verbose = FALSE, ..
         color = "black")
     if (nrow(lavc) != 0 & psi == TRUE) {
 		ftmc1 <- data.frame(cbind(from = lavc$rhs, to = lavc$lhs, 
-            label = "", color = "gray60"))
+            label = "", color = "red"))
         ftmc2 <- data.frame(cbind(from = lavc$lhs, to = lavc$rhs, 
-            label = "", color = "gray60"))
+            label = "", color = "red"))
         ftm <- rbind(ftm, ftmc1, ftmc2)
     }
     graph <- graph_from_data_frame(ftm, directed = directed)
@@ -681,13 +686,14 @@ graph2lavaan <- function(graph, nodes = V(graph)$name, ...)
 {
 	# Set from-to-matrix representation of edge links
 	ig <- induced_subgraph(graph, vids = which(V(graph)$name %in% nodes))
-	ftm <- as_data_frame(ig)
+	ftm <- igraph::as_data_frame(ig)
 
 	if (is.directed(ig) & sum(which_mutual(ig)) > 0) {
 		sel <- as.numeric(c(E(ig)[which_mutual(ig)]))
-		ftm <- as_data_frame(ig)[-sel,]
-		ubg <- as.undirected(graph_from_data_frame(as_data_frame(ig)[sel,]))
-		ftb <- as_data_frame(ubg)
+		ftm <- igraph::as_data_frame(ig)[-sel,]
+		uft <- igraph::as_data_frame(ig)[sel,]
+		ubg <- as.undirected(graph_from_data_frame(uft))
+		ftb <- igraph::as_data_frame(ubg)
 	} else {
 		ftb <- NULL
 	}
@@ -717,8 +723,8 @@ graph2lavaan <- function(graph, nodes = V(graph)$name, ...)
 #' DAG can contain the directed (->) and bi-directed (<->) edges,
 #' while PDAG can contain the edges: ->, <->, and the undirected edges
 #' (--) that represent edges whose direction is not known.
-#' @param verbose A logical value. If TRUE, the output graph is shown
-#' (for \code{graph2dagitty} only). This argument is FALSE by default.
+#' @param verbose A logical value. If TRUE, the output graph is shown.
+#' This argument is FALSE by default.
 #' @param ... Currently ignored.
 #'
 #' @export
@@ -760,8 +766,8 @@ graph2dagitty<- function (graph, graphType = "dag", verbose = FALSE, ...)
 #'
 #' @description Convert a dagitty object to a igraph object.
 #' @param dagi A graph as a dagitty object ("dag" or "pdag").
-#' @param verbose A logical value. If TRUE, the output graph is shown
-#' (for \code{graph2dagitty} only). This argument is FALSE by default.
+#' @param verbose A logical value. If TRUE, the output graph is shown.
+#' This argument is FALSE by default.
 #' @param ... Currently ignored.
 #' 
 #' @export
@@ -834,7 +840,7 @@ graph2dag<- function(graph, data, bap = FALSE, time.limit = Inf, ...)
 	# graph weighting by edge pvalues (r2z)
 	graph <- weightGraph(graph, data)
 	E(graph)$weight <- 1/(-log(E(graph )$pv))
-	ftm <- as_data_frame(graph)
+	ftm <- igraph::as_data_frame(graph)
 	wE <- ftm$weight
 	names(wE) <- paste0(ftm[,1],":",ftm[,2])
 	# delete all mutual edges <-> , i.e. <- & -> 
@@ -1151,8 +1157,8 @@ attrMatch<- function(g1, g2, ...)
 #' sem2 <- SEMrun(graph = alsData$graph, data = alsData$exprs,
 #'                group = alsData$group,
 #'                fit = 2)
-#' est20 <- subset(parameterEstimates(sem2$fit), group = 1)[, -c(4, 5)]
-#' est21 <- subset(parameterEstimates(sem2$fit), group = 2)[, -c(4, 5)]
+#' est20 <- subset(parameterEstimates(sem2$fit), group == 1)[, -c(4, 5)]
+#' est21 <- subset(parameterEstimates(sem2$fit), group == 2)[, -c(4, 5)]
 #'
 #' # Graphs
 #' g <- alsData$graph
@@ -1300,17 +1306,6 @@ pairwiseMatrix<- function (x, y = NULL, size = nrow(x), r = 4, c = 4, ...)
         }
 		on.exit(par(old.par))
     }
-}
-
-fit.mediation <- function(model, data, group, fixed.x, se) {
-  fit <- sem(model = model, data = data, group = group,
-             fixed.x = fixed.x, se = se)
-  semres <- summary(fit, rsquare = TRUE, fit.measures = TRUE)
-  IE <- semres$pe[semres$pe$label == "IE", 6:9]
-  r2 <- semres$pe$est[semres$pe$lhs == "y" & semres$pe$op == "r2"]
-  mest <- c(r2, IE)
-  names(mest)[1] <- "r2"
-  return(mest)
 }
 
 #' @title SEM-based mediation analysis

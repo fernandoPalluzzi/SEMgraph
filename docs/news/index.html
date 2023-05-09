@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -48,44 +48,55 @@
     </div>
 
     <div class="section level2">
-<h2 class="page-header" data-toc-text="1.1.3" id="version-113-release-notes">Version 1.1.3 Release Notes<a class="anchor" aria-label="anchor" href="#version-113-release-notes"></a></h2>
-<ul><li><p>Added new parameterEstimates() function for parameter estimates output of a fitted SEM for RICF and CGGM algorithms similar to lavaan.</p></li>
-<li><p>Updating summary.RICF() and summary.GGM() functions with parameterEstimates() (and hidden functions SEMricf(), SEMricf2(), SEMggm(), and SEMggm2(), …)</p></li>
-<li><p>Added in SEMrun() function the bootstrap resampling of SE (95% CI), and new argoment n_rep = 1000 (default) to set the bootstrap samples or permutation flip, if algo = “ricf” and the argumet SE = c(“standard” or “none”), if algo = “lavaan”.</p></li>
-<li><p>Various fixed bugs in (cplot, colorGraph, SEMtree, …)</p></li>
+<h2 class="page-header" data-toc-text="1.2.0" id="version-120-release-notes">Version 1.2.0 Release Notes<small>2023-05-04</small><a class="anchor" aria-label="anchor" href="#version-120-release-notes"></a></h2>
+<ul><li><p>Version 1.2.0 is a major release with several new features, including:</p></li>
+<li><p>SEMrun() function. The algo =“cggm” based on high-dimensional GGGM is now implemented with the de-sparsified (de-biased) nodewise LASSO procedure applied on a Gaussian DAG model. The overall indices “deviance/df” and “srmr” are now computed using the observed correlation matrix also in p &gt; n regime, where the estimated parameters are computed using the “regularized” (lambda corrected) correlation matrix.</p></li>
+<li><p>SEMbap() function. New deconfounding methods to adjust the data matrix by removing latent sources of confounding encoded in them are implemented. The selected methods are either based on: (i) Bow-free Acyclic Paths (BAP) search (dalgo = “cggm” or “glpc”), (ii) LVs proxies as additional source nodes of the data matrix, Y (dalgo = “pc” or “glpc”) or (iii) spectral transformation of Y (dalgo = “pc” or “trim”).</p></li>
+<li><p>SEMdag() function. New two-step DAG estimation from an input (or empty) graph, using in step 1) graph topological order or bottom-up search order, and in step 2) parent recovery with the LASSO-based algorithm are implemented. The estimate linear order are obtained from a priori graph topological vertex (LO = “TO”) or level (LO = “TL”) ordering, or with a data-driven vertex or level Bottom-up (LO = “BU”) based on “glasso” residual variance ordering. The Top-Down (LO = “TD”) is removed, being the BU more efficient to implement the topological search order.</p></li>
+<li><p>Shipley.test() function. Added new argument cmax = Inf (default). This parameter can be used to perform only those tests where the number of conditioning variables does not exceed the given value. Output of the data.frame “dsep” has the same format of the localCI.test() function.</p></li>
+<li><p>Various fixed bugs</p></li>
+</ul></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="1.1.3" id="version-113-release-notes">Version 1.1.3 Release Notes<small>2022-10-12</small><a class="anchor" aria-label="anchor" href="#version-113-release-notes"></a></h2>
+<ul><li><p>Added in SEMrun() function the argumet SE = c(“standard” or “none”), if algo = “lavaan”.</p></li>
+<li><p>Added in SEMrun() function the bootstrap resampling of SE (95% CI), and new argoment n_rep = 1000 (default) to set the bootstrap samples or permutation flip, if algo = “ricf”.</p></li>
+<li><p>Added in SEMrun() function the de-sparsified SE (95% CI) of omega parameters (the elements of the precision matrix), if algo = “cggm”.</p></li>
+<li><p>Added new parameterEstimates() function for parameter estimates output of a fitted SEM for RICF and CGGM algorithms similar to lavaan.</p></li>
+<li><p>Updating summary.RICF() and summary.GGM() functions with parameterEstimates().</p></li>
+<li><p>Various fixed bugs.</p></li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="1.1.2" id="version-112-release-notes">Version 1.1.2 Release Notes<small>2022-07-05</small><a class="anchor" aria-label="anchor" href="#version-112-release-notes"></a></h2>
 <ul><li><p>Added new SEMtree() function for tree-based structure learning methods. Four methods with graph (type= “ST” or “MST”) and data-driven (type = “CAT” or “CPDAG”) algorithms are implemented.</p></li>
 <li><p>Deprecated activeModule() and corr2graph() functions in favor of new SEMtree() function.</p></li>
 <li><p>Added new dagitty2graph() function for conversion from a dagitty graph object to an igraph object.</p></li>
-<li><p>Added new localCI.test() function for local conditional indipendence (CI) test of missing edges from an acyclic graph. This function is a wrapper to the function localTests() from package dagitty.</p></li>
+<li><p>Added new localCI.test() function for local conditional indipendence (CI) test of missing edges from an acyclic graph. This function is a wrapper to the localTests() function from package dagitty.</p></li>
 <li><p>Added new arguments for SEMace() function: type = c(“parents”, “minimal”, “optimal”) to choose the conditioning set Z of Y over X; effect = c(“all”, “source2sink”, “direct”,) to choose the type of X to Y effect.</p></li>
-<li><p>Added new argument for SEMdci() function: type = “ace” from ACE function() with fixed type= “parents”, and effect=“direct”</p></li>
-<li><p>Change mergeGraph() function. Now the function combines groups of graph nodes using hierarchical clustering with prototypes derived from protoclust package or custom membership attribute (e.g., cluster membership derived from function clusterGraph()).</p></li>
+<li><p>Added new argument for SEMdci() function: type = “ace” from SEMace() function with fixed type=“parents”, and effect=“direct”.</p></li>
+<li><p>Change mergeGraph() function. Now the function combines groups of graph nodes using hierarchical clustering with prototypes derived from protoclust package or custom membership attribute (e.g., cluster membership derived from clusterGraph() function).</p></li>
 <li><p>Delete argument seed = c(0.05, 0.5, 0.5) in the function weigthGraph(). Now if group is NOT NULL also node weighting is actived, and node weights correspond to the sign and P-value of the z-test = b/SE(b) from glm(node ~ group).</p></li>
-<li><p>Various fixed bugs</p></li>
+<li><p>Various fixed bugs.</p></li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="1.1.0" id="version-110-release-notes">Version 1.1.0 Release Notes<small>2022-03-24</small><a class="anchor" aria-label="anchor" href="#version-110-release-notes"></a></h2>
-<ul><li><p>Major release with significant changes:</p></li>
-<li><p>Added new arguments for SEMdag() function: LO = “TO” or “TD” for knowledge-based topological order or data-driven top-down order, and penalty = TRUE or FALSE, separate penalty factors can be applied to each coefficient</p></li>
-<li><p>Deprecated extendGraph() in favor of new resizeGraph() function, that re-sized graph, removing edges or adding edges/nodes if they are present or absent in a given reference network</p></li>
-<li><p>Change modelSerch(), interactive procedure is out, and now a three step procedure is implemented for search strategies with new SEMdag() and resizeGraph functions</p></li>
-<li><p>Change SEMgsa() deleting D,A,E p-values with more performing activation and inhibition pvalues</p></li>
-<li><p>Added argument MCX2= TRUE or FALSE for Shipley.test() function, a Monte Carlo P-value of the combined C test</p></li>
-<li><p>Added new SEMdci() function for differentially connected genes inference</p></li>
-<li><p>Change properties(), now extracted components are order by component sizes</p></li>
+<ul><li><p>Version 1.1.0 is a major release with significant changes:</p></li>
+<li><p>Added new arguments for SEMdag() function: LO = “TO” or “TD” for knowledge-based topological order (TO) or data-driven top-down order (TD), and penalty = TRUE or FALSE, binary penalty factors can be applied to each L1-coefficient.</p></li>
+<li><p>Deprecated extendGraph() in favor of new resizeGraph() function, that re-sized graph, removing edges or adding edges/nodes if they are present or absent in a given reference network.</p></li>
+<li><p>Change modelSerch(), interactive procedure is out, and now a three step procedure is implemented for search strategies with new SEMdag() and resizeGraph() functions.</p></li>
+<li><p>Change SEMgsa() deleting D,A,E p-values with more performing activation and inhibition pvalues.</p></li>
+<li><p>Added argument MCX2= TRUE or FALSE for Shipley.test() function, a Monte Carlo P-value of the combined C test.</p></li>
+<li><p>Added new SEMdci() function for differentially connected genes inference.</p></li>
+<li><p>Change properties(), now extracted components are order by component sizes.</p></li>
 <li><p>Change argument q = q-quantile with q = 1-top/vcount(graph) in activeModule() function, now the induced graph for the “rwr” and “hdi” algorithms is defined by the top-n ranking nodes.</p></li>
 <li><p>Various fixed bugs</p></li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="1.0.3" id="version-103-release-notes">Version 1.0.3 Release Notes<small>2021-07-08</small><a class="anchor" aria-label="anchor" href="#version-103-release-notes"></a></h2>
-<ul><li><p>First stable version on CRAN</p></li>
-<li><p>Update kegg.RData (November, 2021)</p></li>
-<li><p>Added kegg.pathways.RData (November, 2021)</p></li>
-<li><p>Added pkgdown website</p></li>
-<li><p>Various fixed bugs</p></li>
+<ul><li><p>First stable version on CRAN.</p></li>
+<li><p>Update kegg.RData (November, 2021).</p></li>
+<li><p>Added kegg.pathways.RData (November, 2021).</p></li>
+<li><p>Added pkgdown website.</p></li>
+<li><p>Various fixed bugs.</p></li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="1.0.0" id="version-100-release-notes">Version 1.0.0 Release Notes<a class="anchor" aria-label="anchor" href="#version-100-release-notes"></a></h2>
@@ -104,7 +115,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

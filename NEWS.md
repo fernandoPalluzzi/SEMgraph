@@ -1,3 +1,37 @@
+## Version 1.2.0 Release Notes
+
+* Version 1.2.0 is a major release with several new features, including:
+
+* SEMrun() function.  The algo ="cggm" based on high-dimensional GGGM is now
+implemented with the de-sparsified (de-biased) nodewise LASSO procedure 
+applied on a Gaussian DAG model. The overall indices "deviance/df" and "srmr"
+are now computed using the observed correlation matrix also in p > n regime,
+where the estimated parameters are computed using the "regularized" (lambda
+corrected) correlation matrix.
+
+* SEMbap() function. New deconfounding methods to adjust the data matrix
+by removing latent sources of confounding encoded in them are implemented.
+The selected methods are either based on: (i) Bow-free Acyclic Paths (BAP)
+search (dalgo = "cggm" or "glpc"), (ii) LVs proxies as additional source
+nodes of the data matrix, Y (dalgo = "pc" or "glpc") or (iii) spectral
+transformation of Y (dalgo = "pc" or "trim").
+
+* SEMdag() function. New two-step DAG estimation from an input (or empty) graph,
+using in step 1) graph topological order or bottom-up search order, and in
+step 2) parent recovery with the LASSO-based algorithm are implemented.
+The estimate linear order are obtained from a priori graph topological vertex
+(LO = "TO") or level (LO = "TL") ordering, or with a data-driven vertex or 
+level Bottom-up (LO = "BU") based on "glasso" residual variance ordering.
+The Top-Down (LO = "TD") is removed, being the BU more efficient to implement
+the topological search order.
+
+* Shipley.test() function. Added new argument cmax = Inf (default). This
+parameter can be used to perform only those tests where the number of
+conditioning variables does not exceed the given value. Output of the
+data.frame "dsep" has the same format of the localCI.test() function.
+
+* Various fixed bugs
+
 ## Version 1.1.4 Release Notes
 
 * SEMbap() function changes. Now the function implements new deconfounding

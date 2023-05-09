@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -53,7 +53,7 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">graph2lavaan</span><span class="op">(</span><span class="va">graph</span>, nodes <span class="op">=</span> <span class="fu">V</span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">name</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">graph2lavaan</span><span class="op">(</span><span class="va">graph</span>, nodes <span class="op">=</span> <span class="fu">V</span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">name</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -84,10 +84,10 @@ all the input graph nodes will be included in the output model.</p></dd>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"></span>
-<span class="r-in"><span class="co"># Graph (igraph object) to structural model in lavaan syntax</span></span>
-<span class="r-in"><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu">graph2lavaan</span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">graph</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="va">model</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Graph (igraph object) to structural model in lavaan syntax</span></span></span>
+<span class="r-in"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu">graph2lavaan</span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">graph</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="va">model</span>, <span class="st">"\n"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Akt~PIP3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Akt~PKA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Erk~Mek</span>
@@ -107,7 +107,7 @@ all the input graph nodes will be included in the output model.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Raf~PKA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Raf~PKC</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> PKA~~PIP3 </span>
-<span class="r-in"></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -122,7 +122,7 @@ all the input graph nodes will be included in the output model.</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

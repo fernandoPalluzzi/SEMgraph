@@ -23,7 +23,7 @@ two nodes) are not allowed."><!-- mathjax --><script src="https://cdnjs.cloudfla
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -65,18 +65,18 @@ two nodes) are not allowed.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">SEMrun</span><span class="op">(</span>
-  <span class="va">graph</span>,
-  <span class="va">data</span>,
-  group <span class="op">=</span> <span class="cn">NULL</span>,
-  fit <span class="op">=</span> <span class="fl">0</span>,
-  algo <span class="op">=</span> <span class="st">"lavaan"</span>,
-  start <span class="op">=</span> <span class="cn">NULL</span>,
-  SE <span class="op">=</span> <span class="st">"standard"</span>,
-  n_rep <span class="op">=</span> <span class="fl">1000</span>,
-  limit <span class="op">=</span> <span class="fl">100</span>,
-  <span class="va">...</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">SEMrun</span><span class="op">(</span></span>
+<span>  <span class="va">graph</span>,</span>
+<span>  <span class="va">data</span>,</span>
+<span>  group <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  fit <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  algo <span class="op">=</span> <span class="st">"lavaan"</span>,</span>
+<span>  start <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  SE <span class="op">=</span> <span class="st">"standard"</span>,</span>
+<span>  n_rep <span class="op">=</span> <span class="fl">1000</span>,</span>
+<span>  limit <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -111,10 +111,11 @@ on graph edges.</p></dd>
 (default), the SEM will be fitted using the NLMINB solver from
 <code>lavaan</code> R package, with standard errors derived from the expected
 Fisher information matrix. If <code>algo = "ricf"</code>, the model is fitted
-via residual iterative conditional fitting (RICF; Drton et al. 2009).
+via residual iterative conditional fitting (RICF; Drton et al. 2009),
+with standard error derived from randomization or bootstrap procedures.
 If <code>algo = "cggm"</code>, model fitting is based on constrained Gaussian
-Graphical Modeling (GGM) and de-sparsified glasso estimator
-(Williams, 2020).</p></dd>
+Graphical Modeling (CGGM), with DAG nodewise Lasso procedure and
+de-biasing asymptotic inference (Jankova &amp; Van De Geer, 2019).</p></dd>
 
 
 <dt>start</dt>
@@ -146,7 +147,7 @@ for permutation flip or boostrap samples, if <code>algo = "ricf"</code>.</p></dd
 (i.e., number of nodes). Beyond this limit, the execution under
 <code>algo = "lavaan"</code> will run with <code>SE = "none"</code>, if 
 <code>fit = 0</code>, or will be ridirected to <code>algo = "ricf"</code>, if
-<code>fit = 1</code>, or to <code>algo = "ggm"</code>, if <code>fit = 2</code>.
+<code>fit = 1</code>, or to <code>algo = "cggm"</code>, if <code>fit = 2</code>.
 This redirection is necessary to reduce the computational demand of
 standard error estimation by lavaan. Increasing this number will
 enforce lavaan execution when <code>algo = "lavaan"</code>.</p></dd>
@@ -160,7 +161,7 @@ enforce lavaan execution when <code>algo = "lavaan"</code>.</p></dd>
     <h2>Value</h2>
     
 
-<p>A list of 5 objects:</p><ol><li><p>"fit", SEM fitted lavaan, ricf, or ggmncv object,
+<p>A list of 5 objects:</p><ol><li><p>"fit", SEM fitted lavaan, ricf, or cggm object,
 depending on the MLE method specified by the <code>algo</code> argument;</p></li>
 <li><p>"gest" or "dest", a data.frame of node-specific
 ("gest") or edge-specific ("dest") group effect estimates and P-values;</p></li>
@@ -171,7 +172,7 @@ on data variables. Graph edges (i.e., direct effects) with P-value &lt; 0.05
 will be highlighted in red (beta &gt; 0) or blue (beta &lt; 0). If a group
 vector is given, nodes with significant group effect (P-value &lt; 0.05)
 will be red-shaded (beta &gt; 0) or lightblue-shaded (beta &lt; 0);</p></li>
-<li><p>"dataXY", input data subset mapping graph nodes, plus
+<li><p>"data", input data subset mapping graph nodes, plus
 group at the first column (if no group is specified, this column will
 take NA values).</p></li>
 </ol></div>
@@ -185,9 +186,7 @@ of parameter estimates. Beta coefficients (i.e., direct effects) are
 estimated from directed interactions and residual covariances (psi
 coefficients) from bidirected, undirected, or mutual interactions.
 If a group variable is given, exogenous group effects on nodes (gamma
-coefficients) will be estimated. This will also lead to the estimation
-of a set of aggregated group effects, if <code>algo = "ricf"</code> (see
-<code><a href="SEMgsa.html">SEMgsa</a></code>).
+coefficients) or edges (delta coefficients) will be estimated.
 By default, maximum likelihood parameter estimates and P-values for
 parameter sets are computed by conventional z-test (= estimate/SE),
 and fits it through the <code><a href="https://rdrr.io/pkg/lavaan/man/lavaan.html" class="external-link">lavaan</a></code> function, via
@@ -210,9 +209,10 @@ Once fitted, the two models are then compared to assess significant
 edge (i.e., direct effect) differences (d = beta1 - beta0).
 P-values for parameter sets are computed by z-test (= d/SE), through
 <code><a href="https://rdrr.io/pkg/lavaan/man/lavaan.html" class="external-link">lavaan</a></code>. As an alternative to standard P-value
-calculation, SEMrun may use either RICF (randomization P-values) or
-GGM (de-sparsified P-values) methods. These algorithms are much faster
-than <code><a href="https://rdrr.io/pkg/lavaan/man/lavaan.html" class="external-link">lavaan</a></code> in case of large input graphs.</p>
+calculation, SEMrun may use either RICF (randomization or bootstrap
+P-values) or GGM (de-biased asymptotically normal P-values) methods.
+These algorithms are much faster than <code><a href="https://rdrr.io/pkg/lavaan/man/lavaan.html" class="external-link">lavaan</a></code>
+in case of large input graphs.</p>
     </div>
     <div id="references">
     <h2>References</h2>
@@ -230,21 +230,19 @@ Bioinformatics, 15: 132.
 Estimated in Recursive Linear Models with Correlated Errors.
 Journal of Machine Learning Research, 10(Oct): 2329-2348.
 &lt;https://www.jmlr.org/papers/volume10/drton09a/drton09a.pdf&gt;</p>
-<p>Larson JL and Owen AB (2015). Moment based gene set tests. BMC
-Bioinformatics, 16: 132. &lt;https://doi.org/10.1186/s12859-015-0571-7&gt;</p>
-<p>Palluzzi F, Grassi M (2021). SEMgraph: An R Package for Causal Network
+<p>Jankova, J., &amp; Van De Geer, S (2019). Inference in high-dimensional
+graphical models. In Handbook of Graphical Models (2019).
+Chapter 14 (sec. 14.2): 325-349. Chapman &amp; Hall/CRC. ISBN: 9780429463976</p>
+<p>Hastie T, Tibshirani R, Friedman J. (2009). The Elements of Statistical
+Learning (2nd ed.). Springer Verlag. ISBN: 978-0-387-84858-7</p>
+<p>Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
 Analysis of High-Throughput Data with Structural Equation Models.
-&lt;arXiv:2103.08332&gt;</p>
-<p>Williams D (2020). GGMncv: Gaussian Graphical Models with Non-Convex
-Penalties. R package version 1.1.0.
-&lt;https://CRAN.R-project.org/package=GGMncv/&gt;</p>
+Bioinformatics, 38 (20), 4829–4830 &lt;https://doi.org/10.1093/bioinformatics/btac567&gt;</p>
     </div>
     <div id="see-also">
     <h2>See also</h2>
-    <div class="dont-index"><p>See <code><a href="https://rdrr.io/pkg/ggm/man/fitAncestralGraph.html" class="external-link">fitAncestralGraph</a></code> for RICF algorithm
-details, <code><a href="https://rdrr.io/pkg/flip/man/flip.html" class="external-link">flip</a></code> for randomization P-values, and
-<code><a href="https://rdrr.io/pkg/GGMncv/man/constrained.html" class="external-link">constrained</a></code> for constrained GGM, and
-<code><a href="https://rdrr.io/pkg/GGMncv/man/inference.html" class="external-link">inference</a></code> for de-sparsified P-values.</p></div>
+    <div class="dont-index"><p>See <code><a href="https://rdrr.io/pkg/ggm/man/fitAncestralGraph.html" class="external-link">fitAncestralGraph</a></code> and <code><a href="https://rdrr.io/pkg/ggm/man/fitConGraph.html" class="external-link">fitConGraph</a></code>
+for RICF algorithm and constrained GGM algorithm details, respectively.</p></div>
     </div>
     <div id="author">
     <h2>Author</h2>
@@ -253,23 +251,23 @@ details, <code><a href="https://rdrr.io/pkg/flip/man/flip.html" class="external-
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"></span>
-<span class="r-in"><span class="co">#### Model fitting (no group effect)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">sem0</span> <span class="op">&lt;-</span> <span class="fu">SEMrun</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span>, algo <span class="op">=</span> <span class="st">"lavaan"</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">#### Model fitting (no group effect)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">sem0</span> <span class="op">&lt;-</span> <span class="fu">SEMrun</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NLMINB solver ended normally after 10 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 66.93929  srmr: 0.08947309 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 66.93938  srmr: 0.0894911 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sem0</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> lavaan 0.6-11 ended normally after 10 iterations</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sem0</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> lavaan 0.6.15 ended normally after 10 iterations</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Estimator                                         ML</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Optimization method                           NLMINB</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Number of model parameters                        30</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Number of observations                          1766</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model Test User Model:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Test statistic                              2409.815</span>
@@ -331,7 +329,7 @@ details, <code><a href="https://rdrr.io/pkg/flip/man/flip.html" class="external-
 <span class="r-out co"><span class="r-pr">#&gt;</span>     zPIP3             0.999    0.034   29.715    0.000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     zPKA              0.999    0.034   29.715    0.000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="parameterEstimates.html">parameterEstimates</a></span><span class="op">(</span><span class="va">sem0</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="parameterEstimates.html">parameterEstimates</a></span><span class="op">(</span><span class="va">sem0</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   lhs op  rhs    est    se      z pvalue ci.lower ci.upper</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1 Akt  ~ PIP3 -0.065 0.020 -3.251  0.001   -0.104   -0.026</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 Akt  ~  PKA  0.546 0.020 27.454  0.000    0.507    0.585</span>
@@ -339,37 +337,37 @@ details, <code><a href="https://rdrr.io/pkg/flip/man/flip.html" class="external-
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4 Erk  ~  PKA  0.456 0.021 21.506  0.000    0.415    0.498</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 5 Jnk  ~  PKA  0.093 0.024  3.940  0.000    0.047    0.139</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 6 Jnk  ~  PKC  0.128 0.024  5.439  0.000    0.082    0.174</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Graphs</span></span>
-<span class="r-in"><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">sem0</span><span class="op">$</span><span class="va">graph</span>, main <span class="op">=</span> <span class="st">"significant edge weights"</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Graphs</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">sem0</span><span class="op">$</span><span class="va">graph</span>, main <span class="op">=</span> <span class="st">"significant edge weights"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="SEMrun-1.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sem0</span><span class="op">$</span><span class="va">graph</span>, layout <span class="op">=</span> <span class="va">layout.circle</span>, main <span class="op">=</span> <span class="st">"significant edge weights"</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sem0</span><span class="op">$</span><span class="va">graph</span>, layout <span class="op">=</span> <span class="va">layout.circle</span>, main <span class="op">=</span> <span class="st">"significant edge weights"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="SEMrun-2.png" alt="" width="700" height="433"></span>
-<span class="r-in"></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co">#### Model fitting (common model, group effect on nodes)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">sem1</span> <span class="op">&lt;-</span> <span class="fu">SEMrun</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span>,</span>
-<span class="r-in">               group <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">group</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">#### Model fitting (common model, group effect on nodes)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">sem1</span> <span class="op">&lt;-</span> <span class="fu">SEMrun</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>               group <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">group</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NLMINB solver ended normally after 5 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 61.84434  srmr: 0.0700967 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 61.84444  srmr: 0.0701161 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node activation: 2.664535e-15 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 0.8332506 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 0.2368274 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Fitting summaries</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sem1</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> lavaan 0.6-11 ended normally after 5 iterations</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Fitting summaries</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sem1</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> lavaan 0.6.15 ended normally after 5 iterations</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Estimator                                         ML</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Optimization method                           NLMINB</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Number of model parameters                        41</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Number of observations                          1766</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model Test User Model:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Test statistic                              2226.396</span>
@@ -453,7 +451,7 @@ details, <code><a href="https://rdrr.io/pkg/flip/man/flip.html" class="external-
 <span class="r-out co"><span class="r-pr">#&gt;</span>    .zPlcg             0.891    0.030   29.715    0.000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    .zRaf              0.785    0.026   29.715    0.000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">sem1</span><span class="op">$</span><span class="va">gest</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">sem1</span><span class="op">$</span><span class="va">gest</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op   rhs    est    se       z pvalue ci.lower ci.upper</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1   Akt  ~ group  0.150 0.021   7.057  0.000    0.108    0.192</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2   Erk  ~ group  0.179 0.022   8.046  0.000    0.135    0.222</span>
@@ -466,7 +464,7 @@ details, <code><a href="https://rdrr.io/pkg/flip/man/flip.html" class="external-
 <span class="r-out co"><span class="r-pr">#&gt;</span> 9   PKC  ~ group  0.116 0.024   4.818  0.000    0.069    0.163</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 10 Plcg  ~ group  0.268 0.024  11.359  0.000    0.222    0.314</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 11  Raf  ~ group -0.467 0.022 -21.080  0.000   -0.510   -0.423</span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="parameterEstimates.html">parameterEstimates</a></span><span class="op">(</span><span class="va">sem1</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="parameterEstimates.html">parameterEstimates</a></span><span class="op">(</span><span class="va">sem1</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    lhs op   rhs    est    se      z pvalue ci.lower ci.upper</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1  Akt  ~ group  0.150 0.021  7.057  0.000    0.108    0.192</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2  Erk  ~ group  0.179 0.022  8.046  0.000    0.135    0.222</span>
@@ -474,40 +472,40 @@ details, <code><a href="https://rdrr.io/pkg/flip/man/flip.html" class="external-
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4  Mek  ~ group  0.122 0.020  6.036  0.000    0.082    0.162</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 5  P38  ~ group -0.062 0.019 -3.274  0.001   -0.100   -0.025</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 6 PIP2  ~ group  0.110 0.021  5.243  0.000    0.069    0.150</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Graphs</span></span>
-<span class="r-in"><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">sem1</span><span class="op">$</span><span class="va">graph</span>, main <span class="op">=</span> <span class="st">"Between group node differences"</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Graphs</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">sem1</span><span class="op">$</span><span class="va">graph</span>, main <span class="op">=</span> <span class="st">"Between group node differences"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="SEMrun-3.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sem1</span><span class="op">$</span><span class="va">graph</span>, layout <span class="op">=</span> <span class="va">layout.circle</span>, main <span class="op">=</span> <span class="st">"Between group node differences"</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sem1</span><span class="op">$</span><span class="va">graph</span>, layout <span class="op">=</span> <span class="va">layout.circle</span>, main <span class="op">=</span> <span class="st">"Between group node differences"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="SEMrun-4.png" alt="" width="700" height="433"></span>
-<span class="r-in"></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co">#### Two-group model fitting (group effect on edges)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">sem2</span> <span class="op">&lt;-</span> <span class="fu">SEMrun</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span>,</span>
-<span class="r-in">               group <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">group</span>,</span>
-<span class="r-in">               fit <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">#### Two-group model fitting (group effect on edges)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">sem2</span> <span class="op">&lt;-</span> <span class="fu">SEMrun</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>               group <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">group</span>,</span></span>
+<span class="r-in"><span>               fit <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NLMINB solver ended normally after 13 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 31.1974  srmr: 0.08159536 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 31.19757  srmr: 0.0816294 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of edge activation: 3.774758e-15 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of edge inhibition: 0.871612 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of edge inhibition: 0.9989142 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Summaries</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sem2</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> lavaan 0.6-11 ended normally after 13 iterations</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Summaries</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sem2</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> lavaan 0.6.15 ended normally after 13 iterations</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Estimator                                         ML</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Optimization method                           NLMINB</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Number of model parameters                        60</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Number of observations per group:                   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     Group 1                                        853</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     Group 2                                        913</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model Test User Model:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Test statistic                              2246.212</span>
@@ -627,7 +625,7 @@ details, <code><a href="https://rdrr.io/pkg/flip/man/flip.html" class="external-
 <span class="r-out co"><span class="r-pr">#&gt;</span>     zPIP3             0.999    0.047   21.366    0.000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     zPKA              0.999    0.047   21.366    0.000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">sem2</span><span class="op">$</span><span class="va">dest</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">sem2</span><span class="op">$</span><span class="va">dest</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op  rhs  d_est  d_se    d_z pvalue d_lower d_upper</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1   Akt  ~ PIP3  0.028 0.041  0.693  0.488  -0.052   0.108</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2   Akt  ~  PKA  0.212 0.041  5.208  0.000   0.132   0.292</span>
@@ -647,7 +645,7 @@ details, <code><a href="https://rdrr.io/pkg/flip/man/flip.html" class="external-
 <span class="r-out co"><span class="r-pr">#&gt;</span> 16 Plcg  ~ PIP3  0.334 0.045  7.346  0.000   0.245   0.422</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 17  Raf  ~  PKA  0.026 0.048  0.551  0.581  -0.067   0.120</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 18  Raf  ~  PKC  0.083 0.048  1.739  0.082  -0.011   0.176</span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="parameterEstimates.html">parameterEstimates</a></span><span class="op">(</span><span class="va">sem2</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="parameterEstimates.html">parameterEstimates</a></span><span class="op">(</span><span class="va">sem2</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   lhs op  rhs    est    se      z pvalue ci.lower ci.upper group</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1 Akt  ~ PIP3 -0.035 0.031 -1.129  0.259   -0.097    0.026     1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 Akt  ~  PKA  0.404 0.031 12.908  0.000    0.343    0.465     1</span>
@@ -655,129 +653,86 @@ details, <code><a href="https://rdrr.io/pkg/flip/man/flip.html" class="external-
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4 Erk  ~  PKA  0.351 0.032 10.936  0.000    0.288    0.413     1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 5 Jnk  ~  PKA -0.003 0.034 -0.091  0.927   -0.069    0.063     1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 6 Jnk  ~  PKC -0.202 0.034 -6.021  0.000   -0.268   -0.136     1</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Graphs</span></span>
-<span class="r-in"><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">sem2</span><span class="op">$</span><span class="va">graph</span>, main <span class="op">=</span> <span class="st">"Between group edge differences"</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Graphs</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">sem2</span><span class="op">$</span><span class="va">graph</span>, main <span class="op">=</span> <span class="st">"Between group edge differences"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="SEMrun-5.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sem2</span><span class="op">$</span><span class="va">graph</span>, layout <span class="op">=</span> <span class="va">layout.circle</span>, main <span class="op">=</span> <span class="st">"Between group edge differences"</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sem2</span><span class="op">$</span><span class="va">graph</span>, layout <span class="op">=</span> <span class="va">layout.circle</span>, main <span class="op">=</span> <span class="st">"Between group edge differences"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="SEMrun-6.png" alt="" width="700" height="433"></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># \donttest{</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Fitting and visualization of a large pathway:</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">g</span> <span class="op">&lt;-</span> <span class="va">kegg.pathways</span><span class="op">[[</span><span class="st">"MAPK signaling pathway"</span><span class="op">]</span><span class="op">]</span></span>
-<span class="r-in"><span class="va">G</span> <span class="op">&lt;-</span> <span class="fu"><a href="properties.html">properties</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>; <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Fitting and visualization of a large pathway:</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="va">kegg.pathways</span><span class="op">[[</span><span class="st">"Neurotrophin signaling pathway"</span><span class="op">]</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">G</span> <span class="op">&lt;-</span> <span class="fu"><a href="properties.html">properties</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Frequency distribution of graph components</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   n.nodes n.graphs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       3        1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2     291        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     117        1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Percent of vertices in the giant component: 99 %</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Percent of vertices in the giant component: 98.3 %</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   is.simple      is.dag is.directed is.weighted </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        TRUE       FALSE        TRUE        TRUE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> which.mutual.FALSE </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>               1967 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH a0e4e78 DNW- 291 1967 -- </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                357 </span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH 325d8cb DNW- 117 357 -- </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> + attr: name (v/c), weight (e/n)</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">huge</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">als.npn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/huge/man/huge.npn.html" class="external-link">huge.npn</a></span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">exprs</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">huge</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">als.npn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/huge/man/huge.npn.html" class="external-link">huge.npn</a></span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">exprs</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Conducting the nonparanormal (npn) transformation via shrunkun ECDF....done.</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">g1</span> <span class="op">&lt;-</span> <span class="fu">SEMrun</span><span class="op">(</span><span class="va">G</span>, <span class="va">als.npn</span>, <span class="va">alsData</span><span class="op">$</span><span class="va">group</span>, algo <span class="op">=</span> <span class="st">"cggm"</span><span class="op">)</span><span class="op">$</span><span class="va">graph</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Estimating optimal shrinkage intensity lambda (correlation matrix): 0.0647 </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">g1</span> <span class="op">&lt;-</span> <span class="fu">SEMrun</span><span class="op">(</span><span class="va">G</span>, <span class="va">als.npn</span>, <span class="va">alsData</span><span class="op">$</span><span class="va">group</span>, algo <span class="op">=</span> <span class="st">"cggm"</span><span class="op">)</span><span class="op">$</span><span class="va">graph</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> DAG conversion : TRUE </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> GGM (de-biased nodewise L1) solver ended normally after 0 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GGM (constrained) solver ended normally after 0 iterations </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 5.620736  srmr: 0.3141682 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 1.597429  srmr: 0.2617292 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node activation: 1.176836e-14 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node activation: 1.224552e-227 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 4.827302e-08 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 1.354196e-122 </span>
+<span class="r-in"><span><span class="va">g2</span> <span class="op">&lt;-</span> <span class="fu">SEMrun</span><span class="op">(</span><span class="va">g1</span>, <span class="va">als.npn</span>, <span class="va">alsData</span><span class="op">$</span><span class="va">group</span>, fit <span class="op">=</span> <span class="fl">2</span>, algo <span class="op">=</span> <span class="st">"cggm"</span><span class="op">)</span><span class="op">$</span><span class="va">graph</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> GGM (de-biased nodewise L1) solver ended normally after 0 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="va">g2</span> <span class="op">&lt;-</span> <span class="fu">SEMrun</span><span class="op">(</span><span class="va">g1</span>, <span class="va">als.npn</span>, <span class="va">alsData</span><span class="op">$</span><span class="va">group</span>, fit <span class="op">=</span> <span class="fl">2</span>, algo <span class="op">=</span> <span class="st">"cggm"</span><span class="op">)</span><span class="op">$</span><span class="va">graph</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GGM (constrained) solver ended normally after 0 iterations </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 8.518992  srmr: 0.3431851 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 0.7447878  srmr: 0.273665 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of edge activation: 8.719692e-13 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of edge activation: 2.691819e-22 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of edge inhibition: 6.789014e-13 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of edge inhibition: 4.086134e-23 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># extract the subgraph with between group node and edge differences</span></span>
-<span class="r-in"><span class="va">g2</span> <span class="op">&lt;-</span> <span class="va">g2</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/pkg/igraph/man/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">g2</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">g2</span><span class="op">)</span><span class="op">$</span><span class="va">color</span> <span class="op">!=</span> <span class="st">"gray50"</span><span class="op">)</span><span class="op">]</span></span>
-<span class="r-in"><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="properties.html">properties</a></span><span class="op">(</span><span class="va">g2</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># extract the subgraph with node and edge differences</span></span></span>
+<span class="r-in"><span><span class="va">g2</span> <span class="op">&lt;-</span> <span class="va">g2</span> <span class="op">-</span> <span class="fu"><a href="https://r.igraph.org/reference/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">g2</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">g2</span><span class="op">)</span><span class="op">$</span><span class="va">color</span> <span class="op">!=</span> <span class="st">"gray50"</span><span class="op">)</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="properties.html">properties</a></span><span class="op">(</span><span class="va">g2</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Frequency distribution of graph components</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   n.nodes n.graphs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1       2        5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       3        1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3       4        1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4      13        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       3        2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       6        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4       9        1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 5      32        1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6      72        1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Percent of vertices in the giant component: 27 %</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Percent of vertices in the giant component: 29.6 %</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   is.simple      is.dag is.directed is.weighted </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        TRUE        TRUE        TRUE        TRUE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> which.mutual.FALSE </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 83 </span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># plot graph</span></span>
-<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">org.Hs.eg.db</span><span class="op">)</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Loading required package: AnnotationDbi</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Loading required package: stats4</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Loading required package: BiocGenerics</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Attaching package: 'BiocGenerics'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> The following objects are masked from 'package:igraph':</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>     normalize, path, union</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> The following objects are masked from 'package:stats':</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>     IQR, mad, sd, var, xtabs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> The following objects are masked from 'package:base':</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>     Filter, Find, Map, Position, Reduce, anyDuplicated, append,</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>     as.data.frame, basename, cbind, colnames, dirname, do.call,</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>     duplicated, eval, evalq, get, grep, grepl, intersect, is.unsorted,</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>     lapply, mapply, match, mget, order, paste, pmax, pmax.int, pmin,</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>     pmin.int, rank, rbind, rownames, sapply, setdiff, sort, table,</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>     tapply, union, unique, unsplit, which.max, which.min</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Loading required package: Biobase</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Welcome to Bioconductor</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>     Vignettes contain introductory material; view with</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>     'browseVignettes()'. To cite Bioconductor, see</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>     'citation("Biobase")', and for packages 'citation("pkgname")'.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Loading required package: IRanges</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Loading required package: S4Vectors</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Attaching package: 'S4Vectors'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> The following objects are masked from 'package:base':</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>     I, expand.grid, unname</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Attaching package: 'IRanges'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> The following object is masked from 'package:grDevices':</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>     windows</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span><span class="op">$</span><span class="va">label</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/AnnotationDbi/man/AnnotationDb-class.html" class="external-link">mapIds</a></span><span class="op">(</span><span class="va">org.Hs.eg.db</span>, <span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span><span class="op">$</span><span class="va">name</span>, <span class="st">'SYMBOL'</span>, <span class="st">'ENTREZID'</span><span class="op">)</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 'select()' returned 1:1 mapping between keys and columns</span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span><span class="op">$</span><span class="va">color</span><span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/igraph/man/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">g2</span><span class="op">)</span><span class="op">$</span><span class="va">color</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">g2</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/igraph/man/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span><span class="op">]</span></span>
-<span class="r-in"><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">g</span>, l <span class="op">=</span> <span class="st">"fdp"</span>, main<span class="op">=</span><span class="st">"node and edge group differences"</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 35 </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># plot graph</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://r.igraph.org/reference/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span><span class="op">$</span><span class="va">color</span><span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">g2</span><span class="op">)</span><span class="op">$</span><span class="va">color</span><span class="op">[</span><span class="fu"><a href="https://r.igraph.org/reference/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">g2</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://r.igraph.org/reference/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">g</span>, l<span class="op">=</span><span class="st">"fdp"</span>, psize<span class="op">=</span><span class="fl">40</span>, main<span class="op">=</span><span class="st">"node and edge group differences"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="SEMrun-7.png" alt="" width="700" height="433"></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># }</span></span>
-<span class="r-in"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -792,7 +747,7 @@ details, <code><a href="https://rdrr.io/pkg/flip/man/flip.html" class="external-
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

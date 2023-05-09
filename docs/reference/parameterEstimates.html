@@ -18,7 +18,7 @@ for RICF and CGGM algorithms"><!-- mathjax --><script src="https://cdnjs.cloudfl
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -55,7 +55,7 @@ for RICF and CGGM algorithms</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">parameterEstimates</span><span class="op">(</span><span class="va">fit</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">parameterEstimates</span><span class="op">(</span><span class="va">fit</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -81,16 +81,16 @@ for RICF and CGGM algorithms</p>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">ricf1</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span>, <span class="va">sachs</span><span class="op">$</span><span class="va">group</span>, algo <span class="op">=</span> <span class="st">"ricf"</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">ricf1</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span>, <span class="va">sachs</span><span class="op">$</span><span class="va">group</span>, algo <span class="op">=</span> <span class="st">"ricf"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> RICF solver ended normally after 4 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 61.84434  srmr: 0.0700967 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       Brown's combined P-value of node activation: 1.776357e-15 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       Brown's combined P-value of node activation: 8.881784e-16 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 0.1901582 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 0.0004656197 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="fu">parameterEstimates</span><span class="op">(</span><span class="va">ricf1</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="fu">parameterEstimates</span><span class="op">(</span><span class="va">ricf1</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      lhs op   rhs    est</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1    Raf  ~ group -0.467</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2    Mek  ~ group  0.122</span>
@@ -103,6 +103,7 @@ for RICF and CGGM algorithms</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 9    PKC  ~ group  0.116</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 10   P38  ~ group -0.062</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 11   Jnk  ~ group  0.333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30 group ~~ group  1.000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 12   Mek  ~   Raf  0.736</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 13   Erk  ~   Mek  0.016</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 14  PIP2  ~  Plcg  0.199</span>
@@ -121,7 +122,6 @@ for RICF and CGGM algorithms</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 27   Mek  ~   PKC -0.015</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 28   P38  ~   PKC  0.652</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 29   Jnk  ~   PKC  0.096</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 30 group ~~ group  1.000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 31   Raf ~~   Raf  0.785</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 32   Mek ~~   Mek  0.524</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 33  Plcg ~~  Plcg  0.892</span>
@@ -134,60 +134,49 @@ for RICF and CGGM algorithms</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 40   PKC ~~   PKC  0.986</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 41   P38 ~~   P38  0.580</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 42   Jnk ~~   Jnk  0.873</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">cggm1</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span>, <span class="va">sachs</span><span class="op">$</span><span class="va">group</span>, algo <span class="op">=</span> <span class="st">"cggm"</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GGM (constrained) solver ended normally after 0 iterations </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">cggm1</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span>, <span class="va">sachs</span><span class="op">$</span><span class="va">group</span>, algo <span class="op">=</span> <span class="st">"cggm"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> DAG conversion : TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> GGM (de-biased nodewise L1) solver ended normally after 0 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 60.15301  srmr: 0.070095 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 60.18925  srmr: 0.0703002 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node activation: 1.843258e-32 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node activation: 3.330669e-15 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 1.339445e-50 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 0.2568374 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="fu">parameterEstimates</span><span class="op">(</span><span class="va">cggm1</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      lhs op   rhs    est pvalue</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1    Raf  ~ group -0.332  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2    Mek  ~ group  0.120  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3   Plcg  ~ group  0.227  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4   PIP2  ~ group  0.107  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5   PIP3  ~ group -0.306  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6    Erk  ~ group  0.179  0.322</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7    Akt  ~ group  0.150  0.936</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8    PKA  ~ group  0.066  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9    PKC  ~ group  0.090  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10   P38  ~ group -0.066  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11   Jnk  ~ group  0.332  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12   Mek  ~   Raf  0.736  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13   Erk  ~   Mek  0.016  0.229</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14  PIP2  ~  Plcg  0.199  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15   PKC  ~  Plcg -0.006  0.454</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16   PKC  ~  PIP2  0.017  0.762</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17  Plcg  ~  PIP3  0.137  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18  PIP2  ~  PIP3  0.527  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19   Akt  ~  PIP3 -0.024  0.518</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20   Raf  ~   PKA  0.015  0.133</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21   Mek  ~   PKA -0.022  0.253</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 22   Erk  ~   PKA  0.407  0.123</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 23   Akt  ~   PKA  0.506  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 24   P38  ~   PKA  0.012  0.493</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 25   Raf  ~   PKC  0.014  0.207</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 26   Mek  ~   PKC -0.016  0.436</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 27   P38  ~   PKC  0.653  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 28   Jnk  ~   PKC  0.096  0.187</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 29 group ~~ group  1.000  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 30   Raf ~~   Raf  0.804  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 31   Mek ~~   Mek  0.524  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 32  Plcg ~~  Plcg  0.913  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 33  PIP2 ~~  PIP2  0.653  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 34  PIP3 ~~  PIP3  0.909  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 35   Erk ~~   Erk  0.762  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 36   Akt ~~   Akt  0.672  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 37  PIP3 ~~   PKA -0.015  0.730</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 38   PKA ~~   PKA  0.966  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 39   PKC ~~   PKC  0.987  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 40   P38 ~~   P38  0.580  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 41   Jnk ~~   Jnk  0.873  0.000</span>
-<span class="r-in"></span>
+<span class="r-in"><span><span class="fu">parameterEstimates</span><span class="op">(</span><span class="va">cggm1</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op   rhs    est    se  z_test pvalue ci.lower ci.uppper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   PKA  ~ group  0.290 0.023  12.720  0.000    0.245     0.334</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  PIP3  ~ group -0.301 0.023 -13.278  0.000   -0.346    -0.257</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3   PKC  ~ group  0.115 0.024   4.766  0.000    0.068     0.162</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6   Mek  ~ group  0.120 0.020   5.929  0.000    0.080     0.159</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10  Raf  ~ group -0.465 0.022 -21.032  0.000   -0.509    -0.422</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13 PIP2  ~ group  0.108 0.021   5.188  0.000    0.067     0.149</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16 Plcg  ~ group  0.266 0.024  11.308  0.000    0.220     0.312</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18  Jnk  ~ group  0.332 0.023  14.237  0.000    0.286     0.378</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21  P38  ~ group -0.061 0.019  -3.223  0.001   -0.099    -0.024</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24  Akt  ~ group  0.149 0.021   7.040  0.000    0.108     0.191</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 27  Erk  ~ group  0.178 0.022   8.007  0.000    0.134     0.221</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   PKC  ~  PIP2  0.028 0.025   1.101  0.271   -0.022     0.077</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5   PKC  ~  Plcg -0.008 0.025  -0.314  0.753   -0.058     0.042</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7   Mek  ~   PKA -0.016 0.018  -0.884  0.376   -0.051     0.019</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8   Mek  ~   PKC -0.014 0.017  -0.823  0.410   -0.048     0.020</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9   Mek  ~   Raf  0.734 0.019  37.816  0.000    0.696     0.772</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11  Raf  ~   PKA  0.007 0.022   0.303  0.762   -0.036     0.050</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12  Raf  ~   PKC  0.006 0.021   0.297  0.767   -0.035     0.048</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14 PIP2  ~  PIP3  0.527 0.021  25.119  0.000    0.486     0.568</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15 PIP2  ~  Plcg  0.198 0.020   9.751  0.000    0.158     0.238</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17 Plcg  ~  PIP3  0.286 0.024  12.159  0.000    0.240     0.332</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19  Jnk  ~   PKA  0.000 0.023  -0.018  0.985   -0.046     0.045</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20  Jnk  ~   PKC  0.095 0.022   4.245  0.000    0.051     0.139</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22  P38  ~   PKA  0.000 0.019   0.000  1.000   -0.037     0.037</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23  P38  ~   PKC  0.651 0.018  35.721  0.000    0.616     0.687</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25  Akt  ~   PKA  0.506 0.020  24.844  0.000    0.466     0.546</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26  Akt  ~  PIP3 -0.023 0.020  -1.112  0.266   -0.063     0.017</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 28  Erk  ~   PKA  0.406 0.022  18.741  0.000    0.364     0.449</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29  Erk  ~   Mek  0.015 0.021   0.688  0.491   -0.027     0.056</span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -202,7 +191,7 @@ for RICF and CGGM algorithms</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

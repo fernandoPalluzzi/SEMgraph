@@ -4,7 +4,7 @@
 \alias{localCI.test}
 \title{Conditional Independence (CI) local tests of an acyclic graph}
 \usage{
-localCI.test(graph, data, bap = FALSE, limit = 10000, verbose = TRUE, ...)
+localCI.test(graph, data, bap = FALSE, limit = 100, verbose = TRUE, ...)
 }
 \arguments{
 \item{graph}{A directed graph as an igraph object.}
@@ -15,11 +15,10 @@ columns.}
 \item{bap}{If TRUE, the input graph is trasformend in a BAP, if FALSE
 (defult) the input graph is reduced in a DAG.}
 
-\item{limit}{An integer value corresponding to the number of missing
-edges of the extracted acyclic graph. Beyond this limit, switch to
-Shipley's C-test (Shipley 2000) is enabled to reduce the computational
-burden.
-By default, \code{limit = 10000}.}
+\item{limit}{An integer value corresponding to the size of the
+extracted acyclic graph. Beyond this limit, switch to Shipley's
+C-test (Shipley 2000) is enabled to reduce the computational burden.
+By default, \code{limit = 100}.}
 
 \item{verbose}{If TRUE, LocalCI results will be showed to
 screen (default = TRUE).}

@@ -1,12 +1,11 @@
 Package: SEMgraph
-Title: Network Analysis and Causal Inference Through Structural
-        Equation Modeling
-Version: 1.1.4
-Date: 2023-02-13
+Title: Network Analysis and Causal Inference Through Structural Equation Modeling
+Version: 1.2.0
+Date: 2023-05-09
 Authors@R: c(
-    person("Mario", "Grassi", role = "aut", email="mario.grassi@unipv.it"),
-    person("Fernando", "Palluzzi", role = "aut", email="fernando.palluzzi@gmail.com"),
-    person("Barbara", "Tarantino", role = c("aut","cre"), email="barbara.tarantino01@universitadipavia.it"))
+  person("Mario", "Grassi", role = "aut", email="mario.grassi@unipv.it"),
+  person("Fernando", "Palluzzi", role = "aut", email="fernando.palluzzi@gmail.com"),
+  person("Barbara", "Tarantino", role = c("aut","cre"), email="barbara.tarantino01@universitadipavia.it"))
 Description: Estimate networks and causal relationships in complex systems through
   Structural Equation Modeling. This package also includes functions to import,
   weight, manipulate, and fit biological network models within the
@@ -30,4 +29,3 @@ Repository: CRAN
 Author: Mario Grassi [aut],
   Fernando Palluzzi [aut],
   Barbara Tarantino [aut, cre]
-Packaged: 2023-02-13 18:36:23 UTC

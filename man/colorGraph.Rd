@@ -75,8 +75,8 @@ est1 <- parameterEstimates(sem1$fit)
 sem2 <- SEMrun(graph = alsData$graph, data = alsData$exprs,
                group = alsData$group,
                fit = 2)
-est20 <- subset(parameterEstimates(sem2$fit), group = 1)[, -c(4, 5)]
-est21 <- subset(parameterEstimates(sem2$fit), group = 2)[, -c(4, 5)]
+est20 <- subset(parameterEstimates(sem2$fit), group == 1)[, -c(4, 5)]
+est21 <- subset(parameterEstimates(sem2$fit), group == 2)[, -c(4, 5)]
 
 # Graphs
 g <- alsData$graph

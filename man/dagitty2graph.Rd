@@ -9,8 +9,8 @@ dagitty2graph(dagi, verbose = FALSE, ...)
 \arguments{
 \item{dagi}{A graph as a dagitty object ("dag" or "pdag").}
 
-\item{verbose}{A logical value. If TRUE, the output graph is shown
-(for \code{graph2dagitty} only). This argument is FALSE by default.}
+\item{verbose}{A logical value. If TRUE, the output graph is shown.
+This argument is FALSE by default.}
 
 \item{...}{Currently ignored.}
 }

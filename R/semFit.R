@@ -46,9 +46,11 @@
 #' (default), the SEM will be fitted using the NLMINB solver from
 #' \code{lavaan} R package, with standard errors derived from the expected
 #' Fisher information matrix. If \code{algo = "ricf"}, the model is fitted
-#' via residual iterative conditional fitting (RICF; Drton et al. 2009).
+#' via residual iterative conditional fitting (RICF; Drton et al. 2009),
+#' with standard error derived from randomization or bootstrap procedures.
 #' If \code{algo = "cggm"}, model fitting is based on constrained Gaussian
-#' Graphical Modeling (CGGM; Hastie et al. 2009, p. 446).
+#' Graphical Modeling (CGGM), with DAG nodewise Lasso procedure and
+#' de-biasing asymptotic inference (Jankova & Van De Geer, 2019).
 #' @param start Starting value of SEM parameters for \code{algo = "lavaan"}.
 #' If start is \code{NULL} (default), the algorithm will determine the
 #' starting values. If start is a numeric value, it will be used as a
@@ -105,13 +107,14 @@
 #' edge (i.e., direct effect) differences (d = beta1 - beta0).
 #' P-values for parameter sets are computed by z-test (= d/SE), through
 #' \code{\link[lavaan]{lavaan}}. As an alternative to standard P-value
-#' calculation, SEMrun may use either RICF (randomization P-values) or
-#' GGM (de-sparsified P-values) methods. These algorithms are much faster
-#' than \code{\link[lavaan]{lavaan}} in case of large input graphs.
+#' calculation, SEMrun may use either RICF (randomization or bootstrap
+#' P-values) or GGM (de-biased asymptotically normal P-values) methods.
+#' These algorithms are much faster than \code{\link[lavaan]{lavaan}}
+#' in case of large input graphs.
 #'
 #' @return A list of 5 objects:
 #' \enumerate{
-#' \item "fit", SEM fitted lavaan, ricf, or ggmncv object,
+#' \item "fit", SEM fitted lavaan, ricf, or cggm object,
 #' depending on the MLE method specified by the \code{algo} argument;
 #' \item "gest" or "dest", a data.frame of node-specific
 #' ("gest") or edge-specific ("dest") group effect estimates and P-values;
@@ -122,7 +125,7 @@
 #' will be highlighted in red (beta > 0) or blue (beta < 0). If a group
 #' vector is given, nodes with significant group effect (P-value < 0.05)
 #' will be red-shaded (beta > 0) or lightblue-shaded (beta < 0);
-#' \item "dataXY", input data subset mapping graph nodes, plus
+#' \item "data", input data subset mapping graph nodes, plus
 #' group at the first column (if no group is specified, this column will
 #' take NA values).
 #' }
@@ -161,12 +164,12 @@
 #' Journal of Machine Learning Research, 10(Oct): 2329-2348.
 #' <https://www.jmlr.org/papers/volume10/drton09a/drton09a.pdf>
 #'
-#' Jankova J, van de Geer S (2015). Confidence intervals for high-dimensional
-#' inverse covariance estimation. Electronic Journal of Statistics,
-#' 9(1): 1205-1229. <https://doi.org/10.1214/15-EJS1031>
+#' Jankova, J., & Van De Geer, S (2019). Inference in high-dimensional
+#' graphical models. In Handbook of Graphical Models (2019).
+#' Chapter 14 (sec. 14.2): 325-349. Chapman & Hall/CRC. ISBN: 9780429463976
 #'
 #' Hastie T, Tibshirani R, Friedman J. (2009). The Elements of Statistical
-#' Learning (2nd ed.). Springer Verlag: New York. ISBN: 978-0-387-84858-7
+#' Learning (2nd ed.). Springer Verlag. ISBN: 978-0-387-84858-7
 #'
 #' Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
 #' Analysis of High-Throughput Data with Structural Equation Models.
@@ -222,8 +225,9 @@
 #'
 #' # Fitting and visualization of a large pathway:
 #'
-#' g <- kegg.pathways[["MAPK signaling pathway"]]
-#' G <- properties(g)[[1]]; summary(G)
+#' g <- kegg.pathways[["Neurotrophin signaling pathway"]]
+#' G <- properties(g)[[1]]
+#' summary(G)
 #' 
 #' library(huge)
 #' als.npn <- huge.npn(alsData$exprs)
@@ -231,13 +235,13 @@
 #' g1 <- SEMrun(G, als.npn, alsData$group, algo = "cggm")$graph
 #' g2 <- SEMrun(g1, als.npn, alsData$group, fit = 2, algo = "cggm")$graph
 #'
-#' # extract the subgraph with between group node and edge differences
+#' # extract the subgraph with node and edge differences
 #' g2 <- g2 - E(g2)[-which(E(g2)$color != "gray50")]
 #' g <- properties(g2)[[1]]
 #'
 #' # plot graph
 #' E(g)$color<- E(g2)$color[E(g2) %in% E(g)]
-#' gplot(g, l = "fdp", main="node and edge group differences")
+#' gplot(g, l="fdp", psize=40, main="node and edge group differences")
 #'
 #' }
 #'
@@ -288,12 +292,12 @@ SEMrun <- function(graph, data, group = NULL, fit = 0, algo = "lavaan",
 SEMmodel <- function(ig, nodes, group, ...)
 {
 	# Set from-to-matrix representation of gene-gene links
-	ftm <- as_data_frame(ig)
+	ftm <- igraph::as_data_frame(ig)
 	if (is.directed(ig) & sum(which_mutual(ig)) > 0) {
 		dg <- ig - E(ig)[which_mutual(ig)]
 		ug <- as.undirected(ig-E(ig)[!which_mutual(ig)])
-		ftm <- as_data_frame(dg)
-		ftb <- as_data_frame(ug)
+		ftm <- igraph::as_data_frame(dg)
+		ftb <- igraph::as_data_frame(ug)
 	} else {
 		ftb <- data.frame(NULL)
 	}
@@ -347,8 +351,8 @@ SEMstart <- function(ig, data, group, a, ...)
 
 		dg <- ig - E(ig)[which_mutual(ig)]
 		ug <- as.undirected(ig - E(ig)[!which_mutual(ig)])
-		ftm <- as_data_frame(dg)
-		ftb <- as_data_frame(ug)
+		ftm <- igraph::as_data_frame(dg)
+		ftb <- igraph::as_data_frame(ug)
 
 		if(nrow(ftm) > 0) {
 			Reg <- paste0("z", ftm[, 2], "~start(", a*ftm[, 3], ")*z",
@@ -445,12 +449,21 @@ SEMfit <- function(graph, data, group = NULL, start = NULL, fit = 0,
 	              rel.tol = 1e-10))
     )
 	if (fit@Fit@converged == TRUE) {
-		srmr <- fitMeasures(fit, "srmr")
-		dev <- fitMeasures(fit, "chisq")
-		df <- fitMeasures(fit, "df")
 		cat(paste0("NLMINB solver ended normally after ", fit@Fit@iterations,
 		           " iterations"), "\n\n")
-		cat("deviance/df:", dev/df, " srmr:", srmr, "\n\n")
+		#srmr <- fitMeasures(fit, "srmr")
+		#dev <- fitMeasures(fit, "chisq")
+		#df <- fitMeasures(fit, "df")
+		#cat("deviance/df:", dev/df, " srmr:", srmr, "\n\n")
+		df <- fitMeasures(fit, "df")
+		npar <- fitMeasures(fit, "npar")
+		Shat <- fitted(fit)$cov
+		Sobs <- cor(dataXY)[colnames(Shat), colnames(Shat)]
+		idx <- fitIndices(n, df, npar, Sobs, Shat)
+		#if (idx[7] > 0) {
+		# message(paste0(" WARNING: deviance is estimated by removing ", idx[7], " singular values < 1e-12...\n"))
+		#}
+		cat("deviance/df:", idx[1]/idx[2], " srmr:", round(idx[3], 7), "\n\n")
 
 	} else {
 		cat("Model converged:", fit@Fit@converged, "\n\n")
@@ -467,6 +480,7 @@ SEMfit <- function(graph, data, group = NULL, start = NULL, fit = 0,
 		                    tail = "negative")
 		cat("Brown's combined P-value of node activation:", pval1, "\n\n")
 		cat("Brown's combined P-value of node inhibition:", pval2, "\n\n")
+	
 	} else {
 		gest <- NULL
 	}
@@ -477,7 +491,7 @@ SEMfit <- function(graph, data, group = NULL, start = NULL, fit = 0,
 	colnames(dataXY) <- gsub("z", "", colnames(dataXY))
 
 	return(list(fit = fit, gest = gest, model = model, graph = ig,
-	            dataXY = dataXY))
+	            data = dataXY))
 }
 
 SEMfit2 <- function(graph, data, group, start = NULL, SE = "standard",
@@ -486,7 +500,7 @@ SEMfit2 <- function(graph, data, group, start = NULL, SE = "standard",
 	# Model fitting with GGM algo if n.nodes > limit
 	if (vcount(graph) > limit) {
 		message("WARNING: input graph is very large ( >", limit, " nodes ) !
-		 GGM (constrained) solver activated...\n")
+		 GGM (de-biased nodewise L1) solver activated...\n")
 		return(fit = SEMggm2(graph = graph, data = data, group = group))
 	}
 
@@ -507,7 +521,7 @@ SEMfit2 <- function(graph, data, group, start = NULL, SE = "standard",
 	  "WARNING: lambda > 0.5, correlation matrix is 'shrinked' near the identity matrix !\n")
 	 cov1<- cov1[1:p,1:p]
 	}
-	
+
 	# covariances for controls (GROUP 0)
 	data0<- dataY[group==0,]
 	n0<- nrow(data0)
@@ -539,12 +553,28 @@ SEMfit2 <- function(graph, data, group, start = NULL, SE = "standard",
 	              control = list(abs.tol = 1e-20, rel.tol = 1e-10))
 	)
 	if (fit@Fit@converged == TRUE) {
-		srmr <- fitMeasures(fit, "srmr")
-		dev <- fitMeasures(fit, "chisq")
-		df <- fitMeasures(fit, "df")
 		cat(paste0("NLMINB solver ended normally after ", fit@Fit@iterations,
 		           " iterations"),"\n\n")
-		cat("deviance/df:", dev/df, " srmr:", srmr, "\n\n")
+		#srmr <- fitMeasures(fit, "srmr")
+		#dev <- fitMeasures(fit, "chisq")
+		#df <- fitMeasures(fit, "df")
+		#cat("deviance/df:", dev/df, " srmr:", srmr, "\n\n")
+		df <- fitMeasures(fit, "df")/2
+		npar <-  fitMeasures(fit, "npar")/2
+		Shat0 <- fitted(fit)$"Group 1"$cov
+		Sobs0 <- cor(data0)[colnames(Shat0), colnames(Shat0)]
+		Idx0 <- fitIndices(n0, df, npar, Sobs0, Shat0)
+		Shat1 <- fitted(fit)$"Group 2"$cov
+		Sobs1 <- cor(data1)[colnames(Shat1), colnames(Shat1)]
+		Idx1 <- fitIndices(n1, df, npar, Sobs1, Shat1)
+		srmr <- (n0/(n0+n1))*Idx0[3] + (n1/(n0+n1))*Idx1[3]
+		dev <- Idx0[1] + Idx1[1]
+		r <- Idx0[7] + Idx1[7]
+		#if (r > 0) {
+		# message(paste0(" WARNING: deviance is estimated by removing ", r, " singular values < 1e-12...\n"))
+		#}
+		cat("deviance/df:", dev/(2*df), " srmr:", round(srmr, 7), "\n\n")	
+
 	} else {
 		cat("Model converged:", fit@Fit@converged, "\n\n")
 		return(fit = NULL)
@@ -574,13 +604,13 @@ SEMfit2 <- function(graph, data, group, start = NULL, SE = "standard",
 		dest <- NULL
 	}
 	dataXY <- cbind(c(rep(1, n1), rep(0, n0)), rbind(data1, data0))
-	colnames(dataXY) <- gsub("z", "", colnames(dataXY))
+	colnames(dataXY) <- c("group", gsub("z", "", colnames(dataXY)[-1]))
 
 	return(list(fit = fit, dest = dest, model = model, graph = ig,
-	            dataXY = dataXY))
+	            data = dataXY))
 }
 
-SEMricf<- function (graph, data, group = NULL, random.x = FALSE, n_rep = 1000, ...) 
+SEMricf<- function (graph, data, group = NULL, n_rep = 1000, ...) 
 {
 	nodes <- colnames(data)[colnames(data) %in% V(graph)$name]
 	dataY <- data[, nodes]
@@ -602,25 +632,38 @@ SEMricf<- function (graph, data, group = NULL, random.x = FALSE, n_rep = 1000, .
 	ig <- induced_subgraph(graph, vids = which(V(graph)$name %in% nodes))
 	E(ig)$weight <- ifelse(which_mutual(ig), 100, 1)
 	A <- as_adj(ig, attr = "weight", sparse = FALSE)[nodes,nodes]
-	if (is.null(group) & random.x == TRUE) {
-		Vx <- which(colSums(A) == 0)
-		A[Vx, Vx] <- 100
-		diag(A) <- 0
-	}
 	if (!is.null(group)) {
 		A <- cbind(rep(0, p), rbind(rep(1, p - 1), A))
 		colnames(A)[1] <- rownames(A)[1] <- "group"
 	}
+	Vx<- which(colSums(A) == 0)
+	Vy <- which(colSums(A) != 0)
+	px <- length(Vx)
+	py <- length(Vy)
+	
 	fit <- ggm::fitAncestralGraph(amat = A, S = covXY, n = n, tol = 1e-06)
 	cat(paste0("RICF solver ended normally after ", fit$it, 
 		" iterations"), "\n\n")
-	idx <- fitIndices(n, fit$df, covXY, fit$Shat)
+	B <- diag(p)- t(fit$Bhat[c(Vx,Vy), c(Vx,Vy)])
+	O <- fit$Ohat[c(Vx,Vy), c(Vx,Vy)]
+	if (is.null(group) & px > 1) {
+	 O[1:px, 1:px]<- cor(dataXY[, Vx])
+	}else{ O[1,1] <- 1 }
+	Sobs <- cor(dataXY[, c(Vx,Vy)])
+	npar<- sum(A == 1) + sum(A == 100)/2 + py
+	df <- p*(p+1)/2 - npar - (px*(px+1)/2)
+	#Shat <- solve((diag(p)-B) %*% solve(O) %*% t(diag(p)-B))
+	Shat <- t(solve(diag(p)-B)) %*% O %*% solve(diag(p)-B)
+	idx <- fitIndices(n, df, npar, Sobs, Shat)
+	#if (idx[7] > 0) {
+	# cat(paste0(" WARNING: deviance is estimated by removing ", idx[7], " singular values < 1e-12...\n\n"))
+	#}
 	cat("deviance/df:", idx[1]/idx[2], " srmr:", round(idx[3], 7), "\n\n")
-	
+
 	est <- parameterEstimates.RICF(fit)
 	gest <- list(NULL, NULL)
 	pval <- NULL
-	
+
 	if (!is.null(group) & n_rep != 0) {
 	 gest <- flip.RICF(fit = fit, data = dataY, group = group, n_rep = n_rep)
 	 pval1 <- Brown.test(p = gest[[1]][,4], x = dataY,
@@ -637,15 +680,15 @@ SEMricf<- function (graph, data, group = NULL, random.x = FALSE, n_rep = 1000, .
 	 ig <- colorGraph(est, ig, group=NULL, alpha=0.05)
 	}
 	if (is.null(group)) dataXY<- cbind(group=rep(NA, n), dataXY)
-	
-	fit <- list(ricf = fit, fitIdx = idx, parameterEstimates = est)
+
+	fit <- list(Sigma=Shat, Beta=B, Psi=O, it=fit$it, fitIdx=idx, parameterEstimates=est)
 	class(fit) <- "RICF"
-	
+
 	return(list(fit = fit, gest = gest[[1]], model = NULL, graph = ig, 
-		dataXY = dataXY, r_gest = gest[[2]], pval = pval))
+		data = dataXY, r_gest = gest[[2]], pval = pval))
 }
 
-SEMricf2 <- function(graph, data, group, random.x = FALSE, n_rep = 1000, ...)
+SEMricf2 <- function(graph, data, group, n_rep = 1000, ...)
 {
 	# Set graph and data objects
 	nodes <- colnames(data)[colnames(data) %in% V(graph)$name]
@@ -658,19 +701,22 @@ SEMricf2 <- function(graph, data, group, random.x = FALSE, n_rep = 1000, ...)
 	n <- n1 + n0
 
 	# Fitting RICF for group = 1
-	fit1 <- quiet(SEMricf(graph, data1, group = NULL, random.x = FALSE, n_rep = 0))
+	fit1 <- quiet(SEMricf(graph, data1, group = NULL, n_rep = 0))
 	est1 <- fit1$fit$parameterEstimates
-
 	# Fitting RICF for group = 0
-	fit0 <- quiet(SEMricf(graph, data0, group = NULL, random.x = FALSE, n_rep = 0))
+	fit0 <- quiet(SEMricf(graph, data0, group = NULL, n_rep = 0))
 	est0 <- fit0$fit$parameterEstimates
 
 	# Two-group fit indices
-	it <- fit1$fit$ricf$it + fit0$fit$ricf$it
+	it <- fit1$fit$it + fit0$fit$it
 	cat(paste0("RICF solver ended normally after ", it, " iterations"), "\n\n")
 	srmr <- (n1/n)*fit1$fit$fitIdx[3] + (n0/n)*fit0$fit$fitIdx[3]
 	dev <- fit1$fit$fitIdx[1] + fit0$fit$fitIdx[1]
 	df <- fit1$fit$fitIdx[2] + fit0$fit$fitIdx[2]
+	r <- fit1$fit$fitIdx[7] + fit0$fit$fitIdx[7]
+	#if (r > 0) {
+	# cat(paste0(" WARNING: deviance is estimated by removing ", r, " singular values < 1e-12...\n\n"))
+	#}
 	cat("deviance/df:", dev/df , " srmr:", round(srmr, 7), "\n\n")
 
 	# edge differences based on group randomization with n_rep=1000
@@ -678,7 +724,7 @@ SEMricf2 <- function(graph, data, group, random.x = FALSE, n_rep = 1000, ...)
 	dest<- cbind(est1[,c(1:3)], d_est)[est1$op == "~",]
 	
 	if (n_rep != 0) {
-	 A<- ifelse(abs(fit1$fit$ricf$Bhat) > 0, 1, 0)
+	 A<- ifelse(abs(fit1$fit$Beta) > 0, 1, 0)
 	 diag(A)<- 0
 	 dest<- boot.RICF(t(A), dataY, group, dest, R=n_rep)
 	 pval1<- Brown.test(p=dest$pvalue, x=NULL, theta=dest$d_est, tail="positive")
@@ -691,8 +737,9 @@ SEMricf2 <- function(graph, data, group, random.x = FALSE, n_rep = 1000, ...)
 	# output objects:
 	fit<- list(Group_1 = fit1[[1]], Group_0 = fit0[[1]])	
 	dataXY<- cbind(c(rep(1,n1),rep(0,n0)),rbind(data1,data0))
+	colnames(dataXY)[1]<- "group"
 		
-	return(list(fit = fit, dest = dest, model = NULL, graph = ig, dataXY = dataXY))
+	return(list(fit = fit, dest = dest, model = NULL, graph = ig, data = dataXY))
 }
 
 flip.RICF<- function(fit, data, group, n_rep, ...)
@@ -733,7 +780,7 @@ boot.RICF <- function(A, Z, group, L, R, ...)
 	 D <- est(Zi[group == 1,]) - est(Zi[group == 0,])
 	}
 
-	message(paste0("Model randomization with B = ", R, " bootstrap samples ...\n\n"))
+	message(paste0("Model randomization with B = ", R, " bootstrap samples ...\n"))
 	ncpus<- parallel::detectCores(logical = FALSE)
 	if (is.null(group)){
 	 xboot<- boot::boot(Z, est, R, parallel="snow", ncpus=ncpus)
@@ -755,15 +802,15 @@ boot.RICF <- function(A, Z, group, L, R, ...)
 	return(est)
 }
 
-parameterEstimates.RICF <- function(object, ...)
+parameterEstimates.RICF <- function(fit, ...)
 {
 	# Convert into a vector the output of parameter estimates
-	p <- nrow(object$Bhat)
-	B <- gdata::unmatrix(diag(p) - object$Bhat, byrow = FALSE)
+	p <- nrow(fit$Bhat)
+	B <- gdata::unmatrix(diag(p) - fit$Bhat, byrow = FALSE)
 	B <- B[which(B != 0)]
-	O <- ifelse(lower.tri(object$Ohat, diag = TRUE), object$Ohat, 0)
+	O <- ifelse(lower.tri(fit$Ohat, diag = TRUE), fit$Ohat, 0)
 	diag(O) <- ifelse(diag(O) == 0, 1, diag(O))
-	rownames(O) <- colnames(O) <- rownames(object$Ohat)
+	rownames(O) <- colnames(O) <- rownames(fit$Ohat)
 	O <- gdata::unmatrix(O, byrow = FALSE)
 	O <- O[which(O != 0)]
 	P <- c(B, O)
@@ -786,220 +833,245 @@ parameterEstimates.RICF <- function(object, ...)
 	return(est)
 }
 
-SEMggm<- function(graph, data, group = NULL, method = "none", alpha = 0.05, ...) 
+SEMggm <- function(graph, data, group = NULL, ...) 
 {
-	# Set data objects :
+	# Set data and graph objects :
 	nodes<- colnames(data)[colnames(data) %in% V(graph)$name]
-	dataY<- data[,nodes]
+	graph<- induced_subgraph(graph, vids=which(V(graph)$name %in% nodes))
+	dag<- graph2dag(graph, data, bap=FALSE) #del cycles & all <->
+	dataY<- data[, V(dag)$name]
 	if (is.null(group)){
-     dataXY <- dataY
-    }else{ dataXY <- cbind(group, dataY)}
+     dataXY<- dataY
+    }else{
+	 dataXY<- cbind(group, dataY)
+	}
 	n<- nrow(dataXY)
 	p<- ncol(dataXY)
-	if( corpcor::is.positive.definite(cor(dataXY)[1:p,1:p]) ){
-	 covXY<- cor(dataXY)[1:p,1:p]
-	}else{ 
-	 covXY<- corpcor::cor.shrink(dataXY,verbose=TRUE)
-	 if (attributes(covXY)$lambda > 0.5) message(
-	  "WARNING: lambda > 0.5, correlation matrix is 'shrinked' near the identity matrix !\n")
-	 covXY<- covXY[1:p,1:p]
-	}
 
-	# Set graph objects :
-	ig<- induced_subgraph(graph, vids= which(V(graph)$name %in% nodes))
-	E(ig)$weight<- ifelse(which_mutual(ig), 100, 1)
-	dadj<- as_adj(ig, attr="weight", sparse=FALSE)[nodes,nodes]
-	diag(dadj) <- 100
-	adj<- as_adj(as.undirected(ig), sparse=FALSE)[nodes,nodes]
+	din<- igraph::degree(dag, mode= "in")
+	Vx<- V(dag)$name[din == 0]
+	Vy<- V(dag)$name[din != 0]
+	px<- length(Vx)
+	py<- length(Vy)
+	dadj<- as_adj(dag, sparse=FALSE)
+	dadj<- dadj[c(Vx,Vy),c(Vx,Vy)]
+	
 	if( !is.null(group) ){
-	 adj<- cbind(c(0,rep(1, p-1)), rbind(rep(1, p-1),adj))
-	 colnames(adj)[1]<- rownames(adj)[1]<- "group"
 	 dadj<- cbind(rep(0, p), rbind(rep(1, p-1),dadj))
 	 colnames(dadj)[1]<- rownames(dadj)[1]<- "group"
+	 Vx<- "group"
+	 Vy<- V(dag)$name
+	 px<- 1
+	 py<- p - 1
 	}
+
+	# de-biased (de-sparsified) DAG
+	res<- parameterEstimates.DAG(Ay=dadj[,-c(1:px)], Z=scale(dataXY))
+	est<- res$beta
+
+	# Beta, Psi & Sigma matrices :
+	gB<- graph_from_data_frame(est[,c(3,1,4)])
+	V<- V(dag)$name[V(dag)$name %in% V(gB)$name == FALSE]
+	gB<- gB + vertices(V)
+	B<- as_adjacency_matrix(gB, attr="est", sparse=FALSE)
+	B<- B[c(Vx,Vy), c(Vx,Vy)]
+	O<- diag(res$sigma[c(Vx,Vy)])
+	if(is.null(group) & px >1) O[1:px, 1:px]<- cor(dataXY[, Vx])
+	Sobs <- cor(dataXY[, c(Vx,Vy)])
+	npar<- sum(dadj != 0) + py
+	df <- p*(p+1)/2 - npar - (px*(px+1)/2)
+	Shat <- solve((diag(p)-B) %*% solve(O) %*% t(diag(p)-B))
+	#Shat <- t(solve(diag(p)-B))%*%O%*%solve(diag(p)-B)
 	
-	# constrained GGM 
-	cggm<- ggm::fitConGraph(amat=adj, S=covXY, n=n)
-	Sigma<- cggm$Shat
-	Theta<- solve(cggm$Shat)
-	#cggm<- GGMncv::constrained(covXY, adj)
-	#Sigma<- cggm$Sigma
-	#Theta<- cggm$Theta
-	rownames(Sigma)<- colnames(Sigma) <- colnames(dataXY)
-	rownames(Theta)<- colnames(Theta) <- colnames(dataXY)	
-	
-	# Beta, Psi & Sigma matrices:
-	betas<- function(Theta){
-	 sapply(1:p, function(x) Theta[x,]/Theta[x,x]) * -1
-	}
-	Beta<- ifelse(dadj == 1, betas(Theta), 0)
-	Psi<- ifelse(dadj == 100, Sigma, 0)
-	diag(Psi)<- apply(scale(dataXY) %*% (diag(p)- Beta), 2, var)
-	df<- p*(p+1)/2 - (sum(Beta != 0) + (sum(Psi != 0)-p)/2 + p)
-	cat(paste0("GGM (constrained) solver ended normally after ", 0, " iterations"),"\n\n")
-	idx<- fitIndices(n, df, covXY, Sigma, Theta)
+	cat(paste0("GGM (de-biased nodewise L1) solver ended normally after ", 0, " iterations"),"\n\n")
+	idx<- fitIndices(n, df, npar, Sobs, Shat)
+	#if (idx[7] > 0) {
+	# cat(paste0(" WARNING: deviance is estimated by removing ", idx[7], " singular values < 1e-12...\n\n"))
+	#}
 	cat("deviance/df:", idx[1]/idx[2], " srmr:", round(idx[3],7), "\n\n")
 
-	est <- parameterEstimates.GGM(dadj, Beta, Psi, Theta, R=covXY, n=n)
 	if (!is.null(group)) {
-	 gest<- est[est$op == "~" & est$rhs == "group",]
-	 pval1<- Brown.test(p=gest$pvalue, x=dataY, theta=gest$est, tail="positive")
-	 pval2<- Brown.test(p=gest$pvalue, x=dataY, theta=gest$est, tail="negative")
+	 Reg<- est[which(est$op == "~"),]
+	 gest<- Reg[Reg$rhs == "group",]
+	 pval1<- Brown.test(x=dataY, p=gest$pvalue, theta=gest$est, tail="positive")
+	 pval2<- Brown.test(x=dataY, p=gest$pvalue, theta=gest$est, tail="negative")
 	 cat("Brown's combined P-value of node activation:", pval1, "\n\n")
      cat("Brown's combined P-value of node inhibition:", pval2, "\n\n")
 	}else{gest<- NULL}
 
-	# output objects:
-	Reg <- est[which(est$op == "~"),]
-	ig<- colorGraph(est=Reg, graph=ig, group=group, alpha=0.05)
+	# output objects
+	fit<- list(Sigma=Shat, Beta=B, Psi=O, fitIdx=idx, parameterEstimates=est)
+	Reg<- est[which(est$op == "~"),]
+	dag<- colorGraph(est=Reg, graph=dag, group=group, alpha=0.05)
 	if (is.null(group)) dataXY<- cbind(group=rep(NA, n), dataXY)
-	fit<- list(Theta=Theta, Beta=Beta, Psi=Psi, fitIdx=idx, parameterEstimates=est)
 	class(fit)<- "GGM"
-	
-	return( list(fit=fit, gest=gest, model=NULL, graph=ig, dataXY=dataXY) )	
+
+	return( list(fit=fit, gest=gest, model=NULL, graph=dag, data=dataXY) )	
 }
 
-SEMggm2<- function(graph, data, group, method = "none", alpha = 0.05, ...) 
+SEMggm2 <- function(graph, data, group, ...) 
 {
-	# Set graph and data objects:
+	# Set data and graph objects :
 	nodes<- colnames(data)[colnames(data) %in% V(graph)$name]
-	ig<- induced_subgraph(graph, vids= which(V(graph)$name %in% nodes))
-	E(ig)$weight<- ifelse(which_mutual(ig), 100, 1)
-	dadj<- as_adj(ig, attr="weight", sparse=FALSE)[nodes,nodes]
-	dataY<- data[,nodes]
+	graph<- induced_subgraph(graph, vids=which(V(graph)$name %in% nodes))
+	dag<- graph2dag(graph, data, bap=FALSE) #del cycles & all <->
+	dataY<- data[, V(dag)$name]
 	data1<- dataY[group == 1,]
 	data0<- dataY[group == 0,]
 	n1<- nrow(data1)
 	n0<- nrow(data0)
 	n<- n1 + n0
 	p<- ncol(dataY)
-		
-	# constrained GGM for group = 1
-	cggm1<- quiet(SEMggm(graph, data1, group=NULL, method = method, alpha = alpha))
-	est1<- parameterEstimates(cggm1$fit)
-	# constrained GGM for group = 0
-	cggm0<- quiet(SEMggm(graph, data0, group=NULL, method = method, alpha = alpha))
-	est0<- parameterEstimates(cggm0$fit)
+
+	# de-biased (de-sparsified) DAG for group = 1
+	dag1<- quiet(SEMggm(dag, data1, group=NULL))
+	est1<- dag1$fit$parameterEstimates
+	# de-biased (de-sparsified) DAG for group = 0
+	dag0<- quiet(SEMggm(dag, data0, group=NULL))
+	est0<- dag0$fit$parameterEstimates
+
 	# two-group fit indices
-	cat(paste0("GGM (constrained) solver ended normally after ", 0, " iterations"),"\n\n")
-	srmr<- (n1/n)*cggm1$fit$fitIdx[3] + (n0/n)*cggm0$fit$fitIdx[3]
-	dev<- cggm1$fit$fitIdx[1] + cggm0$fit$fitIdx[1]
-	df<- cggm1$fit$fitIdx[2] + cggm0$fit$fitIdx[2]
+	cat(paste0("GGM (de-biased nodewise L1) solver ended normally after ", 0, " iterations"),"\n\n")
+	srmr<- (n1/n)*dag1$fit$fitIdx[3] + (n0/n)*dag0$fit$fitIdx[3]
+	dev<- dag1$fit$fitIdx[1] + dag0$fit$fitIdx[1]
+	df<- dag1$fit$fitIdx[2] + dag0$fit$fitIdx[2]
+	r<- dag1$fit$fitIdx[7] + dag0$fit$fitIdx[7]
+	#if (r > 0) {
+	# cat(paste0(" WARNING: deviance is estimated by removing ", r, " singular values < 1e-12...\n\n"))
+	#}
 	cat("deviance/df:", dev/df , " srmr:", round(srmr,7), "\n\n")
-		
-	# Edge differences based on the de-sparsified precision matrix	
-	est1<- est1[est1$op == "~",] #case
-	est0<- est0[est0$op == "~",] #control
-	d_omega<- est1$omega - est0$omega #case - control
-	d_est <- est1$est - est0$est
+
+	# edge differences based on the de-sparsified Beta matrix
+	d_est<- est1$est - est0$est
 	if (sum(d_est) != 0) {
 	 d_se<- sqrt(est1$se^2 + est0$se^2)
-	 d_z<- d_omega/d_se
-	 pvalue<- 2*(1-pnorm(abs(d_z)))
-	 d_lower<- d_omega - 1.96*d_se
-	 d_upper<- d_omega + 1.96*d_se
+	 pvalue<- 2*(1-pnorm(abs(d_est/d_se)))
+	 d_lower<- d_est - 1.96*d_se
+	 d_upper<- d_est + 1.96*d_se
 	 pval1<- Brown.test(p=pvalue, x=NULL, theta=d_est, tail="positive")
 	 pval2<- Brown.test(p=pvalue, x=NULL, theta=d_est, tail="negative")
 	 cat("Brown's combined P-value of edge activation:", pval1, "\n\n")
      cat("Brown's combined P-value of edge inhibition:", pval2, "\n\n")
-	 dest<- cbind(est0[,1:3], d_est, d_omega, d_se, d_z, pvalue, d_lower, d_upper)
+	 dest<- cbind(est0[,1:3], d_est, d_se, d_z=d_est/d_se, pvalue, d_lower, d_upper)
 	 class(dest)<- c("lavaan.data.frame" ,"data.frame")
-	 ig<- colorGraph(est=dest, graph=ig, group=NULL, alpha=0.05)
+	 dag<- colorGraph(est=dest, graph=dag, group=NULL, alpha=0.05) #gplot(dag)
 	}else{ dest<- NULL }
 
 	# output objects :
-	fit<- list(Group_1 = cggm1$fit, Group_0 = cggm0$fit)
-	dataXY<- cbind(c(rep(1,n1),rep(0,n0)),rbind(data1,data0))
-		
-	return( list(fit=fit, dest=dest, model=NULL, graph=ig, dataXY=dataXY) )	
+	fit<- list(Group_1 = dag1$fit, Group_0 = dag0$fit)
+	dataXY<- cbind(c(rep(1,n1),rep(0,n0)),rbind(data1,data0)) 
+	colnames(dataXY)[1]<- "group"
+
+	return( list(fit=fit, dest=dest, model=NULL, graph=dag, data=dataXY) )	
 }
 
-parameterEstimates.GGM <- function(dadj, Beta, Psi, Theta, R, n, ...)
+parameterEstimates.DAG <- function(Ay, Z, ...)
 {
-	# Convert into a vector the output of parameter estimates	
-	A <- gdata::unmatrix(dadj, byrow=TRUE)
-	B <- gdata::unmatrix(Beta, byrow=TRUE)
-	B <- na.omit(ifelse(A == 1, B, NA))
-	O <- ifelse(lower.tri(Psi, diag=TRUE), Psi, 0)
-	rownames(O)<-colnames(O)<- rownames(Psi)
-    O <- gdata::unmatrix(O, byrow=TRUE)
-	O <- O[-which(O == 0)]
-	
-	L <- NULL
-	P <- c(B,O)
-	for(j in 1:length(P)) {
-	 s<- strsplit(names(P)[j],":")
-	 lhs<- s[[1]][2]
-	 rhs<- s[[1]][1]
-	 if(j <= length(B)){ 
-	  L<- rbind(L, data.frame(lhs, op= "~", rhs))
+	# Asymptotic inference in sparse DAGs with the procedure of:
+	# Jankova, J., & Van De Geer, S. Inference in high-dimensional
+	# graphical models. In Handbook of Graphical Models (2019).
+	# Chapter 14: 325-349. Chapman & Hall/CRC. ISBN 9780429463976
+
+	est<- NULL
+	n<- nrow(Z)
+	sigma<- rep(1, nrow(Ay)-ncol(Ay))
+	for (j in 1:ncol(Ay)) { #j=1
+	 yy<- colnames(Ay)[j]
+	 xx<- rownames(Ay)[Ay[,j] == 1]
+	 y<- as.matrix(Z[,yy])
+	 x<- as.matrix(Z[,xx])
+	 if (ncol(y) == 1) colnames(y)<- yy
+	 if (ncol(x) == 1) colnames(x)<- xx
+	 if (ncol(x) > 1) {
+	    p <- ncol(x) + 1
+		if (p > n) {
+		 l <- sqrt(log(p)/n)
+		}else{
+		 l <- 1e-3
+		}
+		fit <- glmnet::glmnet(x=x, y=y, family="gaussian", lambda=l)
+		b <- coef(fit, s = NULL)[-1,]
+		wi <- glasso::glasso(s=cov(x), rho=l)$wi/n
+		rownames(wi) <- colnames(wi) <- colnames(x)
 	 }else{
-	  L<- rbind(L, data.frame(lhs, op= "~~", rhs))}
+		fit <- lm(y ~ x)
+		b <- coef(fit)[2]
+		names(b) <- colnames(x)
+		wi <- 1/(n*var(x))
+	 }
+	 e <- y - x%*%b
+	 B <- b + wi%*%t(x)%*%e/n
+	 colnames(B) <- NULL
+	 SE <- sd(e)*sqrt(diag(wi))
+	 estj <- data.frame(
+		lhs = rep(colnames(y), length(B)),
+		op = "~",
+		rhs = names(b),
+		est = B,
+		se = SE,
+		z_test = B/SE,
+		pvalue = 2*(1-pnorm(abs(B/SE))),
+		ci.lower = B - 1.96*SE,
+		ci.uppper = B + 1.96*SE
+	  )
+	 est <- rbind(est, estj)
+	 sigma <- c(sigma, var(e))
 	}
-	
-	# Equation 7 in
-	# Jankova, J., & Van De Geer, S. (2015). Confidence intervals for high-dimensional
-	# inverse covariance estimation. Electronic Journal of Statistics, 9(1), 1205-1229.
-	Tstar <- 2 * Theta - Theta %*% R %*% Theta
-	Tstar <- gdata::unmatrix(Tstar, byrow=TRUE)
-	Bstar <- Tstar[names(Tstar) %in% names(B)]
-	Ostar <- Tstar[names(Tstar) %in% names(O)]
-	# standard error
-	sds <- sqrt((tcrossprod(diag(Theta)) + Theta^2))
-	sds <- gdata::unmatrix(sds, byrow=TRUE)
-	Bse <- sds[names(sds) %in% names(B)]/sqrt(n)
-	Ose <- sds[names(sds) %in% names(O)]/sqrt(n)
-	# z test
-	z <- c(Bstar,Ostar)/c(Bse,Ose)
-
-	est <- data.frame(L, est = c(B,O),
-	 omega = c(Bstar,Ostar), se = c(Bse,Ose), z = z,
-	 pvalue = 2*(1-pnorm(abs(z))),
-	 ci.lower = (c(Bstar,Ostar) - 1.96*c(Bse,Ose)),
-	 ci.upper = (c(Bstar,Ostar) + 1.96*c(Bse,Ose)))
 	rownames(est) <- NULL
-	#class(est) <- c("lavaan.data.frame" ,"data.frame")
+	names(sigma) <- rownames(Ay)
+	class(est) <- c("lavaan.data.frame","data.frame")
 
-	return(est)
+	return(list(beta = est, sigma = sigma))
 }
 
-fitIndices <- function(n, df, S, Sigma, Theta = NULL, ...)
+fitIndices <- function(n, df, npar, S, Sigma, ...)
 {
-	p <- nrow(S)
-	t <- p*(p + 1)/2 - df
+	p <- ncol(S)
+	df <- as.numeric(df)
+	t_free <- npar
+	t_fixed <- p*(p+1)/2 - npar - df
+
+	# remove latent variables (LV)
+	colnames(S) <- gsub("z", "", colnames(S))
+	lv <- which(substr(colnames(S),1,2) == "LV")
+	q <- length(lv)
+	#q <- 0
+	if (q > 0) {
+	 S <- S[-lv,-lv]
+	 Sigma <- Sigma[-lv,-lv]
+	 p <- ncol(S)
+	}
+
 	if (corpcor::is.positive.definite(Sigma) == FALSE){
 	 message(" WARNING: Sigma is not a definite positive matrix...\n")
 	}
-	E <- S - Sigma
-
 	# Deviance and df for model 1 (fitted model)
-	if (is.null(Theta)) {
-		ST <- S %*% solve(Sigma)
-	} else {
-		ST <- S %*% Theta
-	}
-	dev <- n*(sum(diag(ST)) - log(det(ST)) - p)
-
+	ST <- S %*% solve(Sigma)
+	#dev <- n * (sum(diag(ST)) - log(det(ST)) - p) # ggm:::likGau
+	d <- svd(S, nu=0, nv=0)$d
+	r <- length(which(d < 1e-18))
+	d <- d[d > 1e-18]
+	dev <- n * (log(det(Sigma)) + sum(diag(ST)) - sum(log(d)) - p)
+    devN <- (100/n)*dev
 	# Deviance and df for model 0 (null model)
-	dev0 <- n*(sum(diag(S)) - log(det(S)) - p) # n*(-log(det(R)))
+	dev0 <- n * (-sum(log(d))) # n*(-log(det(R)))
 	df0 <- p*(p + 1)/2 - p
 
 	# Standardized Root Mean Square Residual (SRMR)
+	E <- S - Sigma
 	SRMR <- sqrt(mean(E[lower.tri(E, diag = TRUE)]^2))
-
 	# Root Mean Square Error of Approximation (RMSEA)
 	RMSEA <- sqrt(max((dev - df), 0)/(df*(n - 1)))
-
+	ncp <- df*n*RMSEA^2
+	pRMSEA <- pchisq(dev, df, ncp, lower.tail = FALSE)
 	# Comparative Fit Index (CFI)
 	CFI <- 1 - (dev - df)/(dev0 - df0)
-
 	# Tucker-Lewis Index (TLI)
 	TLI <- (dev0/df0 - dev/df)/(dev0/df0 - 1)
-
 	# ULS Goodness of Fit Index (GFI)
 	ULS <- 1 - sum(diag(t(E)%*%E))/sum(diag(t(S)%*%S))
 
-	return(c(dev = dev, df = df, srmr = SRMR, rmsea = RMSEA, n = n, t = t))
+	return(c(dev=dev, df=df, srmr=SRMR, rmsea=RMSEA, n=n, npar, r=r))
 }
 
 Brown.test <- function (p, x = NULL, theta = NULL, tail = "both", ...)
@@ -1043,6 +1115,200 @@ Brown.test <- function (p, x = NULL, theta = NULL, tail = "both", ...)
 	return(pX2)
 }
 
+#' @title Missing edge testing implied by a DAG with Shipley's basis-set
+#'
+#' @description Compute all the P-values of the d-separation tests
+#' implied by the missing edges of a given acyclic graph (DAG).
+#' The conditioning set Z is represented, in a DAG, by the union of the
+#' parent sets of X and Y (Shipley, 2000). 
+#' The results of every test, in a DAG, is then combined using the
+#' Fisher’s statistic in an overall test of the fitted model
+#' C = -2*sum(log(P-value(k))), where C is distributed as a chi-squared
+#' variate with df = 2k, as suggested by Shipley (2000).
+#'
+#' @param graph A directed graph as an igraph object.
+#' @param data A data matrix with subjects as rows and variables as
+#' columns.
+#' @param MCX2 If TRUE, a Monte Carlo P-value of the combined C test is
+#' enabled using the R code of Shipley extracted from 
+#' <https://github.com/BillShipley/CauseAndCorrelation>.
+#' @param cmax Maximum number of parents set, C. This parameter can be
+#' used to perform only those tests where the number of conditioning
+#' variables does not exceed the given value. High-dimensional conditional
+#' independence tests can be very unreliable. By default, cmax = Inf.
+#' @param limit An integer value corresponding to the graph size (vcount)
+#' tolerance. Beyond this limit, multicore computation is enabled to
+#' reduce the computational burden. By default, \code{limit = 100}.
+#' @param verbose If TRUE, Shipley's test results will be showed to
+#' screen (default = TRUE).
+#' @param ... Currently ignored.
+#'
+#' @export
+#'
+#' @return A list of three objects: (i) "dag":  the DAG used to perform the Shipley
+#' test (ii) "dsep": the data.frame of all d-separation tests over missing edges in
+#' the DAG and (iii) "ctest": the overall Shipley's' P-value.
+#'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
+#' @references
+#'
+#' Shipley B (2000). A new inferential test for path models based on DAGs.
+#' Structural Equation Modeling, 7(2): 206-218.
+#' <https://doi.org/10.1207/S15328007SEM0702_4>
+#'
+#' @examples
+#'
+#' #\donttest{
+#'
+#' library(huge)
+#' als.npn <- huge.npn(alsData$exprs)
+#' 
+#' sem <- SEMrun(alsData$graph, als.npn)
+#' C_test <- Shipley.test(sem$graph, als.npn, MCX2 = FALSE)
+#' #MC_test <- Shipley.test(sem$graph, als.npn, MCX2 = TRUE)
+#'
+#' #}
+#'
+Shipley.test<- function(graph, data, MCX2=FALSE, cmax=Inf, limit=100, verbose=TRUE,...)
+{
+	# graph to DAG conversion :
+	nodes<- colnames(data)[colnames(data) %in% V(graph)$name]
+	graph<- induced_subgraph(graph, vids=which(V(graph)$name %in% nodes))
+	df1<- vcount(graph)*(vcount(graph)-1)/2-ecount(as.undirected(graph))
+	dataY<- as.matrix(data[, nodes])
+	S<- cov(dataY)
+	n<- nrow(dataY)
+	
+	if (!is_dag(graph)){
+	 cat("WARNING: input graph is not acyclic !\n")
+	 cat(" Applying graph -> DAG conversion...\n")
+	 dag<- graph2dag(graph, dataY, bap=FALSE) #del cycles & all <->
+	 df2<- vcount(dag)*(vcount(dag)-1)/2-ecount(as.undirected(dag))
+	 cat(" \nDegrees of freedom:\n Input graph  =", 
+            df1, "\n Output graph =", df2, "\n\n")
+	}else{
+	 dag <- graph
+	 df2 <- df1
+	}
+
+	# d-separation local tests (B_U) & Shipley's overall pvalue
+	cat("d-separation test (basis set) of", df2, "edges...\n")
+	dsep<- dsep.test(dag, S, n, cmax=cmax, limit=limit)
+	colnames(dsep)[c(3,6,7)]<- c("|Z|", "2.5%", "97.5%")
+	#Combining p-values with Fisher's procedure:
+	X2<- -2 * sum(log(dsep$p.value + 1E-16))
+	df<- 2 * nrow(dsep)
+	if (MCX2) {
+	 pv<- MCX2(model.df=df, n.obs=n, model.chi.square=X2)[[1]]
+	}else{
+	 pv<- 1 - pchisq(q = X2, df = df)
+	}
+	if (verbose) print(data.frame(C_test=X2, df=df, pvalue=round(pv,6)))
+			
+	return( list(dag=dag, dsep=dsep, ctest=c(X2, df, pv)) )
+}
+
+dsep.test<- function(dag, S, n, cmax, limit, ...)
+{
+	# d-sep (basis set) testing of a DAG
+	A <- ifelse(as_adj(as.undirected(dag), sparse=FALSE) == 1, 0, 1)
+	ug <- graph_from_adjacency_matrix(A, mode="undirected", diag=FALSE)
+	M <- attr(E(ug), "vnames")
+	
+	local<- function(x) {
+	 s <- strsplit(x,"\\|")
+	 ed <- c(s[[1]][1], s[[1]][2])
+	 pa.r <- V(dag)$name[SEMgraph::parents(dag, ed[1])]
+	 pa.s <- V(dag)$name[SEMgraph::parents(dag, ed[2])]
+	 dsep <- union(pa.r, pa.s)
+     dsep <- setdiff(dsep, ed)
+	 B <- c(ed, dsep)
+	 pcor <- pcor.test(S, B, n, cmax, H0=0.05)
+	 #set <- paste(B[-c(1:2)], collapse=",")
+	 return(data.frame(X=B[1], Y=B[2], pcor))
+	}
+
+	#message("d-separation test (basis set) of ", length(M), " edges...")
+	op<- pbapply::pboptions(type = "timer", style = 2)
+	#df<- vcount(dag)*(vcount(dag)-1)/2 - ecount(dag)
+	if (vcount(dag) > limit){
+	 n_cores <- parallel::detectCores(logical = FALSE)
+	 cl <- parallel::makeCluster(n_cores)
+	 #cl <- parallel::makeCluster(3)
+	 parallel::clusterExport(cl,
+	  c("local", "dag", "S", "n"),  envir = environment())
+	 SET<- pbapply::pblapply(M, local, cl=cl)
+	 parallel::stopCluster(cl)
+	}else{
+	 SET<- pbapply::pblapply(M, local, cl=NULL)
+	}
+	SET<- do.call(rbind, lapply(SET, as.data.frame))
+
+	return( SET=na.omit(SET) )
+}
+
+pcor.test<- function(S, B, n, cmax, H0, ...)
+{
+	#Set objects
+	q <- length(B)-2
+	if (cmax == Inf) cmax <- n - 3
+	if (q > cmax) {
+	 pcor<- cbind(K=NA, estimate=NA, p.value=NA, lower=NA, upper=NA)
+	 return(pcor)
+	}
+	k <- tryCatch(solve(S[B,B]), error = function(err) NA)
+	if (!is.matrix(k)) {
+	 pcor <- cbind(K=NA, estimate=NA, p.value=NA, lower=NA, upper=NA)
+	 return(pcor)
+	}
+    r <- -k[1,2]/sqrt(k[1,1]*k[2,2])
+	if( H0 == 0 ) {
+	#Test null H0: r=abs(r(X,Y|Z))=0
+	 df <- n - 2 - q
+	 tval <- r * sqrt(df)/sqrt(1 - r * r)
+	 pval <- 2 * pt(-abs(tval), df)
+	}else{
+	#Test of not-close fit, H0: r=abs(r(X,Y|Z)) vs. r<.05
+	 z <- atanh(r)
+	 se <-  1/sqrt(n - 3 - q)
+	 pval <- pchisq((z/se)^2, df=1, ncp=(atanh(H0)/se)^2, lower.tail=FALSE)
+	}
+	lower<- (exp(2*(z - 1.96*se))-1)/(exp(2*(z - 1.96*se))+1)
+	upper<- (exp(2*(z + 1.96*se))-1)/(exp(2*(z + 1.96*se))+1)
+	pcor<- cbind(K=q, estimate=r, p.value=pval, lower, upper)
+	return( pcor )
+}
+
+MCX2 <- function (model.df, n.obs, model.chi.square, n.sim = 10000, ...)
+{
+	#Monte Carlo Chi-square simulator (Author: Bill Shipley) from:
+	#devtools::install_github("BillShipley/CauseAndCorrelation")
+	# All rights reserved.  See the file COPYING for license terms.
+	x <- (-1 + sqrt(1 + 8 * model.df))/2
+	if ((x - as.integer(x)) == 0)
+	v <- x
+	if ((x - as.integer(x)) > 0 & (x - as.integer(x)) < 1) 
+	v <- as.integer(x) + 1
+	if ((x - as.integer(x)) > 1)return(message("ERROR: check model df !"))
+	c.value <- v * (v + 1)/2 - model.df
+	MCX2 <- rep(NA, n.sim)
+	for (i in 1:n.sim) {
+	 dat <- matrix(rnorm(n.obs * v), ncol = v)
+	 obs.VCV <- var(dat)
+	 model.VCV <- diag(v)
+	 diag(model.VCV)[1:c.value] <- diag(obs.VCV)[1:c.value]
+	 MCX2[i] <- (n.obs - 1) * (log(det(model.VCV)) + sum(diag(obs.VCV) * 
+							(1/diag(model.VCV))) - log(det(obs.VCV)) - v)
+	}
+	MCprob <- sum(MCX2 >= model.chi.square)/n.sim
+	x <- seq(0, max(MCX2))
+	theoretical.prob <- dchisq(x, model.df)
+	MLprob<- pchisq(model.chi.square, model.df, lower.tail=FALSE)
+	
+	return(list(MCprob = MCprob, MLprob = MLprob))
+}
+
 #' @title Conditional Independence (CI) local tests of an acyclic graph
 #'
 #' @description P-values of one minimal testable implication (with the
@@ -1062,11 +1328,10 @@ Brown.test <- function (p, x = NULL, theta = NULL, tail = "both", ...)
 #' (defult) the input graph is reduced in a DAG.
 #' @param verbose If TRUE, LocalCI results will be showed to
 #' screen (default = TRUE).
-#' @param limit An integer value corresponding to the number of missing
-#' edges of the extracted acyclic graph. Beyond this limit, switch to
-#' Shipley's C-test (Shipley 2000) is enabled to reduce the computational
-#' burden.
-#' By default, \code{limit = 10000}.
+#' @param limit An integer value corresponding to the size of the
+#' extracted acyclic graph. Beyond this limit, switch to Shipley's
+#' C-test (Shipley 2000) is enabled to reduce the computational burden.
+#' By default, \code{limit = 100}.
 #' @param ... Currently ignored.
 #'
 #' @export
@@ -1094,14 +1359,14 @@ Brown.test <- function (p, x = NULL, theta = NULL, tail = "both", ...)
 #' sem <- SEMrun(alsData$graph, als.npn)
 #' B_test <- localCI.test(sem$graph, als.npn, verbose = TRUE)
 #'
-localCI.test<- function(graph, data, bap=FALSE, limit=10000, verbose=TRUE, ...)
+localCI.test<- function(graph, data, bap=FALSE, limit=100, verbose=TRUE, ...)
 {
 	# Set graph and covariance matrix:
 	nodes<- colnames(data)[colnames(data) %in% V(graph)$name]
 	graph<- induced_subgraph(graph, vids=which(V(graph)$name %in% nodes))
 	dataY<- as.matrix(data[, nodes])
 	df1<- vcount(graph)*(vcount(graph)-1)/2-ecount(as.undirected(graph))
-	if (df1 > limit){
+	if (vcount(graph) > limit){
 	 message("too many degree of fredoom, switch to Shipley.test...\n")
 	 CI<- Shipley.test(graph, dataY)
 	 return( list(bap=CI$dag, msep=CI$dsep, mtest=CI$ctest) )
@@ -1150,13 +1415,13 @@ msep.test<- function(bap, S, n, verbose, ...)
 	
 	imp0<- dagitty::impliedConditionalIndependencies(dagi,
 	 type="missing.edge", max.results=Inf)
-	imp<- Filter(function(x) length(x$Z) <= 10, imp0)
+	imp<- Filter(function(x) length(x$Z) <= 3, imp0)
 	XY<- t(sapply(1:length(imp), function(x) imp[[x]][1:2]))
 	K<- sapply(1:length(imp), function(x) length(imp[[x]][3]$Z))
 	del<- which(duplicated(XY[,1:2]) == TRUE)
 	if (length(del)>0) imp<- imp[-del]
 	res<- dagitty::localTests(dagi, type = "cis", tests = imp,
-	 sample.cov=S, sample.nobs=n, max.conditioning.variables=NULL, tol=0.05)
+	 sample.cov=S, sample.nobs=n, max.conditioning.variables=3, tol=0.05)
 	if (length(del)>0) {
 	 SET<- cbind(XY[-del,], "|Z|"=K[-del], res)
 	}else{
@@ -1200,12 +1465,12 @@ parameterEstimates<- function(fit, ...)
 	else if (!inherits(fit, "lavaan")){
 	 if (length(fit) != 2){
 	  est0<- fit$parameterEstimates
-	  sel<- which(est0$lhs == "group")
-	  if(length(sel) != 1){
+	  sel<- which(est0$rhs == "group")
+	  if(length(sel) == 0){
 	   est <- est0
 	  }else{
-	   est <- est0[-sel,]
-	   est <- rbind(est, est0[sel,])
+	   est <- est0[sel,]
+	   est <- rbind(est, est0[-sel,])
 	  }
 	 }else{
 	  est0 <- fit$Group_0$parameterEstimates
@@ -1241,7 +1506,7 @@ parameterEstimates<- function(fit, ...)
 summary.RICF <- function(object, ...)
 {
 	.local <- function(object) {
-		it <- object$ricf$it
+		it <- object$it
 		t <- object$fitIdx[6]
 		n <- object$fitIdx[5]
 		dev <- round(object$fitIdx[1], 3)
@@ -1318,7 +1583,7 @@ summary.GGM <- function(object, ...)
 		df <- object$fitIdx[2]
 		srmr <- round(object$fitIdx[3], 3)
 
-		cat(paste0("GGM (constrained) solver ended normally after ", it,
+		cat(paste0("GGM (de-biased nodewise L1) solver ended normally after ", it,
 		           " iterations"), "\n\n")
 		cat(paste0("  Estimator                                       ML"),
 		           "\n")
@@ -1346,7 +1611,7 @@ summary.GGM <- function(object, ...)
 		cov <- L[which(L$op == "~~"),]
 		sel <- which(cov$lhs == cov$rhs)
 		L <- list(reg, cov[-sel,], cov[sel,])
-		for (l in 1:3) {
+		for (l in 1:1) {
 			cat(K[l], "\n\n")
 			print(data.frame(lapply(L[[l]], function(y) {
 					if(is.numeric(y)) round(y, 3) else y
