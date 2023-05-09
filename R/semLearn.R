@@ -28,15 +28,15 @@
 #' the data matrix, Y or (iii) spectral transformation of Y. 
 #' 
 #' @param graph An igraph object.
-#' @param data A matrix whith rows corresponding to subjects, and    or \code{\link[SILGGM]{SILGGM}}
-#' columns to graph nodes (variables).
+#' @param data A matrix whith rows corresponding to subjects, and columns to
+#' graph nodes (variables).
 #' @param group A binary vector. This vector must be as long as the
 #' number of subjects. Each vector element must be 1 for cases and 0
 #' for control subjects. If \code{NULL} (default), confouding within group
 #' will not be considered.
-#' @param dalgo Deconfounding method. Six algorithms are available: 
+#' @param dalgo Deconfounding method. Four algorithms are available: 
 #' \itemize{
-#' \item "cggm_dsep" (default). The algorithm make: (i) exhaustive search
+#' \item "cggm" (default). The algorithm make: (i) exhaustive search
 #' of bow-free significant covariances (see details) through  
 #' \code{\link[SEMgraph]{Shipley.test}} function; (ii) estimation of the inverse
 #' of the selected covariance matrix (i.e. the precision matrix, W) through
@@ -44,7 +44,7 @@
 #' matrix, Z by multiplying the data matrix, Y rightward by the square root of
 #' the estimated precision matrix, Z=YW^(1/2) as suggested by Grassi, Palluzzi
 #' and Tarantino (2022).
-#' \item "glpc_dsep". The algorithm first makes an exhaustive search of bow-free
+#' \item "glpc". The algorithm first makes an exhaustive search of bow-free
 #' significant covariances through \code{\link[SEMgraph]{Shipley.test}} function.
 #' Once obtained the adjacency matrix, Graph-Laplacian PCA (gLPCA) algorithm learns
 #' a low dimensional representation of the observed data matrix that incorporates
@@ -52,51 +52,51 @@
 #' confounding proxies, i.e. LVs, as additional source nodes defined by last q
 #' principal component scores of gLPCA and these LV scores are added to the data
 #' matrix, Z=cbind(LV,Y).
-#' \item "pc". The procedure add additional source nodes to DAG as in "glpc*"
-#' algorithms, but confounding proxies are the q principal component scores
+#' \item "pc". The procedure add additional source nodes to DAG as in "glpc"
+#' algorithm, but confounding proxies are the q principal component scores
 #' extracted by Spectral decomposition (SVD) selecting only graph nodes and
 #' without graph edge information and bow-free covariance search.
-#' \item "trim" or "pcss". Ćevid et al. (2020) suggest multiplying the data
+#' \item "trim". Ćevid et al. (2020) suggest multiplying the data
 #' matrix, Y leftward by a well selected spectrum transformation matrix, T
 #' which modifies the singular values of Y, while keeping its singular vectors
 #' intact, Z=TY. Trim transform limits all singular values to be at most some
-#' costant (t), where t = median of the singuar values. While, PCSS trasform
-#' set equal to zero the first q singular values, and kep the others intact.
+#' costant (t), where t = median of the singuar values.
 #' }
 #' @param method Multiple testing correction method. One of the values
 #' available in \code{\link[stats]{p.adjust}}. By default, \code{method}
 #' is set to "BH" (i.e., Benjamini-Hochberg multiple test correction).
 #' @param alpha Significance level for false discovery rate (FDR) used
-#' for d-separation or CI tests. This argument is used to
+#' for d-separation test. This argument is used to
 #' control data de-correlation. A higher \code{alpha} level includes more
 #' hidden covariances, thus considering more sources of confounding.
 #' If \code{alpha = 0}, data de-correlation is disabled. By default,
 #' \code{alpha = 0.05}.
 #' @param hcount The number of latent (or hidden) variables. By default
 #' \code{hcount="auto"}, the hidden count is determined with a
-#' permutation method (see details). Currently ignored if (dalgo ="cggm*"
+#' permutation method (see details). Currently ignored if (dalgo ="cggm"
 #' or "trim").
-#' @param limit An integer value corresponding to the number of missing
-#' edges tolerance. Beyond this limit, multicore computation is enabled to
-#' reduce the computational burden of the exaustive BAP search of the
-#' \code{\link[SEMgraph]{Shipley.test}} procedure.
-#' By default, \code{limit = 30000}.
+#' @param cmax Maximum number of parents set, C. This parameter can be
+#' used to perform only those tests where the number of conditioning
+#' variables does not exceed the given value. High-dimensional conditional
+#' independence tests can be very unreliable. By default, cmax = Inf.
+#' @param limit An integer value corresponding to the graph size (vcount)
+#' tolerance. Beyond this limit, the precision matrix is estimated by
+#' "glasso" algorithm (FHT, 2008) to reduce the computational burden of the
+#' exaustive BAP search of the \code{\link[SEMgraph]{Shipley.test}} procedure.
+#' By default, \code{limit = 200}.
 #' @param verbose A logical value. If FALSE (default), the processed graphs
 #' will not be plotted to screen.
 #' @param ... Currently ignored.
 #'
 #' @details Missing edges in causal network inference using a directed acyclic
 #' graph (DAG) are frequently hidden by unmeasured confounding variables.
-#' A Bow-free Acyclic Paths (BAP) search is performed with d-separation or
-#' Conditional Independence (CI) tests between all pairs of variables with
-#' missing connection in the input DAG, adding a bidirected edge (i.e.,
-#' bow-free covariance) to the DAG when there is an association between them.
-#' The d-separation test evaluates if two variables (Y1, Y2) in a DAG are
-#' conditionally independent for a given conditioning set, C represented in a
-#' DAG by the union of the parent sets of Y1 and Y2 (Shipley, 2000). The CI
-#' test (Jankova and van de Geer, 2015) evaluates if two variables (Y1, Y2) in
-#' an undirected graph are independent given the set = "rest" (the other
-#' variables excluding Y1 and Y2).
+#' A Bow-free Acyclic Paths (BAP) search is performed with d-separation tests
+#' between all pairs of variables with missing connection in the input DAG,
+#' adding a bidirected edge (i.e., bow-free covariance) to the DAG when there
+#' is an association between them. The d-separation test evaluates if two
+#' variables (Y1, Y2) in a DAG are conditionally independent for a given
+#' conditioning set, C represented in a DAG by the union of the parent sets
+#' of Y1 and Y2 (Shipley, 2000).
 #' A new bow-free covariance is added if there is a significant (Y1, Y2)
 #' association at a significance level \code{alpha}, after multiple testing
 #' correction. The selected covariance between pairs of nodes is interpreted
@@ -109,7 +109,7 @@
 #' were independent, which is estimated by permuting the columns of the data matrix,
 #' Y and selects components if their singular values are larger than those of the
 #' permuted data (for a review see Dobriban, 2020).
-#' While for "glpc*" algorithms, q is determined by the number of clusters by
+#' While for "glpc" algorithm, q is determined by the number of clusters by
 #' spectral clustering through \code{\link[igraph]{cluster_leading_eigen}} function.
 #' If the input graph is not acyclic, a warning message will be raised, and a
 #' cycle-breaking algorithm will be applied (see \code{\link[SEMgraph]{graph2dag}}
@@ -118,14 +118,13 @@
 #' @return A list of four objects:
 #' \itemize{
 #' \item "dag", the directed acyclic graph (DAG) extracted from input graph.
-#' If (dalgo = "glpc*" or "pc"), the DAG also includes LVs as source nodes.
-#' \item "dsep", the data.frame of all d-separation tests or the conditional
-#' independence (CI) tests over missing edges in the DAG. If (dalgo = "pc"
-#' or "trim"), dsep dataframe is equal to NULL.
+#' If (dalgo = "glpc" or "pc"), the DAG also includes LVs as source nodes.
+#' \item "guu", the bow-free covariance graph, BAP = dag + guu. If (dalgo =
+#' "pc" or "trim"), guu is equal to NULL
 #' \item "adj", the adjacency matrix of selected bow-free covariances; i.e, the 
 #' missing edges selected after multiple testing correction. If (dalgo = "pc"
 #' or "trim"), adj matrix is equal to NULL.
-#' \item "data", the adjusted (de-correlated) data matrix or if (dalgo = "glpc*",
+#' \item "data", the adjusted (de-correlated) data matrix or if (dalgo = "glpc",
 #' or "pc"), the combined data matrix, where the first columns represent LVs
 #' scores and the other columns are the raw data.
 #' }
@@ -145,83 +144,132 @@
 #' Structural Equation Modeling, 7(2), 206-218.
 #' <https://doi.org/10.1207/S15328007SEM0702_4>
 #'
-#' Jankova J, van de Geer S. (2015) Confidence intervals for high-dimensional
-#' inverse covariance estimation. Electronic Journal of Statistics, 9, 1205-1229.
-#' <https://doi.org/10.1214/15-EJS1031>
-#' 
 #' Jiang B, Ding C, Bin L, Tang J (2013). Graph-Laplacian PCA: 
 #' Closed-Form Solution and Robustness. IEEE Conference on Computer
 #' Vision and Pattern Recognition, 3492-3498. 
 #' <https://doi.org/10.1109/CVPR.2013.448>
 #' 
 #' Ćevid D,  Bühlmann P, Meinshausen N (2020). Spectral deconfounding via
-#' perturbed sparse linear models. J. Mach. Learn. Res, 21 (232), 1-41.
+#' perturbed sparse linear models. J. Mach. Learn. Res, 21(232), 1-41.
 #' <http://jmlr.org/papers/v21/19-545.html>
 #'
 #' Dobriban E (2020). Permuatation methods for Factor Analysis and PCA.
 #' Ann. Statist. 48(5): 2824-2847
 #' <https://doi.org/10.1214/19-AOS1907>
 #'
+#' Friedman J, Hastie T, Tibshirani R (2008). Sparse inverse covariance
+#' estimation with the graphical lasso. Biostatistics, 9(3), 432-441.
+#' <https://doi.org/10.1093/biostatistics/kxm045>
+#'
 #' @examples
 #'
-#' #Set parameters
+#' #Set function param
 #' graph <- sachs$graph
 #' data <- log(sachs$pkc)
 #' group <-sachs$group
 #'
-#' # BAP search with CGGM and d-separation test (default)
+#' # BAP decounfounding with CGGM (default)
 #' bap <- SEMbap(graph, data, verbose = TRUE)
-#' #gplot(bap$dag)
 #'
-#' # BAP search with gLPCA scores and CI test
-#' glpc <- SEMbap(graph, data, dalgo = "glpc_ci")
-#' gplot(glpc$dag)
+#' # SVD decounfounding with trim method
+#' svd <- SEMbap(graph, data, dalgo = "trim")
 #'
 #' # Model fitting (with node-perturbation)
 #' sem1 <- SEMrun(graph, data, group)
 #' bap1 <- SEMrun(bap$dag, bap$data, group)
-#' glpc1 <- SEMrun(glpc$dag, glpc$data, group)
+#' svd1 <- SEMrun(svd$dag, svd$data, group)
 #'
-SEMbap <- function(graph, data, group=NULL, dalgo="cggm_dsep",
-					method="BH", alpha=0.05, hcount="auto",
-					limit=30000, verbose=FALSE, ...)
+SEMbap <- function(graph, data, group = NULL, dalgo = "cggm",
+					method = "BH", alpha = 0.05, hcount = "auto",
+					cmax = Inf, limit = 200, verbose = FALSE, ...)
 {
 	# Set graph and data objects:
 	nodes<- colnames(data)[colnames(data) %in% V(graph)$name]
 	graph<- induced_subgraph(graph, vids=which(V(graph)$name %in% nodes))
 	dag<- graph2dag(graph, data, bap=FALSE) #del cycles & all <->
-	A0<- ifelse(as_adj(as.undirected(dag), sparse=FALSE) == 1, TRUE, FALSE)
-	dataY<- as.matrix(data[, colnames(A0)])
-	s<- round(sqrt(nrow(dataY))/log(ncol(dataY)))
-	df<- vcount(dag)*(vcount(dag)-1)/2 - ecount(dag)
+	dataY<- data[, V(dag)$name]
+		
+	if (dalgo == "cggm" | dalgo == "glpc") {
+	 if (vcount(dag) <= limit) {
+	  cat("Bow-free covariances search. Use method:", dalgo, "...\n")
+	  Z <- estimatePSI(dag, dataY, group, dalgo, method, alpha, cmax)
+	 }else{
+	  cat("Bow-free covariances search. Use method: glasso ...\n")
+	  Z <- estimateGGM(dag, dataY, group, dalgo)
+	 }
+	 if (is.null(Z)) {
+	  return(message("NULL covariance graph, data de-correlation is not performed !"))
+	 }else{
+	  guu<- Z$guu; adj<- Z$adj; Z<- Z$data
+	  cls <- length(cluster_leading_eigen(guu))
+	  #cls <- count_components(guu)
+	  cat("Number of clusters / number of nodes:", cls, "/", vcount(guu), "\n\n")
+	}
+
+	 # Covariance and latent variables graphs (guu, gLV)
+	 if (verbose) {
+	  ftm<- as_edgelist(as.undirected(guu))
+	  ftmLV<- NULL
+	  V(guu)$color<- "white"
+	  for (i in 1:nrow(ftm)) ftmLV<- rbind(ftmLV, cbind(rep(paste0("L",i), 2),ftm[i,]))
+	  gLV<- graph_from_data_frame(ftmLV, directed=TRUE)
+	  V(gLV)$color<- ifelse(substr(V(gLV)$name,1,1)=="L","yellow","white")
+	 
+	  plot(guu, main="bow-free covariance graph (guu)")
+	  Sys.sleep(3)
+	  plot(gLV, main="bow-free latent variables graph (gLV)")
+	  #Sys.sleep(3)
+	  #gplot(graph.union(g=list(dag,gLV)), main="BAP graph (dag+gLV)")
+	 }
+	 
+	 if (dalgo == "glpc") {
+	  beta <- ifelse(cls > 3, 1, 0.75)
+	  Z <- estimateLV(adj, dataY, group, hcount=cls, beta=beta)
+	  dag <- map_hidden_dag(dag, Z)
+	 }
+	}
+
+	else if (dalgo == "pc" | dalgo == "fa"){
+	 Z <- estimateFX(dataY, group, dalgo=dalgo, hcount=hcount)
+	 dag <- map_hidden_dag(dag, Z)
+	 guu <- adj<- NULL
+	}else{
+	 Z <- estimateFX(dataY, group, dalgo=dalgo, hcount=0)
+	 guu <- adj<- NULL
+	}
+
+	# SEM fitting with adjusted bow-free covariances:
+	if (verbose) fit<- SEMrun(dag, Z, algo = "ricf", n_rep = 0)
+
+	return( list(dag=dag, guu=guu, adj=adj, data=Z) )
+}
+
+estimatePSI <- function(dag, data, group, dalgo, method, alpha, cmax, ...)
+{
+	# Set data objects
+	if (is.null(group)){
+	 Y <- data
+	}else{
+	 Y_0 <- data[group == 0, ]
+	 Y_1 <- data[group == 1, ]
+	}
 	
-	if (substr(dalgo,1,4) == "cggm" | substr(dalgo,1,4) == "glpc") {
-	  if (substr(dalgo,6,9) == "dsep") {
-	   dsep <- Shipley.test(dag, dataY, limit=limit, verbose=FALSE)$dsep
-	   d_sep <- subset(dsep, p.adjust(dsep[,5], method = method) < alpha)
-	  }else if (substr(dalgo,6,7) == "ci") {
-	   cat("Conditional Independence (CI) test. Use method pcalg ...\n")
-	   nc <- parallel::detectCores(logical = FALSE)
-	   ske<- pcalg::skeleton(suffStat=list(C=cor(dataY), n=nrow(dataY)),
-		 indepTest=pcalg::gaussCItest, alpha=alpha, labels=colnames(dataY),
-		 method="stable.fast", fixedGaps=A0, fixedEdges=NULL, numCores=nc)
-	   dsep <- NULL
-	   d_sep<- as_data_frame(graph_from_graphnel(ske@graph))
-	  }
+	estimate_ggm <- function(dag, X, dalgo, method, alpha, cmax, ...)
+	{
+	  # Set the bow-free covariance graph
+	  dsep <- quiet(Shipley.test(dag, X, cmax=cmax, limit=100, verbose=FALSE)$dsep)
+	  d_sep <- subset(dsep, p.adjust(dsep[,5 ], method) < alpha)
 	  guu <- graph_from_data_frame(d_sep[,c(1,2)], directed = FALSE)
 	  if (ecount(guu) > 0) {
 	   adj <- as_adj(guu, type = "both", attr = NULL, sparse = FALSE)
-	   d <- max(igraph::degree(guu))
-	   cls <- length(cluster_leading_eigen(guu))
-	   #cls <- count_components(guu)
-	   cat("Number of significant covariances  :", nrow(d_sep), "/", df,"\n")
-	   cat("Number of clusters/number of nodes :", cls, "/", vcount(guu),"\n")
-	   cat("Max nodes degree(d)/Sparsity idx(s):", d, "/", s, "\n\n")
+	   s <- round(sqrt(nrow(X))/log(ncol(X)))
+	   cat("Number of bow-free covariances / df :", nrow(d_sep),"/",nrow(dsep),"\n")
+	   cat("Max parent set(S) / Sparsity idx(s) :", max(dsep[, 3]),"/",s,"\n")
 	  }else{
-	   return(message("NULL covariance graph: ALL adjusted pvalues > ", alpha, "!"))
+	   return(NULL)
 	  }
 
-	  # Set the complete adjacency matrix of guu
+	  # Set the complete adjacency matrix
 	  idx <- which(V(dag)$name %in% rownames(adj) == FALSE)
 	  if (length(idx) > 0) {
 	    R <- matrix(0, length(idx), ncol(adj))
@@ -230,107 +278,182 @@ SEMbap <- function(graph, data, group=NULL, dalgo="cggm_dsep",
 	    adj <- rbind(cbind(D,R), cbind(C,adj))
 	    rownames(adj)[1:length(idx)] <- V(dag)$name[idx]
 	    colnames(adj)[1:length(idx)] <- V(dag)$name[idx]
-	  } #colnames(adj)
-
-	  # Covariance and latent variables graphs (guu, gLV)
-	  if (verbose) {
-	   ftm<- as_edgelist(as.undirected(guu))
-	   ftmLV<- NULL
-	   V(guu)$color<- "white"
-	   for (i in 1:nrow(ftm)) ftmLV<- rbind(ftmLV, cbind(rep(paste0("L",i), 2),ftm[i,]))
-	   gLV<- graph_from_data_frame(ftmLV, directed=TRUE)
-	   V(gLV)$color<- ifelse(substr(V(gLV)$name,1,1)=="L","yellow","white")
-
-	   plot(guu, main="bow-free covariance graph (guu)")
-	   Sys.sleep(3)
-	   plot(gLV, main="bow-free latent variables graph (gLV)")
-	   #Sys.sleep(3)
-	   #gplot(graph.union(g=list(dag,gLV)), main="BAP graph (dag+gLV)")
 	  }
-
-	  if (substr(dalgo,1,4) == "cggm")
- 	   Z <- estimatePsi(adj, dataY, group)
-	  if (substr(dalgo,1,4) == "glpc") {
-	   Z <- estimateLV(adj, dataY, group, dalgo="glpc", hcount=cls, beta=0.75)
-	   dag <- map_hidden_dag(dag, Z)
-	  }
-	}
-
-	else if (dalgo == "pc" | dalgo == "fa"){
-	 Z <- estimateLV(A0, dataY, group, dalgo=dalgo, hcount=hcount)
-	 dag <- map_hidden_dag(dag, Z)
-	 dsep <- adj <- NULL
-	}else{
-	 Z <- estimateFX(A0, dataY, group, dalgo=dalgo, hcount=hcount)
-	 dsep <- adj <- NULL
-	}
-
-	# SEM fitting with adjusted bow-free covariances:
-	if (verbose) fit<- SEMrun(dag, Z, algo = "ricf", n_rep = 0)
-
-	return( list(dag=dag, dsep=dsep, adj=adj, data=Z) )
-}
-
-estimatePsi <- function(adj, data, group, ...)
-{
-	# Set data objects
-	if (is.null(group)){
-	 Y <- data[, which(colnames(data) %in% colnames(adj))]
-	}else{
-	 Y_0 <- data[group == 0, which(colnames(data) %in% colnames(adj))]
-	 Y_1 <- data[group == 1, which(colnames(data) %in% colnames(adj))]
-	}
-
-	estimate_Psi <- function(X)
-	{
-	 X <- scale(X)
-	 adj<- ifelse(adj != 0, 1, 0)
-	 pcor <- adj*cor(X[, colnames(adj)])
-	 diag(pcor) <- 1
+      adj<- adj[colnames(X), colnames(X)]
+	  
+	  if (dalgo == "glpc") return(list(guu = guu, adj = adj, Z = X))
 	 
-	 # Fitting a concentration graph model with HTF procedure
-	 S <- cov(X[, colnames(adj)])
-	 w <- tryCatch(ggm::fitConGraph(adj, S, n=nrow(X))$Shat,
-                        error = function(err) pcor)
-	 colnames(w) <- rownames(w) <- colnames(adj)
-
-	 if (!corpcor::is.positive.definite(w)){
+	  # Fitting a concentration graph model with HTF procedure
+	  suppressWarnings(
+	   w <- tryCatch(ggm::fitConGraph(adj, S=cor(X), n=nrow(X))$Shat,
+                     error = function(err) cor(X)*adj)
+	  )
+	  colnames(w) <- rownames(w) <- colnames(X)
+	  	  
+	  if (!corpcor::is.positive.definite(w)){
 	   w <- corpcor::cov.shrink(w, verbose = FALSE)
 	   #w<- corpcor::cor.shrink(w, verbose = TRUE)
 	   #w<- corpcor::make.positive.definite(w)
-	 }
-	 E<- eigen(w) # Eigenvalues-eigenvectors of w
-	 #R<- E$vectors%*%diag(sqrt(E$values))%*%t(E$vectors) #dim(R)
-	 #sum(w - R %*% R)
-	 R<- E$vectors%*%diag(1/sqrt(E$values))%*%t(E$vectors) #dim(R)
-	 #sum(solve(w) - R %*% R)
-	 colnames(R) <- rownames(R) <- colnames(adj)
-	 X <- X[, colnames(adj)]
-	 return( as.matrix(X)%*%R )
+	  }
+	  E<- eigen(w) # Eigenvalues-eigenvectors of w
+	  R<- E$vectors%*%diag(1/sqrt(E$values))%*%t(E$vectors)
+	  #sum(solve(w) - R %*% R)
+	  Z <- as.matrix(X)%*%R
+	  colnames(Z) <- colnames(X)
+	  
+	  return( list(guu = guu, adj = adj, Z = Z) )
 	}
 
 	if (is.null(group)){
-     Z <- estimate_Psi(Y)
+     Z <- estimate_ggm(dag, Y, dalgo, method, alpha, cmax)
 	}else{
-	 Z <- rbind(
-	  estimate_Psi(Y_0),
-	  estimate_Psi(Y_1))
+	 Z_0 <- estimate_ggm(dag, Y_0, dalgo, method, alpha, cmax)
+	 Z_1 <- estimate_ggm(dag, Y_1, dalgo, method, alpha, cmax)
+	 group<- c(rep(0,nrow(Z_0$Z)),rep(1,nrow(Z_1$Z)))
+	 Z01 <- cbind(group, rbind(Z_0$Z, Z_1$Z))
+	 guu <- Z_0$guu %u% Z_1$guu
+	 adj <- as_adj(guu, type = "both", sparse = FALSE)
+	 Z <- list(guu=guu, adj=adj, Z=Z01)
+	}
+
+	return(list(guu = Z$guu, adj = Z$adj, data = Z$Z))
+}
+
+estimateGGM <- function(dag, data, group, dalgo, ...)
+{
+	# Set data objects
+	if (is.null(group)){
+	 Y <- data
+	}else{
+	 Y_0 <- data[group == 0, ]
+	 Y_1 <- data[group == 1, ]
+	}
+	
+	estimate_glasso <- function(dag, X, dalgo, ...)
+	{
+	  # graphical LASSO of large-scale data, rho=sqrt(log(p)/n)
+	  rho <- sqrt(log(ncol(X))/nrow(X))
+	  ug <- as.undirected(dag, mode="collapse")
+	  V(ug)$name <- 1:vcount(ug)
+	  ftm <- igraph::as_data_frame(ug)[1:2]
+	  zero <- cbind(as.numeric(ftm[,1]),as.numeric(ftm[,2]))
+	  wi <- glasso::glasso(s=cor(X), rho=rho, zero=zero)$wi
+	  rownames(wi) <- colnames(wi) <- colnames(X)
+	  
+	  ai <- ifelse(abs(wi) > 0, 1, 0)
+	  guu <- graph_from_adjacency_matrix(ai, mode="undirected", diag=FALSE)
+	  if (ecount(guu) > 0) {
+	   df0 <- vcount(dag)*(vcount(dag)-1)/2 - ecount(dag)
+	   s <- round(sqrt(nrow(X))/log(ncol(X)))
+	   d <- max(igraph::degree(guu))
+	   cat("Number of bow-free covariances / df :", ecount(guu), "/", df0, "\n")
+	   cat("Max node degree(d) / Sparsity idx(s):", d,"/",s,"\n")
+	  }else{
+	   return(NULL)
+	  }
+	  
+	  if (dalgo == "glpc") return(list(guu = guu, adj = ai, Z = X))
+
+	  # Eigenvalues-eigenvectors of wi
+	  E <- eigen(wi*ai)
+	  R <- E$vectors%*%diag(sqrt(E$values))%*%t(E$vectors)
+	  #sum(wi - R %*% R)
+	  Z <- as.matrix(X)%*%R
+	  colnames(Z) <- colnames(X)
+	  
+	  return( list(guu = guu, adj = ai, Z = Z) )
+	}
+
+	if (is.null(group)){
+     Z <- estimate_glasso(dag, Y, dalgo)
+	}else{
+	 Z_0 <- estimate_glasso(dag, Y_0, dalgo)
+	 Z_1 <- estimate_glasso(dag, Y_1, dalgo)
+	 group<- c(rep(0,nrow(Z_0$Z)),rep(1,nrow(Z_1$Z)))
+	 Z01 <- cbind(group, rbind(Z_0$Z, Z_1$Z))
+	 guu <- Z_0$guu %u% Z_1$guu
+	 adj <- as_adj(guu, type = "both", sparse = FALSE)
+	 Z <- list(guu=guu, adj=adj, Z=Z01)
+	}
+
+	return(list(guu = Z$guu, adj = Z$adj, data = Z$Z))
+}
+
+estimateLV <- function(adj, data, group, hcount, beta, ...)
+{
+	# Set data objects
+	if (is.null(group)){
+	 Y <- data[, colnames(adj)]
+	}else{
+	 Y_0 <- data[group == 0, colnames(adj)]
+	 Y_1 <- data[group == 1, colnames(adj)]
+	}
+
+	# Estimate latent variables via gLPCA
+
+	estimate_LV <- function(X, q, b)
+	{
+	 X <- scale(X)
+	 n <- nrow(X)
+	 p <- ncol(X)
+
+	 S <- cov(X)*(n-1)/n
+	 E <- eigen(S)
+	 e1 <- E$values[1]
+	 
+	 adj<- S*adj #signed Adjacency
+	 dj <- rowSums(abs(adj), na.rm = FALSE)
+	 D <- diag(dj)
+	 L <- D - adj #signed Laplacian
+	 E <- eigen(L)
+	 f1 <- E$values[1]
+
+	 one <- rep(1,p)
+	 I <- diag(one)
+	 if (sum(D) == 0) {
+	  b <- 0; f1 <- 1
+	 }
+
+	 G <- (1-b)*(I-S/e1) + b*(L/f1 + one%*%t(one)/p)
+	 E <- svd(G, nu = 0)
+	 W <- E$v #sum(round(t(W)%*%W, 6))
+	 U <- X%*%W
+
+	 #ev<- sort(1-E$d^2, decreasing = TRUE)
+	 #q <- screePlot(ev, method="knee")
+	 LV <- scale(U[,(p-q+1):p])
+	 colnames(LV) <- paste0("LV", seq_len(q))
+	 return(cbind(LV,X))
+	}
+	
+	if (is.null(group)){
+	 Z <- estimate_LV(Y, q=hcount, b=beta)
+	}else{
+	 Z_0 <- estimate_LV(Y_0, q=hcount, b=beta)
+	 Z_1 <- estimate_LV(Y_1, q=hcount, b=beta)
+	 group<- c(rep(0,nrow(Z_0)),rep(1,nrow(Z_1)))
+	 Z <- cbind(group, rbind(Z_0, Z_1))
 	}
 
 	return(data = Z)
 }
 
-estimateFX <- function(adj, data, group, dalgo, hcount, ...)
-{
+estimateFX <- function(data, group, dalgo, hcount, ...)
+{	
 	# Set data objects
-	K <- 0
 	if (is.null(group)){
-	 Y <- data[, which(colnames(data) %in% colnames(adj))]
-	 if (dalgo == "pcss") K<- estimate_latent_count(Y, method=hcount)
+	 Y <- data
+	 if (is.character(hcount)) {
+	  hcount<- estimate_latent_count(Y, method=hcount)
+	 }
 	}else{
-	 Y_0 <- data[group == 0, which(colnames(data) %in% colnames(adj))]
-	 Y_1 <- data[group == 1, which(colnames(data) %in% colnames(adj))]
-	 if (dalgo == "pcss") K <- estimate_latent_count(rbind(Y_0, Y_1), method=hcount)
+	 Y_0 <- data[group == 0, ]
+	 Y_1 <- data[group == 1, ]
+	 if (is.character(hcount)) {
+	  K_0 <- estimate_latent_count(Y_0, method=hcount)
+	  K_1 <- estimate_latent_count(Y_1, method=hcount)
+	  hcount <- (K_0+K_1)/2
+	 }
 	}
 
 	# Estimate deconfounding data via svd(X, nu, nv)
@@ -338,7 +461,25 @@ estimateFX <- function(adj, data, group, dalgo, hcount, ...)
 	estimate_FX <- function(X, q)
 	{
 	 X <- scale(X)
-	 n <- nrow(X)  
+	 n <- nrow(X)
+	 #p <- ncol(X)
+	 
+	 if (dalgo == "pc") {
+	  x <- svd(X, nv = 0)
+	  if (q == 0) return(X)
+	  LV <- sqrt(n-1)*as.matrix(x$u[,1:q]) #round(t(LV)%*%LV,6)
+	  colnames(LV) <- paste0("LV", seq_len(q))
+	  return(cbind(LV,X))
+	 }
+
+	 if (dalgo == "fa") {
+	  x <- svd(X, nv = 0)
+	  if (q == 0) return(X)
+	  LV <- factor.analysis(X, r=q, method="ml")$Z
+	  LV <- scale (LV)
+	  colnames(LV) <- paste0("LV", seq_len(q))
+	  return(cbind(LV,X))
+	 }
 
 	 if (dalgo == "trim") {
 	  x <- svd(X, nv = 0)
@@ -388,92 +529,12 @@ estimateFX <- function(adj, data, group, dalgo, hcount, ...)
 	}
 	
 	if (is.null(group)){
-	 Z <- estimate_FX(Y, q=K)
+	 Z <- estimate_FX(Y, q=hcount)
 	}else{
-	Z <- rbind(
-	  estimate_FX(Y_0, q=K),
-	  estimate_FX(Y_1, q=K))
-	}
-
-	return(data = Z)
-}
-
-estimateLV <- function(adj, data, group, dalgo, hcount, beta, ...)
-{
-	# Set data objects
-	if (is.null(group)){
-	 Y <- data[, which(colnames(data) %in% colnames(adj))]
-	 if (is.character(hcount)) hcount <- estimate_latent_count(Y, method=hcount)
-	}else{
-	 Y_0 <- data[group == 0, which(colnames(data) %in% colnames(adj))]
-	 Y_1 <- data[group == 1, which(colnames(data) %in% colnames(adj))]
-	 if (is.character(hcount)) hcount <- estimate_latent_count(rbind(Y_0, Y_1), method=hcount)
-	}
-
-	# Estimate latent variables via svd(X, nu, nv)
-
-	estimate_LV <- function(X, q, b)
-	{
-	 X <- scale(X)
-	 n <- nrow(X)
-	 p <- ncol(X)
-
-	 if (dalgo == "pc") {
-	  x <- svd(X, nv = 0)
-	  if (q == 0) return(X)
-	  LV <- sqrt(n-1)*as.matrix(x$u[,1:q]) #round(t(LV)%*%LV,6)
-	  colnames(LV) <- paste0("LV", seq_len(q))
-	  return(cbind(LV,X))
-	 }
-
-	 if (dalgo == "fa") {
-	  x <- svd(X, nv = 0)
-	  if (q == 0) return(X)
-	  LV <- factor.analysis(X, r=q, method="ml")$Z
-	  LV <- scale (LV)
-	  colnames(LV) <- paste0("LV", seq_len(q))
-	  return(cbind(LV,X))
-	 }
-
-	 if (dalgo == "glpc") {
-	  S <- cov(X)*(n-1)/n
-	  E <- eigen(S)
-	  e1 <- E$values[1] # e1
-	  
-	  adj<- S*adj #signed Adjacency
-	  dj <- rowSums(abs(adj), na.rm = FALSE)
-	  D <- diag(dj)
-	  L <- D - adj #signed Laplacian
-	  E <- eigen(L)
-	  f1 <- E$values[1]
-
-	  one <- rep(1,p)
-	  I <- diag(one)
-	  if (sum(D) == 0) {
-	   b <- 0; f1 <- 1
-	  }
-
-	  G <- (1-b)*(I-S/e1) + b*(L/f1 + one%*%t(one)/p)
-	  E <- eigen(G)
-	  e <- E$values
-	  W <- E$vectors #sum(round(t(W)%*%W, 6))
-	  U <- X%*%W
-
-	  #ev<- sort(1-e, decreasing = TRUE)
-	  #q <- screePlot(ev, method="knee")
-	  if (q == 0) return(X)
-	  LV <- scale(U[,(p-q+1):p])
-	  colnames(LV) <- paste0("LV", seq_len(q))
-	  return(cbind(LV,X))
-     }
-	}
-	
-	if (is.null(group)){
-	 Z <- estimate_LV(Y, q=hcount, b=beta)
-	}else{
-	 Z <- rbind(
-	  estimate_LV(Y_0, q=hcount, b=beta),
-	  estimate_LV(Y_1, q=hcount, b=beta))
+	 Z_0 <- estimate_FX(Y_0, q=hcount)
+	 Z_1 <- estimate_FX(Y_1, q=hcount)
+	 group<- c(rep(0,nrow(Z_0)),rep(1,nrow(Z_1)))
+	 Z <- cbind(group, rbind(Z_0, Z_1))
 	}
 
 	return(data = Z)
@@ -512,7 +573,7 @@ estimate_latent_count <- function(X, method, seed = 1, ...)
 		# limit number of confounders to at most 10 LVs
 		limit <- ifelse(r > 10, 10, r)
 		# last which crosses the threshold
-		crosses <- (svd(X, nu = 0, nv = 0)$d > thresholds)#[1:limit]
+		crosses <- (svd(X, nu = 0, nv = 0)$d > thresholds)[1:limit]
 		return(max(which(c(TRUE, crosses)) - 1))
 	 }
 	 q <- permutation_thresholding(X, seed = seed)
@@ -597,205 +658,26 @@ map_hidden_dag <- function(graph, data, cg=NULL, verbose=FALSE, ...)
 	return(gH)	
 }
 
-#' @title Missing edge testing implied by a graph with Shipley's basis-set
+#' @title Estimate a DAG from an input (or empty) graph
 #'
-#' @description Compute all the P-values of the d-separation tests
-#' implied by the missing edges of a given acyclic graph (DAG).
-#' The conditioning set Z is represented, in a DAG, by the union of the
-#' parent sets of X and Y (Shipley, 2000). 
-#' The results of every test, in a DAG, is then combined using the
-#' Fisher’s statistic in an overall test of the fitted model
-#' C = -2*sum(log(P-value(k))), where C is distributed as a chi-squared
-#' variate with df = 2k, as suggested by Shipley (2000).
+#' @description Two-step extraction of the optimal DAG from an input (or empty)
+#' graph, using in step 1) graph topological order or bottom-up search order,
+#' and in step 2) parent recovery with the LASSO-based algorithm (FHT, 2010),
+#' implemented in \code{\link[glmnet]{glmnet}}.
 #'
-#' @param graph A directed graph as an igraph object.
-#' @param data A data matrix with subjects as rows and variables as
-#' columns.
-#' @param MCX2 If TRUE, a Monte Carlo P-value of the combined C test is enabled.
-#' @param verbose If TRUE, Shipley's test results will be showed to
-#' screen (default = TRUE).
-#' @param limit An integer value corresponding to the number of missing
-#' edges of the extracted acyclic graph. Beyond this limit, multicore
-#' computation is enabled to reduce the computational burden.
-#' By default, \code{limit = 30000}.
-#' @param ... Currently ignored.
-#'
-#' @export
-#'
-#' @return A list of three objects: (i) "dag":  the DAG used to perform the Shipley
-#' test (ii) "dsep": the data.frame of all d-separation tests over missing edges in
-#' the DAG and (iii) "ctest": the overall Shipley's' P-value.
-#'
-#' @author Mario Grassi \email{mario.grassi@unipv.it}
-#'
-#' @references
-#'
-#' Shipley B (2000). A new inferential test for path models based on DAGs.
-#' Structural Equation Modeling, 7(2): 206-218.
-#' <https://doi.org/10.1207/S15328007SEM0702_4>
-#'
-#' @examples
-#'
-#' #\donttest{
-#'
-#' library(huge)
-#' als.npn <- huge.npn(alsData$exprs)
-#' 
-#' sem <- SEMrun(alsData$graph, als.npn)
-#' C_test <- Shipley.test(sem$graph, als.npn, MCX2 = FALSE)
-#' #MC_test <- Shipley.test(sem$graph, als.npn, MCX2 = TRUE)
-#'
-#' #}
-#'
-Shipley.test<- function(graph, data, MCX2=FALSE, limit=30000, verbose=TRUE,...)
-{
-	# graph to DAG conversion :
-	nodes<- colnames(data)[colnames(data) %in% V(graph)$name]
-	graph<- induced_subgraph(graph, vids=which(V(graph)$name %in% nodes))
-	df1<- vcount(graph)*(vcount(graph)-1)/2-ecount(as.undirected(graph))
-	dataY<- as.matrix(data[, nodes])
-	
-	if (!is_dag(graph)){
-	 cat("WARNING: input graph is not acyclic !\n")
-	 cat(" Applying graph -> DAG conversion...\n")
-	 dag<- graph2dag(graph, dataY, bap=FALSE) #del cycles & all <->
-	 df2<- vcount(dag)*(vcount(dag)-1)/2-ecount(as.undirected(dag))
-	 cat(" \nDegrees of freedom:\n Input graph  =", 
-            df1, "\n Output graph =", df2, "\n\n")
-	}else{
-	 dag <- graph
-	 df2 <- df1
-	}
-
-	# d-separation local tests (B_U) & Shipley's overall pvalue
-	cat("d-separation test (basis set) of", df2, "edges...\n")
-	dsep<- dsep.test(dag=dag, S=cov(dataY), n=nrow(dataY), limit=limit)
-	colnames(dsep)[c(3,6,7)]<- c("|Z|", "2.5%", "97.5%")
-	#Combining p-values with Fisher's procedure:
-	X2<- -2 * sum(log(dsep$p.value + 1E-16))
-	df<- 2 * nrow(dsep)
-	if (MCX2) {
-	 pv<- MCX2(model.df=df, n.obs=nrow(data), model.chi.square=X2)[[1]]
-	}else{
-	 pv<- 1 - pchisq(q = X2, df = df)
-	}
-	if (verbose) print(data.frame(C_test=X2, df=df, pvalue=round(pv,6)))
-			
-	return( list(dag=dag, dsep=dsep, ctest=c(X2, df, pv)) )
-}
-
-dsep.test<- function(dag, S, n, limit, ...)
-{
-	# d-sep (basis set) testing of a DAG
-	A <- ifelse(as_adj(as.undirected(dag), sparse=FALSE) == 1, 0, 1)
-	ug <- graph_from_adjacency_matrix(A, mode="undirected", diag=FALSE)
-	M <- attr(E(ug), "vnames")
-	
-	local<- function(x) {
-	 s <- strsplit(x,"\\|")
-	 ed <- c(s[[1]][1], s[[1]][2])
-	 pa.r <- V(dag)$name[SEMgraph::parents(dag, ed[1])]
-	 pa.s <- V(dag)$name[SEMgraph::parents(dag, ed[2])]
-	 dsep <- union(pa.r, pa.s)
-     dsep <- setdiff(dsep, ed)
-	 B <- c(ed, dsep)
-	 pcor <- pcor.test(S, B, n, H0=0.05)
-	 #set <- paste(B[-c(1:2)], collapse=",")
-	 return(data.frame(X=B[1], Y=B[2], pcor))
-	}
-
-	#message("d-separation test (basis set) of ", length(M), " edges...")
-	op<- pbapply::pboptions(type = "timer", style = 2)
-	df<- vcount(dag)*(vcount(dag)-1)/2 - ecount(dag)
-	if ( df > limit ){
-	 n_cores <- parallel::detectCores()
-	 cl <- parallel::makeCluster(n_cores)
-	 #cl <- parallel::makeCluster(3)
-	 parallel::clusterExport(cl,
-	  c("local", "dag", "S", "n"),  envir = environment())
-	 SET<- pbapply::pblapply(M, local, cl=cl)
-	 parallel::stopCluster(cl)
-	}else{
-	 SET<- pbapply::pblapply(M, local, cl=NULL)
-	}
-	SET<- do.call(rbind, lapply(SET, as.data.frame))
-
-	return( SET=na.omit(SET) )
-}
-
-pcor.test<- function(S, B, n, H0, ...)
-{
-	#Set objects
-	s <- round(sqrt(n)/log(ncol(S)))
-	q <- length(B)-2
-	#if (length(B) > (n-3)) {
-	if (q >= s) {
-	 pcor<- cbind(K=NA, estimate=NA, p.value=NA, lower=NA, upper=NA)
-	 return(pcor)
-	}
-	k <- solve(S[B,B])
-    r <- -k[1,2]/sqrt(k[1,1]*k[2,2])
-	if( H0 == 0 ) {
-	#Test null H0: r=abs(r(X,Y|Z))=0
-	 df <- n - 2 - q
-	 tval <- r * sqrt(df)/sqrt(1 - r * r)
-	 pval <- 2 * pt(-abs(tval), df)
-	}else{
-	#Test of not-close fit, H0: r=abs(r(X,Y|Z)) vs. r<.05
-	 z <- atanh(r)
-	 se <-  1/sqrt(n - 3 - q)
-	 pval <- pchisq((z/se)^2, df=1, ncp=(atanh(H0)/se)^2, lower.tail=FALSE)
-	}
-	lower<- (exp(2*(z - 1.96*se))-1)/(exp(2*(z - 1.96*se))+1)
-	upper<- (exp(2*(z + 1.96*se))-1)/(exp(2*(z + 1.96*se))+1)
-	pcor<- cbind(K=q, estimate=r, p.value=pval, lower, upper)
-	return( pcor )
-}
-
-MCX2 <- function (model.df, n.obs, model.chi.square, n.sim = 10000, ...)
-{
-	#Monte Carlo Chi-square simulator (Author: Bill Shipley) from:
-	#devtools::install_github("BillShipley/CauseAndCorrelation")
-	# All rights reserved.  See the file COPYING for license terms.
-	x <- (-1 + sqrt(1 + 8 * model.df))/2
-	if ((x - as.integer(x)) == 0)
-	v <- x
-	if ((x - as.integer(x)) > 0 & (x - as.integer(x)) < 1) 
-	v <- as.integer(x) + 1
-	if ((x - as.integer(x)) > 1)return(message("ERROR: check model df !"))
-	c.value <- v * (v + 1)/2 - model.df
-	MCX2 <- rep(NA, n.sim)
-	for (i in 1:n.sim) {
-	 dat <- matrix(rnorm(n.obs * v), ncol = v)
-	 obs.VCV <- var(dat)
-	 model.VCV <- diag(v)
-	 diag(model.VCV)[1:c.value] <- diag(obs.VCV)[1:c.value]
-	 MCX2[i] <- (n.obs - 1) * (log(det(model.VCV)) + sum(diag(obs.VCV) * 
-							(1/diag(model.VCV))) - log(det(obs.VCV)) - v)
-	}
-	MCprob <- sum(MCX2 >= model.chi.square)/n.sim
-	x <- seq(0, max(MCX2))
-	theoretical.prob <- dchisq(x, model.df)
-	MLprob<- pchisq(model.chi.square, model.df, lower.tail=FALSE)
-	
-	return(list(MCprob = MCprob, MLprob = MLprob))
-}
-
-#' @title Estimate the optimal DAG from an input graph
-#'
-#' @description Extract the optimal DAG from an input graph, using
-#' topological order or top-down order search and LASSO-based algorithm, implemented in
-#' \code{\link[glmnet]{glmnet}}.
-#'
-#' @param graph An igraph object.
+#' @param graph An igraph object or a graph with no edges (make_empty_graph(n=0)).
 #' @param data A matrix whith n rows corresponding to subjects, and p columns
 #' to graph nodes (variables).
-#' @param LO character for linear order method. If LO="TO" the topological
-#' order of the input DAG is enabled (default), while LO="TD" the data-driven
-#' top-down minimum conditional variance method is performed.
+#' @param LO character for linear order method. If LO="TO" or LO="TL" the
+#' topological order (resp. level) of the input graph is enabled, while LO="BU"
+#' the data-driven bottom-up search of vertex (resp. layer) order is performed
+#' using the vertices of the empty graph. By default \code{LO = "TO"}.
 #' @param beta Numeric value. Minimum absolute LASSO beta coefficient for
-#' a new interaction to be retained in the final model. By default,
+#' a new direct link to be retained in the final model. By default,
 #' \code{beta = 0}.
+#' @param eta Numeric value. Minimum fixed eta threshold for bottom-up search
+#' of vertex (eta = 0) or layer (eta > 0) ordering. Use eta = NULL, for estimation
+#' of eta adaptively with half of the sample data. By default, \code{eta = 0}.
 #' @param lambdas A vector of regularization LASSO lambda values. If lambdas is
 #' NULL, the \code{\link[glmnet]{glmnet}} default using cross-validation lambdas
 #' is enabled. If lambdas is NA (default), the tuning-free scheme is enabled by
@@ -814,24 +696,32 @@ MCX2 <- function (model.df, n.obs, model.chi.square, n.sim = 10000, ...)
 #' will not be plotted to screen.
 #' @param ... Currently ignored.
 #'
-#' @details The optimal DAG is estimated using the order search approach. First
-#' a linear order of p nodes is determined, and from this sort, the DAG can be
-#' learned using successive penalized (L1) regressions (Shojaie and Michailidis,
-#' 2010). The estimate linear order are obtained from \emph{a priori} graph
-#' topological order (TO), or with a data-driven high dimensional top-down (TD)
-#' approach (best subset regression), assuming a SEM whose error terms have equal
-#' variances (Peters and Bühlmann, 2014; Chen et al, 2019). If the input graph is
-#' not acyclic, a warning message will be raised, and a cycle-breaking algorithm
-#' will be applied (see \code{\link[SEMgraph]{graph2dag}} for details).
-#' Output DAG edges will be colored in gray, if they were present in the
-#' input graph, and in green, if they are new edges generated by LASSO
-#' screening.
+#' @details The extracted DAG is estimated using the two-step order search approach.
+#' First a vertex (node) or level (layer) order of p nodes is determined, and from
+#' this sort, the DAG can be learned using in step 2) penalized (L1) regressions
+#' (Shojaie and Michailidis, 2010). The estimate linear order are obtained from
+#' \emph{a priori} graph topological vertex (TO) or level (TL) ordering, or with a
+#' data-driven Bottom-up (BU) approach, assuming a SEM whose error terms have equal
+#' variances (Peters and Bühlmann, 2014). The BU algorithm first estimates the last
+#' element (the terminal vertex) using the diagonal entries of the inverse covariance
+#' matrix with: t = argmin(diag(Omega)), or the terminal layer (> 1 vertices) with
+#' d = diag(Omega)- t < eta. And then, it determines its parents with L1 regression.
+#' After eliminating the last element (or layer) of the ordering, the algorithm applies
+#' the same procedure until a DAG is completely estimated. In high-dimensional data 
+#' (n < p), the inverse covariance matrix is computed by glasso-based algorithm
+#' (FHT, 2008), implemented in \code{\link[glasso]{glasso}}. If the input graph is
+#' not acyclic, in TO or TL, a warning message will be raised, and a cycle-breaking
+#' algorithm will be applied (see \code{\link[SEMgraph]{graph2dag}} for details).
+#' Output DAG will be colored: vertices in cyan, if they are source nodes, and in
+#' orange, if they are sink nodes, and edges in gray, if they were present in the
+#' input graph, and in green, if they are new edges generated by LASSO screening.
 #'
-#' @return A list of 3 igraph objects:
+#' @return A list of 3 igraph objects plus the vertex ordering:
 #' \enumerate{
 #' \item "dag", the estimated DAG;
 #' \item "dag.new", new estimated connections;
-#' \item "dag.old", connections preserved from the input graph.
+#' \item "dag.old", connections preserved from the input graph;
+#' \item "LO", the estimated vertex ordering.
 #' }
 #'
 #' @export
@@ -842,12 +732,15 @@ MCX2 <- function (model.df, n.obs, model.chi.square, n.sim = 10000, ...)
 #'
 #' @references
 #'
-#' Tibshirani R, Bien J, Friedman J, Hastie T, Simon N, Taylor J,
-#' Tibshirani RJ (2012). Strong rules for discarding predictors in
-#' lasso type problems. Royal Statistical Society: Series B
-#' (Statistical Methodology), 74(2): 245-266.
-#' <https://doi.org/10.1111/j.1467-9868.2011.01004.x>
-#' 
+#' Friedman J, Hastie T, Tibshirani R (2008). Sparse inverse covariance
+#' estimation with the graphical lasso. Biostatistics, 9(3), 432-441.
+#' <https://doi.org/10.1093/biostatistics/kxm045>
+#'
+#' Friedman J, Hastie T, Tibshirani R (2010). Regularization Paths for
+#' Generalized Linear Models via Coordinate Descent.
+#' Journal of Statistical Software, Vol. 33(1), 1-22.
+#' <https://doi.org/10.18637/jss.v033.i01>
+#'
 #' Shojaie A, Michailidis G (2010). Penalized likelihood methods for
 #' estimation of sparse high-dimensional directed acyclic graphs.
 #' Biometrika, 97(3): 519-538. <https://doi.org/10.1093/biomet/asq038>
@@ -858,52 +751,74 @@ MCX2 <- function (model.df, n.obs, model.chi.square, n.sim = 10000, ...)
 #'
 #' Peters J, Bühlmann P (2014). Identifiability of Gaussian structural equation
 #' models with equal error variances. Biometrika, 101(1):219–228.
-#' 
-#' Chen W, Drton M, Wang YS (2019). On Causal Discovery with an Equal-Variance
-#' Assumption. Biometrika, 106(4): 973-980.
+#' <https://doi.org/10.1093/biomet/ast043>
 #'
 #' @examples
 #'
-#' # DAG estimation
-#' G <- SEMdag(graph = sachs$graph, data = log(sachs$pkc), beta = 0.05)
+#' #Set function param
+#' ig <- sachs$graph
+#' X <- log(sachs$pkc)
+#' group <- sachs$group
 #'
-#' # Model fitting
-#' sem <- SEMrun(graph = G$dag, data = log(sachs$pkc), group = sachs$group)
+#' # DAG estimation (default values)
+#' dag0 <- SEMdag(ig, X)
+#' sem0 <- SEMrun(ig, X, group)
 #'
 #' # Graphs
 #' old.par <- par(no.readonly = TRUE)
 #' par(mfrow=c(2,2), mar=rep(1,4))
 #' plot(sachs$graph, layout=layout.circle, main="input graph")
-#' plot(G$dag, layout=layout.circle, main = "Output DAG")
-#' plot(G$dag.old, layout=layout.circle, main = "Inferred old edges")
-#' plot(G$dag.new, layout=layout.circle, main = "Inferred new edges")
+#' plot(dag0$dag, layout=layout.circle, main = "Output DAG")
+#' plot(dag0$dag.old, layout=layout.circle, main = "Inferred old edges")
+#' plot(dag0$dag.new, layout=layout.circle, main = "Inferred new edges")
 #' par(old.par)
 #'
-SEMdag<- function(graph, data, LO="TO", beta=0, lambdas=NA, penalty=TRUE, verbose=FALSE, ...)
+#' # Four DAG estimation
+#' dag1 <- SEMdag(ig, X, LO="TO")
+#' dag2 <- SEMdag(ig, X, LO="TL")
+#' dag3 <- SEMdag(ig, X, LO="BU", eta=0)
+#' dag4 <- SEMdag(ig, X, LO="BU", eta=NULL)
+#' 
+#' unlist(dag1$LO)
+#' dag2$LO
+#' unlist(dag3$LO)
+#' dag4$LO
+#' 
+#' # Graphs
+#' old.par <- par(no.readonly = TRUE)
+#' par(mfrow=c(2,2), mar=rep(2,4))
+#' gplot(dag1$dag, main="TO")
+#' gplot(dag2$dag, main="TL")
+#' gplot(dag3$dag, main="BU")
+#' gplot(dag4$dag, main="TLBU")
+#' par(old.par)
+#' 
+SEMdag<- function(graph, data, LO="TO", beta=0, eta=NULL, lambdas=NA, penalty=TRUE, verbose=FALSE, ...)
 {
 	# Set DAG objects:
 	nodes<- colnames(data)[colnames(data) %in% V(graph)$name]
 	ig<- induced_subgraph(graph, vids= which(V(graph)$name %in% nodes))
-	if (!is_dag(ig) & LO == "TO"){
+	if (!is_dag(ig) & (LO == "TO" | LO == "TL")){
 	 cat("WARNING: input graph is not acyclic !\n")
 	 cat(" Applying graph -> DAG conversion...\n")
 	 dag<- graph2dag(ig, data) #del cycles & all <->
 	}else{ dag<- ig }
-	#X <- scale(data[,V(dag)$name])
-	X<- as.matrix(data[,V(dag)$name])
+	X<- as.matrix(data[, V(dag)$name])
 
 	# Estimate DAG using linear ordering (LO) approach:
-	x<- DAG_HD_TD(graph=dag, X=X, LO=LO, beta=beta,
-	 lambdas=lambdas, penalty=penalty, verbose=verbose)
-	colnames(x$adj)<- rownames(x$adj)<- colnames(X)
+	x<- getParents(dag, X, LO, beta, eta, lambdas, penalty, verbose)
+	#if (LO == "TO") x$L<- unlist(x$L)
 	
 	# Mapping DAG edges on input graph:
-	if (sum(x$adj) == 0) return(message("DAG with 0 edges, decrease beta threshold !"))
-	ig1<- graph_from_adjacency_matrix(x$adj, mode="directed")
+	ig1<- x$gxy
 	ig2<- quiet(properties(ig1)[[1]])
 	E1<- attr(E(ig2), "vnames")
 	E0<- attr(E(ig), "vnames")
 	E(ig2)$color<- ifelse(E1 %in% E0, "gray", "green")
+	dout <- igraph::degree(ig2, mode= "out") #sink
+	din <- igraph::degree(ig2, mode= "in") #source
+	V(ig2)$color[dout == 0]<- "orange"
+	V(ig2)$color[din == 0]<- "cyan"
 	ig3<- ig2-E(ig2)[which(E(ig2)$color == "gray")]
 	ig3<- ig3-vertices(V(ig3)$name[igraph::degree(ig3) == 0])
 	ig4<- ig2-E(ig2)[which(E(ig2)$color == "green")]
@@ -913,99 +828,178 @@ SEMdag<- function(graph, data, LO="TO", beta=0, lambdas=NA, penalty=TRUE, verbos
 	 gplot(ig2)
 	 fit<- SEMrun(ig2, X, algo = "ricf", n_rep = 0)
 	}
-	
-	return( list(dag=ig2, dag.new=ig3, dag.old=ig4) )
+
+	return( list(dag=ig2, dag.new=ig3, dag.old=ig4, LO=x$L) )
 }
 
-DAG_HD_TD<- function(graph, X, LO, beta, lambdas, penalty, verbose, ...)
+getParents<- function(dag, X, LO, beta, eta, lambdas, penalty, verbose, ...)
 {
-	n <- dim(X)[1]
-	p <- dim(X)[2]
-	
-	if (LO == "TO"){
-	 TO <- names(igraph::topo_sort(graph))
-	 rr <- rev(match(TO, colnames(X)))
-	 l <- sqrt(log(p)/n)
-	}else if (LO == "TD"){
-	 J <- 3
-	 rr <- rev(getOrdering(X, J))
-	 l <- sqrt(log(p)/n)
-	 #l <- (2/sqrt(n))*qnorm(1 - 0.05/(2*p*(p-1)))
-	}
+	# STEP 1: Bottom-Up (Sink > Source) ordering
 	cat("Node Linear Ordering with", LO, "setting\n\n")
-	if (verbose) {print(colnames(X)[rev(rr)]);cat("\n")}
-	
-	result <- matrix(0, p, p)
-	X <- scale(X)
-	A <- as_adj(graph, sparse = FALSE)
-	for (ii in 1:(p - 1)) {
-		now <- rr[ii]
-		this <- sort(rr[(ii + 1):p])
-		if (penalty) {
-		 pw <- 1 - A[this,now]
+	if (LO == "TO"){
+	 TO <- names(igraph::topo_sort(dag))
+	 L <- as.list(rev(TO))
+	}else if (LO == "TL"){
+	 L <- buildLevels(dag)
+	}else if (LO == "BU"){
+	 L <- buildLayers(X, rho = NULL, eta = eta)
+	}
+	Z <- scale(X)
+	n <- nrow(Z)
+	p <- length(L)
+	if (is.na(lambdas)) lambdas <- sqrt(log(p)/n)
+	adj <- as_adj(dag, sparse = FALSE)
+
+	# STEP 2: DAG recovery by Bottom-Up ordering
+	ftm<- NULL
+	for (i in 1:(p - 1)) { #i=1
+	  yy<- which(colnames(Z) %in% L[[i]])
+	  ll<- unique(unlist(L[(i+1):length(L)]))
+	  xx<- which(colnames(Z) %in% ll)
+	  y<- as.matrix(Z[,yy])
+	  x<- as.matrix(Z[,xx]) 
+	  if (ncol(y) == 1) colnames(y)<- colnames(Z)[yy]
+	  if (ncol(x) == 1) colnames(x)<- colnames(Z)[xx]
+	  if (penalty) {
+		 pw <- matrix(1,ncol(x),ncol(y)) - adj[xx, yy]
+	  }else{
+		 pw <- matrix(1,ncol(x),ncol(y))
+	  }
+	  ftmi<- glmnet.set(x, y, beta, lambdas, pw)
+	  ftm<- rbind(ftm, ftmi)
+	}
+
+	if (is.null(ftm))
+ 	 return(message("DAG with 0 edges, change input values !"))
+	del<- which(duplicated(ftm) == TRUE)
+	if (length(del) > 0) ftm<- ftm[-del,]
+	gxy<- graph_from_data_frame(ftm, directed=TRUE)
+		
+	return(list(gxy = gxy, L = L))
+}
+
+glmnet.set<- function(x, y, beta, lambdas, pw, ...)
+{ 
+	set.seed(1324)
+	ftm <- NULL
+	for (k in 1:ncol(y)) {
+	   if (ncol(x) > 1) {
+		if (!is.null(lambdas)) {
+			fit <- glmnet::glmnet(x=x, y=y[,k], family="gaussian",
+					#lambda = sqrt(log(ncol(y)+ncol(x))/nrow(y)))
+					lambda = lambdas,
+					penalty.factor = pw[,k])
+			b <- coef(fit, s = NULL)[-1,]
 		}else{
-		 pw <- rep(1, length(this))
+			fit <- glmnet::cv.glmnet(x=x, y=y, family="gaussian",
+					lambda = NULL,
+					penalty.factor = pw[,k])
+			b <- coef(fit, s = fit$lambda.min)[-1,]
 		}
-		if (sum(pw) == 0) break
-		if (length(this) > 1) {
-			if (!is.null(lambdas)) {
-				 lassom <- glmnet::glmnet(X[, this], X[, now], 
-				  lambda = l, penalty.factor = pw)
-				 bfit <- coefficients(lassom)[-1]
-			}
-			else{
-				 lassom <- glmnet::cv.glmnet(X[, this], X[, now],
-				  lambda = NULL, penalty.factor = pw)
-				 bfit <- coefficients(lassom)[-1]
-			}
-			for (jj in 1:length(this)) {
-				if (abs(bfit[jj]) > beta)
-				result[this[jj], now] <- 1
-			}
-		}
-		else {
-			#lmod <- summary(RcppEigen::fastLm(X[, now] ~ X[, this]))
-			lmod <- summary(lm(X[, now] ~ X[, this]))$coefficients
-			if (lmod[2, 4] < 0.05 & abs(lmod[2, 1]) > beta) {
-			#if (lmod$coef[2, 4] < 0.05) {
-				result[this, now] <- 1
-			}
-		}
+	   }else{
+			fit <- summary(lm(y[,k] ~ x))$coefficients[2,4]
+			b <- ifelse(fit < 0.05, 1, 0)
+			names(b) <- colnames(x)
+	   }
+	   from <- names(b)[abs(b) > beta]
+	   to <- rep(colnames(y)[k], length(from))
+	   ftm <- rbind(ftm, cbind(from, to))
 	}
-	return(list(adj = result, TO = rev(rr)))
+
+	return(ftm)
 }
 
-getOrdering<- function (Y, J, ...)
+buildLevels <- function(dag, ...)
 {
-	# Copyright (c) 2020  Wenyu Chen [email ?]
-	# https://github.com/WY-Chen/EqVarDAG
-	# All rights reserved.  See the file COPYING for license terms.
-	p <- dim(Y)[2]
-	variances <- apply(Y, MARGIN = 2, sd)
-	Theta <- rep(0, p)
-	Theta[1] <- which.min(variances)
-	out <- sapply(setdiff(1:p, Theta[1]), function(z) {
-	  #sum(resid(RcppEigen::fastLm(Y[, z] ~ Y[, Theta[1], drop = F]))^2)
-	  sum(resid(lm(Y[, z] ~ Y[, Theta[1], drop = F]))^2)
-	 })
-	Theta[2] <- setdiff(1:p, Theta[1])[which.min(out)]
-	for (i in 3:p) {
-	 out <- suppressWarnings(lapply(setdiff(1:p, Theta),
-			function(jj) subsets(jj, Y, Theta[seq(i - 1)], J)))
-	 nextRoot <- which.min(sapply(out, function(x) {
-		min(x$rss)
-	 }))
-	 Theta[i] <- setdiff(1:p, Theta)[nextRoot]
+	Leaf_removal <- function(dag)
+	{
+	 levels <- list()
+	 level <- 1
+	 repeat {
+	  leaves <- igraph::degree(dag, mode= "out")
+	  levels[[level]]<- names(leaves)[leaves == 0]
+  	  dag <- delete_vertices(dag, names(leaves)[leaves == 0])
+	  level <- level+1
+	  if (vcount(dag)==0 | ecount(dag)==0) break
+	 }
+	 levels[[level]] <- V(dag)$name
+	 names(levels)<- 1:level
+	 return(levels)
 	}
-	return(Theta)
+
+	# leaf-removal(dag)
+	l1<- Leaf_removal(dag)
+	if (length(l1) == 2) return(l1)
+	# leaf removal(dagT)
+	adj <- as_adj(dag, sparse=FALSE)
+	dagT <- graph_from_adjacency_matrix(t(adj), mode="directed")
+	l2 <- Leaf_removal(dagT)
+	l2 <- rev(l2)
+	# number-of-layers 
+	L <- max(length(l1), length(l2))
+
+	# combine BU-ordering (dag+dagT)
+	l3 <- list()
+	l3[[1]] <- l1[[1]] #sink
+	l3[[L]] <- l2[[L]] #source
+	for (k in 2:(L-1)){
+	 lk <- unique(c(l1[[k]], l2[[k]]))
+	 Lk <- unlist(l3[c(1:(k-1),L)])
+	 l3[[k]] <- setdiff(lk, Lk)
+	}
+
+	return(l3)
 }
 
-subsets<- function (z, Y, Theta, J, mtd = "seqrep") 
+buildLayers <- function(X, rho = NULL, eta = NULL, eta.scaler = 1)
 {
-  #mtd = c("exhaustive","backward", "forward", "seqrep")
-  leaps::regsubsets(x = Y[, Theta, drop = F], y = Y[, z, drop = F], 
-                    method = mtd, nbest = 1, nvmax = min(J, sum(Theta > 0)), 
-                    really.big = TRUE)
+	### Set the required parameters from data matrix
+	X <- as.matrix(X)
+	p <- ncol(X)
+	n <- nrow(X)
+	#if (is.null(rho)) rho <- sqrt(log(p)/n)
+
+	### Layer Estimation
+	layers <- list()
+	l <- 1
+	RemNode <- colnames(X) ## initial remaining nodes
+
+	while (length(RemNode) > 0) {
+	 ### Estimate residual variance for each RemNode
+	 X1 <- X[, RemNode]
+	 if (is.null(rho)) rho <- sqrt(log(ncol(X1))/n)
+	 if (ncol(as.matrix(X1)) > 1) {
+	  if (n > p) {
+	   wi <- solve(cov(X1))
+	  }else{
+	   wi <- glasso::glasso(s=cov(X1), rho=rho)$wi
+	   rownames(wi) <- colnames(wi) <- colnames(X1)
+	  }
+	  resvars <- diag(wi)
+	  diff.resvars <- resvars - min(resvars)
+	  #Recover layers using X2 to determine eta adaptively 
+	  if (is.null(eta)) {
+	   X2 <- X[sample(1:n, n/2), RemNode]
+	   wi <- glasso::glasso(s=cov(X2), rho=sqrt(2)*rho)$wi
+	   rownames(wi) <- colnames(wi) <- colnames(X2)
+	   resvars2 <- diag(wi)
+	   eta_hat <- min(abs(resvars - resvars2)) * eta.scaler
+	   layers[[l]] <- RemNode[diff.resvars <= eta_hat]
+	  }else{
+	  #Recover layers with fixed eta    
+	   layers[[l]] <- RemNode[diff.resvars <= eta]
+	  }
+	 }else{
+	  layers[[l]] <- RemNode
+	 }
+
+	 ### Updating the remaining node ###
+	 RemNode<- RemNode[-which(RemNode %in% layers[[l]])]
+
+	 l <- l + 1 # layer indicator
+	}
+
+	return(layers)
 }
 
 #' @title Interactome-assisted graph re-seizing
@@ -1042,18 +1036,20 @@ subsets<- function (z, Y, Theta, J, mtd = "seqrep")
 #' @param ... Currently ignored.
 #'
 #' @details Typically, the first graph is an estimated causal graph (DAG),
-#' and the second graph is the output of \code{\link[SEMgraph]{SEMdag}} or
-#' an external covariance graph. In the former we use the new inferred
-#' causal structure stored in the \code{dag.new} object. In the latter, we
-#' use the new inferred covariance structure stored in the covariance graph
-#' object. Both directed (causal) edges and covariances (i.e., bidirected
-#' edges) highlight emergent hidden topological proprieties, absent in the
-#' input graph. Estimated directed edges between nodes X and Y
-#' are interpreted as either direct links or direct paths mediated by hidden
-#' connector nodes. Covariances between any two bow-free nodes X and Y may
-#' hide causal relationships, not explicitly represented in the current model.
-#' Conversely, directed (or bi-directed) edges could be redundant or artifact,
-#' specific to the observed data and could be deleted.
+#' and the second graph is the output of either \code{\link[SEMgraph]{SEMdag}}
+#' or \code{\link[SEMgraph]{SEMbap}}. Alternatively, the first graph is an
+#' empthy graph, and the second graph is a external covariance graph.
+#' In the former we use the new inferred causal structure stored in the
+#' \code{dag.new} object. In the latter, we use the new inferred covariance
+#' structure stored in the \code{guu} object. Both directed (causal) edges
+#' inferred by \code{SEMdag()} and covariances (i.e., bidirected edges)
+#' added by \code{SEMbap()}, highlight emergent hidden topological
+#' proprieties, absent in the input graph. Estimated directed edges between
+#' nodes X and Y are interpreted as either direct links or direct paths
+#' mediated by hidden connector nodes. Covariances between any two bow-free
+#' nodes X and Y may hide causal relationships, not explicitly represented
+#' in the current model. Conversely, directed edges could be redundant or
+#' artifact, specific to the observed data and could be deleted.
 #' Function \code{resizeGraph()} leverage on these concepts to extend/reduce a
 #' causal model, importing new connectors or deleting estimated edges, if they are
 #' present or absent in a given reference network. The whole process may lead to
@@ -1225,17 +1221,7 @@ getNetEdges<- function(graph, gnet, d, yes, ...)
 #' @title Tree-based structure learning methods
 #'
 #' @description Four tree-based structure learning methods are implemented
-#' with graph and data-driven algorithms. A tree ia an acyclic graph with p vertices
-#' and p-1 edges. The graph method refers to the  Steiner Tree (ST), a tree from an
-#' undirected graph that connect "seed" with additional nodes in the
-#' "most compact" way possible. The data-driven methods propose fast and scalable
-#' procedures based on Chu-Liu–Edmonds’ algorithm (CLE) to recover a tree from a full
-#' graph. The first method, called Causal Additive Trees (CAT) uses pairwise mutual
-#' weights as input for CLE algorithm to recover a directed tree (an "arborescence").
-#' The second one applies CLE algorithm for skeleton recovery and extends the skeleton
-#' to a tree (a "polytree") represented by a Completed Partially Directed Acyclic Graph
-#' (CPDAG). Finally, the Minimum Spanning Tree (MST) connecting an undirected graph (or
-#' on an undirected full graph) with minimal edge weights can be identified.
+#' with graph and data-driven algorithms.
 #'
 #' @param graph An igraph object.
 #' @param data A matrix or data.frame. Rows correspond to subjects, and
@@ -1296,7 +1282,18 @@ getNetEdges<- function(graph, gnet, d, yes, ...)
 #' @param verbose If TRUE, it shows the output tree (not recommended for large graphs).
 #' @param ... Currently ignored.
 #'
-#' @details If the input graph is a directed graph, ST and MST undirected trees are
+#' @details A tree ia an acyclic graph with p vertices and p-1 edges. The graph method
+#' refers to the  Steiner Tree (ST), a tree from an undirected graph that connect "seed"
+#' with additional nodes in the "most compact" way possible. The data-driven methods
+#' propose fast and scalable procedures based on Chu-Liu–Edmonds’ algorithm (CLE) to
+#' recover a tree from a full graph. The first method, called Causal Additive Trees (CAT)
+#' uses pairwise mutual weights as input for CLE algorithm to recover a directed tree
+#' (an "arborescence"). The second one applies CLE algorithm for skeleton recovery and
+#' extends the skeleton to a tree (a "polytree") represented by a Completed Partially
+#' Directed Acyclic Graph (CPDAG). Finally, the Minimum Spanning Tree (MST) connecting
+#' an undirected graph (or an undirected full graph, if graph=NULL) with minimal edge
+#' weights can be identified.
+#' To note, if the input graph is a directed graph, ST and MST undirected trees are
 #' converted in directed trees using the \code{\link[SEMgraph]{orientEdges}} function.
 #'
 #' @export
@@ -1479,7 +1476,7 @@ CAT.R<- function(data, limit = 100, ...)
 	# Compute Gaussian Edge Weights:
 	if (is.data.frame(data)) {
 	 ig0 <- make_full_graph(ncol(data), directed = TRUE)
-	 Edges <- as_data_frame(ig0)
+	 Edges <- igraph::as_data_frame(ig0)
 	 x <- split(Edges, f = seq(nrow(Edges)))
 	 message("Score weighting of ", length(x), " edges...")
 	 op <- pbapply::pboptions(type = "timer", style = 2)
@@ -1566,295 +1563,152 @@ CPDAG <- function(data, alpha, verbose = FALSE, ...)
 	return(CPDAG)
 }
 
-#' @title Data-driven model learning
+#' @title Causal structure learning
 #'
-#' @description Data-driven model structure learning based on the linear 
-#' order provided by the input graph.
+#' @description Data-driven model structure learning based on the linear order 
+#' provided by the input graph.
 #'
 #' @param graph Input network as an igraph object.
-#' @param data A matrix or data.frame. Rows correspond to subjects, and
-#' columns to graph nodes (variables).
+#' @param data A matrix or data.frame. Rows correspond to subjects, and columns 
+#' to graph nodes (variables).
 #' @param group A binary vector. This vector must be as long as the number of 
 #' subjects. Each vector element must be 1 for cases and 0 for control subjects. 
 #' If NULL (default), group influence will not be considered.
-#' @param method Linear order method. If \code{method = "TO"}, the topological order 
-#' of the input DAG is enabled (default). If code{method = "TD"} a data-driven 
+#' @param method Linear order method. If method = "TO", the topological order 
+#' of the input DAG is enabled (default). If codemethod = "TD" a data-driven 
 #' top-down minimum conditional variance method is performed.
 #' @param beta Numeric value corresponding to the minimum LASSO beta coefficient 
-#' needed for a new interaction to be retained in the final model (default = 0).
-#' Increasing \code{beta} values decrease output model density and generally 
-#' increase the number of output clusters.
-#' @param dag.only A logical value. If FALSE (default), inferred connections 
-#' will be added to the input graph. If TRUE, only inferred connections will 
-#' be retained in the output. In this case, the output network will be a 
-#' directed acyclic graph. See \code{\link[SEMgraph]{SEMdag}} for details.
+#' needed for a new interaction to be retained in the final model (default = 0). 
+#' Increasing beta values decrease output model density and generally increase 
+#' the number of output clusters.
 #' @param cluster Graph clustering method. Basic clustering methods are taken 
 #' from the igraph package, including: "wtc" (default value; walktrap community 
 #' structure with short random walks), "ebc" (edge betweenness clustering), 
-#' "fgc" (fast greedy method), "lbc" (label propagation method), "lec" (leading 
-#' eigenvector method), "loc" (multi-level optimization), "opc" (optimal 
-#' communiy structure), "sgc" (spinglass statistical mechanics). 
+#' "fgc" (fast greedy method), "lbc" (label propagation method), 
+#' "lec" (leading eigenvector method), "loc" (multi-level optimization), 
+#' "opc" (optimal communiy structure), "sgc" (spinglass statistical mechanics). 
 #' If type = "tahc", network modules are generated using the tree agglomerative 
-#' hierarchical clustering method (Yu et al., 2015).
-#' Clustering can be disabled by setting \code{cluster = NULL}.
+#' hierarchical clustering method (Yu et al., 2015). Clustering can be disabled 
+#' by setting \code{cluster = NULL}.
 #' @param hidden Hidden model type. For each defined hidden module: 
-#' (i) if HM = "LV", a latent variable (LV) will be defined as common unknown 
-#' cause acting on cluster nodes; (ii) if HM = "CV", cluster nodes will be 
-#' considered as regressors of a latent composite variable (CV); 
-#' (iii) if HM = "UV", an unmeasured variable (UV) model will be generated for 
-#' each module, where source nodes (i.e., in-degree = 0) act as common 
-#' regressors influencing the other nodes via an unmeasured variable. 
+#' (i) if \code{HM = "LV"}, a latent variable (LV) will be defined as common 
+#' unknown cause acting on cluster nodes; (ii) if \code{HM = "CV"}, cluster 
+#' nodes will be considered as regressors of a latent composite variable (CV); 
+#' (iii) if \code{HM = "UV"}, an unmeasured variable (UV) model will be 
+#' generated for each module, where source nodes (i.e., in-degree = 0) act as 
+#' common regressors influencing the other nodes via an unmeasured variable. 
 #' By default, HM is set to "LV" (i.e., the latent variable model).
 #' @param min.clust Minimum size for a cluster to be fitted (default = 5). 
 #' Ignored if \code{cluster = NULL}.
-#' @param edge.weights Logical value. If TRUE, the resulting network is 
-#' weighted using the r2z method (see \code{\link[SEMgraph]{weightGraph}}).
+#' @param edge.weights Logical value. If TRUE, the resulting network is weighted 
+#' using the r2z method (see \code{\link[SEMgraph]{weightGraph}}).
+#' @param edge.color.base Color attribute for edges belonging to the input 
+#' graph (default = "gray85").
+#' @param edge.color.learn Color attribute for learned edges 
+#' (default = "orange").
 #' @param ... Currently ignored.
+#' 
+#' @details A critical argument for model reduction/denoising is the LASSO beta 
+#' coefficient threshold. By default, this value is set to 0, implying no edge 
+#' filtering (highest model complexity). Clustering and cluster-level fitting 
+#' could give a set of criteria to choose an optimal beta value. We initially 
+#' launch the function with beta = 0. At each following run, we gradually 
+#' increase beta by 0.01. For each run: (i) modularity must increase respect 
+#' to the previous step, (ii) the chosen hidden model must converge (if not, 
+#' it is a sign of suboptimal clustering), (iii) the number of small clusters 
+#' (i.e., cluster size < min.clust; default = 5 nodes) should be minimized 
+#' (ideally 0), (iv) the number of resulting clusters should be minimized to 
+#' avoid unnecessary fragmentation and interaction loss. As an additional 
+#' criterion, we could set a maximum cluster size (e.g., 500 nodes), unless 
+#' this gives a biological or computational advantage. 
+#' Once the optimal value has been detected (e.g., 0.02), the threshold can 
+#' be refined with a 0.001 step around the threshold (e.g., between 0.015 and 
+#' 0.025), for possible further improvements (e.g., merge small clusters).
 #'
+#' @return A list of 3 objects:
+#' \enumerate{
+#' \item "model", an igraph object corresponding to the output model;
+#' \item "dag", the directed acyclic core of the model;
+#' \item "clusters", a list of 3 objects containing clustering results:
+#' \itemize{
+#' \item "membership", vector assigning cluster membership to each node;
+#' \item "fit", latent model fitting results;
+#' \item "dataHM", a data matrix including latent variable scores followed by 
+#' the original variables.
+#' }
+#' }
+#'
+#' @import igraph
+#' @import lavaan
 #' @export
 #'
-#' @return A list of two objects:
-#' \enumerate{
-#' \item "model", The output model as an igraph object;
-#' \item "clusters", A list containing model clustering results.
-#' It includes tree more objects:
-#' \itemize{
-#' \item "membership", A vector reporting cluster membership for each node;
-#' \item "fit", hidden model fitting as a lavaan object;
-#' \item "dataHM", data matrix containing cluster scores (hidden variables) 
-#' alongside the original data variables.
-#' }
-#' }
-#'
 #' @author Fernando Palluzzi \email{fernando.palluzzi@gmail.com}
-#' 
+#'
 #' @references
 #'
-#' Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
-#' Analysis of High-Throughput Data with Structural Equation Models.
-#' Bioinformatics, 38 (20), 4829–4830 <https://doi.org/10.1093/bioinformatics/btac567>
+#' Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal 
+#' Network Analysis of High-Throughput Data with Structural Equation Models. 
+#' Bioinformatics, 38 (20), 4829–4830 
+#' <https://doi.org/10.1093/bioinformatics/btac567>
 #' 
-#' Tibshirani R, Bien J, Friedman J, Hastie T, Simon N, Taylor J,
-#' Tibshirani RJ (2012). Strong rules for discarding predictors in
-#' lasso type problems. Royal Statistical Society: Series B
-#' (Statistical Methodology), 74(2): 245-266.
-#' <https://doi.org/10.1111/j.1467-9868.2011.01004.x>
+#' Tibshirani R, Bien J, Friedman J, Hastie T, Simon N, Taylor J, 
+#' Tibshirani RJ (2012). Strong rules for discarding predictors in lasso type 
+#' problems. Royal Statistical Society: Series B (Statistical Methodology), 
+#' 74(2): 245-266. <https://doi.org/10.1111/j.1467-9868.2011.01004.x>
 #' 
-#' Shojaie A, Michailidis G (2010). Penalized likelihood methods for
-#' estimation of sparse high-dimensional directed acyclic graphs.
+#' Shojaie A, Michailidis G (2010). Penalized likelihood methods for estimation 
+#' of sparse high-dimensional directed acyclic graphs. 
 #' Biometrika, 97(3): 519-538. <https://doi.org/10.1093/biomet/asq038>
-#'
-#' Jankova J, van de Geer S (2015). Confidence intervals for high-dimensional
-#' inverse covariance estimation. Electronic Journal of Statistics,
+#' 
+#' Jankova J, van de Geer S (2015). Confidence intervals for high-dimensional 
+#' inverse covariance estimation. Electronic Journal of Statistics, 
 #' 9(1): 1205-1229. <https://doi.org/10.1214/15-EJS1031>
-#'
-#' Peters J, Bühlmann P (2014). Identifiability of Gaussian structural equation
+#' 
+#' Peters J, Bühlmann P (2014). Identifiability of Gaussian structural equation 
 #' models with equal error variances. Biometrika, 101(1):219–228.
 #' 
-#' Chen W, Drton M, Wang YS (2019). On Causal Discovery with an Equal-Variance
+#' Chen W, Drton M, Wang YS (2019). On Causal Discovery with an Equal-Variance 
 #' Assumption. Biometrika, 106(4): 973-980.
 #'
-#' @seealso \code{\link[SEMgraph]{SEMdag}} for data-driven DAG learning details.
-#'
 #' @examples
-#'
+#' 
+#' # Nonparanormal data transform
 #' library(huge)
 #' als.npn <- huge.npn(alsData$exprs)
-#'
+#' 
 #' # Model learning
-#' model <- model.learn(graph = alsData$graph, data = als.npn,
-#'                      group = alsData$group, method = "TO",
-#'                      beta = 0)
+#' kbm <- model.learn(alsData$graph, als.npn, alsData$group,
+#'                    method = "TO",
+#'                    beta = 0)
 #'
 model.learn <- function(graph, data, group = NULL, method = "TO", beta = 0,
-                        dag.only = FALSE, cluster = "wtc", hidden = "LV",
-                        min.clust = 5, edge.weights = TRUE) {
+                        cluster = "wtc", hidden = "LV", min.clust = 5,
+                        edge.weights = TRUE, edge.color.base = "gray85",
+                        edge.color.learn = "orange", ...) {
   
-  model <- SEMdag(graph, data, LO = method, beta = beta)
+  dag <- SEMgraph::SEMdag(graph, data, LO = method, beta = beta)
   
-  if (!dag.only) {
-    model <- graph.union(graph, model$dag)
-    model <- properties(model)[[1]]
-  }
+  model <- igraph::graph.union(graph, dag$dag)
+  model <- SEMgraph::properties(model)[[1]]
+  
   if (edge.weights) {
-	message("\nModel weighting ...")
-	model <- weightGraph(model, data, group = group)
-	message("Done.")
+    message("\nModel weighting ...")
+    model <- SEMgraph::weightGraph(model, data, group = group)
+    message("Done.")
   }
+  
+  E(model)$color <- edge.color.learn
+  E(model)$color[E(model) %in% E(graph)] <- edge.color.base
+  
   if (!is.null(cluster)) {
     message("\nModel clustering ...\n")
-    model.clust <- clusterScore(model, data, group, type = cluster, HM = hidden,
-                                size = min.clust, verbose = FALSE)
+    model.clust <- SEMgraph::clusterScore(model, data, group, type = cluster, HM = hidden,
+                                          size = min.clust, verbose = FALSE)
   } else {
     model.clust <- NULL
   }
   
-  return(list(model = model, clusters = model.clust))
-}
-
-#' @title Cluster extraction and fitting
-#'
-#' @description Extract and fit clusters from an input graph.
-#'
-#' @param graph Input network as an igraph object.
-#' @param data A matrix or data.frame. Rows correspond to subjects, and
-#' columns to graph nodes (variables).
-#' @param membership A vector of cluster membership IDs. The membership 
-#' vector can be generated using the \code{\link[SEMgraph]{clusterScore}}, 
-#' \code{\link[SEMgraph]{clusterGraph}}, or 
-#' \code{\link[SEMgraph]{model.learn}} functions.
-#' @param group A binary vector. This vector must be as long as the
-#' number of subjects. Each vector element must be 1 for cases and 0
-#' for control subjects. If not NULL, edges will be weighted accounting
-#' for the correlation difference between cases (1) and controls (0). 
-#' By default, \code{group = NULL}.
-#' @param fitting.method MLE method used for SEM fitting. 
-#' If \code{fitting.method = "lavaan"} (default), the SEM will be fitted 
-#' using the NLMINB solver from lavaan R package, with standard errors 
-#' derived from the expected Fisher information matrix. 
-#' If \code{fitting.method = "ricf"}, the model is fitted via residual 
-#' iterative conditional fitting (RICF; Drton et al. 2009). 
-#' If \code{fitting.method = "cggm"}, model fitting is based on 
-#' constrained Gaussian Graphical Modeling (CGGM; Hastie et al. 2009, p. 446).
-#' @param se If "standard" (default), with \code{fitting.method = "lavaan"}, 
-#' conventional standard errors are computed based on inverting the 
-#' observed information matrix. If "none", no standard errors are computed.
-#' @param n Number of randomization replicates (default = 2000), for 
-#' permutation flip or boostrap sampling, if \code{fitting.method = "ricf"}.
-#' @param limit An integer value corresponding to the network size 
-#' (i.e., number of nodes). Beyond this limit, the execution under
-#' \code{fitting.method = "lavaan"} will run with \code{SE = "none"}, 
-#' if \code{fit = 0}; it will be ridirected to 
-#' \code{fitting.method = "ricf"}, if \code{fit = 1}; or to 
-#' \code{fitting.method = "cggm"}, if \code{fit = 2}.
-#' This redirection is necessary to reduce the computational demand of 
-#' standard error estimation by lavaan. Increasing this number will 
-#' enforce lavaan execution when \code{fitting.method = "lavaan"}.
-#' @param size Minimum size for a cluster to be fitted (default = 5). 
-#' Use \code{size = 0} to enforce model fitting for every cluster.
-#' @param ... Currently ignored.
-#'
-#' @export
-#'
-#' @return A list of three objects:
-#' \enumerate{
-#' \item "clusters", A list of clusters as igraph objects;
-#' \item "estimates", A data.frame containing model estimates for each cluster;
-#' \item "fit.indices", A data.frame containing fitting indices for each cluster.
-#' }
-#'
-#' @author Fernando Palluzzi \email{fernando.palluzzi@gmail.com}
-#' 
-#' @references
-#'
-#' Yves Rosseel (2012). lavaan: An R Package for Structural Equation
-#' Modeling. Journal of Statistical Software, 48(2): 1-36.
-#' <https://www.jstatsoft.org/v48/i02/>
-#'
-#' Drton M, Eichler M, Richardson TS (2009). Computing Maximum Likelihood
-#' Estimated in Recursive Linear Models with Correlated Errors.
-#' Journal of Machine Learning Research, 10(Oct): 2329-2348.
-#' <https://www.jmlr.org/papers/volume10/drton09a/drton09a.pdf>
-#'
-#' Jankova J, van de Geer S (2015). Confidence intervals for high-dimensional
-#' inverse covariance estimation. Electronic Journal of Statistics,
-#' 9(1): 1205-1229. <https://doi.org/10.1214/15-EJS1031>
-#'
-#' Hastie T, Tibshirani R, Friedman J. (2009). The Elements of Statistical
-#' Learning (2nd ed.). Springer Verlag: New York. ISBN: 978-0-387-84858-7
-#'
-#' Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
-#' Analysis of High-Throughput Data with Structural Equation Models.
-#' Bioinformatics, 38 (20), 4829–4830 <https://doi.org/10.1093/bioinformatics/btac567>
-#'
-#' Fortunato S, Hric D. Community detection in networks: A user guide (2016).
-#' Phys Rep; 659: 1-44. <https://dx.doi.org/10.1016/j.physrep.2016.09.002>
-#'
-#' Yu M, Hillebrand A, Tewarie P, Meier J, van Dijk B, Van Mieghem P,
-#' Stam CJ (2015). Hierarchical clustering in minimum spanning trees.
-#' Chaos 25(2): 023107. <https://doi.org/10.1063/1.4908014>
-#'
-#' @seealso See \code{\link[SEMgraph]{clusterScore}} and 
-#' \code{\link[SEMgraph]{clusterGraph}} for network clustering.
-#' See \code{\link[SEMgraph]{model.learn}} for data-driven model learning and 
-#' clustering.
-#' See \code{\link[SEMgraph]{SEMrun}} for general model fitting.
-#'
-#' @examples
-#'
-#' \donttest{
-#'
-#' library(huge)
-#' als.npn <- huge.npn(alsData$exprs)
-#'
-#' # Cluster creation
-#' clusters <- clusterScore(graph = alsData$graph, data = als.npn,
-#'                          group = alsData$group,
-#'                          type = "wtc")
-#'
-#' # Clusters extraction and fitting with the RICF algorithm
-#' fit <- extractClusters(graph = alsData$graph, data = als.npn,
-#'                        membership = clusters$membership,
-#'                        group = alsData$group,
-#'                        fitting.method = "ricf")
-#'
-#' # Extracting differentially regulated nodes
-#' DRNs <- rownames(fit$estimates)[fit$estimates$pvalue < 0.05]
-#' length(DRNs)
-#'
-#' # Map cluster 1 on the input graph
-#' g <- alsData$graph
-#' c <- fit$clusters[[1]]
-#' V(g)$color <- ifelse(V(g)$name %in% V(c)$name, "gold", "white")
-#' gplot(g)
-#'
-#' }
-#'
-extractClusters <- function (graph, data, membership, group = NULL,
-                             fitting.method = "lavaan", se = "standard",
-                             limit = 100, n = 2000, size = 5, ...)
-{
-  
-  clusters <- list()
-  model.estimates <- data.frame()
-  clust.fit <- data.frame(id = numeric(), devdfr = numeric(), srmr = numeric(),
-                          rmsea = numeric(), nobs = numeric(), npar = numeric())
-  
-  cluster.names <- names(table(membership))
-  m <- length(cluster.names)
-  
-  for (i in 1:m) {
-    
-    cluster <- induced_subgraph(graph,
-                                vids = names(membership[membership == i]))
-    n.nodes <- length(V(cluster)$name)
-    clusters[[i]] <- cluster
-    
-    if (n.nodes > size) {
-      message(paste0("\nFitting cluster ", i, " of ", m, " (cluster size: ",
-                     n.nodes, ")", " ..."))
-      fit <-  suppressWarnings(SEMrun(cluster, data, group,
-                                      algo = fitting.method,
-                                      n_rep = n, SE = se,
-                                      limit = limit))
-      if (is.null(group)) {
-        est <- parameterEstimates(fit$fit)
-      } else {
-        est <- fit$gest
-      }
-      est$cluster <- cluster.names[i]
-      model.estimates <- rbind(model.estimates, est)
-      cfit <- c(cluster.names[i], fit$fit$fitIdx[1]/fit$fit$fitIdx[2],
-                fit$fit$fitIdx[3], fit$fit$fitIdx[4], fit$fit$fitIdx[5],
-                fit$fit$fitIdx[6])
-      clust.fit[nrow(clust.fit) + 1,] <- cfit
-    } else {
-      warning(paste0("Cluster #", cluster.names[i], " too small. Skipped."))
-    }
-  }
-  
-  return(list(clusters = clusters, estimates = model.estimates,
-              fit.indices = clust.fit))
+  return(list(model = model, dag = dag$dag, clusters = model.clust))
 }
 
 #' @title Optimal model search strategies
@@ -1923,9 +1777,6 @@ extractClusters <- function (graph, data, membership, group = NULL,
 #' hidden covariances, thus considering more sources of confounding.
 #' If \code{alpha = 0}, data de-correlation is disabled.
 #' By default, \code{alpha = 0.05}.
-#' @param limit An integer value corresponding to the number of missing
-#' edges of the extracted acyclic graph. Beyond this limit, multicore
-#' computation is enabled to reduce the computational burden.
 #' @param verbose If TRUE, it shows intermediate graphs during the
 #' execution (not recommended for large graphs).
 #' @param ... Currently ignored.
@@ -1993,15 +1844,15 @@ extractClusters <- function (graph, data, membership, group = NULL,
 #' }
 #'
 modelSearch<- function(graph, data, gnet = NULL, d = 2, search = "basic",
-                       beta = 0, method = "BH", alpha = 0.05,
-                       limit = 30000, verbose = FALSE, ...)
+						beta = 0, method = "BH", alpha = 0.05,
+						verbose = FALSE, ...)
 {
 	# Step by step search:
 	nodes<- colnames(data)[colnames(data) %in% V(graph)$name]
 	Zt<- as.matrix(data[,nodes])
 	Gt<- induced_subgraph(graph, vids= which(V(graph)$name %in% nodes))
 	cat("Step1: BAP deconfounding...\n")
-	Zt1<- quiet(SEMbap(Gt, Zt, method=method, alpha=alpha, limit=limit))
+	Zt1<- quiet(SEMbap(Gt, Zt, method=method, alpha=alpha))
 	cat("Step2: DAG estimation...\n")
 	if(is.null(Zt1)) {
 	 Zt1$data <- Zt

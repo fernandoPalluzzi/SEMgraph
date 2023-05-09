@@ -18,7 +18,7 @@ Rgraphwiz."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -55,24 +55,24 @@ Rgraphwiz.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">gplot</span><span class="op">(</span>
-  <span class="va">graph</span>,
-  l <span class="op">=</span> <span class="st">"dot"</span>,
-  main <span class="op">=</span> <span class="st">""</span>,
-  cex.main <span class="op">=</span> <span class="fl">1</span>,
-  font.main <span class="op">=</span> <span class="fl">1</span>,
-  color.txt <span class="op">=</span> <span class="st">"black"</span>,
-  fontsize <span class="op">=</span> <span class="fl">16</span>,
-  cex <span class="op">=</span> <span class="fl">0.6</span>,
-  shape <span class="op">=</span> <span class="st">"circle"</span>,
-  color <span class="op">=</span> <span class="st">"gray70"</span>,
-  lty <span class="op">=</span> <span class="fl">1</span>,
-  lwd <span class="op">=</span> <span class="fl">1</span>,
-  w <span class="op">=</span> <span class="st">"auto"</span>,
-  h <span class="op">=</span> <span class="st">"auto"</span>,
-  psize <span class="op">=</span> <span class="fl">80</span>,
-  <span class="va">...</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">gplot</span><span class="op">(</span></span>
+<span>  <span class="va">graph</span>,</span>
+<span>  l <span class="op">=</span> <span class="st">"dot"</span>,</span>
+<span>  main <span class="op">=</span> <span class="st">""</span>,</span>
+<span>  cex.main <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  font.main <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  color.txt <span class="op">=</span> <span class="st">"black"</span>,</span>
+<span>  fontsize <span class="op">=</span> <span class="fl">16</span>,</span>
+<span>  cex <span class="op">=</span> <span class="fl">0.6</span>,</span>
+<span>  shape <span class="op">=</span> <span class="st">"circle"</span>,</span>
+<span>  color <span class="op">=</span> <span class="st">"gray70"</span>,</span>
+<span>  lty <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  lwd <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  w <span class="op">=</span> <span class="st">"auto"</span>,</span>
+<span>  h <span class="op">=</span> <span class="st">"auto"</span>,</span>
+<span>  psize <span class="op">=</span> <span class="fl">80</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -159,18 +159,18 @@ Available options include: 0 for blank, 1 for solid line, 2 for dashed,
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"></span>
-<span class="r-in"><span class="fu">gplot</span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, main <span class="op">=</span> <span class="st">"input graph"</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">gplot</span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, main <span class="op">=</span> <span class="st">"input graph"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="gplot-1.png" alt="" width="700" height="433"></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">sem</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, <span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">sem</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, <span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NLMINB solver ended normally after 10 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 188.9368  srmr: 0.1037022 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 188.9369  srmr: 0.103719 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="fu">gplot</span><span class="op">(</span><span class="va">sem</span><span class="op">$</span><span class="va">graph</span>, main <span class="op">=</span> <span class="st">"output graph"</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="fu">gplot</span><span class="op">(</span><span class="va">sem</span><span class="op">$</span><span class="va">graph</span>, main <span class="op">=</span> <span class="st">"output graph"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="gplot-2.png" alt="" width="700" height="433"></span>
-<span class="r-in"></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -185,7 +185,7 @@ Available options include: 0 for blank, 1 for solid line, 2 for dashed,
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

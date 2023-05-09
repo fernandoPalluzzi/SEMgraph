@@ -2,7 +2,7 @@
 % Please edit documentation in R/semLearn.R
 \name{model.learn}
 \alias{model.learn}
-\title{Data-driven model learning}
+\title{Causal structure learning}
 \usage{
 model.learn(
   graph,
@@ -10,120 +10,139 @@ model.learn(
   group = NULL,
   method = "TO",
   beta = 0,
-  dag.only = FALSE,
   cluster = "wtc",
   hidden = "LV",
   min.clust = 5,
-  edge.weights = TRUE
+  edge.weights = TRUE,
+  edge.color.base = "gray85",
+  edge.color.learn = "orange",
+  ...
 )
 }
 \arguments{
 \item{graph}{Input network as an igraph object.}
 
-\item{data}{A matrix or data.frame. Rows correspond to subjects, and
-columns to graph nodes (variables).}
+\item{data}{A matrix or data.frame. Rows correspond to subjects, and columns 
+to graph nodes (variables).}
 
 \item{group}{A binary vector. This vector must be as long as the number of 
 subjects. Each vector element must be 1 for cases and 0 for control subjects. 
 If NULL (default), group influence will not be considered.}
 
-\item{method}{Linear order method. If \code{method = "TO"}, the topological order 
-of the input DAG is enabled (default). If code{method = "TD"} a data-driven 
+\item{method}{Linear order method. If method = "TO", the topological order 
+of the input DAG is enabled (default). If codemethod = "TD" a data-driven 
 top-down minimum conditional variance method is performed.}
 
 \item{beta}{Numeric value corresponding to the minimum LASSO beta coefficient 
-needed for a new interaction to be retained in the final model (default = 0).
-Increasing \code{beta} values decrease output model density and generally 
-increase the number of output clusters.}
-
-\item{dag.only}{A logical value. If FALSE (default), inferred connections 
-will be added to the input graph. If TRUE, only inferred connections will 
-be retained in the output. In this case, the output network will be a 
-directed acyclic graph. See \code{\link[SEMgraph]{SEMdag}} for details.}
+needed for a new interaction to be retained in the final model (default = 0). 
+Increasing beta values decrease output model density and generally increase 
+the number of output clusters.}
 
 \item{cluster}{Graph clustering method. Basic clustering methods are taken 
 from the igraph package, including: "wtc" (default value; walktrap community 
 structure with short random walks), "ebc" (edge betweenness clustering), 
-"fgc" (fast greedy method), "lbc" (label propagation method), "lec" (leading 
-eigenvector method), "loc" (multi-level optimization), "opc" (optimal 
-communiy structure), "sgc" (spinglass statistical mechanics). 
+"fgc" (fast greedy method), "lbc" (label propagation method), 
+"lec" (leading eigenvector method), "loc" (multi-level optimization), 
+"opc" (optimal communiy structure), "sgc" (spinglass statistical mechanics). 
 If type = "tahc", network modules are generated using the tree agglomerative 
-hierarchical clustering method (Yu et al., 2015).
-Clustering can be disabled by setting \code{cluster = NULL}.}
+hierarchical clustering method (Yu et al., 2015). Clustering can be disabled 
+by setting \code{cluster = NULL}.}
 
 \item{hidden}{Hidden model type. For each defined hidden module: 
-(i) if HM = "LV", a latent variable (LV) will be defined as common unknown 
-cause acting on cluster nodes; (ii) if HM = "CV", cluster nodes will be 
-considered as regressors of a latent composite variable (CV); 
-(iii) if HM = "UV", an unmeasured variable (UV) model will be generated for 
-each module, where source nodes (i.e., in-degree = 0) act as common 
-regressors influencing the other nodes via an unmeasured variable. 
+(i) if \code{HM = "LV"}, a latent variable (LV) will be defined as common 
+unknown cause acting on cluster nodes; (ii) if \code{HM = "CV"}, cluster 
+nodes will be considered as regressors of a latent composite variable (CV); 
+(iii) if \code{HM = "UV"}, an unmeasured variable (UV) model will be 
+generated for each module, where source nodes (i.e., in-degree = 0) act as 
+common regressors influencing the other nodes via an unmeasured variable. 
 By default, HM is set to "LV" (i.e., the latent variable model).}
 
 \item{min.clust}{Minimum size for a cluster to be fitted (default = 5). 
 Ignored if \code{cluster = NULL}.}
 
-\item{edge.weights}{Logical value. If TRUE, the resulting network is 
-weighted using the r2z method (see \code{\link[SEMgraph]{weightGraph}}).}
+\item{edge.weights}{Logical value. If TRUE, the resulting network is weighted 
+using the r2z method (see \code{\link[SEMgraph]{weightGraph}}).}
+
+\item{edge.color.base}{Color attribute for edges belonging to the input 
+graph (default = "gray85").}
+
+\item{edge.color.learn}{Color attribute for learned edges 
+(default = "orange").}
 
 \item{...}{Currently ignored.}
 }
 \value{
-A list of two objects:
+A list of 3 objects:
 \enumerate{
-\item "model", The output model as an igraph object;
-\item "clusters", A list containing model clustering results.
-It includes tree more objects:
+\item "model", an igraph object corresponding to the output model;
+\item "dag", the directed acyclic core of the model;
+\item "clusters", a list of 3 objects containing clustering results:
 \itemize{
-\item "membership", A vector reporting cluster membership for each node;
-\item "fit", hidden model fitting as a lavaan object;
-\item "dataHM", data matrix containing cluster scores (hidden variables) 
-alongside the original data variables.
+\item "membership", vector assigning cluster membership to each node;
+\item "fit", latent model fitting results;
+\item "dataHM", a data matrix including latent variable scores followed by 
+the original variables.
 }
 }
 }
 \description{
-Data-driven model structure learning based on the linear 
-order provided by the input graph.
+Data-driven model structure learning based on the linear order 
+provided by the input graph.
+}
+\details{
+A critical argument for model reduction/denoising is the LASSO beta 
+coefficient threshold. By default, this value is set to 0, implying no edge 
+filtering (highest model complexity). Clustering and cluster-level fitting 
+could give a set of criteria to choose an optimal beta value. We initially 
+launch the function with beta = 0. At each following run, we gradually 
+increase beta by 0.01. For each run: (i) modularity must increase respect 
+to the previous step, (ii) the chosen hidden model must converge (if not, 
+it is a sign of suboptimal clustering), (iii) the number of small clusters 
+(i.e., cluster size < min.clust; default = 5 nodes) should be minimized 
+(ideally 0), (iv) the number of resulting clusters should be minimized to 
+avoid unnecessary fragmentation and interaction loss. As an additional 
+criterion, we could set a maximum cluster size (e.g., 500 nodes), unless 
+this gives a biological or computational advantage. 
+Once the optimal value has been detected (e.g., 0.02), the threshold can 
+be refined with a 0.001 step around the threshold (e.g., between 0.015 and 
+0.025), for possible further improvements (e.g., merge small clusters).
 }
 \examples{
 
+# Nonparanormal data transform
 library(huge)
 als.npn <- huge.npn(alsData$exprs)
 
 # Model learning
-model <- model.learn(graph = alsData$graph, data = als.npn,
-                     group = alsData$group, method = "TO",
-                     beta = 0)
+kbm <- model.learn(alsData$graph, als.npn, alsData$group,
+                   method = "TO",
+                   beta = 0)
 
 }
 \references{
-Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
-Analysis of High-Throughput Data with Structural Equation Models.
-Bioinformatics, 38 (20), 4829–4830 <https://doi.org/10.1093/bioinformatics/btac567>
+Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal 
+Network Analysis of High-Throughput Data with Structural Equation Models. 
+Bioinformatics, 38 (20), 4829–4830 
+<https://doi.org/10.1093/bioinformatics/btac567>
 
-Tibshirani R, Bien J, Friedman J, Hastie T, Simon N, Taylor J,
-Tibshirani RJ (2012). Strong rules for discarding predictors in
-lasso type problems. Royal Statistical Society: Series B
-(Statistical Methodology), 74(2): 245-266.
-<https://doi.org/10.1111/j.1467-9868.2011.01004.x>
+Tibshirani R, Bien J, Friedman J, Hastie T, Simon N, Taylor J, 
+Tibshirani RJ (2012). Strong rules for discarding predictors in lasso type 
+problems. Royal Statistical Society: Series B (Statistical Methodology), 
+74(2): 245-266. <https://doi.org/10.1111/j.1467-9868.2011.01004.x>
 
-Shojaie A, Michailidis G (2010). Penalized likelihood methods for
-estimation of sparse high-dimensional directed acyclic graphs.
+Shojaie A, Michailidis G (2010). Penalized likelihood methods for estimation 
+of sparse high-dimensional directed acyclic graphs. 
 Biometrika, 97(3): 519-538. <https://doi.org/10.1093/biomet/asq038>
 
-Jankova J, van de Geer S (2015). Confidence intervals for high-dimensional
-inverse covariance estimation. Electronic Journal of Statistics,
+Jankova J, van de Geer S (2015). Confidence intervals for high-dimensional 
+inverse covariance estimation. Electronic Journal of Statistics, 
 9(1): 1205-1229. <https://doi.org/10.1214/15-EJS1031>
 
-Peters J, Bühlmann P (2014). Identifiability of Gaussian structural equation
+Peters J, Bühlmann P (2014). Identifiability of Gaussian structural equation 
 models with equal error variances. Biometrika, 101(1):219–228.
 
-Chen W, Drton M, Wang YS (2019). On Causal Discovery with an Equal-Variance
+Chen W, Drton M, Wang YS (2019). On Causal Discovery with an Equal-Variance 
 Assumption. Biometrika, 106(4): 973-980.
-}
-\seealso{
-\code{\link[SEMgraph]{SEMdag}} for data-driven DAG learning details.
 }
 \author{
 Fernando Palluzzi \email{fernando.palluzzi@gmail.com}

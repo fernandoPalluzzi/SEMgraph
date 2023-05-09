@@ -92,20 +92,21 @@ between x and y).
 }
 \description{
 Four tree-based structure learning methods are implemented
-with graph and data-driven algorithms. A tree ia an acyclic graph with p vertices
-and p-1 edges. The graph method refers to the  Steiner Tree (ST), a tree from an
-undirected graph that connect "seed" with additional nodes in the
-"most compact" way possible. The data-driven methods propose fast and scalable
-procedures based on Chu-Liu–Edmonds’ algorithm (CLE) to recover a tree from a full
-graph. The first method, called Causal Additive Trees (CAT) uses pairwise mutual
-weights as input for CLE algorithm to recover a directed tree (an "arborescence").
-The second one applies CLE algorithm for skeleton recovery and extends the skeleton
-to a tree (a "polytree") represented by a Completed Partially Directed Acyclic Graph
-(CPDAG). Finally, the Minimum Spanning Tree (MST) connecting an undirected graph (or
-on an undirected full graph) with minimal edge weights can be identified.
+with graph and data-driven algorithms.
 }
 \details{
-If the input graph is a directed graph, ST and MST undirected trees are
+A tree ia an acyclic graph with p vertices and p-1 edges. The graph method
+refers to the  Steiner Tree (ST), a tree from an undirected graph that connect "seed"
+with additional nodes in the "most compact" way possible. The data-driven methods
+propose fast and scalable procedures based on Chu-Liu–Edmonds’ algorithm (CLE) to
+recover a tree from a full graph. The first method, called Causal Additive Trees (CAT)
+uses pairwise mutual weights as input for CLE algorithm to recover a directed tree
+(an "arborescence"). The second one applies CLE algorithm for skeleton recovery and
+extends the skeleton to a tree (a "polytree") represented by a Completed Partially
+Directed Acyclic Graph (CPDAG). Finally, the Minimum Spanning Tree (MST) connecting
+an undirected graph (or an undirected full graph, if graph=NULL) with minimal edge
+weights can be identified.
+To note, if the input graph is a directed graph, ST and MST undirected trees are
 converted in directed trees using the \code{\link[SEMgraph]{orientEdges}} function.
 }
 \examples{

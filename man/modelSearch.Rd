@@ -13,7 +13,6 @@ modelSearch(
   beta = 0,
   method = "BH",
   alpha = 0.05,
-  limit = 30000,
   verbose = FALSE,
   ...
 )
@@ -86,10 +85,6 @@ control data de-correlation. A higher \code{alpha} level includes more
 hidden covariances, thus considering more sources of confounding.
 If \code{alpha = 0}, data de-correlation is disabled.
 By default, \code{alpha = 0.05}.}
-
-\item{limit}{An integer value corresponding to the number of missing
-edges of the extracted acyclic graph. Beyond this limit, multicore
-computation is enabled to reduce the computational burden.}
 
 \item{verbose}{If TRUE, it shows intermediate graphs during the
 execution (not recommended for large graphs).}

@@ -18,7 +18,7 @@ Model (GGM) similar to lavaan-formated summary"><!-- mathjax --><script src="htt
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -55,8 +55,8 @@ Model (GGM) similar to lavaan-formated summary</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="co"># S3 method for GGM</span>
-<span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for GGM</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -86,73 +86,54 @@ Model (GGM) similar to lavaan-formated summary</p>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">sem0</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span>, algo <span class="op">=</span> <span class="st">"cggm"</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GGM (constrained) solver ended normally after 0 iterations </span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">sem0</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span>, algo <span class="op">=</span> <span class="st">"cggm"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> DAG conversion : TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> GGM (de-biased nodewise L1) solver ended normally after 0 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 66.86359  srmr: 0.0888077 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 66.94041  srmr: 0.089629 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sem0</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GGM (constrained) solver ended normally after 0 iterations </span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sem0</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> GGM (de-biased nodewise L1) solver ended normally after 0 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Estimator                                       ML </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Optimization method                             CGGM </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Number of free parameters                       30 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Number of free parameters                       27 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Number of observations                          1766 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model Test User Model</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Test statistic (Deviance)                       2407.089 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Test statistic (Deviance)                       2409.855 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Degrees of freedom (df)                         36 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Deviance/df                                     66.864 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Standardized Root Mean Square Residual (srmr)   0.089 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Deviance/df                                     66.94 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Standardized Root Mean Square Residual (srmr)   0.09 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Parameter Estimates:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Regressions: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op  rhs    est pvalue</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1   Mek  ~  Raf  0.683  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2   Erk  ~  Mek -0.021  0.030</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  PIP2  ~ Plcg  0.226  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4   PKC  ~ Plcg  0.008  0.872</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5   PKC  ~ PIP2  0.012  0.880</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  Plcg  ~ PIP3  0.044  0.041</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7  PIP2  ~ PIP3  0.489  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8   Akt  ~ PIP3 -0.065  0.002</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9   Raf  ~  PKA -0.075  0.398</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10  Mek  ~  PKA  0.017  0.178</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11  Erk  ~  PKA  0.456  0.073</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12  Akt  ~  PKA  0.546  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13  P38  ~  PKA  0.007  0.863</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14  Jnk  ~  PKA  0.097  0.633</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15  Raf  ~  PKC -0.019  0.585</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16  Mek  ~  PKC -0.005  0.886</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17  P38  ~  PKC  0.645  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18  Jnk  ~  PKC  0.131  0.726</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op  rhs    est    se z_test pvalue ci.lower ci.uppper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   PKC  ~ PIP2  0.019 0.025  0.753  0.451   -0.030     0.068</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2   PKC  ~ Plcg  0.014 0.025  0.541  0.588   -0.036     0.063</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3   Mek  ~  PKA  0.010 0.018  0.547  0.584   -0.025     0.044</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   Mek  ~  PKC -0.005 0.017 -0.262  0.793   -0.039     0.030</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5   Mek  ~  Raf  0.682 0.018 38.894  0.000    0.648     0.717</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6   Raf  ~  PKA -0.123 0.024 -5.225  0.000   -0.170    -0.077</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7   Raf  ~  PKC -0.037 0.024 -1.548  0.122   -0.083     0.010</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8  PIP2  ~ PIP3  0.488 0.020 24.675  0.000    0.450     0.527</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  PIP2  ~ Plcg  0.226 0.020 11.408  0.000    0.187     0.265</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 Plcg  ~ PIP3  0.207 0.023  8.895  0.000    0.161     0.253</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11  Jnk  ~  PKA  0.092 0.024  3.903  0.000    0.046     0.138</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12  Jnk  ~  PKC  0.127 0.024  5.402  0.000    0.081     0.173</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13  P38  ~  PKA -0.017 0.018 -0.930  0.352   -0.053     0.019</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14  P38  ~  PKC  0.645 0.018 35.465  0.000    0.610     0.681</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15  Akt  ~  PKA  0.545 0.020 27.426  0.000    0.506     0.584</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16  Akt  ~ PIP3 -0.064 0.020 -3.208  0.001   -0.103    -0.025</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17  Erk  ~  PKA  0.455 0.021 21.475  0.000    0.414     0.497</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18  Erk  ~  Mek -0.020 0.021 -0.931  0.352   -0.061     0.022</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Covariances: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    lhs op rhs    est pvalue</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 PIP3 ~~ PKA -0.103  0.379</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Variances: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op  rhs   est pvalue</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1   Raf ~~  Raf 0.985      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2   Mek ~~  Mek 0.535      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  Plcg ~~ Plcg 0.984      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  PIP2 ~~ PIP2 0.663      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  PIP3 ~~ PIP3 1.000      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6   Erk ~~  Erk 0.790      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7   Akt ~~  Akt 0.691      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8   PKA ~~  PKA 1.000      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9   PKC ~~  PKC 0.999      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10  P38 ~~  P38 0.584      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11  Jnk ~~  Jnk 0.974      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -167,7 +148,7 @@ Model (GGM) similar to lavaan-formated summary</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

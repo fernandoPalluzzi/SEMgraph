@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -53,15 +53,15 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">extractClusters</span><span class="op">(</span>
-  <span class="va">graph</span>,
-  <span class="va">data</span>,
-  group <span class="op">=</span> <span class="cn">NULL</span>,
-  membership <span class="op">=</span> <span class="cn">NULL</span>,
-  map <span class="op">=</span> <span class="cn">FALSE</span>,
-  verbose <span class="op">=</span> <span class="cn">FALSE</span>,
-  <span class="va">...</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">extractClusters</span><span class="op">(</span></span>
+<span>  <span class="va">graph</span>,</span>
+<span>  <span class="va">data</span>,</span>
+<span>  group <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  membership <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  map <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -108,9 +108,10 @@ cluster.</p></dd>
     <h2>Value</h2>
     
 
-<p>List of clusters as igraph objects and fitting results for
-each cluster as a lavaan object.</p>
-    </div>
+<p>A list of 3 objects:</p><ol><li><p>"clusters", list of clusters as igraph objects;</p></li>
+<li><p>"fit", list of fitting results for each cluster as a lavaan object;</p></li>
+<li><p>"dfc", data.frame of summary results.</p></li>
+</ol></div>
     <div id="author">
     <h2>Author</h2>
     <p>Fernando Palluzzi <a href="mailto:fernando.palluzzi@gmail.com">fernando.palluzzi@gmail.com</a></p>
@@ -118,75 +119,73 @@ each cluster as a lavaan object.</p>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"></span>
-<span class="r-in"><span class="co"># \donttest{</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">huge</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">als.npn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/huge/man/huge.npn.html" class="external-link">huge.npn</a></span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">exprs</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">huge</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">als.npn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/huge/man/huge.npn.html" class="external-link">huge.npn</a></span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">exprs</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Conducting the nonparanormal (npn) transformation via shrunkun ECDF....done.</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">adjdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMbap.html">SEMbap</a></span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">graph</span>, <span class="va">als.npn</span><span class="op">)</span><span class="op">$</span><span class="va">data</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> d-separation test (basis set) of 420 edges...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  / 0 % elapsed=00s    - 1 % elapsed=00s, remaining~01s \ 2 % elapsed=00s, remaining~01s | 4 % elapsed=00s, remaining~01s / 5 % elapsed=00s, remaining~01s - 6 % elapsed=00s, remaining~01s \ 7 % elapsed=00s, remaining~01s | 8 % elapsed=00s, remaining~01s / 10% elapsed=00s, remaining~01s - 11% elapsed=00s, remaining~01s \ 12% elapsed=00s, remaining~01s | 13% elapsed=00s, remaining~01s / 14% elapsed=00s, remaining~01s - 15% elapsed=00s, remaining~01s \ 17% elapsed=00s, remaining~01s | 18% elapsed=00s, remaining~01s / 19% elapsed=00s, remaining~01s - 20% elapsed=00s, remaining~01s \ 21% elapsed=00s, remaining~01s | 23% elapsed=00s, remaining~01s / 24% elapsed=00s, remaining~01s - 25% elapsed=00s, remaining~01s \ 26% elapsed=00s, remaining~01s | 27% elapsed=00s, remaining~01s / 29% elapsed=00s, remaining~01s - 30% elapsed=00s, remaining~01s \ 31% elapsed=00s, remaining~01s | 32% elapsed=00s, remaining~01s / 33% elapsed=01s, remaining~01s - 35% elapsed=01s, remaining~01s \ 36% elapsed=01s, remaining~01s | 37% elapsed=01s, remaining~01s / 38% elapsed=01s, remaining~01s - 39% elapsed=01s, remaining~01s \ 40% elapsed=01s, remaining~01s | 42% elapsed=01s, remaining~01s / 43% elapsed=01s, remaining~01s - 44% elapsed=01s, remaining~01s \ 45% elapsed=01s, remaining~01s | 46% elapsed=01s, remaining~01s / 48% elapsed=01s, remaining~01s - 49% elapsed=01s, remaining~01s \ 50% elapsed=01s, remaining~01s | 51% elapsed=01s, remaining~01s / 52% elapsed=01s, remaining~01s - 54% elapsed=01s, remaining~01s \ 55% elapsed=01s, remaining~01s | 56% elapsed=01s, remaining~01s / 57% elapsed=01s, remaining~01s - 58% elapsed=01s, remaining~01s \ 60% elapsed=01s, remaining~01s | 61% elapsed=01s, remaining~01s / 62% elapsed=01s, remaining~01s - 63% elapsed=01s, remaining~01s \ 64% elapsed=01s, remaining~01s | 65% elapsed=01s, remaining~01s / 67% elapsed=01s, remaining~01s - 68% elapsed=01s, remaining~01s \ 69% elapsed=01s, remaining~00s | 70% elapsed=01s, remaining~00s / 71% elapsed=01s, remaining~00s - 73% elapsed=01s, remaining~00s \ 74% elapsed=01s, remaining~00s | 75% elapsed=01s, remaining~00s / 76% elapsed=01s, remaining~00s - 77% elapsed=01s, remaining~00s \ 79% elapsed=01s, remaining~00s | 80% elapsed=01s, remaining~00s / 81% elapsed=01s, remaining~00s - 82% elapsed=01s, remaining~00s \ 83% elapsed=01s, remaining~00s | 85% elapsed=01s, remaining~00s / 86% elapsed=01s, remaining~00s - 87% elapsed=01s, remaining~00s \ 88% elapsed=01s, remaining~00s | 89% elapsed=01s, remaining~00s / 90% elapsed=01s, remaining~00s - 92% elapsed=01s, remaining~00s \ 93% elapsed=01s, remaining~00s | 94% elapsed=02s, remaining~00s / 95% elapsed=02s, remaining~00s - 96% elapsed=02s, remaining~00s \ 98% elapsed=02s, remaining~00s | 99% elapsed=02s, remaining~00s / 100% elapsed=02s, remaining~00s</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Number of significant local tests: 220 / 420 </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">adjdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMbap.html">SEMbap</a></span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">graph</span>, <span class="va">als.npn</span><span class="op">)</span><span class="op">$</span><span class="va">data</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Bow-free covariances search. Use method: cggm ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Number of bow-free covariances / df : 220 / 420 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Max parent set(S) / Sparsity idx(s) : 10 / 4 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Number of clusters / number of nodes: 2 / 31 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Clusters creation</span></span>
-<span class="r-in"><span class="va">clusters</span> <span class="op">&lt;-</span> <span class="fu">extractClusters</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">alsData</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="va">adjdata</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Clusters creation</span></span></span>
+<span class="r-in"><span><span class="va">clusters</span> <span class="op">&lt;-</span> <span class="fu">extractClusters</span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">graph</span>, <span class="va">adjdata</span>, <span class="va">alsData</span><span class="op">$</span><span class="va">group</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> modularity = 0.5588502 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Community sizes</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  3  2  1  4 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  4  8  9 11 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  cluster= 1 of 3</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>no non-missing arguments to min; returning Inf</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>no non-missing arguments to min; returning Inf</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  cluster= 2 of 3</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>no non-missing arguments to min; returning Inf</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>no non-missing arguments to min; returning Inf</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  cluster= 3 of 3</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>no non-missing arguments to min; returning Inf</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>no non-missing arguments to min; returning Inf</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  cluster= 1 of 3 cluster= 2 of 3 cluster= 3 of 3</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Found 3 clusters with &gt; 5 nodes</span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="parameterEstimates.html">parameterEstimates</a></span><span class="op">(</span><span class="va">clusters</span><span class="op">$</span><span class="va">fit</span><span class="op">$</span><span class="va">HM1</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op  rhs    est    se      z pvalue ci.lower ci.upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 10452  ~ 6647 -0.044 0.079 -0.553  0.580   -0.198    0.111</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  5530  ~ 6647 -0.066 0.079 -0.833  0.405   -0.220    0.089</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  5532  ~ 6647 -0.017 0.079 -0.218  0.827   -0.172    0.138</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  5533  ~ 6647 -0.179 0.078 -2.302  0.021   -0.332   -0.027</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  5534  ~ 6647 -0.066 0.079 -0.838  0.402   -0.221    0.089</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  5535  ~ 6647 -0.430 0.071 -6.019  0.000   -0.570   -0.290</span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="parameterEstimates.html">parameterEstimates</a></span><span class="op">(</span><span class="va">clusters</span><span class="op">$</span><span class="va">fit</span><span class="op">$</span><span class="va">HM2</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op rhs    est    se      z pvalue ci.lower ci.upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 54205  ~ 572 -0.140 0.071 -1.962  0.050   -0.280    0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 54205  ~ 581 -0.247 0.071 -3.463  0.001   -0.387   -0.107</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 54205  ~ 596  0.119 0.073  1.634  0.102   -0.024    0.261</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 54205  ~ 598 -0.315 0.073 -4.338  0.000   -0.457   -0.173</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5   836  ~ 842  0.049 0.079  0.620  0.536   -0.106    0.204</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6   842  ~ 317  0.063 0.079  0.798  0.425   -0.092    0.218</span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="parameterEstimates.html">parameterEstimates</a></span><span class="op">(</span><span class="va">clusters</span><span class="op">$</span><span class="va">fit</span><span class="op">$</span><span class="va">HM4</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    lhs op  rhs    est    se      z pvalue ci.lower ci.upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 1432  ~ 5606  0.440 0.070  6.257  0.000    0.302    0.578</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 1432  ~ 5608 -0.110 0.070 -1.560  0.119   -0.248    0.028</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 4741  ~ 1432  0.106 0.078  1.355  0.175   -0.047    0.258</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 4741  ~ 5600 -0.115 0.076 -1.509  0.131   -0.264    0.034</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 4741  ~ 5603  0.140 0.076  1.840  0.066   -0.009    0.289</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 4741  ~ 5630  0.002 0.076  0.028  0.978   -0.147    0.152</span>
-<span class="r-in"><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">clusters</span><span class="op">$</span><span class="va">clusters</span><span class="op">$</span><span class="va">HM2</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">clusters</span><span class="op">$</span><span class="va">dfc</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   cluster n.nodes n.edges dev_df  srmr V.pv.act V.pv.inh</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     HM1       9       8  1.062 0.052 0.000118 0.058611</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2     HM2       8       7  1.180 0.059 0.000468 0.927939</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3     HM4      11      25  1.840 0.059 0.000002 0.007126</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="parameterEstimates.html">parameterEstimates</a></span><span class="op">(</span><span class="va">clusters</span><span class="op">$</span><span class="va">fit</span><span class="op">$</span><span class="va">HM1</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op   rhs    est</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  6647  ~ group -0.156</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 10452  ~ group -0.021</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 84134  ~ group -0.080</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 79139  ~ group  0.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  5530  ~ group -0.134</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  5532  ~ group  0.169</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="parameterEstimates.html">parameterEstimates</a></span><span class="op">(</span><span class="va">clusters</span><span class="op">$</span><span class="va">fit</span><span class="op">$</span><span class="va">HM2</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op   rhs    est</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 54205  ~ group  0.056</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2   836  ~ group  0.200</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3   581  ~ group -0.013</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   572  ~ group -0.045</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5   596  ~ group  0.127</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6   598  ~ group  0.198</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="parameterEstimates.html">parameterEstimates</a></span><span class="op">(</span><span class="va">clusters</span><span class="op">$</span><span class="va">fit</span><span class="op">$</span><span class="va">HM4</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    lhs op   rhs    est</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 4217  ~ group  0.086</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 5606  ~ group  0.033</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 5608  ~ group  0.188</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 1432  ~ group -0.017</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 5600  ~ group -0.296</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 5603  ~ group  0.003</span>
+<span class="r-in"><span><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">clusters</span><span class="op">$</span><span class="va">clusters</span><span class="op">$</span><span class="va">HM2</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="extractClusters-1.png" alt="" width="700" height="433"></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Map cluster on the input graph</span></span>
-<span class="r-in"><span class="va">g</span> <span class="op">&lt;-</span> <span class="va">alsData</span><span class="op">$</span><span class="va">graph</span></span>
-<span class="r-in"><span class="va">c</span> <span class="op">&lt;-</span> <span class="va">clusters</span><span class="op">$</span><span class="va">clusters</span><span class="op">$</span><span class="va">HM2</span></span>
-<span class="r-in"><span class="fu">V</span><span class="op">(</span><span class="va">g</span><span class="op">)</span><span class="op">$</span><span class="va">color</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu">V</span><span class="op">(</span><span class="va">g</span><span class="op">)</span><span class="op">$</span><span class="va">name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu">V</span><span class="op">(</span><span class="va">c</span><span class="op">)</span><span class="op">$</span><span class="va">name</span>, <span class="st">"gold"</span>, <span class="st">"white"</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Map cluster on the input graph</span></span></span>
+<span class="r-in"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="va">alsData</span><span class="op">$</span><span class="va">graph</span></span></span>
+<span class="r-in"><span><span class="va">c</span> <span class="op">&lt;-</span> <span class="va">clusters</span><span class="op">$</span><span class="va">clusters</span><span class="op">$</span><span class="va">HM2</span></span></span>
+<span class="r-in"><span><span class="fu">V</span><span class="op">(</span><span class="va">g</span><span class="op">)</span><span class="op">$</span><span class="va">color</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu">V</span><span class="op">(</span><span class="va">g</span><span class="op">)</span><span class="op">$</span><span class="va">name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu">V</span><span class="op">(</span><span class="va">c</span><span class="op">)</span><span class="op">$</span><span class="va">name</span>, <span class="st">"gold"</span>, <span class="st">"white"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="extractClusters-2.png" alt="" width="700" height="433"></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># }</span></span>
-<span class="r-in"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -201,7 +200,7 @@ each cluster as a lavaan object.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

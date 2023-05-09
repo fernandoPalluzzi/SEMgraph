@@ -25,7 +25,7 @@ as reviewed in Vovk &amp;amp; Wang (2020)."><!-- mathjax --><script src="https:/
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -69,7 +69,7 @@ as reviewed in Vovk &amp; Wang (2020).</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">localCI.test</span><span class="op">(</span><span class="va">graph</span>, <span class="va">data</span>, bap <span class="op">=</span> <span class="cn">FALSE</span>, limit <span class="op">=</span> <span class="fl">10000</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">localCI.test</span><span class="op">(</span><span class="va">graph</span>, <span class="va">data</span>, bap <span class="op">=</span> <span class="cn">FALSE</span>, limit <span class="op">=</span> <span class="fl">100</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -89,11 +89,10 @@ columns.</p></dd>
 
 
 <dt>limit</dt>
-<dd><p>An integer value corresponding to the number of missing
-edges of the extracted acyclic graph. Beyond this limit, switch to
-Shipley's C-test (Shipley 2000) is enabled to reduce the computational
-burden.
-By default, <code>limit = 10000</code>.</p></dd>
+<dd><p>An integer value corresponding to the size of the
+extracted acyclic graph. Beyond this limit, switch to Shipley's
+C-test (Shipley 2000) is enabled to reduce the computational burden.
+By default, <code>limit = 100</code>.</p></dd>
 
 
 <dt>verbose</dt>
@@ -109,9 +108,9 @@ screen (default = TRUE).</p></dd>
     <h2>Value</h2>
     
 
-<p>A list of three objects: (i) the DAG used to perform the localCI
-test (ii) the list of all d-separation tests over missing edges in the
-input graph and (iii) the overall Bonferroni's P-value.</p>
+<p>A list of three objects: (i) "dag": the DAG used to perform the localCI
+test (ii) "msep": the list of all m-separation tests over missing edges in the
+input graph and (iii) "mtest":the overall Bonferroni's P-value.</p>
     </div>
     <div id="references">
     <h2>References</h2>
@@ -128,21 +127,21 @@ Structural Equation Modeling, 7(2): 206-218.
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"></span>
-<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">huge</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">als.npn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/huge/man/huge.npn.html" class="external-link">huge.npn</a></span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">exprs</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">huge</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">als.npn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/huge/man/huge.npn.html" class="external-link">huge.npn</a></span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">exprs</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Conducting the nonparanormal (npn) transformation via shrunkun ECDF....done.</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">sem</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">graph</span>, <span class="va">als.npn</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">sem</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">graph</span>, <span class="va">als.npn</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NLMINB solver ended normally after 8 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 10.92479  srmr: 0.2858233 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 10.92504  srmr: 0.2858859 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="va">B_test</span> <span class="op">&lt;-</span> <span class="fu">localCI.test</span><span class="op">(</span><span class="va">sem</span><span class="op">$</span><span class="va">graph</span>, <span class="va">als.npn</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="va">B_test</span> <span class="op">&lt;-</span> <span class="fu">localCI.test</span><span class="op">(</span><span class="va">sem</span><span class="op">$</span><span class="va">graph</span>, <span class="va">als.npn</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> d-separation test (minimal set) of 420 edges...</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     B_test df B_pvalue</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1 376.6275  1        0</span>
-<span class="r-in"></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -157,7 +156,7 @@ Structural Equation Modeling, 7(2): 206-218.
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

@@ -55,23 +55,30 @@ with the full list of perturbed edges.
 
 \dontrun{
 
+#load SEMdata package for ALS data with 17K genes:
+#devtools::install_github("fernandoPalluzzi/SEMdata")
+#library(SEMdata)
+
 # Nonparanormal(npn) transformation
 library(huge)
-als.npn <- huge.npn(alsData$exprs)
+data.npn<- huge.npn(alsData$exprs)
+dim(data.npn) #160 17695
 
-g <- kegg.pathways[["MAPK signaling pathway"]]
-G <- properties(g)[[1]]; summary(G)
+# Extract KEGG interactome (max component)
+KEGG<- properties(kegg)[[1]]
+summary(KEGG)
 
-# Create ALS network with perturbed edges using edge betweeness clustering
-gU<- SEMdci(G, als.npn, alsData$group, type="ebc", method="BH", alpha=0.2)
-gcU<- properties(gU)
+# KEGG modules with ALS perturbed edges using fast gready clustering
+gD<- SEMdci(KEGG, data.npn, alsData$group, type="fgc")
+summary(gD)
+gcD<- properties(gD)
 
 old.par <- par(no.readonly = TRUE)
-par(mfrow=c(2,2), mar=rep(1,4))
-gplot(gcU[[1]], l="fdp") # max component
-gplot(gcU[[2]], l="fdp") # 2nd cpmponent
-gplot(gcU[[3]], l="fdp") # 3rd component 
-gplot(gcU[[4]], l="fdp") # 4th component
+par(mfrow=c(2,2), mar=rep(2,4))
+gplot(gcD[[1]], l="fdp", main="max component")
+gplot(gcD[[2]], l="fdp", main="2nd component")
+gplot(gcD[[3]], l="fdp", main="3rd component")
+gplot(gcD[[4]], l="fdp", main="4th component")
 par(old.par)
 
 }

@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -53,7 +53,7 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">clusterGraph</span><span class="op">(</span><span class="va">graph</span>, type <span class="op">=</span> <span class="st">"wtc"</span>, HM <span class="op">=</span> <span class="st">"none"</span>, size <span class="op">=</span> <span class="fl">5</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">clusterGraph</span><span class="op">(</span><span class="va">graph</span>, type <span class="op">=</span> <span class="st">"wtc"</span>, HM <span class="op">=</span> <span class="st">"none"</span>, size <span class="op">=</span> <span class="fl">5</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -129,9 +129,9 @@ Chaos 25(2): 023107. &lt;https://doi.org/10.1063/1.4908014&gt;</p>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"></span>
-<span class="r-in"><span class="co"># Clustering ALS graph with WTC method and LV model</span></span>
-<span class="r-in"><span class="va">G</span> <span class="op">&lt;-</span> <span class="fu"><a href="properties.html">properties</a></span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">graph</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Clustering ALS graph with WTC method and LV model</span></span></span>
+<span class="r-in"><span><span class="va">G</span> <span class="op">&lt;-</span> <span class="fu"><a href="properties.html">properties</a></span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">graph</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Frequency distribution of graph components</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   n.nodes n.graphs</span>
@@ -144,20 +144,20 @@ Chaos 25(2): 023107. &lt;https://doi.org/10.1063/1.4908014&gt;</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> which.mutual.FALSE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 47 </span>
-<span class="r-in"><span class="va">clv</span> <span class="op">&lt;-</span> <span class="fu">clusterGraph</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">G</span>, type <span class="op">=</span> <span class="st">"wtc"</span>, HM <span class="op">=</span> <span class="st">"LV"</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="va">clv</span> <span class="op">&lt;-</span> <span class="fu">clusterGraph</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">G</span>, type <span class="op">=</span> <span class="st">"wtc"</span>, HM <span class="op">=</span> <span class="st">"LV"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> modularity = 0.5588502 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Community sizes</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  3  1  4  2 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  4  8  9 11 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">clv</span><span class="op">$</span><span class="va">gHM</span>, l <span class="op">=</span> <span class="st">"fdp"</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">clv</span><span class="op">$</span><span class="va">gHM</span>, l <span class="op">=</span> <span class="st">"fdp"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="clusterGraph-1.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">clv</span><span class="op">$</span><span class="va">membership</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">clv</span><span class="op">$</span><span class="va">membership</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  1  2  4 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  8 11  9 </span>
-<span class="r-in"></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -172,7 +172,7 @@ Chaos 25(2): 023107. &lt;https://doi.org/10.1063/1.4908014&gt;</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

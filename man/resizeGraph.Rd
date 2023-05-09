@@ -50,18 +50,20 @@ of connections to be checked against a directed reference network
 }
 \details{
 Typically, the first graph is an estimated causal graph (DAG),
-and the second graph is the output of \code{\link[SEMgraph]{SEMdag}} or
-an external covariance graph. In the former we use the new inferred
-causal structure stored in the \code{dag.new} object. In the latter, we
-use the new inferred covariance structure stored in the covariance graph
-object. Both directed (causal) edges and covariances (i.e., bidirected
-edges) highlight emergent hidden topological proprieties, absent in the
-input graph. Estimated directed edges between nodes X and Y
-are interpreted as either direct links or direct paths mediated by hidden
-connector nodes. Covariances between any two bow-free nodes X and Y may
-hide causal relationships, not explicitly represented in the current model.
-Conversely, directed (or bi-directed) edges could be redundant or artifact,
-specific to the observed data and could be deleted.
+and the second graph is the output of either \code{\link[SEMgraph]{SEMdag}}
+or \code{\link[SEMgraph]{SEMbap}}. Alternatively, the first graph is an
+empthy graph, and the second graph is a external covariance graph.
+In the former we use the new inferred causal structure stored in the
+\code{dag.new} object. In the latter, we use the new inferred covariance
+structure stored in the \code{guu} object. Both directed (causal) edges
+inferred by \code{SEMdag()} and covariances (i.e., bidirected edges)
+added by \code{SEMbap()}, highlight emergent hidden topological
+proprieties, absent in the input graph. Estimated directed edges between
+nodes X and Y are interpreted as either direct links or direct paths
+mediated by hidden connector nodes. Covariances between any two bow-free
+nodes X and Y may hide causal relationships, not explicitly represented
+in the current model. Conversely, directed edges could be redundant or
+artifact, specific to the observed data and could be deleted.
 Function \code{resizeGraph()} leverage on these concepts to extend/reduce a
 causal model, importing new connectors or deleting estimated edges, if they are
 present or absent in a given reference network. The whole process may lead to

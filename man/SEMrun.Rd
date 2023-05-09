@@ -39,9 +39,11 @@ on graph edges.}
 (default), the SEM will be fitted using the NLMINB solver from
 \code{lavaan} R package, with standard errors derived from the expected
 Fisher information matrix. If \code{algo = "ricf"}, the model is fitted
-via residual iterative conditional fitting (RICF; Drton et al. 2009).
+via residual iterative conditional fitting (RICF; Drton et al. 2009),
+with standard error derived from randomization or bootstrap procedures.
 If \code{algo = "cggm"}, model fitting is based on constrained Gaussian
-Graphical Modeling (CGGM; Hastie et al. 2009, p. 446).}
+Graphical Modeling (CGGM), with DAG nodewise Lasso procedure and
+de-biasing asymptotic inference (Jankova & Van De Geer, 2019).}
 
 \item{start}{Starting value of SEM parameters for \code{algo = "lavaan"}.
 If start is \code{NULL} (default), the algorithm will determine the
@@ -75,7 +77,7 @@ enforce lavaan execution when \code{algo = "lavaan"}.}
 \value{
 A list of 5 objects:
 \enumerate{
-\item "fit", SEM fitted lavaan, ricf, or ggmncv object,
+\item "fit", SEM fitted lavaan, ricf, or cggm object,
 depending on the MLE method specified by the \code{algo} argument;
 \item "gest" or "dest", a data.frame of node-specific
 ("gest") or edge-specific ("dest") group effect estimates and P-values;
@@ -86,7 +88,7 @@ on data variables. Graph edges (i.e., direct effects) with P-value < 0.05
 will be highlighted in red (beta > 0) or blue (beta < 0). If a group
 vector is given, nodes with significant group effect (P-value < 0.05)
 will be red-shaded (beta > 0) or lightblue-shaded (beta < 0);
-\item "dataXY", input data subset mapping graph nodes, plus
+\item "data", input data subset mapping graph nodes, plus
 group at the first column (if no group is specified, this column will
 take NA values).
 }
@@ -132,9 +134,10 @@ Once fitted, the two models are then compared to assess significant
 edge (i.e., direct effect) differences (d = beta1 - beta0).
 P-values for parameter sets are computed by z-test (= d/SE), through
 \code{\link[lavaan]{lavaan}}. As an alternative to standard P-value
-calculation, SEMrun may use either RICF (randomization P-values) or
-GGM (de-sparsified P-values) methods. These algorithms are much faster
-than \code{\link[lavaan]{lavaan}} in case of large input graphs.
+calculation, SEMrun may use either RICF (randomization or bootstrap
+P-values) or GGM (de-biased asymptotically normal P-values) methods.
+These algorithms are much faster than \code{\link[lavaan]{lavaan}}
+in case of large input graphs.
 }
 \examples{
 
@@ -183,8 +186,9 @@ plot(sem2$graph, layout = layout.circle, main = "Between group edge differences"
 
 # Fitting and visualization of a large pathway:
 
-g <- kegg.pathways[["MAPK signaling pathway"]]
-G <- properties(g)[[1]]; summary(G)
+g <- kegg.pathways[["Neurotrophin signaling pathway"]]
+G <- properties(g)[[1]]
+summary(G)
 
 library(huge)
 als.npn <- huge.npn(alsData$exprs)
@@ -192,13 +196,13 @@ als.npn <- huge.npn(alsData$exprs)
 g1 <- SEMrun(G, als.npn, alsData$group, algo = "cggm")$graph
 g2 <- SEMrun(g1, als.npn, alsData$group, fit = 2, algo = "cggm")$graph
 
-# extract the subgraph with between group node and edge differences
+# extract the subgraph with node and edge differences
 g2 <- g2 - E(g2)[-which(E(g2)$color != "gray50")]
 g <- properties(g2)[[1]]
 
 # plot graph
 E(g)$color<- E(g2)$color[E(g2) \%in\% E(g)]
-gplot(g, l = "fdp", main="node and edge group differences")
+gplot(g, l="fdp", psize=40, main="node and edge group differences")
 
 }
 
@@ -222,12 +226,12 @@ Estimated in Recursive Linear Models with Correlated Errors.
 Journal of Machine Learning Research, 10(Oct): 2329-2348.
 <https://www.jmlr.org/papers/volume10/drton09a/drton09a.pdf>
 
-Jankova J, van de Geer S (2015). Confidence intervals for high-dimensional
-inverse covariance estimation. Electronic Journal of Statistics,
-9(1): 1205-1229. <https://doi.org/10.1214/15-EJS1031>
+Jankova, J., & Van De Geer, S (2019). Inference in high-dimensional
+graphical models. In Handbook of Graphical Models (2019).
+Chapter 14 (sec. 14.2): 325-349. Chapman & Hall/CRC. ISBN: 9780429463976
 
 Hastie T, Tibshirani R, Friedman J. (2009). The Elements of Statistical
-Learning (2nd ed.). Springer Verlag: New York. ISBN: 978-0-387-84858-7
+Learning (2nd ed.). Springer Verlag. ISBN: 978-0-387-84858-7
 
 Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
 Analysis of High-Throughput Data with Structural Equation Models.

@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -53,7 +53,7 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">weightGraph</span><span class="op">(</span><span class="va">graph</span>, <span class="va">data</span>, group <span class="op">=</span> <span class="cn">NULL</span>, method <span class="op">=</span> <span class="st">"r2z"</span>, limit <span class="op">=</span> <span class="fl">10000</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">weightGraph</span><span class="op">(</span><span class="va">graph</span>, <span class="va">data</span>, group <span class="op">=</span> <span class="cn">NULL</span>, method <span class="op">=</span> <span class="st">"r2z"</span>, limit <span class="op">=</span> <span class="fl">10000</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -72,8 +72,8 @@ columns to graph nodes.</p></dd>
 of subjects. Each vector element must be 1 for cases and 0 for control
 subjects. By default, <code>group = NULL</code>. If group is not NULL, also
 node weighting is actived, and node weights correspond to the sign
-(-1 if z&lt;-2, +1 if z&gt;2, 0 otherwise) and P-value of the z-test = b/SE(b) from simple linear regression
-y ~ x (i.e., glm(node ~ group)).</p></dd>
+(-1 if z&lt;-2, +1 if z&gt;2, 0 otherwise) and P-value of the z-test = b/SE(b)
+from simple linear regression y ~ x (i.e., glm(node ~ group)).</p></dd>
 
 
 <dt>method</dt>
@@ -82,10 +82,9 @@ y ~ x (i.e., glm(node ~ group)).</p></dd>
 of interacting nodes, if <code>group == NULL</code>. Otherwise, the correlation
 difference between group will be tested and edge weights correspond to
 the sign (-1 if z&lt;-2, +1 if z&gt;2, 0 otherwise) and P-value of the group
-difference.</p></li>
+correlation difference.</p></li>
 <li><p>"sem", edge weights are defined by a SEM model that implies 
-testing the group effect simultaneously on the j-th source node and 
-the k-th sink node. 
+testing the group effect simultaneously on the source node and the sink mode.
 A new parameter w is defined as the weighted sum of the total effect 
 of the group on source and sink nodes, adjusted by node degree centrality, 
 and edge weights correspond to the sign (-1 if z&lt;-2, +1 if z&gt;2, 0 otherwise)
@@ -98,6 +97,12 @@ adjusted by sink degree centrality), and the source-sink interaction
 (-1 if z&lt;-2, +1 if z&gt;2, 0 otherwise) and P-value of the z-test = w/SE(w)
 of the combined difference of the group over source node, sink node, and
 their connection. Not available if <code>group == NULL</code>.</p></li>
+<li><p>"cfa", edge weights are defined by a CFA1 model that implies 
+testing the group effect, w on a latent variable (LV) with observed indicators
+two interacting nodes, fixing loading coefficients and residual
+variances for model identification. Edge weights correspond to the sign
+(-1 if z&lt;-2, +1 if z&gt;2, 0 otherwise) and P-value of the z-test = w/SE(w)
+of the group effect on the LV. Not available if <code>group == NULL</code>.</p></li>
 </ol></dd>
 
 
@@ -120,9 +125,9 @@ By default, <code>limit = 10000</code>.</p></dd>
     </div>
     <div id="references">
     <h2>References</h2>
-    <p>Palluzzi F, Grassi M (2021). SEMgraph: An R Package for Causal Network 
-Analysis of High-Throughput Data with Structural Equation Models. 
-&lt;arXiv:2103.08332&gt;</p>
+    <p>Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
+Analysis of High-Throughput Data with Structural Equation Models.
+Bioinformatics, 38 (20), 4829–4830 &lt;https://doi.org/10.1093/bioinformatics/btac567&gt;</p>
 <p>Fisher RA (1915). Frequency Distribution of the Values of the Correlation
 Coefficient in Samples from an Indefinitely Large Population. Biometrika,
 10(4), 507–521. &lt;doi:10.2307/2331838&gt;</p>
@@ -134,37 +139,37 @@ Coefficient in Samples from an Indefinitely Large Population. Biometrika,
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"></span>
-<span class="r-in"><span class="co"># Graph weighting</span></span>
-<span class="r-in"><span class="va">G</span> <span class="op">&lt;-</span> <span class="fu">weightGraph</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>,</span>
-<span class="r-in">                 data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span>,</span>
-<span class="r-in">                 group <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">group</span>,</span>
-<span class="r-in">                 method <span class="op">=</span> <span class="st">"r2z"</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># New edge attributes</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">pv</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">pv</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Graph weighting</span></span></span>
+<span class="r-in"><span><span class="va">G</span> <span class="op">&lt;-</span> <span class="fu">weightGraph</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>,</span></span>
+<span class="r-in"><span>                 data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                 group <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">group</span>,</span></span>
+<span class="r-in"><span>                 method <span class="op">=</span> <span class="st">"r2z"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># New edge attributes</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">pv</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">pv</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2.661577e-01 8.370494e-01 5.528435e-01 4.401098e-01 4.742076e-01</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [6] 1.003647e-09</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      Min.   1st Qu.    Median      Mean   3rd Qu.      Max. </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 0.0000000 0.0000004 0.2412998 0.2952637 0.5031423 0.9642826 </span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">zsign</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">zsign</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">zsign</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">zsign</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0 0 0 0 0 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  0  1 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 13  7 </span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># New nodes attributes</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">pv</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">pv</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># New nodes attributes</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">pv</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">pv</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.721660e-35 1.576567e-06 2.219336e-38 7.635299e-22 8.952626e-95</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [6] 5.688104e-01</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      Min.   1st Qu.    Median      Mean   3rd Qu.      Max. </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 0.0000000 0.0000000 0.0000000 0.1076364 0.0000008 0.6151884 </span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">zsign</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">zsign</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">zsign</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">zsign</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1]  1  1 -1 -1 -1  0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -1  0  1 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  3  2  6 </span>
-<span class="r-in"></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -179,7 +184,7 @@ Coefficient in Samples from an Indefinitely Large Population. Biometrika,
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

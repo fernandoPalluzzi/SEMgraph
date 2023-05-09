@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -53,7 +53,7 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">graph2dagitty</span><span class="op">(</span><span class="va">graph</span>, graphType <span class="op">=</span> <span class="st">"dag"</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">graph2dagitty</span><span class="op">(</span><span class="va">graph</span>, graphType <span class="op">=</span> <span class="st">"dag"</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -70,8 +70,8 @@ while PDAG can contain the edges: -&gt;, &lt;-&gt;, and the undirected edges
 
 
 <dt>verbose</dt>
-<dd><p>A logical value. If TRUE, the output graph is shown
-(for <code>graph2dagitty</code> only). This argument is FALSE by default.</p></dd>
+<dd><p>A logical value. If TRUE, the output graph is shown.
+This argument is FALSE by default.</p></dd>
 
 
 <dt>...</dt>
@@ -91,12 +91,12 @@ while PDAG can contain the edges: -&gt;, &lt;-&gt;, and the undirected edges
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"></span>
-<span class="r-in"><span class="co"># Graph as an igraph object to dagitty object</span></span>
-<span class="r-in"><span class="va">G</span> <span class="op">&lt;-</span> <span class="fu">graph2dagitty</span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">graph</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu">dagitty</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/dagitty/man/graphLayout.html" class="external-link">graphLayout</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Graph as an igraph object to dagitty object</span></span></span>
+<span class="r-in"><span><span class="va">G</span> <span class="op">&lt;-</span> <span class="fu">graph2dagitty</span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">graph</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu">dagitty</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/dagitty/man/graphLayout.html" class="external-link">graphLayout</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="graph2dagitty-1.png" alt="" width="700" height="433"></span>
-<span class="r-in"></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -111,7 +111,7 @@ while PDAG can contain the edges: -&gt;, &lt;-&gt;, and the undirected edges
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>
