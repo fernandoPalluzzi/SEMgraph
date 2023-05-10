@@ -264,12 +264,13 @@ gsa.extract <- function(gsa, reference = reactome.pathways, lcc = TRUE,
 {  
   message(paste0("# Evaluated pathways: ", nrow(gsa$gsa), "\n"))
   
-  pathways <- gsa$gsa[gsa$gsa$No.nodes > min.size - 1
-                      & gsa$gsa$No.nodes < max.size + 1
-                      & gsa$gsa$No.DEGs > min.drns - 1
-                      & gsa$gsa$pNa < act.alpha
-                      & gsa$gsa$pNi < inh.alpha
-                      & gsa$gsa$ADJP < adj.alpha,]
+  GSA <- na.omit(gsa$gsa)
+  pathways <- GSA[GSA$No.nodes > min.size - 1
+                  & GSA$No.nodes < max.size + 1
+                  & GSA$No.DEGs > min.drns - 1
+                  & GSA$pNa < act.alpha
+                  & GSA$pNi < inh.alpha
+                  & GSA$ADJP < adj.alpha,]
   
   pathways <- rownames(pathways)
   message(paste0("# Perturbed pathways: ", length(pathways), "\n"))
