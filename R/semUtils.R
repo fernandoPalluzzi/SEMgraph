@@ -1351,17 +1351,16 @@ pairwiseMatrix<- function (x, y = NULL, size = nrow(x), r = 4, c = 4, ...)
 #' 
 #' @export
 #'
-#' @return A list of two objects:
-#' \enumerate{
-#' \item "model", The output model as an igraph object;
-#' \item "clusters", A list containing model clustering results.
-#' It includes tree more objects:
+#' @return A data.frame with the following fields:
 #' \itemize{
-#' \item "membership", A vector reporting cluster membership for each node;
-#' \item "fit", hidden model fitting as a lavaan object;
-#' \item "dataHM", data matrix containing cluster scores (hidden variables) 
-#' alongside the original data variables.
-#' }
+#' \item "ID", mediator ID;
+#' \item "symbol", gene symbol (only if \code{gene.symbols = TRUE});
+#' \item "r2", r-squared value for y;
+#' \item "est", estimated mediation effect;
+#' \item "se", standard error;
+#' \item "z", z-score;
+#' \item "pvalue", P-value;
+#' \item "FDR", false discovery rate (Benjamini-Hochberg adjusted P-value).
 #' }
 #'
 #' @author Fernando Palluzzi \email{fernando.palluzzi@gmail.com}
