@@ -2,9 +2,9 @@
 
 *Mario Grassi and Barbara Tarantino*
 
-## Corresponding Author for Code: Barbara Tarantino,  barbara.tarantino@unipv.it
+Correspondence to: barbara.tarantino@unipv.it
 
-## R session
+**R session**
 
 R version 4.1.0 (2021-05-18)
 Platform: x86_64-apple-darwin17.0 (64-bit)
