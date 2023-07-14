@@ -50,20 +50,19 @@ loaded via a namespace (and not attached):
 
 This folder contains the following data and files that can be used to reproduce the analysis of the manuscript. The folder structure can be summarised as follows:
 
-
- main_sim.R
+ **main_sim.R** <br>
  An R script to run Data simulations
 
- main_real.R
+ **main_real.R** <br>
  An R script to run breast cancer data analysis
 
- help.R
+ **help.R** <br>
  An R script with functions to import for running the analysis
 
- trrust_rawdata.human.txt
+ **trrust_rawdata.human.txt** <br>
  Transcription factor data
 
- brca.RData
+ **brca.RData** <br>
  Raw BRCA data
 
 ./csv/: simulations’ results
