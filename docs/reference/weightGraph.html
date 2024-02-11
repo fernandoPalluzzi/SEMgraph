@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.1</span>
       </span>
     </div>
 
@@ -44,7 +44,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Graph weighting methods</h1>
-    <small class="dont-index">Source: <a href="https://github.com/fernandoPalluzzi/SEMgraph/blob/HEAD/R/semWeights.R" class="external-link"><code>R/semWeights.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/fernandoPalluzzi/SEMgraph/blob/HEAD/R/semTools.R" class="external-link"><code>R/semTools.R</code></a></small>
     <div class="hidden name"><code>weightGraph.Rd</code></div>
     </div>
 
@@ -71,46 +71,49 @@ columns to graph nodes.</p></dd>
 <dd><p>Binary vector. This vector must be as long as the number
 of subjects. Each vector element must be 1 for cases and 0 for control
 subjects. By default, <code>group = NULL</code>. If group is not NULL, also
-node weighting is actived, and node weights correspond to the sign
-(-1 if z&lt;-2, +1 if z&gt;2, 0 otherwise) and P-value of the z-test = b/SE(b)
-from simple linear regression y ~ x (i.e., glm(node ~ group)).</p></dd>
+node weighting is actived, and node weights correspond to the attribute:
+V(graph)$pv (P-value of the z-test = b/SE(b) from simple linear regression
+y ~ x, i.e., lm(node ~ group)) and V(graph)$sign (-1 if z&lt;-2, +1 if z&gt;2,
+0 otherwise).</p></dd>
 
 
 <dt>method</dt>
-<dd><p>Edge weighting method. It can be one of the following:</p><ol><li><p>"r2z", weight edges of a graph using Fisher's r-to-z transform 
-(Fisher, 1915) to test the correlation coefficient of pairs 
-of interacting nodes, if <code>group == NULL</code>. Otherwise, the correlation
-difference between group will be tested and edge weights correspond to
-the sign (-1 if z&lt;-2, +1 if z&gt;2, 0 otherwise) and P-value of the group
-correlation difference.</p></li>
+<dd><p>Edge weighting method. It can be one of the following:</p><ol><li><p>"r2z", weight edges are defined using Fisher's r-to-z transform
+(Fisher, 1915) to test the correlation coefficient of pairs of interacting
+nodes, if <code>group=NULL</code>. Otherwise, the difference between group of
+the r-to-z trasform will be tested. Edge weights correspond to the attribute:
+E(graph)$pv (P-value of the z-test) and E(graph)$sign (-1 if z&lt;-2, +1 if z&gt;2,
+0 otherwise).</p></li>
 <li><p>"sem", edge weights are defined by a SEM model that implies 
-testing the group effect simultaneously on the source node and the sink mode.
+testing the group effect simultaneously on source and sink nodes.
 A new parameter w is defined as the weighted sum of the total effect 
-of the group on source and sink nodes, adjusted by node degree centrality, 
-and edge weights correspond to the sign (-1 if z&lt;-2, +1 if z&gt;2, 0 otherwise)
-and P-value of the z-test = w/SE(w). Not available if <code>group == NULL</code>.</p></li>
+of the group on source and sink nodes, adjusted by node degree centrality. 
+Edge weights correspond to the attribute: E(graph)$pv (P-value of the
+z-test = w/SE(w)) and E(graph)$sign (-1 if z&lt;-2, +1 if z&gt;2, 0 otherwise). 
+Not available if <code>group=NULL</code>.</p></li>
 <li><p>"cov", edge weights are defined by a new parameter w combining 
 the group effect on the source node (mean group difference, adjusted 
 by source degree centrality), the sink node (mean group difference, 
-adjusted by sink degree centrality), and the source-sink interaction 
-(correlation difference). Edge weights correspond to the sign
-(-1 if z&lt;-2, +1 if z&gt;2, 0 otherwise) and P-value of the z-test = w/SE(w)
-of the combined difference of the group over source node, sink node, and
-their connection. Not available if <code>group == NULL</code>.</p></li>
+adjusted by sink degree centrality), and the source--sink interaction 
+(correlation difference). Edge weights correspond to the attribute:
+E(graph)$pv (P-value of the z-test = w/SE(w) of the combined difference
+of the group over source node, sink node, and their connection) and
+E(graph)$sign (-1 if z&lt;-2, +1 if z&gt;2, 0 otherwise).
+Not available if <code>group=NULL</code>.</p></li>
 <li><p>"cfa", edge weights are defined by a CFA1 model that implies 
-testing the group effect, w on a latent variable (LV) with observed indicators
-two interacting nodes, fixing loading coefficients and residual
-variances for model identification. Edge weights correspond to the sign
-(-1 if z&lt;-2, +1 if z&gt;2, 0 otherwise) and P-value of the z-test = w/SE(w)
-of the group effect on the LV. Not available if <code>group == NULL</code>.</p></li>
+testing the group effect, w on a latent variable (LV) with observed
+indicators two interacting nodes, fixing loading coefficients and residual
+variances for model identification. Edge weights correspond to the
+attribute: E(graph)$pv (P-value of the z-test = w/SE(w) of the group
+effect on the LV) and E(graph)$sign (-1 if z&lt;-2, +1 if z&gt;2, 0 otherwise).
+Not available if <code>group=NULL</code>.</p></li>
 </ol></dd>
 
 
 <dt>limit</dt>
 <dd><p>An integer value corresponding to the number of graph 
 edges. Beyond this limit, multicore computation is enabled to reduce 
-the computational burden. 
-By default, <code>limit = 10000</code>.</p></dd>
+the computational burden. By default, <code>limit = 10000</code>.</p></dd>
 
 
 <dt>...</dt>
@@ -125,9 +128,9 @@ By default, <code>limit = 10000</code>.</p></dd>
     </div>
     <div id="references">
     <h2>References</h2>
-    <p>Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
-Analysis of High-Throughput Data with Structural Equation Models.
-Bioinformatics, 38 (20), 4829–4830 &lt;https://doi.org/10.1093/bioinformatics/btac567&gt;</p>
+    <p>Grassi M, Tarantino B (2023). [Supplementary material of] SEMtree: tree-based structure
+learning methods with structural equation models. 
+Bioinformatics, 39 (6), 4829–4830 &lt;https://doi.org/10.1093/bioinformatics/btad377&gt;</p>
 <p>Fisher RA (1915). Frequency Distribution of the Values of the Correlation
 Coefficient in Samples from an Indefinitely Large Population. Biometrika,
 10(4), 507–521. &lt;doi:10.2307/2331838&gt;</p>
@@ -158,7 +161,7 @@ Coefficient in Samples from an Indefinitely Large Population. Biometrika,
 <span class="r-out co"><span class="r-pr">#&gt;</span>  0  1 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 13  7 </span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># New nodes attributes</span></span></span>
+<span class="r-in"><span><span class="co"># New node attributes</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">pv</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span><span class="op">$</span><span class="va">pv</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.721660e-35 1.576567e-06 2.219336e-38 7.635299e-22 8.952626e-95</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [6] 5.688104e-01</span>

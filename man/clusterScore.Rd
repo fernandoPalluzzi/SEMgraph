@@ -72,8 +72,8 @@ respectively, and fit them with an exogenous group effect.
 }
 \examples{
 
-library(huge)
-als.npn <- huge.npn(alsData$exprs)
+# Nonparanormal(npn) transformation
+als.npn <- transformData(alsData$exprs)$data
 
 C <- clusterScore(graph = alsData$graph, data = als.npn,
                   group = alsData$group,

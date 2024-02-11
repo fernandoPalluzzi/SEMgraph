@@ -2,7 +2,7 @@
 % Please edit documentation in R/semUtils.R
 \name{SEMgsa}
 \alias{SEMgsa}
-\title{SEM-based gene set analysis (GSA)}
+\title{SEM-based gene set analysis}
 \usage{
 SEMgsa(g = list(), data, group, method = "BH", alpha = 0.05, n_rep = 1000, ...)
 }
@@ -80,9 +80,7 @@ respect to control group.
 \dontrun{
 
 # Nonparanormal(npn) transformation
-
-library(huge)
-als.npn <- huge.npn(alsData$exprs)
+als.npn <- transformData(alsData$exprs)$data
 
 # Selection of FTD-ALS pathways from kegg.pathways.Rdata
 

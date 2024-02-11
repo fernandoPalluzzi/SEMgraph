@@ -75,7 +75,7 @@ The full list of **SEMgraph** functions with examples is available at our websit
 
 - [**KEGG**](https://www.genome.jp/kegg/) directed reference network of 5934 nodes and 77158 edges, derived from the **KEGG** database.
 
-- **KEGG pathways**. A comprehensive list of 225 KEGG pathways (last update: November 2021).
+- **KEGG pathways**. A comprehensive list of 227 KEGG pathways (last update: February 2024).
 
 - [**Reactome**](https://reactome.org) directed reference network of 9762 nodes and 416128 edges, derived from **Reactome** DB. [[**\*\***](https://github.com/fernandoPalluzzi/SEMdata)]
 

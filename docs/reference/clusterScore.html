@@ -19,7 +19,7 @@ respectively, and fit them with an exogenous group effect."><!-- mathjax --><scr
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.1</span>
       </span>
     </div>
 
@@ -155,9 +155,9 @@ for graph clustering.</p></div>
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">huge</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">als.npn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/huge/man/huge.npn.html" class="external-link">huge.npn</a></span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">exprs</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Conducting the nonparanormal (npn) transformation via shrunkun ECDF....done.</span>
+<span class="r-in"><span><span class="co"># Nonparanormal(npn) transformation</span></span></span>
+<span class="r-in"><span><span class="va">als.npn</span> <span class="op">&lt;-</span> <span class="fu"><a href="transformData.html">transformData</a></span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">exprs</span><span class="op">)</span><span class="op">$</span><span class="va">data</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Conducting the nonparanormal transformation via shrunkun ECDF...done.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu">clusterScore</span><span class="op">(</span>graph <span class="op">=</span> <span class="va">alsData</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="va">als.npn</span>,</span></span>
 <span class="r-in"><span>                  group <span class="op">=</span> <span class="va">alsData</span><span class="op">$</span><span class="va">group</span>,</span></span>
@@ -174,7 +174,7 @@ for graph clustering.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> SRMR: 6.892669e-10 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">C</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> lavaan 0.6.15 ended normally after 16 iterations</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> lavaan 0.6.17 ended normally after 16 iterations</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Estimator                                         ML</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Optimization method                           NLMINB</span>

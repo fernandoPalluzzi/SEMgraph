@@ -41,12 +41,12 @@ the estimated precision matrix, Z=YW^(1/2) as suggested by Grassi, Palluzzi
 and Tarantino (2022).
 \item "glpc". The algorithm first makes an exhaustive search of bow-free
 significant covariances through \code{\link[SEMgraph]{Shipley.test}} function.
-Once obtained the adjacency matrix, Graph-Laplacian PCA (gLPCA) algorithm learns
-a low dimensional representation of the observed data matrix that incorporates
-graph structure (Jiang et al., 2013). Then, the DAG is extended by including the
-confounding proxies, i.e. LVs, as additional source nodes defined by last q
-principal component scores of gLPCA and these LV scores are added to the data
-matrix, Z=cbind(LV,Y).
+Once obtained the adjacency matrix, Graph-Laplacian PCA (gLPCA) algorithm
+(Jiang et al., 2013) learns a low dimensional representation of the observed
+data matrix that incorporates bow-free structure. Then, the DAG is extended
+by including the confounding proxies, i.e. LVs, as additional source nodes
+defined by last q principal component scores of gLPCA and these LV scores are
+added to the data matrix, Z=cbind(LV,Y).
 \item "pc". The procedure add additional source nodes to DAG as in "glpc"
 algorithm, but confounding proxies are the q principal component scores
 extracted by Spectral decomposition (SVD) selecting only graph nodes and

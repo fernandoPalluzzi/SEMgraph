@@ -2,7 +2,7 @@
 % Please edit documentation in R/semUtils.R
 \name{SEMdci}
 \alias{SEMdci}
-\title{SEM-based differential causal inference (DCI)}
+\title{SEM-based differential network analysis}
 \usage{
 SEMdci(graph, data, group, type = "ace", method = "BH", alpha = 0.05, ...)
 }
@@ -16,17 +16,18 @@ columns to graph nodes (variables).}
 of subjects. Each vector element must be 1 for cases and 0 for control
 subjects.}
 
-\item{type}{Average Causal Effect (ACE) with two-group, "parents" (back-door)
-adjustement set, and "direct" effects (\code{type = "ace"}, default), or
-CGGM solver with two-group using a clustering method.
+\item{type}{Average Causal Effect (ACE) with two-group, "parents"
+(back-door) adjustement set, and "direct" effects (\code{type = "ace"},
+default), or CGGM solver with two-group using a clustering method.
 If \code{type = "tahc"}, network modules are generated using the tree
-agglomerative hierarchical clustering method. Other non-tree clustering
-methods from igraph package include: "wtc" (walktrap community structure
-with short random walks), "ebc" (edge betweeness clustering), "fgc"
-(fast greedy method), "lbc" (label propagation method), "lec" (leading
-eigenvector method), "loc" (multi-level optimization), "opc" (optimal
-community structure), "sgc" (spinglass statistical mechanics), "none"
-(no breaking network structure into clusters).}
+agglomerative hierarchical clustering method, or non-tree clustering
+methods from igraph package, i.e., \code{type = "wtc"} (walktrap community
+structure with short random walks), \code{type ="ebc"} (edge betweeness
+clustering), \code{type = "fgc"} (fast greedy method), \code{type = "lbc"}
+(label propagation method), \code{type = "lec"} (leading eigenvector method),
+\code{type = "loc"} (multi-level optimization), \code{type = "opc"} (optimal
+community structure), \code{type = "sgc"} (spinglass statistical mechanics),
+\code{type = "none"} (no breaking network structure into clusters).}
 
 \item{method}{Multiple testing correction method. One of the values
 available in \code{\link[stats]{p.adjust}}. By default, method is set
@@ -40,7 +41,7 @@ to "BH" (i.e., FDR multiple test correction).}
 An igraph object.
 }
 \description{
-Creates a network with perturbed edges obtained from the
+Creates a sub-network with perturbed edges obtained from the
 output of \code{\link[SEMgraph]{SEMace}}, comparable to the procedure in
 Jablonski et al (2022), or of \code{\link[SEMgraph]{SEMrun}} with two-group
 and CGGM solver, comparable to the algorithm 2 in Belyaeva et al (2021). 

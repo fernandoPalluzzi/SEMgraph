@@ -19,7 +19,7 @@ SEMrun."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mat
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.1</span>
       </span>
     </div>
 
@@ -146,13 +146,13 @@ is given to edges with P-value &lt; alpha. By default ewidth = c(1, 2).</p></dd>
 <span class="r-in"><span><span class="va">sem1</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span>graph <span class="op">=</span> <span class="va">alsData</span><span class="op">$</span><span class="va">graph</span>, data <span class="op">=</span> <span class="va">alsData</span><span class="op">$</span><span class="va">exprs</span>,</span></span>
 <span class="r-in"><span>               group <span class="op">=</span> <span class="va">alsData</span><span class="op">$</span><span class="va">group</span>,</span></span>
 <span class="r-in"><span>               fit <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NLMINB solver ended normally after 6 iterations </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NLMINB solver ended normally after 1 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 12.66492  srmr: 0.3036439 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 12.66492  srmr: 0.303644 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node activation: 8.945067e-13 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node activation: 8.943957e-13 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 0.02173369 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 0.02173378 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="va">est1</span> <span class="op">&lt;-</span> <span class="fu"><a href="parameterEstimates.html">parameterEstimates</a></span><span class="op">(</span><span class="va">sem1</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
@@ -162,13 +162,13 @@ is given to edges with P-value &lt; alpha. By default ewidth = c(1, 2).</p></dd>
 <span class="r-in"><span>               fit <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Estimating optimal shrinkage intensity lambda (correlation matrix): 0.4547 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NLMINB solver ended normally after 17 iterations </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NLMINB solver ended normally after 7 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 16.74697  srmr: 0.3247999 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 16.74697  srmr: 0.3247998 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of edge activation: 0.01363441 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of edge activation: 0.01363458 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of edge inhibition: 0.8656964 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of edge inhibition: 0.8656962 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="va">est20</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fu"><a href="parameterEstimates.html">parameterEstimates</a></span><span class="op">(</span><span class="va">sem2</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span>, <span class="va">group</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span><span class="op">[</span>, <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">5</span><span class="op">)</span><span class="op">]</span></span></span>
 <span class="r-in"><span><span class="va">est21</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fu"><a href="parameterEstimates.html">parameterEstimates</a></span><span class="op">(</span><span class="va">sem2</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span>, <span class="va">group</span> <span class="op">==</span> <span class="fl">2</span><span class="op">)</span><span class="op">[</span>, <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">5</span><span class="op">)</span><span class="op">]</span></span></span>

@@ -1,5 +1,5 @@
 #  SEMgraph library
-#  Copyright (C) 2019-2023 Mario Grassi; Fernando Palluzzi; Barbara Tarantino
+#  Copyright (C) 2019-2024 Mario Grassi; Fernando Palluzzi; Barbara Tarantino
 #  e-mail: <mario.grassi@unipv.it>
 #  University of Pavia, Department of Brain and Behavioral Sciences
 #  Via Bassi 21, 27100 Pavia, Italy
@@ -60,7 +60,7 @@
 #' (e.g., 1 for activated, -1 for repressed, and 0 for unchanged interaction).
 #' Fixed values may compromise model fitting, and scaling them is a safe
 #' option to avoid this problem. As a rule of thumb, to our experience,
-#' \code{start = 0.1} generally performs well with {-1, 0, 1} weights.
+#' \code{start = 0.1} generally performs well with (-1, 0, 1) weights.
 #' @param SE If "standard" (default), with \code{algo = "lavaan"},
 #' conventional standard errors are computed based on inverting the observed
 #' information matrix. If "none", no standard errors are computed.
@@ -133,13 +133,14 @@
 #' @import igraph
 #' @import lavaan
 #' @importFrom boot boot
-#' @importFrom graphics abline curve hist legend par
+#' @importFrom graphics abline curve hist legend par polygon
 #' @importFrom mgcv gam
-#' @importFrom stats approx as.dist coefficients cor cov
-#'             cutree dchisq dnorm formula hclust lm lm.fit
+#' @importFrom stats approx as.dist coefficients cor cov cutree 
+#'             dchisq dnorm density formula hclust lm lm.fit
 #' 			   median na.omit p.adjust pchisq pnorm pt qchisq
 #'             qnorm quantile rnorm runif sd var
-#' @importFrom utils flush.console
+#' @importFrom utils flush.console tail
+#'
 #' @export
 #'
 #' @author Mario Grassi \email{mario.grassi@unipv.it}
@@ -229,8 +230,8 @@
 #' G <- properties(g)[[1]]
 #' summary(G)
 #' 
-#' library(huge)
-#' als.npn <- huge.npn(alsData$exprs)
+#' # Nonparanormal(npn) transformation
+#' als.npn <- transformData(alsData$exprs)$data
 #'
 #' g1 <- SEMrun(G, als.npn, alsData$group, algo = "cggm")$graph
 #' g2 <- SEMrun(g1, als.npn, alsData$group, fit = 2, algo = "cggm")$graph
@@ -649,11 +650,13 @@ SEMricf<- function (graph, data, group = NULL, n_rep = 1000, ...)
 	if (is.null(group) & px > 1) {
 	 O[1:px, 1:px]<- cor(dataXY[, Vx])
 	}else{ O[1,1] <- 1 }
-	Sobs <- cor(dataXY[, c(Vx,Vy)])
 	npar<- sum(A == 1) + sum(A == 100)/2 + py
 	df <- p*(p+1)/2 - npar - (px*(px+1)/2)
+	Sobs <- cor(dataXY[, c(Vx,Vy)])
 	#Shat <- solve((diag(p)-B) %*% solve(O) %*% t(diag(p)-B))
 	Shat <- t(solve(diag(p)-B)) %*% O %*% solve(diag(p)-B)
+	#Sobs <- covXY[c(Vx,Vy), c(Vx,Vy)]
+	#Shat <- fit$Shat[c(Vx,Vy), c(Vx,Vy)]
 	idx <- fitIndices(n, df, npar, Sobs, Shat)
 	#if (idx[7] > 0) {
 	# cat(paste0(" WARNING: deviance is estimated by removing ", idx[7], " singular values < 1e-12...\n\n"))
@@ -829,6 +832,7 @@ parameterEstimates.RICF <- function(fit, ...)
 		}
 	}
 	rownames(est)<- NULL
+	class(est) <- c("lavaan.data.frame","data.frame")
 	
 	return(est)
 }
@@ -868,6 +872,7 @@ SEMggm <- function(graph, data, group = NULL, ...)
 	# de-biased (de-sparsified) DAG
 	res<- parameterEstimates.DAG(Ay=dadj[,-c(1:px)], Z=scale(dataXY))
 	est<- res$beta
+	sigma<- res$sigma
 
 	# Beta, Psi & Sigma matrices :
 	gB<- graph_from_data_frame(est[,c(3,1,4)])
@@ -875,7 +880,8 @@ SEMggm <- function(graph, data, group = NULL, ...)
 	gB<- gB + vertices(V)
 	B<- as_adjacency_matrix(gB, attr="est", sparse=FALSE)
 	B<- B[c(Vx,Vy), c(Vx,Vy)]
-	O<- diag(res$sigma[c(Vx,Vy)])
+	O<- diag(sigma[c(Vx,Vy)])
+	rownames(O)<- colnames(O)<- names(sigma)
 	if(is.null(group) & px >1) O[1:px, 1:px]<- cor(dataXY[, Vx])
 	Sobs <- cor(dataXY[, c(Vx,Vy)])
 	npar<- sum(dadj != 0) + py
@@ -883,7 +889,7 @@ SEMggm <- function(graph, data, group = NULL, ...)
 	Shat <- solve((diag(p)-B) %*% solve(O) %*% t(diag(p)-B))
 	#Shat <- t(solve(diag(p)-B))%*%O%*%solve(diag(p)-B)
 	
-	cat(paste0("GGM (de-biased nodewise L1) solver ended normally after ", 0, " iterations"),"\n\n")
+	cat(paste0("GGM (de-biased nodewise L1) solver ended normally after ", py, " iterations"),"\n\n")
 	idx<- fitIndices(n, df, npar, Sobs, Shat)
 	#if (idx[7] > 0) {
 	# cat(paste0(" WARNING: deviance is estimated by removing ", idx[7], " singular values < 1e-12...\n\n"))
@@ -1071,7 +1077,7 @@ fitIndices <- function(n, df, npar, S, Sigma, ...)
 	# ULS Goodness of Fit Index (GFI)
 	ULS <- 1 - sum(diag(t(E)%*%E))/sum(diag(t(S)%*%S))
 
-	return(c(dev=dev, df=df, srmr=SRMR, rmsea=RMSEA, n=n, npar, r=r))
+	return(c(dev=dev, df=df, srmr=SRMR, rmsea=RMSEA, n=n, npar=npar, r=r))
 }
 
 Brown.test <- function (p, x = NULL, theta = NULL, tail = "both", ...)
@@ -1161,8 +1167,8 @@ Brown.test <- function (p, x = NULL, theta = NULL, tail = "both", ...)
 #'
 #' #\donttest{
 #'
-#' library(huge)
-#' als.npn <- huge.npn(alsData$exprs)
+#' # Nonparanormal(npn) transformation
+#' als.npn <- transformData(alsData$exprs)$data
 #' 
 #' sem <- SEMrun(alsData$graph, als.npn)
 #' C_test <- Shipley.test(sem$graph, als.npn, MCX2 = FALSE)
@@ -1353,8 +1359,8 @@ MCX2 <- function (model.df, n.obs, model.chi.square, n.sim = 10000, ...)
 #'
 #' @examples
 #'
-#' library(huge)
-#' als.npn <- huge.npn(alsData$exprs)
+#' # Nonparanormal(npn) transformation
+#' als.npn <- transformData(alsData$exprs)$data
 #' 
 #' sem <- SEMrun(alsData$graph, als.npn)
 #' B_test <- localCI.test(sem$graph, als.npn, verbose = TRUE)
@@ -1452,6 +1458,7 @@ msep.test<- function(bap, S, n, verbose, ...)
 #' parameterEstimates(cggm1$fit)
 #'
 #' @export
+#'
 parameterEstimates<- function(fit, ...)
 {
 	if (inherits(fit, "lavaan")){
@@ -1503,6 +1510,7 @@ parameterEstimates<- function(fit, ...)
 #' summary(sem1$fit)
 #'
 #' @export
+#'
 summary.RICF <- function(object, ...)
 {
 	.local <- function(object) {
@@ -1543,10 +1551,7 @@ summary.RICF <- function(object, ...)
 		L <- list(reg, cov[-sel,], cov[sel,])
 		for (l in 1:3) {
 			cat(K[l], "\n\n")
-			print(data.frame(lapply(L[[l]], function(y) {
-					if(is.numeric(y)) round(y, 3) else y
-				}
-			)))
+			print(L[[l]])
 			cat("\n")
 		}
 	}
@@ -1573,6 +1578,7 @@ summary.RICF <- function(object, ...)
 #' summary(sem0$fit)
 #'
 #' @export
+#'
 summary.GGM <- function(object, ...)
 {
 	.local <- function(object) {
@@ -1587,7 +1593,7 @@ summary.GGM <- function(object, ...)
 		           " iterations"), "\n\n")
 		cat(paste0("  Estimator                                       ML"),
 		           "\n")
-		cat(paste0("  Optimization method                             CGGM"),
+		cat(paste0("  Optimization method                             GGM"),
 		           "\n\n")
 		cat(paste0("  Number of free parameters                       ",
 		           t), "\n\n")
@@ -1604,21 +1610,13 @@ summary.GGM <- function(object, ...)
 		           srmr), "\n")
 		cat("\nParameter Estimates:\n\n")
 
-		#print(object$parameterEstimates)
-		K <- c("Regressions:", "Covariances:", "Variances:")
-		L <- object$parameterEstimates
-		reg <- L[which(L$op == "~"),]
-		cov <- L[which(L$op == "~~"),]
-		sel <- which(cov$lhs == cov$rhs)
-		L <- list(reg, cov[-sel,], cov[sel,])
-		for (l in 1:1) {
-			cat(K[l], "\n\n")
-			print(data.frame(lapply(L[[l]], function(y) {
-					if(is.numeric(y)) round(y, 3) else y
-				}
-			)))
-			cat("\n")
-		}
+		B<- object$parameterEstimates
+		cat("Regressions:\n\n")
+		print(B)
+		V<- diag(object$Psi)
+		names(V)<- rownames(object$Psi)
+		cat("\nVariances:\n\n")
+		print(round(V,3))
 	}
 	.local(object)
 }

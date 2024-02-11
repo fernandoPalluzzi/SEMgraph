@@ -18,7 +18,7 @@ Model (GGM) similar to lavaan-formated summary"><!-- mathjax --><script src="htt
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.1</span>
       </span>
     </div>
 
@@ -88,7 +88,7 @@ Model (GGM) similar to lavaan-formated summary</p>
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">sem0</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">graph</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">pkc</span><span class="op">)</span>, algo <span class="op">=</span> <span class="st">"cggm"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> DAG conversion : TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GGM (de-biased nodewise L1) solver ended normally after 0 iterations </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> GGM (de-biased nodewise L1) solver ended normally after 9 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 66.94041  srmr: 0.089629 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -96,7 +96,7 @@ Model (GGM) similar to lavaan-formated summary</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> GGM (de-biased nodewise L1) solver ended normally after 0 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Estimator                                       ML </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Optimization method                             CGGM </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Optimization method                             GGM </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Number of free parameters                       27 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -111,7 +111,7 @@ Model (GGM) similar to lavaan-formated summary</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Parameter Estimates:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Regressions: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Regressions:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     lhs op  rhs    est    se z_test pvalue ci.lower ci.uppper</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1   PKC  ~ PIP2  0.019 0.025  0.753  0.451   -0.030     0.068</span>
@@ -133,6 +133,10 @@ Model (GGM) similar to lavaan-formated summary</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 17  Erk  ~  PKA  0.455 0.021 21.475  0.000    0.414     0.497</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 18  Erk  ~  Mek -0.020 0.021 -0.931  0.352   -0.061     0.022</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Variances:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   PKA  PIP3   PKC   Mek   Raf  PIP2  Plcg   Jnk   P38   Akt   Erk </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1.000 1.000 0.999 0.535 0.983 0.663 0.957 0.974 0.583 0.691 0.790 </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

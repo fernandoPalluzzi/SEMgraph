@@ -34,8 +34,8 @@ using the PCA solution as the initial value. See Bai and Li (2012) for more deta
 }
 \examples{
 
-library(huge)
-als.npn <- huge.npn(alsData$exprs)
+# Nonparanormal(npn) transformation
+als.npn <- transformData(alsData$exprs)$data
 
 ## pc
 pc<- factor.analysis(Y = als.npn, r = 2, method = "pc")

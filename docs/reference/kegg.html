@@ -18,7 +18,7 @@ extracted using the ROntoTools R package (update: November, 2021)."><!-- mathjax
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.1</span>
       </span>
     </div>
 
@@ -60,9 +60,9 @@ extracted using the <code>ROntoTools</code> R package (update: November, 2021).<
 
     <div id="format">
     <h2>Format</h2>
-    <p>"kegg" is an igraph network object of 5934 nodes and 77158 edges 
-(41122 directed and 3164/2 = 1582 bidirected) corresponding to the
-union of 225 KEGG pathways.</p>
+    <p>"kegg" is an igraph network object of 5143 nodes and 43734 edges 
+(40424 directed and 3310/2 = 1655 bidirected) corresponding to the
+union of 227 KEGG pathways.</p>
     </div>
     <div id="source">
     <h2>Source</h2>
@@ -73,8 +73,8 @@ union of 225 KEGG pathways.</p>
     <p>Kanehisa M, Goto S (1999). KEGG: kyoto encyclopedia of genes and genomes. 
 Nucleic Acid Research 28(1): 27-30. 
 &lt;https://doi.org/10.1093/nar/27.1.29&gt;</p>
-<p>Calin Voichita, Sahar Ansari and Sorin Draghici (2021).
-ROntoTools: R Onto-Tools suite. R package version 2.20.0.</p>
+<p>Calin Voichita, Sahar Ansari and Sorin Draghici (2023).
+ROntoTools: R Onto-Tools suite. R package version 2.30.0.</p>
     </div>
 
     <div id="ref-examples">
@@ -82,12 +82,12 @@ ROntoTools: R Onto-Tools suite. R package version 2.20.0.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># KEGG graph</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">kegg</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH b46d4ee DNW- 5007 44755 -- </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> + attr: name (v/c), weight (e/n)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH 46880a7 DN-- 5147 43734 -- </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> + attr: name (v/c)</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># KEGG degrees of freedom</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://r.igraph.org/reference/gorder.html" class="external-link">vcount</a></span><span class="op">(</span><span class="va">kegg</span><span class="op">)</span><span class="op">*</span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/gorder.html" class="external-link">vcount</a></span><span class="op">(</span><span class="va">kegg</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span><span class="op">/</span><span class="fl">2</span> <span class="op">-</span> <span class="fu"><a href="https://r.igraph.org/reference/gsize.html" class="external-link">ecount</a></span><span class="op">(</span><span class="va">kegg</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 12487766</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 13199497</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

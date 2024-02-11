@@ -1,5 +1,5 @@
 #  SEMgraph library
-#  Copyright (C) 2019-2023 Mario Grassi; Fernando Palluzzi; Barbara Tarantino
+#  Copyright (C) 2019-2024 Mario Grassi; Fernando Palluzzi; Barbara Tarantino
 #  e-mail: <mario.grassi@unipv.it>
 #  University of Pavia, Department of Brain and Behavioral Sciences
 #  Via Bassi 21, 27100 Pavia, Italy
@@ -22,12 +22,12 @@
 #' @title KEGG pathways
 #'
 #' @description KEGG pathways extracted using the \code{ROntoTools}
-#' R package (update: November, 2021).
+#' R package (update: February, 2024).
 #' @name kegg.pathways
 #' @usage kegg.pathways
 #' @docType data
 #' @format
-#' "kegg.pathways" is a list of 225 igraph objects corresponding to the
+#' "kegg.pathways" is a list of 227 igraph objects corresponding to the
 #' KEGG pathways.
 #' @source \url{https://www.genome.jp/kegg/}
 #' @references
@@ -36,8 +36,8 @@
 #' Nucleic Acid Research 28(1): 27-30. 
 #' <https://doi.org/10.1093/nar/27.1.29>
 #'
-#' Calin Voichita, Sahar Ansari and Sorin Draghici (2021).
-#' ROntoTools: R Onto-Tools suite. R package version 2.20.0.
+#' Calin Voichita, Sahar Ansari and Sorin Draghici (2023).
+#' ROntoTools: R Onto-Tools suite. R package version 2.30.0.
 #' 
 #' @examples
 #' 

@@ -83,8 +83,8 @@ G <- properties(g)[[1]]; summary(G)
 
 # Extend a graph using new inferred DAG edges (dag+dag.new):
 
-library(huge)
-als.npn <- huge.npn(alsData$exprs)
+# Nonparanormal(npn) transformation
+als.npn <- transformData(alsData$exprs)$data
 
 dag <- SEMdag(graph = G, data = als.npn, beta = 0.1)
 gplot(dag$dag)

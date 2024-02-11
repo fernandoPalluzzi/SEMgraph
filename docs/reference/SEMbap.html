@@ -21,7 +21,7 @@ the data matrix, Y or (iii) spectral transformation of Y."><!-- mathjax --><scri
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.1</span>
       </span>
     </div>
 
@@ -105,12 +105,12 @@ the estimated precision matrix, Z=YW^(1/2) as suggested by Grassi, Palluzzi
 and Tarantino (2022).</p></li>
 <li><p>"glpc". The algorithm first makes an exhaustive search of bow-free
 significant covariances through <code><a href="Shipley.test.html">Shipley.test</a></code> function.
-Once obtained the adjacency matrix, Graph-Laplacian PCA (gLPCA) algorithm learns
-a low dimensional representation of the observed data matrix that incorporates
-graph structure (Jiang et al., 2013). Then, the DAG is extended by including the
-confounding proxies, i.e. LVs, as additional source nodes defined by last q
-principal component scores of gLPCA and these LV scores are added to the data
-matrix, Z=cbind(LV,Y).</p></li>
+Once obtained the adjacency matrix, Graph-Laplacian PCA (gLPCA) algorithm
+(Jiang et al., 2013) learns a low dimensional representation of the observed
+data matrix that incorporates bow-free structure. Then, the DAG is extended
+by including the confounding proxies, i.e. LVs, as additional source nodes
+defined by last q principal component scores of gLPCA and these LV scores are
+added to the data matrix, Z=cbind(LV,Y).</p></li>
 <li><p>"pc". The procedure add additional source nodes to DAG as in "glpc"
 algorithm, but confounding proxies are the q principal component scores
 extracted by Spectral decomposition (SVD) selecting only graph nodes and
@@ -267,6 +267,7 @@ estimation with the graphical lasso. Biostatistics, 9(3), 432-441.
 <span class="r-in"><span><span class="co"># SVD decounfounding with trim method</span></span></span>
 <span class="r-in"><span><span class="va">svd</span> <span class="op">&lt;-</span> <span class="fu">SEMbap</span><span class="op">(</span><span class="va">graph</span>, <span class="va">data</span>, dalgo <span class="op">=</span> <span class="st">"trim"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> DAG conversion : TRUE</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Estimated 4 (68%) latent confounders</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Model fitting (with node-perturbation)</span></span></span>
 <span class="r-in"><span><span class="va">sem1</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">graph</span>, <span class="va">data</span>, <span class="va">group</span><span class="op">)</span></span></span>
@@ -288,7 +289,7 @@ estimation with the graphical lasso. Biostatistics, 9(3), 432-441.
 <span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 5.175634e-05 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="va">svd1</span> <span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">svd</span><span class="op">$</span><span class="va">dag</span>, <span class="va">svd</span><span class="op">$</span><span class="va">data</span>, <span class="va">group</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NLMINB solver ended normally after 7 iterations </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NLMINB solver ended normally after 1 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 36.71868  srmr: 0.0812168 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
