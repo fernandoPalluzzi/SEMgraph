@@ -54,7 +54,7 @@ For instance, a scaling factor is useful when weights have fixed values
 (e.g., 1 for activated, -1 for repressed, and 0 for unchanged interaction).
 Fixed values may compromise model fitting, and scaling them is a safe
 option to avoid this problem. As a rule of thumb, to our experience,
-\code{start = 0.1} generally performs well with {-1, 0, 1} weights.}
+\code{start = 0.1} generally performs well with (-1, 0, 1) weights.}
 
 \item{SE}{If "standard" (default), with \code{algo = "lavaan"},
 conventional standard errors are computed based on inverting the observed
@@ -190,8 +190,8 @@ g <- kegg.pathways[["Neurotrophin signaling pathway"]]
 G <- properties(g)[[1]]
 summary(G)
 
-library(huge)
-als.npn <- huge.npn(alsData$exprs)
+# Nonparanormal(npn) transformation
+als.npn <- transformData(alsData$exprs)$data
 
 g1 <- SEMrun(G, als.npn, alsData$group, algo = "cggm")$graph
 g2 <- SEMrun(g1, als.npn, alsData$group, fit = 2, algo = "cggm")$graph

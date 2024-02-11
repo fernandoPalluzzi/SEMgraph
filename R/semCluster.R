@@ -1,5 +1,5 @@
 #  SEMgraph library
-#  Copyright (C) 2019-2023 Mario Grassi; Fernando Palluzzi; Barbara Tarantino
+#  Copyright (C) 2019-2024 Mario Grassi; Fernando Palluzzi; Barbara Tarantino
 #  e-mail: <mario.grassi@unipv.it>
 #  University of Pavia, Department of Brain and Behavioral Sciences
 #  Via Bassi 21, 27100 Pavia, Italy
@@ -232,8 +232,8 @@ clusterGraph <- function(graph, type = "wtc", HM = "none", size = 5,
 #'
 #' @examples
 #'
-#' library(huge)
-#' als.npn <- huge.npn(alsData$exprs)
+#' # Nonparanormal(npn) transformation
+#' als.npn <- transformData(alsData$exprs)$data
 #'
 #' C <- clusterScore(graph = alsData$graph, data = als.npn,
 #'                   group = alsData$group,
@@ -405,8 +405,8 @@ clusterScore <- function(graph, data, group, HM = "LV", type = "wtc",
 #'
 #' @examples
 #' 
-#' library(huge)
-#' als.npn <- huge.npn(alsData$exprs)
+#' # Nonparanormal(npn) transformation
+#' als.npn <- transformData(alsData$exprs)$data
 #' 
 #' ## pc
 #' pc<- factor.analysis(Y = als.npn, r = 2, method = "pc")
@@ -571,106 +571,107 @@ fa.em <- function(Y, r, tol = 1e-6, maxiter = 1000) {
 #' @description Extract and fit clusters from an input graph.
 #'
 #' @param graph Input network as an igraph object.
+#' @param membership A vector of cluster membership IDs. If NULL, clusters
+#' will be automatically generated with \code{\link[SEMgraph]{clusterGraph}}
+#' using the edge betweenness clustering ("ebc") algorithm.
 #' @param data A matrix or data.frame. Rows correspond to subjects, and
 #' columns to graph nodes (variables).
-#' @param membership A vector of cluster membership IDs.
 #' @param group A binary vector. This vector must be as long as the
 #' number of subjects. Each vector element must be 1 for cases and 0
 #' for control subjects. Group specification enables node perturbation
 #' testing. By default, \code{group = NULL}.
-#' @param fitting.method Model parameter estimation method. By default, the
-#' Residual Iterative Conditional Fitting (\code{fitting.method = "ricf"}) 
-#' method is used. As a faster alternative, the Constrained Gaussian Graphical 
-#' Modeling (\code{fitting.method = "cggm"}) method can be used. However, RICF 
-#' ensures better convergence to canonical Maximum Likelihood Estimation (MLE). 
-#' MLE can be enabled by setting (\code{fitting.method = "lavaan"}), using the 
-#' basic \code{"lavaan"} package SEM fitting framework.
-#' @param se If \code{"standard"} (default), conventional standard errors are 
-#' compute based on inverting the observed information matrix. All options 
-#' from the \code{lavaan} package are allowed, including "robust" and "boot" 
-#' for robust and bootstrap standard errors, respectively.
-#' @param limit Maximum network size limit (nodes number) above which the RICF
-#' fitting method will be enforced to reduce the computational burden 
-#' (default = 100).
-#' @param n Number of randomization replicates (default = 2000), for permutation 
-#' flip or boostrap samples, if \code{fitting.method = "ricf"}.
-#' @param size Minimum cluster size (default = 5). If a group of connected nodes 
-#' is below this size it will not be considered as a cluster and not fitted.
+#' @param map Logical value. If TRUE, the plot of the input graph
+#' (coloured by cluster membership) will be generated along with independent
+#' module plots. If the input graph is very large, plotting could be
+#' computationally intensive (by default, \code{map = FALSE}).
+#' @param verbose Logical value. If TRUE, a plot will be showed for each
+#' cluster.
 #' @param ... Currently ignored.
 #'
 #' @export
 #'
-#' @return A list of three objects:
+#' @return A list of 3 objects:
 #' \enumerate{
-#' \item clusters, the list of extracted clusters;
-#' \item estimates, data.frame containing fitting results and 
-#' cluster membership for each node.
-#' \item fit.indices, data.frame reporting goodness-of-fitting results for each 
-#' cluster.
+#' \item "clusters", list of clusters as igraph objects;
+#' \item "fit", list of fitting results for each cluster as a lavaan object;
+#' \item "dfc", data.frame of summary results.
 #' }
 #'
 #' @author Fernando Palluzzi \email{fernando.palluzzi@gmail.com}
 #'
 #' @examples
-#' 
-#' library(huge)
-#' als.npn <- huge.npn(alsData$exprs)
-#' als.membership <- clusterGraph(alsData$graph)
-#' 
-#' # Clusters extraction and fitting
-#' als.clust <- extractClusters(alsData$graph, als.npn, als.membership,
-#'                              group = alsData$group,
-#'                              fitting.method = "ricf")
-#' print(als.clust$estimates)
 #'
-extractClusters <- function (graph, data, membership, group = NULL,
-                             fitting.method = "ricf", se = "standard",
-                             limit = 100, n = 2000, size = 5, ...)
+#' \donttest{
+#'
+#' # Nonparanormal(npn) transformation
+#' als.npn <- transformData(alsData$exprs)$data
+#'
+#' adjdata <- SEMbap(alsData$graph, als.npn)$data
+#'
+#' # Clusters creation
+#' clusters <- extractClusters(alsData$graph, adjdata, alsData$group)
+#' print(clusters$dfc)
+#' head(parameterEstimates(clusters$fit$HM1))
+#' head(parameterEstimates(clusters$fit$HM2))
+#' head(parameterEstimates(clusters$fit$HM4))
+#' gplot(clusters$clusters$HM2)
+#'
+#' # Map cluster on the input graph
+#' g <- alsData$graph
+#' c <- clusters$clusters$HM2
+#' V(g)$color <- ifelse(V(g)$name %in% V(c)$name, "gold", "white")
+#' gplot(g)
+#'
+#' }
+#'
+extractClusters<- function(graph, data, group = NULL, membership = NULL, map = FALSE, verbose = FALSE, ...) 
 {
-  clusters <- list()
-  model.estimates <- data.frame()
-  clust.fit <- data.frame(id = numeric(), devdfr = numeric(), 
-                          srmr = numeric(), rmsea = numeric(), nobs = numeric(), 
-                          npar = numeric())
-  cluster.names <- names(table(membership))
-  m <- length(cluster.names)
-  for (i in 1:m) {
-    cluster <- induced_subgraph(graph,
-                                vids = names(membership[membership == cluster.names[i]]))
-    n.nodes <- length(V(cluster)$name)
-    clusters[[i]] <- cluster
-    if (n.nodes > size) {
-      message(paste0("\nFitting cluster ", i, " of ", m, 
-                     " (cluster size: ", n.nodes, ")", " ..."))
-      fit <- suppressWarnings(SEMrun(cluster, data, group,
-                                     algo = fitting.method, n_rep = n, SE = se,
-                                     limit = limit))
-      if (is.null(group)) {
-        est <- parameterEstimates(fit$fit)
-      } else {
-        est <- fit$gest
-        if (fitting.method == "ricf") {
-          par <- parameterEstimates(fit$fit)
-          par <- par[par$rhs == "group" & par$lhs != "group",]
-          est <- data.frame(estimate = par$est,
-                            t = est$Stat,
-                            pvalue = est$pvalue)
-          rownames(est) <- par$lhs
-        }
-      }
-      est$cluster <- cluster.names[i]
-      model.estimates <- rbind(model.estimates, est)
-      cfit <- c(cluster.names[i], fit$fit$fitIdx[1]/fit$fit$fitIdx[2], 
-                fit$fit$fitIdx[3], fit$fit$fitIdx[4], fit$fit$fitIdx[5], 
-                fit$fit$fitIdx[6])
-      clust.fit[nrow(clust.fit) + 1, ] <- cfit
-    }
-    else {
-      warning(paste0("Cluster #", cluster.names[i], " too small. Skipped."))
-    }
-  }
-  return(list(clusters = clusters, estimates = model.estimates, 
-              fit.indices = clust.fit))
+	if (is.null(membership)) {
+	 membership<- clusterGraph(graph, type="ebc", HM="none", size=5, verbose=FALSE)
+	}
+	clusters <- cplot(graph, membership, l=layout.auto, map, verbose)[-1]
+	N <- length(clusters)
+	if ("HM9999" %in% names(clusters)) N <- N - 1
+	res <- NULL
+	lav <- list()
+	for (i in 1:N) {
+		cat("\r","cluster=", i, "of", N)
+		flush.console()
+		
+		if (!is.null(group)){
+		 fit<- quiet(SEMrun(clusters[[i]], data, group, algo="ricf"))
+		 if(is.null(fit)) next
+		 dev_df <- fit$fit$fitIdx[1]/fit$fit$fitIdx[2]
+		 srmr <- fit$fit$fitIdx[3]
+		 pv1<- Brown.test(x=fit$dataXY[,-1], p=fit$gest$pvalue, theta=fit$gest$Stat, tail="positive")
+		 pv2<- Brown.test(x=fit$dataXY[,-1], p=fit$gest$pvalue, theta=fit$gest$Stat, tail="negative")
+		}else{
+		 fit<- quiet(SEMrun(clusters[[i]], data, group=NULL))
+		 if(is.null(fit)) next
+		 dev_df <- fitMeasures(fit$fit, "chisq")/fitMeasures(fit$fit, "df")
+		 srmr <- fitMeasures(fit$fit, "srmr")
+		 pv1<- 1
+		 pv2<- 1
+		}
+		
+		dfc<- data.frame(
+		 cluster = names(clusters)[i],
+		 n.nodes = vcount(clusters[[i]]),
+		 n.edges = ecount(clusters[[i]]),
+		 dev_df = round(dev_df, 3),
+		 srmr = round(srmr, 3),
+		 V.pv.act = round(pv1, 6),
+		 V.pv.inh = round(pv2, 6)
+		)
+		 
+		res <- rbind(res, dfc)
+		lav <- c(lav, list(fit$fit))
+	}
+	message("\n\nFound ", nrow(res), " clusters with > 5 nodes")
+	rownames(res) <- NULL
+	names(lav) <- res$cluster
+	
+	return(list(clusters = clusters, fit = lav, dfc = res))
 }
 
 #' @title Subgraph mapping
@@ -875,387 +876,4 @@ prototype<- function(graph, data, h, size, ...)
 	cl <- cl[cl %in% csize] # table(cl)
 
 	return(membership = cl)
-}
-
-#' @title Active module identification
-#'
-#' @description Uses different information flow and tree-based strategies 
-#' for identifying active modules (e.g., disease modules), including a 
-#' perturbed subset of nodes and edges. 
-#' Function scalability enables graph reduction at both pathway and 
-#' entire interactome scales.
-#' @param graph An igraph object.
-#' @param type Module identification method. If \code{type = "kou"}, 
-#' the Steiner tree algorithm will be applied. 
-#' If \code{type = "usp"}, the resulting graph will be the union of all 
-#' significant shortest paths. If \code{type = "rwr"}, the random walk 
-#' with restart algorithm will be enabled. Finally, if \code{type = "hdi"}, 
-#' the heat diffusion algorithm is used.
-#' @param seed Either a user-defined vector containing seed node names 
-#' or one among: "pvlm", "proto", or "qi", corresponding to the seed 
-#' name attribute yielded by \code{\link[SEMgraph]{weightGraph}}.
-#' @param eweight Edge weight type derived from
-#' \code{\link[SEMgraph]{weightGraph}} or from user-defined distances. 
-#' This option determines the weight-to-distance transform. If set to 
-#' "none" (default), edge weights will be set to 1. 
-#' If \code{eweight = "kegg"}, repressing interactions (-1) will be set 
-#' to 1 (maximum distance), neutral interactions (0) will be set to 0.5, 
-#' and activating interactions (+1) will be set to 0 (minimum distance).
-#' If \code{eweight = "zsign"}, all significant interactions will be set 
-#' to 0 (minimum distance), while non-significant ones will be set to 1.
-#' If \code{eweight = "pvalue"}, weights (p-values) will be transformed 
-#' to the inverse of negative base-10 logarithm. 
-#' If \code{eweight = "custom"}, the algorithm will use the distance 
-#' measure specified by the user as "weight" edge attribute.
-#' @param alpha Significance level to assess shortest paths significance, 
-#' when type is "usp". By default, \code{alpha = 0.05}.
-#' @param top Number of top nodes for the "rwr" and "hdi" algorithms. The 
-#' output subgraph is induced by the top-n ranking nodes.
-#' By default, \code{top = 100} (i.e., the top-100 of nodes are selected).
-#' @param limit An integer value corresponding to the number of graph 
-#' edges. If \code{type = "usp"}, beyond this limit, multicore computation 
-#' is enabled to reduce the computational burden. 
-#' By default, \code{limit = 10000}.
-#' @param ... Currently ignored.
-#'
-#' @details Graph filtering algorithms include:
-#' \enumerate{
-#' \item "kou", the Steiner tree connecting a set of seed nodes, using 
-#' the algorithm suggested by Kou et al. (1981);
-#' \item "usp", generates a subnetwork as the union of the significant 
-#' (P-value < alpha) shortest paths between the seeds set;
-#' \item "rwr", Random Walk with Restart, a wrapper for \code{random.walk}
-#' function of the R package \code{diffusr};
-#' \item "hdi", Heat Diffusion algorithm, a wrapper for \code{heat.diffusion}
-#' function of the R package \code{diffusr}.
-#' }
-#'
-#' @return An active module, an igraph object with colored nodes
-#' (seed = "green", and connector = "white").
-#'
-#' @import igraph
-#' @importFrom diffusr random.walk heat.diffusion
-#' @importFrom Matrix sparseMatrix
-#' @export
-#'
-#' @author Mario Grassi \email{mario.grassi@unipv.it}
-#'
-#' @references
-#' 
-#' Palluzzi F, Grassi M (2021). SEMgraph: An R Package for Causal Network 
-#' Analysis of High-Throughput Data with Structural Equation Models. 
-#' <arXiv:2103.08332>
-#' 
-#' Kou L, Markowsky G, Berman L (1981). A fast algorithm for Steiner trees.
-#' Acta Informatica, 15(2): 141-145. <https://doi.org/10.1007/BF00288961>
-#'
-#' Simon Dirmeier (2018). diffusr: Network Diffusion Algorithms. R
-#' package version 0.1.4.
-#' <https://CRAN.R-project.org/package=diffusr/>
-#'
-#' @examples
-#' 
-#' # Graph weighting
-#' G <- weightGraph(graph = sachs$graph, data = sachs$pkc, group = sachs$group,
-#'                  method = "r2z",
-#'                  seed = c(0.05, 0.5, 0.5))
-#' 
-#' # RWR algorithm, seeds and edge P-values as weights
-#' R1 <- activeModule(graph = G, type = "kou", seed = "pvlm", eweight = "pvalue")
-#' R2 <- activeModule(graph = G, type = "kou", seed = "proto", eweight = "pvalue")
-#' R3 <- activeModule(graph = G, type = "kou", seed = "qi", eweight = "pvalue")
-#' 
-#' # Graphs
-#' old.par <- par(no.readonly = TRUE)
-#' par(mfrow=c(2,2), mar=rep(2, 4))
-#' plot(G, layout = layout.circle, main = "input graph")
-#' box(col = "gray")
-#' plot(R1, layout = layout.circle, main = "lm P-value (alpha = 0.05)")
-#' box(col = "gray")
-#' plot(R2, layout = layout.circle, main = "prototype (h = 0.5)")
-#' box(col = "gray")
-#' plot(R3, layout = layout.circle, main = "closeness (q = 0.5)")
-#' box(col = "gray")
-#' par(old.par)
-#' 
-activeModule <- function(graph, type, seed, eweight = "none", alpha = 0.05,
-                         top = 100, limit = 10000, ...)
-{
-  if (length(eweight) == 1) {
-    if (eweight == "kegg") eweight <- (1 - E(graph)$weight)/2
-    else if (eweight == "zsign") eweight <- 1 - abs(E(graph)$zsign)
-    else if (eweight == "pvalue") eweight <- 1/(-log10(E(graph)$pv))
-    else if (eweight == "custom") eweight <- E(graph)$weight
-    else if (eweight == "none") eweight <- rep(1, ecount(graph))
-  }
-  
-  if (length(seed) == 1) {
-    if (seed == "pvlm") seed <- V(graph)$name[V(graph)$pvlm == 1]
-    else if (seed == "proto") seed <- V(graph)$name[V(graph)$proto == 1]
-    else if (seed == "qi") seed <- V(graph)$name[V(graph)$qi == 1]
-  } else {
-    seed <- seed[seed %in% V(graph)$name]
-  }
-  
-  if (type == "kou" & length(seed) != 0) {
-    R <- SteinerTree(graph, seed = seed, eweight = eweight)
-    
-  } else if (type == "usp" & length(seed) != 0) {
-    R <- USPG(graph, seed = seed, eweight = eweight, alpha = alpha, limit = limit)
-    
-  } else if (type == "rwr" & length(seed) != 0) {
-    R <- RWR(graph, seed = seed, eweight = eweight, algo = "rwr", top = top)
-    
-  } else if (type == "hdi" & length(seed) != 0) {
-    R <- RWR(graph, seed = seed, eweight = eweight, algo = "hdi", top = top)
-  }
-  V(R)$color <- ifelse(V(R)$name %in% seed, "green", "white")
-  
-  return(R)
-}
-
-seedweight <- function(ig, data, group, alpha, h, q, ...)
-{
-  # Set data object
-  Y <- data[, which(colnames(data) %in% V(ig)$name)]
-  D <- as.dist(1 - abs(cor(Y)))
-  
-  # Seed nodes by p_values
-  pv.lm <- function(x) { summary(lm(x~group))$coefficients[2, 4] }
-  if (!is.null(group)) {
-    pvlm <- apply(Y, 2, pv.lm)
-    p.adj <- p.adjust(pvlm, method="BH")
-    seed1 <- V(ig)$name[p.adj < alpha]
-    V(ig)$pvlm <- ifelse(V(ig)$name %in% seed1, 1, 0)
-  } else {
-    V(ig)$pvlm <- 0
-  }
-  
-  # Seed nodes by prototypes
-  #plot(hc <- protoclust::protoclust(D))
-  hc <- protoclust::protoclust(D)
-  #abline(h = h, lty = 1, col = "red")
-  
-  # Cut distance threshold fixed to 0.2 (i.e., 0.8 correlation)
-  cutd <- protoclust::protocut(hc, h = h)
-  seed2 <- hc$labels[cutd$protos]
-  V(ig)$proto <- ifelse(V(ig)$name %in% seed2, 1, 0)
-  
-  # Seed nodes by closeness
-  suppressWarnings(qi <- igraph::closeness(ig, mode = "all", weights = NA))
-  seed3 <- V(ig)$name[which(qi > quantile(qi, probs = q))]
-  V(ig)$qi <- ifelse(V(ig)$name %in% seed3, 1, 0)
-  
-  return (ig)
-}
-
-RWR <- function(graph, seed, eweight, algo, top, ...)
-{
-  E(graph)$weight <- eweight
-  W <- as_adjacency_matrix(graph, attr = "weight", sparse = FALSE)
-  p0 <- ifelse(V(graph)$name %in% seed, 1, 0)
-  q <- 1-top/vcount(graph)
-  
-  if (algo == "rwr") {
-    pt <- diffusr::random.walk(p0 = p0, W, r = 0.5)
-    score <- pt$p.inf
-    #score <- rowSums(pt$transition.matrix)
-    top <- rownames(W)[score > quantile(score, q)]
-  } else {
-    #ht <- heat.diffusion(h0 = pval, W, t = 0.5)
-    ht <- diffusr::heat.diffusion(h0 = p0, W, t = 0.5)
-    top <- rownames(W)[ht > quantile(ht, q)]
-  }
-  
-  return(graph = induced_subgraph(graph, top))
-}
-
-USPG <- function(graph, seed, eweight, alpha, limit, ...)
-{
-  # Define graph, edge weights, and distance matrix
-  E(graph)$weight <- eweight
-  if (is.null(E(graph)$pv)) E(graph)$pv <- rep(0, ecount(graph))
-  D <- igraph::distances(graph, v = seed, to = seed, mode = "all",
-                         weights = eweight)
-  
-  # Complete directed distance graph for terminal nodes
-  Gd <- graph_from_adjacency_matrix(D, mode = "undirected", weighted = TRUE)
-  Gd <- Gd - igraph::edges(E(Gd)[which(E(Gd)$weight == Inf)])
-  #plot(as_graphnel(Gd)); Gd; E(Gd)$weight
-  
-  # For each edge in Gd, replace it with the shortest path
-  ftm <- as_edgelist(Gd)
-  N <- nrow(ftm)
-  if (alpha == 1) alpha <- N
-  
-  local <- function(x) {
-    i <- x[[1]]
-    j <- x[[2]]
-    
-    # Extract nodes from the shortest paths between edges of Gd
-    path <- shortest_paths(graph, from = V(graph)[i], to = V(graph)[j],
-                           mode = "all", weights = E(graph)$weight,
-                           output = "both")
-    vpath <- V(graph)$name[path$vpath[[1]]]
-    r <- length(vpath) - 1
-    pvalue <- E(graph)$pv[path$epath[[1]]]
-    
-    # Fisher's combined significance test of the shortest path
-    ppath <- 1 - pchisq(-2*sum(log(pvalue)), df = 2*length(pvalue))
-    ppath[is.na(ppath)] <- 0.5
-    if (ppath < alpha/N) {
-      ftm <- lapply(1:r, function(x) {
-        data.frame(from = vpath[x], to = vpath[x + 1])
-      })
-    } else {
-      ftm <- NULL
-    }
-    do.call(rbind, lapply(ftm, as.data.frame))
-  }
-  
-  x <- split(ftm, f = seq(nrow(ftm)))
-  message("Edge weigthing of ", length(x), " edges ...")
-  op <- pbapply::pboptions(type = "timer", style = 2)
-  
-  if (length(x) > limit) {
-    n_cores <- parallel::detectCores()/2
-    cl <- parallel::makeCluster(n_cores)
-    parallel::clusterExport(cl, c("local", "graph", "alpha", "N"),
-                            envir = environment())
-    ftm <- pbapply::pblapply(x, local, cl = cl)
-    parallel::stopCluster(cl)
-  } else {
-    est <- pbapply::pblapply(x, local, cl = NULL)
-  }
-  ftm <- do.call(rbind, lapply(est, as.data.frame))
-  
-  # Merging the shortest paths
-  if( !is.null(ftm) ) {
-    del <- which(duplicated(ftm) == TRUE)
-    if(length(del) > 0) ftm <- ftm[-del,]
-    Gs <- simplify(graph_from_data_frame(ftm, directed = FALSE))
-    if(is.directed(graph)) Gs <- orientEdges(ug = Gs, dg = graph)
-  } else {
-    Gs <- make_empty_graph(0)
-  }
-  
-  return(Gs)
-}
-
-TMFG <- function(cormat, ...)
-{
-  n <- ncol(cormat)
-  cormat <- abs(cormat)
-  in_v <- matrix(nrow = nrow(cormat), ncol = 1)
-  ou_v <- matrix(nrow = nrow(cormat), ncol = 1)
-  tri <- matrix(nrow = ((2 * n) - 4), ncol = 3)
-  separators <- matrix(nrow = n - 4, ncol = 3)
-  s <- rowSums(cormat*(cormat > mean(matrix(unlist(cormat),nrow = 1)))*1)
-  in_v[1:4] <- order(s, decreasing = TRUE)[1:4]
-  ou_v <- setdiff(1:nrow(in_v), in_v)
-  tri[1,] <- in_v[1:3,]
-  tri[2,] <- in_v[2:4,]
-  tri[3,] <- in_v[c(1, 2, 4),]
-  tri[4,] <- in_v[c(1, 3, 4),]
-  
-  S <- matrix(nrow = (3 * nrow(cormat) - 6), ncol = 3)
-  if (cormat[in_v[1], in_v[2]] > cormat[in_v[2], in_v[1]]) {
-    S[1,] <- c(in_v[1], in_v[2], 1)
-  } else {
-    S[1, ] <- c(in_v[2], in_v[1], 1)
-  }
-  
-  if (cormat[in_v[1], in_v[3]] > cormat[in_v[3], in_v[1]]) {
-    S[2,] <- c(in_v[1], in_v[3], 1)
-  } else {
-    S[2,] <- c(in_v[3], in_v[1], 1)
-  }
-  
-  if (cormat[in_v[1], in_v[4]] > cormat[in_v[4], in_v[1]]) {
-    S[3,] <- c(in_v[1], in_v[4], 1)
-  } else {
-    S[3,] <- c(in_v[4], in_v[1], 1)
-  }
-  
-  if (cormat[in_v[2], in_v[3]] > cormat[in_v[3], in_v[2]]) {
-    S[4,] <- c(in_v[2], in_v[3], 1)
-  } else {
-    S[4,] <- c(in_v[3], in_v[2], 1)
-  }
-  
-  if (cormat[in_v[2], in_v[4]] > cormat[in_v[4], in_v[2]]) {
-    S[5,] <- c(in_v[2], in_v[4], 1)
-  } else {
-    S[5,] <- c(in_v[4], in_v[2], 1)
-  }
-  
-  if (cormat[in_v[3], in_v[4]] > cormat[in_v[4], in_v[3]]) {
-    S[6,] <- c(in_v[3], in_v[4], 1)
-  } else {
-    S[6,] <- c(in_v[4], in_v[3], 1)
-  }
-  
-  gain <- matrix(-Inf, nrow = n, ncol = (2 * (n - 2)))
-  gain[ou_v, 1] <- rowSums(cormat[ou_v, (tri[1,])])
-  gain[ou_v, 2] <- rowSums(cormat[ou_v, (tri[2,])])
-  gain[ou_v, 3] <- rowSums(cormat[ou_v, (tri[3,])])
-  gain[ou_v, 4] <- rowSums(cormat[ou_v, (tri[4,])])
-  ntri <- 4
-  gij <- matrix(nrow = 1, ncol = ncol(gain))
-  v <- matrix(nrow = 1, ncol = ncol(gain))
-  ve <- array()
-  tr <- 0
-  for (e in 5:n) {
-    if (length(ou_v) == 1) {
-      ve <- ou_v
-      v <- 1
-      w <- 1
-      tr <- which.max(gain[ou_v,])
-    } else {
-      for (q in 1:ncol(gain)) {
-        gij[, q] <- max(gain[ou_v, q])
-        v[, q] <- which.max(gain[ou_v, q])
-        tr <- which.max(gij)
-      }
-      ve <- ou_v[v[tr]]
-      w <- v[tr]
-    }
-    ou_v <- ou_v[-w]
-    in_v[e] <- ve
-    for (u in 1:length(tri[tr, ])) {
-      cou <- 6 + ((3 * (e - 5)) + u)
-      S[cou, ] <- cbind(ve, tri[tr, u], 1)
-    }
-    separators[e - 4, ] <- tri[tr, ]
-    tri[ntri + 1, ] <- cbind(rbind(tri[tr, c(1, 3)]), ve)
-    tri[ntri + 2, ] <- cbind(rbind(tri[tr, c(2, 3)]), ve)
-    tri[tr, ] <- cbind(rbind(tri[tr, c(1, 2)]), ve)
-    gain[ve, ] <- 0
-    gain[ou_v, tr] <- rowSums(cormat[ou_v, tri[tr, ], drop = FALSE])
-    gain[ou_v, ntri + 1] <- rowSums(cormat[ou_v, tri[ntri + 1, ],
-                                           drop = FALSE])
-    gain[ou_v, ntri + 2] <- rowSums(cormat[ou_v, tri[ntri + 2, ],
-                                           drop = FALSE])
-    ntri <- ntri + 2
-  }
-  cliques <- rbind(in_v[1:4], (cbind(separators, in_v[5:ncol(cormat)])))
-  L <- S
-  L[, 1] <- S[, 2]
-  L[, 2] <- S[, 1]
-  K <- rbind(S, L)
-  x <- as.matrix(Matrix::sparseMatrix(i = K[, 1], j = K[, 2], x = K[, 3]))
-  diag(x) <- 1
-  for (r in 1:nrow(x)) for (z in 1:ncol(x)) {
-    if (x[r, z] == 1) {
-      x[r, z] <- cormat[r, z]
-    }
-  }
-  colnames(x) <- colnames(cormat)
-  x <- as.data.frame(x)
-  row.names(x) <- colnames(x)
-  x <- as.matrix(x)
-  x <- x - diag(nrow(x))
-  gtmf <- graph_from_adjacency_matrix(x, mode = "undirected", weighted = TRUE)
-  
-  return(list(graph = gtmf, separators = separators, cliques = cliques))
 }

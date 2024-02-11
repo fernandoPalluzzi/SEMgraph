@@ -7,13 +7,10 @@
 extractClusters(
   graph,
   data,
-  membership,
   group = NULL,
-  fitting.method = "ricf",
-  se = "standard",
-  limit = 100,
-  n = 2000,
-  size = 5,
+  membership = NULL,
+  map = FALSE,
+  verbose = FALSE,
   ...
 )
 }
@@ -23,46 +20,31 @@ extractClusters(
 \item{data}{A matrix or data.frame. Rows correspond to subjects, and
 columns to graph nodes (variables).}
 
-\item{membership}{A vector of cluster membership IDs.}
-
 \item{group}{A binary vector. This vector must be as long as the
 number of subjects. Each vector element must be 1 for cases and 0
 for control subjects. Group specification enables node perturbation
 testing. By default, \code{group = NULL}.}
 
-\item{fitting.method}{Model parameter estimation method. By default, the
-Residual Iterative Conditional Fitting (\code{fitting.method = "ricf"}) 
-method is used. As a faster alternative, the Constrained Gaussian Graphical 
-Modeling (\code{fitting.method = "cggm"}) method can be used. However, RICF 
-ensures better convergence to canonical Maximum Likelihood Estimation (MLE). 
-MLE can be enabled by setting (\code{fitting.method = "lavaan"}), using the 
-basic \code{"lavaan"} package SEM fitting framework.}
+\item{membership}{A vector of cluster membership IDs. If NULL, clusters
+will be automatically generated with \code{\link[SEMgraph]{clusterGraph}}
+using the edge betweenness clustering ("ebc") algorithm.}
 
-\item{se}{If \code{"standard"} (default), conventional standard errors are 
-compute based on inverting the observed information matrix. All options 
-from the \code{lavaan} package are allowed, including "robust" and "boot" 
-for robust and bootstrap standard errors, respectively.}
+\item{map}{Logical value. If TRUE, the plot of the input graph
+(coloured by cluster membership) will be generated along with independent
+module plots. If the input graph is very large, plotting could be
+computationally intensive (by default, \code{map = FALSE}).}
 
-\item{limit}{Maximum network size limit (nodes number) above which the RICF
-fitting method will be enforced to reduce the computational burden 
-(default = 100).}
-
-\item{n}{Number of randomization replicates (default = 2000), for permutation 
-flip or boostrap samples, if \code{fitting.method = "ricf"}.}
-
-\item{size}{Minimum cluster size (default = 5). If a group of connected nodes 
-is below this size it will not be considered as a cluster and not fitted.}
+\item{verbose}{Logical value. If TRUE, a plot will be showed for each
+cluster.}
 
 \item{...}{Currently ignored.}
 }
 \value{
-A list of three objects:
+A list of 3 objects:
 \enumerate{
-\item clusters, the list of extracted clusters;
-\item estimates, data.frame containing fitting results and 
-cluster membership for each node.
-\item fit.indices, data.frame reporting goodness-of-fitting results for each 
-cluster.
+\item "clusters", list of clusters as igraph objects;
+\item "fit", list of fitting results for each cluster as a lavaan object;
+\item "dfc", data.frame of summary results.
 }
 }
 \description{
@@ -70,15 +52,28 @@ Extract and fit clusters from an input graph.
 }
 \examples{
 
-library(huge)
-als.npn <- huge.npn(alsData$exprs)
-als.membership <- clusterGraph(alsData$graph)
+\donttest{
 
-# Clusters extraction and fitting
-als.clust <- extractClusters(alsData$graph, als.npn, als.membership,
-                             group = alsData$group,
-                             fitting.method = "ricf")
-print(als.clust$estimates)
+# Nonparanormal(npn) transformation
+als.npn <- transformData(alsData$exprs)$data
+
+adjdata <- SEMbap(alsData$graph, als.npn)$data
+
+# Clusters creation
+clusters <- extractClusters(alsData$graph, adjdata, alsData$group)
+print(clusters$dfc)
+head(parameterEstimates(clusters$fit$HM1))
+head(parameterEstimates(clusters$fit$HM2))
+head(parameterEstimates(clusters$fit$HM4))
+gplot(clusters$clusters$HM2)
+
+# Map cluster on the input graph
+g <- alsData$graph
+c <- clusters$clusters$HM2
+V(g)$color <- ifelse(V(g)$name \%in\% V(c)$name, "gold", "white")
+gplot(g)
+
+}
 
 }
 \author{

@@ -1,5 +1,5 @@
 #  SEMgraph library
-#  Copyright (C) 2019-2023 Mario Grassi; Fernando Palluzzi; Barbara Tarantino 
+#  Copyright (C) 2019-2024 Mario Grassi; Fernando Palluzzi; Barbara Tarantino 
 #  e-mail: <mario.grassi@unipv.it>
 #  University of Pavia, Department of Brain and Behavioral Sciences
 #  Via Bassi 21, 27100 Pavia, Italy
@@ -378,19 +378,14 @@ SEMpath <- function(graph, data, group, from, to, path, verbose = FALSE, ...)
 #'
 #' # Find and evaluate significantly perturbed paths
 #'
-#' library(huge)
-#' als.npn <- huge.npn(alsData$exprs)
+#' # Nonparanormal(npn) transformation
+#' als.npn <- transformData(alsData$exprs)$data
 #'
-#' adjData <- SEMbap(graph = alsData$graph, data = als.npn)$data
+#' adjData <- SEMbap(alsData$graph, als.npn)$data
 #'
-#' ace <- SEMace(graph = alsData$graph, data = adjData,
-#'               group = alsData$group)
-#' ace <- ace[order(ace$pvalue),]
-#' print(ace)
-#'
-#' paths <- pathFinder(graph = alsData$graph, data = adjData,
+#' paths <- pathFinder(alsData$graph, adjData,
 #'                     group = alsData$group,
-#'                     ace = ace)
+#'                     ace = NULL)
 #'
 #' print(paths$dfp)
 #' head(parameterEstimates(paths$fit[[1]]))
@@ -426,7 +421,7 @@ pathFinder <- function(graph, data, group = NULL, ace = NULL, path = "directed",
 	 if (distances(dag, from, to, mode = "out", weights = NA) < 2) next
 	 fit <- quiet(SEMpath(dag, data, group, from, to, path, verbose = FALSE))
 	 if (!is.null(group) & vcount(fit$graph) > 100) {
-	  dev_df <- fit$fit$ricf$dev/fit$fit$ricf$df
+	  dev_df <- fit$fit$fitIdx[1]/fit$fit$fitIdx[2]
 	  srmr <- fit$fit$fitIdx$srmr
 	  pv1 <- Brown.test(x = fit$dataXY[, -1], p = fit$gest$pvalue,
 						theta = fit$gest$Stat,

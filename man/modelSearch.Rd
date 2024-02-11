@@ -133,8 +133,8 @@ confounding factors, hence a weaker correction
 
 # Comparison among different model estimation strategies
 
-library(huge)
-als.npn <- huge.npn(alsData$exprs)
+# Nonparanormal(npn) transformation
+als.npn <- transformData(alsData$exprs)$data
 
 # Models estimation
 m1 <- modelSearch(graph = alsData$graph, data = als.npn, gnet = kegg,

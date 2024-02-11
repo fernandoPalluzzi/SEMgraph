@@ -43,8 +43,8 @@ as reviewed in Vovk & Wang (2020).
 }
 \examples{
 
-library(huge)
-als.npn <- huge.npn(alsData$exprs)
+# Nonparanormal(npn) transformation
+als.npn <- transformData(alsData$exprs)$data
 
 sem <- SEMrun(alsData$graph, als.npn)
 B_test <- localCI.test(sem$graph, als.npn, verbose = TRUE)

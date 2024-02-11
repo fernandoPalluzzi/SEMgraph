@@ -85,6 +85,9 @@
     <loc>/reference/pathFinder.html</loc>
   </url>
   <url>
+    <loc>/reference/predictSink.html</loc>
+  </url>
+  <url>
     <loc>/reference/properties.html</loc>
   </url>
   <url>
@@ -125,6 +128,9 @@
   </url>
   <url>
     <loc>/reference/summary.RICF.html</loc>
+  </url>
+  <url>
+    <loc>/reference/transformData.html</loc>
   </url>
   <url>
     <loc>/reference/weightGraph.html</loc>

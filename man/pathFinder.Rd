@@ -62,19 +62,14 @@ perturbation.
 
 # Find and evaluate significantly perturbed paths
 
-library(huge)
-als.npn <- huge.npn(alsData$exprs)
+# Nonparanormal(npn) transformation
+als.npn <- transformData(alsData$exprs)$data
 
-adjData <- SEMbap(graph = alsData$graph, data = als.npn)$data
+adjData <- SEMbap(alsData$graph, als.npn)$data
 
-ace <- SEMace(graph = alsData$graph, data = adjData,
-              group = alsData$group)
-ace <- ace[order(ace$pvalue),]
-print(ace)
-
-paths <- pathFinder(graph = alsData$graph, data = adjData,
+paths <- pathFinder(alsData$graph, adjData,
                     group = alsData$group,
-                    ace = ace)
+                    ace = NULL)
 
 print(paths$dfp)
 head(parameterEstimates(paths$fit[[1]]))

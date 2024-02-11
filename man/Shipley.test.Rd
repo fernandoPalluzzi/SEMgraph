@@ -57,8 +57,8 @@ variate with df = 2k, as suggested by Shipley (2000).
 
 #\donttest{
 
-library(huge)
-als.npn <- huge.npn(alsData$exprs)
+# Nonparanormal(npn) transformation
+als.npn <- transformData(alsData$exprs)$data
 
 sem <- SEMrun(alsData$graph, als.npn)
 C_test <- Shipley.test(sem$graph, als.npn, MCX2 = FALSE)

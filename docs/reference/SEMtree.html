@@ -18,7 +18,7 @@ with graph and data-driven algorithms."><!-- mathjax --><script src="https://cdn
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.1</span>
       </span>
     </div>
 
@@ -59,7 +59,7 @@ with graph and data-driven algorithms.</p>
 <span>  <span class="va">graph</span>,</span>
 <span>  <span class="va">data</span>,</span>
 <span>  <span class="va">seed</span>,</span>
-<span>  type <span class="op">=</span> <span class="st">"CAT"</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"ST"</span>,</span>
 <span>  eweight <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">0.05</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -84,14 +84,14 @@ columns to graph nodes (variables).</p></dd>
 
 <dt>type</dt>
 <dd><p>Tree-based structure learning method. Four algorithms 
-are available:</p><ul><li><p>"ST". Steiner Tree (ST) identification via fast Kou's algorithm 
+are available:</p><ul><li><p>"ST"(default). Steiner Tree (ST) identification via fast Kou's algorithm 
 (Kou et al, 1981) connecting a set of seed nodes (called Terminal vertices)
 with connector nodes (called Steiner vertices) from input graph as defined
 in <code>graph</code> with minimal total distance on its edges. By default the edge
 weights are based on the pairwise correlation, 1-abs(cor(j,k)). If input
 graph has E(graph)$weight=1, and <code>eweight = "custom"</code>, ST seeks a minimum
-subtree (i.e. subtree with minimal number of edges).</p></li>
-<li><p>"CAT" (default). Causal additive trees (CAT) algorithm as in Jakobsen et al. 
+subtree (i.e., the subtree with minimal number of edges).</p></li>
+<li><p>"CAT". Causal additive trees (CAT) algorithm as in Jakobsen et al. 
 (2022). The argument <code>graph</code> is set to NULL (i.e., no input graph is needed).
 In the first step, a (univariate) generalized additive model (GAM) is employed
 to estimate the residual variances, var(X(j) - [X(j)|X(k)]) for all j != k,
@@ -112,26 +112,27 @@ Argument <code>seed</code> must be specified to analyse a subset of nodes
 (Prim, 1957). The latter finds the subset of edges that includes every vertex
 of the graph (as defined in <code>graph</code>) such that the sum of the weights 
 of the edges can be minimized. The argument <code>seed</code> is set to NULL (i.e.,
-no seed nodes are needed), or if argument <code>seed</code> is not NULL, argument
-<code>graph</code> is set to NULL to recover the MST of the full graph.</p></li>
+no seed nodes are needed).</p></li>
 </ul></dd>
 
 
 <dt>eweight</dt>
-<dd><p>Edge weight type for igraph object derived from
-<code><a href="weightGraph.html">weightGraph</a></code> or from user-defined distances. 
-This option determines the weight-to-distance transform.
-If set to "NULL" (default), edge weights will be internally computed
-equal to 1 - abs(cor), i.e., 1 - abs(pairwise Pearson's correlation).
-If <code>eweight = "kegg"</code>, repressing interactions (-1) will be set 
-to 2 (maximum distance), neutral interactions (0) will be set to 1, 
-and activating interactions (+1) will be set to 1 (minimum distance).
-If <code>eweight = "zsign"</code>, all significant interactions will be set 
-to 1 (minimum distance), while non-significant ones will be set to 2.
-If <code>eweight = "pvalue"</code>, weights (p-values) will be transformed 
-to the inverse of negative base-10 logarithm. 
-If <code>eweight = "custom"</code>, the algorithm will use the distance 
-measure specified by the user as "weight" edge attribute.</p></dd>
+<dd><p>Edge weight type for igraph object can be externally derived
+using <code><a href="weightGraph.html">weightGraph</a></code> or from user-defined distances. 
+This option determines the weight-to-distance transform. If set to:</p><ul><li><p>"NULL" (default), edge weights will be internally computed
+equal to 1 - abs(pairwise Pearson's correlation).</p></li>
+<li><p>"kegg", repressing(-1), neutral(0) and activating(+1) kegg
+interactions will be multiplied by "zsign" attributes, and positive
+(i.e., concordant) values will be set to 1 (minimum distance), while
+negative (i.e., discordant) values will be set to 2.</p></li>
+<li><p>"zsign", all significant interactions (abs(zsign) &gt; 0) will be
+set to 1 (minimum distance), while non-significant (zsign=0) ones will
+be set to 2.</p></li>
+<li><p>"pvalue", edge p-value atributes will be transformed to the
+inverse of negative base-10 logarithm, 1/(-log(E(graph)$pv)).</p></li>
+<li><p>"custom", the algorithm will use the distance measure specified
+by the user as "weight" edge attribute in the input graph.</p></li>
+</ul></dd>
 
 
 <dt>alpha</dt>
@@ -172,14 +173,16 @@ uses pairwise mutual weights as input for CLE algorithm to recover a directed tr
 (an "arborescence"). The second one applies CLE algorithm for skeleton recovery and
 extends the skeleton to a tree (a "polytree") represented by a Completed Partially
 Directed Acyclic Graph (CPDAG). Finally, the Minimum Spanning Tree (MST) connecting
-an undirected graph (or an undirected full graph, if graph=NULL) with minimal edge
-weights can be identified.
+an undirected graph with minimal edge weights can be identified.
 To note, if the input graph is a directed graph, ST and MST undirected trees are
 converted in directed trees using the <code><a href="orientEdges.html">orientEdges</a></code> function.</p>
     </div>
     <div id="references">
     <h2>References</h2>
-    <p>Kou, L., Markowsky, G., Berman, L. (1981). A fast algorithm for Steiner trees. 
+    <p>Grassi M, Tarantino B (2023). SEMtree: tree-based structure learning methods
+with structural equation models. 
+Bioinformatics, 39 (6), 4829–4830 &lt;https://doi.org/10.1093/bioinformatics/btad377&gt;</p>
+<p>Kou, L., Markowsky, G., Berman, L. (1981). A fast algorithm for Steiner trees. 
 Acta Informatica 15, 141–145. &lt;https://doi.org/10.1007/BF00288961&gt;</p>
 <p>Prim, R.C. (1957). Shortest connection networks and some generalizations Bell
 System Technical Journal, 37 1389–1401.</p>
@@ -205,20 +208,20 @@ Structural Learning and Inverse Correlation Estimation. arXiv:
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">huge</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/huge/man/huge.npn.html" class="external-link">huge.npn</a></span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">exprs</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Conducting the nonparanormal (npn) transformation via shrunkun ECDF....done.</span>
-<span class="r-in"><span><span class="va">graph</span> <span class="op">&lt;-</span> <span class="va">alsData</span><span class="op">$</span><span class="va">graph</span></span></span>
+<span class="r-in"><span><span class="co"># Nonparanormal(npn) transformation</span></span></span>
+<span class="r-in"><span><span class="va">als.npn</span> <span class="op">&lt;-</span> <span class="fu"><a href="transformData.html">transformData</a></span><span class="op">(</span><span class="va">alsData</span><span class="op">$</span><span class="va">exprs</span><span class="op">)</span><span class="op">$</span><span class="va">data</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Conducting the nonparanormal transformation via shrunkun ECDF...done.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># graph-based trees</span></span></span>
+<span class="r-in"><span><span class="va">graph</span> <span class="op">&lt;-</span> <span class="va">alsData</span><span class="op">$</span><span class="va">graph</span></span></span>
 <span class="r-in"><span><span class="va">seed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">name</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://r.igraph.org/reference/gorder.html" class="external-link">vcount</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span>, <span class="fl">10</span><span class="op">)</span><span class="op">]</span></span></span>
-<span class="r-in"><span><span class="va">tree1</span><span class="op">&lt;-</span> <span class="fu">SEMtree</span><span class="op">(</span><span class="va">graph</span>, <span class="va">data</span>, seed<span class="op">=</span><span class="va">seed</span>, type<span class="op">=</span><span class="st">"ST"</span>, verbose<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">tree1</span> <span class="op">&lt;-</span> <span class="fu">SEMtree</span><span class="op">(</span><span class="va">graph</span>, <span class="va">als.npn</span>, seed<span class="op">=</span><span class="va">seed</span>, type<span class="op">=</span><span class="st">"ST"</span>, verbose<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="SEMtree-1.png" alt="" width="700" height="433"></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> RICF solver ended normally after 2 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 15.65363  srmr: 0.2923645 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span><span class="va">tree2</span><span class="op">&lt;-</span> <span class="fu">SEMtree</span><span class="op">(</span><span class="va">graph</span>, <span class="va">data</span>, seed<span class="op">=</span><span class="cn">NULL</span>, type<span class="op">=</span><span class="st">"MST"</span>, verbose<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">tree2</span> <span class="op">&lt;-</span> <span class="fu">SEMtree</span><span class="op">(</span><span class="va">graph</span>, <span class="va">als.npn</span>, seed<span class="op">=</span><span class="cn">NULL</span>, type<span class="op">=</span><span class="st">"MST"</span>, verbose<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="SEMtree-2.png" alt="" width="700" height="433"></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> RICF solver ended normally after 2 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -226,16 +229,16 @@ Structural Learning and Inverse Correlation Estimation. arXiv:
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># data-driven trees</span></span></span>
-<span class="r-in"><span><span class="va">V</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://r.igraph.org/reference/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">name</span><span class="op">]</span></span></span>
-<span class="r-in"><span><span class="va">tree3</span><span class="op">&lt;-</span> <span class="fu">SEMtree</span><span class="op">(</span><span class="cn">NULL</span>, <span class="va">data</span>, seed<span class="op">=</span><span class="va">V</span>, type<span class="op">=</span><span class="st">"CAT"</span>, verbose<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">V</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">als.npn</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">als.npn</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://r.igraph.org/reference/V.html" class="external-link">V</a></span><span class="op">(</span><span class="va">graph</span><span class="op">)</span><span class="op">$</span><span class="va">name</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">tree3</span> <span class="op">&lt;-</span> <span class="fu">SEMtree</span><span class="op">(</span><span class="cn">NULL</span>, <span class="va">als.npn</span>, seed<span class="op">=</span><span class="va">V</span>, type<span class="op">=</span><span class="st">"CAT"</span>, verbose<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Score weighting of 930 edges...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  / 0 % elapsed=00s    - 1 % elapsed=00s, remaining~07s \ 2 % elapsed=00s, remaining~07s | 3 % elapsed=00s, remaining~07s / 4 % elapsed=00s, remaining~06s - 5 % elapsed=00s, remaining~06s \ 6 % elapsed=00s, remaining~06s | 8 % elapsed=00s, remaining~06s / 9 % elapsed=01s, remaining~06s - 10% elapsed=01s, remaining~06s \ 11% elapsed=01s, remaining~05s | 12% elapsed=01s, remaining~05s / 13% elapsed=01s, remaining~05s - 14% elapsed=01s, remaining~05s \ 15% elapsed=01s, remaining~05s | 16% elapsed=01s, remaining~05s / 17% elapsed=01s, remaining~05s - 18% elapsed=01s, remaining~05s \ 19% elapsed=01s, remaining~05s | 20% elapsed=01s, remaining~05s / 22% elapsed=01s, remaining~05s - 23% elapsed=01s, remaining~05s \ 24% elapsed=01s, remaining~05s | 25% elapsed=02s, remaining~05s / 26% elapsed=02s, remaining~04s - 27% elapsed=02s, remaining~04s \ 28% elapsed=02s, remaining~04s | 29% elapsed=02s, remaining~04s / 30% elapsed=02s, remaining~04s - 31% elapsed=02s, remaining~04s \ 32% elapsed=02s, remaining~04s | 33% elapsed=02s, remaining~04s / 34% elapsed=02s, remaining~04s - 35% elapsed=02s, remaining~04s \ 37% elapsed=02s, remaining~04s | 38% elapsed=02s, remaining~04s / 39% elapsed=02s, remaining~04s - 40% elapsed=02s, remaining~04s \ 41% elapsed=02s, remaining~04s | 42% elapsed=03s, remaining~04s / 43% elapsed=03s, remaining~03s - 44% elapsed=03s, remaining~03s \ 45% elapsed=03s, remaining~03s | 46% elapsed=03s, remaining~03s / 47% elapsed=03s, remaining~03s - 48% elapsed=03s, remaining~03s \ 49% elapsed=03s, remaining~03s | 51% elapsed=03s, remaining~03s / 52% elapsed=03s, remaining~03s - 53% elapsed=03s, remaining~03s \ 54% elapsed=03s, remaining~03s | 55% elapsed=03s, remaining~03s / 56% elapsed=03s, remaining~03s - 57% elapsed=03s, remaining~03s \ 58% elapsed=04s, remaining~03s | 59% elapsed=04s, remaining~02s / 60% elapsed=04s, remaining~02s - 61% elapsed=04s, remaining~02s \ 62% elapsed=04s, remaining~02s | 63% elapsed=04s, remaining~02s / 65% elapsed=04s, remaining~02s - 66% elapsed=04s, remaining~02s \ 67% elapsed=04s, remaining~02s | 68% elapsed=04s, remaining~02s / 69% elapsed=04s, remaining~02s - 70% elapsed=04s, remaining~02s \ 71% elapsed=04s, remaining~02s | 72% elapsed=04s, remaining~02s / 73% elapsed=04s, remaining~02s - 74% elapsed=04s, remaining~02s \ 75% elapsed=05s, remaining~01s | 76% elapsed=05s, remaining~01s / 77% elapsed=05s, remaining~01s - 78% elapsed=05s, remaining~01s \ 80% elapsed=05s, remaining~01s | 81% elapsed=05s, remaining~01s / 82% elapsed=05s, remaining~01s - 83% elapsed=05s, remaining~01s \ 84% elapsed=05s, remaining~01s | 85% elapsed=05s, remaining~01s / 86% elapsed=05s, remaining~01s - 87% elapsed=05s, remaining~01s \ 88% elapsed=05s, remaining~01s | 89% elapsed=05s, remaining~01s / 90% elapsed=05s, remaining~01s - 91% elapsed=06s, remaining~01s \ 92% elapsed=06s, remaining~00s | 94% elapsed=06s, remaining~00s / 95% elapsed=06s, remaining~00s - 96% elapsed=06s, remaining~00s \ 97% elapsed=06s, remaining~00s | 98% elapsed=06s, remaining~00s / 99% elapsed=06s, remaining~00s - 100% elapsed=06s, remaining~00s</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  / 0 % elapsed=00s    - 1 % elapsed=00s, remaining~08s \ 2 % elapsed=00s, remaining~07s | 3 % elapsed=00s, remaining~07s / 4 % elapsed=00s, remaining~07s - 5 % elapsed=00s, remaining~07s \ 6 % elapsed=00s, remaining~06s | 8 % elapsed=00s, remaining~06s / 9 % elapsed=01s, remaining~06s - 10% elapsed=01s, remaining~06s \ 11% elapsed=01s, remaining~06s | 12% elapsed=01s, remaining~06s / 13% elapsed=01s, remaining~06s - 14% elapsed=01s, remaining~06s \ 15% elapsed=01s, remaining~06s | 16% elapsed=01s, remaining~06s / 17% elapsed=01s, remaining~05s - 18% elapsed=01s, remaining~05s \ 19% elapsed=01s, remaining~05s | 20% elapsed=01s, remaining~05s / 22% elapsed=01s, remaining~05s - 23% elapsed=02s, remaining~05s \ 24% elapsed=02s, remaining~05s | 25% elapsed=02s, remaining~05s / 26% elapsed=02s, remaining~05s - 27% elapsed=02s, remaining~05s \ 28% elapsed=02s, remaining~05s | 29% elapsed=02s, remaining~05s / 30% elapsed=02s, remaining~05s - 31% elapsed=02s, remaining~05s \ 32% elapsed=02s, remaining~04s | 33% elapsed=02s, remaining~04s / 34% elapsed=02s, remaining~04s - 35% elapsed=02s, remaining~04s \ 37% elapsed=02s, remaining~04s | 38% elapsed=02s, remaining~04s / 39% elapsed=03s, remaining~04s - 40% elapsed=03s, remaining~04s \ 41% elapsed=03s, remaining~04s | 42% elapsed=03s, remaining~04s / 43% elapsed=03s, remaining~04s - 44% elapsed=03s, remaining~04s \ 45% elapsed=03s, remaining~04s | 46% elapsed=03s, remaining~04s / 47% elapsed=03s, remaining~03s - 48% elapsed=03s, remaining~03s \ 49% elapsed=03s, remaining~03s | 51% elapsed=03s, remaining~03s / 52% elapsed=03s, remaining~03s - 53% elapsed=03s, remaining~03s \ 54% elapsed=04s, remaining~03s | 55% elapsed=04s, remaining~03s / 56% elapsed=04s, remaining~03s - 57% elapsed=04s, remaining~03s \ 58% elapsed=04s, remaining~03s | 59% elapsed=04s, remaining~03s / 60% elapsed=04s, remaining~03s - 61% elapsed=04s, remaining~03s \ 62% elapsed=04s, remaining~02s | 63% elapsed=04s, remaining~02s / 65% elapsed=04s, remaining~02s - 66% elapsed=04s, remaining~02s \ 67% elapsed=04s, remaining~02s | 68% elapsed=04s, remaining~02s / 69% elapsed=05s, remaining~02s - 70% elapsed=05s, remaining~02s \ 71% elapsed=05s, remaining~02s | 72% elapsed=05s, remaining~02s / 73% elapsed=05s, remaining~02s - 74% elapsed=05s, remaining~02s \ 75% elapsed=05s, remaining~02s | 76% elapsed=05s, remaining~02s / 77% elapsed=05s, remaining~01s - 78% elapsed=05s, remaining~01s \ 80% elapsed=05s, remaining~01s | 81% elapsed=05s, remaining~01s / 82% elapsed=05s, remaining~01s - 83% elapsed=05s, remaining~01s \ 84% elapsed=06s, remaining~01s | 85% elapsed=06s, remaining~01s / 86% elapsed=06s, remaining~01s - 87% elapsed=06s, remaining~01s \ 88% elapsed=06s, remaining~01s | 89% elapsed=06s, remaining~01s / 90% elapsed=06s, remaining~01s - 91% elapsed=06s, remaining~01s \ 92% elapsed=06s, remaining~00s | 94% elapsed=06s, remaining~00s / 95% elapsed=06s, remaining~00s - 96% elapsed=06s, remaining~00s \ 97% elapsed=06s, remaining~00s | 98% elapsed=06s, remaining~00s / 99% elapsed=07s, remaining~00s - 100% elapsed=07s, remaining~00s</span>
 <span class="r-plt img"><img src="SEMtree-3.png" alt="" width="700" height="433"></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> RICF solver ended normally after 2 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 5.696462  srmr: 0.2143798 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span><span class="va">tree4</span><span class="op">&lt;-</span> <span class="fu">SEMtree</span><span class="op">(</span><span class="cn">NULL</span>, <span class="va">data</span>, seed<span class="op">=</span><span class="va">V</span>, type<span class="op">=</span><span class="st">"CPDAG"</span>, alpha<span class="op">=</span><span class="fl">0.05</span>, verbose<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">tree4</span> <span class="op">&lt;-</span> <span class="fu">SEMtree</span><span class="op">(</span><span class="cn">NULL</span>, <span class="va">als.npn</span>, seed<span class="op">=</span><span class="va">V</span>, type<span class="op">=</span><span class="st">"CPDAG"</span>, alpha<span class="op">=</span><span class="fl">0.05</span>, verbose<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  9 -&gt; 3 &lt;- 29 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>

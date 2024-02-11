@@ -8,7 +8,7 @@ SEMtree(
   graph,
   data,
   seed,
-  type = "CAT",
+  type = "ST",
   eweight = NULL,
   alpha = 0.05,
   verbose = FALSE,
@@ -26,14 +26,14 @@ columns to graph nodes (variables).}
 \item{type}{Tree-based structure learning method. Four algorithms 
 are available:
 \itemize{
-\item "ST". Steiner Tree (ST) identification via fast Kou's algorithm 
+\item "ST"(default). Steiner Tree (ST) identification via fast Kou's algorithm 
 (Kou et al, 1981) connecting a set of seed nodes (called Terminal vertices)
 with connector nodes (called Steiner vertices) from input graph as defined
 in \code{graph} with minimal total distance on its edges. By default the edge
 weights are based on the pairwise correlation, 1-abs(cor(j,k)). If input
 graph has E(graph)$weight=1, and \code{eweight = "custom"}, ST seeks a minimum
-subtree (i.e. subtree with minimal number of edges).
-\item "CAT" (default). Causal additive trees (CAT) algorithm as in Jakobsen et al. 
+subtree (i.e., the subtree with minimal number of edges).
+\item "CAT". Causal additive trees (CAT) algorithm as in Jakobsen et al. 
 (2022). The argument \code{graph} is set to NULL (i.e., no input graph is needed).
 In the first step, a (univariate) generalized additive model (GAM) is employed
 to estimate the residual variances, var(X(j) - [X(j)|X(k)]) for all j != k,
@@ -54,23 +54,27 @@ Argument \code{seed} must be specified to analyse a subset of nodes
 (Prim, 1957). The latter finds the subset of edges that includes every vertex
 of the graph (as defined in \code{graph}) such that the sum of the weights 
 of the edges can be minimized. The argument \code{seed} is set to NULL (i.e.,
-no seed nodes are needed), or if argument \code{seed} is not NULL, argument
-\code{graph} is set to NULL to recover the MST of the full graph.}}
+no seed nodes are needed).
+}}
 
-\item{eweight}{Edge weight type for igraph object derived from
-\code{\link[SEMgraph]{weightGraph}} or from user-defined distances. 
-This option determines the weight-to-distance transform.
-If set to "NULL" (default), edge weights will be internally computed
-equal to 1 - abs(cor), i.e., 1 - abs(pairwise Pearson's correlation).
-If \code{eweight = "kegg"}, repressing interactions (-1) will be set 
-to 2 (maximum distance), neutral interactions (0) will be set to 1, 
-and activating interactions (+1) will be set to 1 (minimum distance).
-If \code{eweight = "zsign"}, all significant interactions will be set 
-to 1 (minimum distance), while non-significant ones will be set to 2.
-If \code{eweight = "pvalue"}, weights (p-values) will be transformed 
-to the inverse of negative base-10 logarithm. 
-If \code{eweight = "custom"}, the algorithm will use the distance 
-measure specified by the user as "weight" edge attribute.}
+\item{eweight}{Edge weight type for igraph object can be externally derived
+using \code{\link[SEMgraph]{weightGraph}} or from user-defined distances. 
+This option determines the weight-to-distance transform. If set to:
+\itemize{
+\item "NULL" (default), edge weights will be internally computed
+equal to 1 - abs(pairwise Pearson's correlation).
+\item "kegg", repressing(-1), neutral(0) and activating(+1) kegg
+interactions will be multiplied by "zsign" attributes, and positive
+(i.e., concordant) values will be set to 1 (minimum distance), while
+negative (i.e., discordant) values will be set to 2.
+\item "zsign", all significant interactions (abs(zsign) > 0) will be
+set to 1 (minimum distance), while non-significant (zsign=0) ones will
+be set to 2.
+\item "pvalue", edge p-value atributes will be transformed to the
+inverse of negative base-10 logarithm, 1/(-log(E(graph)$pv)).
+\item "custom", the algorithm will use the distance measure specified
+by the user as "weight" edge attribute in the input graph.
+}}
 
 \item{alpha}{Threshold for rejecting a pair of node being independent in 
 "CPDAG" algorithm. The latter implements a natural v-structure identification 
@@ -104,8 +108,7 @@ uses pairwise mutual weights as input for CLE algorithm to recover a directed tr
 (an "arborescence"). The second one applies CLE algorithm for skeleton recovery and
 extends the skeleton to a tree (a "polytree") represented by a Completed Partially
 Directed Acyclic Graph (CPDAG). Finally, the Minimum Spanning Tree (MST) connecting
-an undirected graph (or an undirected full graph, if graph=NULL) with minimal edge
-weights can be identified.
+an undirected graph with minimal edge weights can be identified.
 To note, if the input graph is a directed graph, ST and MST undirected trees are
 converted in directed trees using the \code{\link[SEMgraph]{orientEdges}} function.
 }
@@ -113,24 +116,28 @@ converted in directed trees using the \code{\link[SEMgraph]{orientEdges}} functi
 
 \donttest{
 
-library(huge)
-data <- huge.npn(alsData$exprs)
-graph <- alsData$graph
+# Nonparanormal(npn) transformation
+als.npn <- transformData(alsData$exprs)$data
 
 # graph-based trees
+graph <- alsData$graph
 seed <- V(graph)$name[sample(1:vcount(graph), 10)]
-tree1<- SEMtree(graph, data, seed=seed, type="ST", verbose=TRUE)
-tree2<- SEMtree(graph, data, seed=NULL, type="MST", verbose=TRUE)
+tree1 <- SEMtree(graph, als.npn, seed=seed, type="ST", verbose=TRUE)
+tree2 <- SEMtree(graph, als.npn, seed=NULL, type="MST", verbose=TRUE)
 
 # data-driven trees
-V <- colnames(data)[colnames(data) \%in\% V(graph)$name]
-tree3<- SEMtree(NULL, data, seed=V, type="CAT", verbose=TRUE)
-tree4<- SEMtree(NULL, data, seed=V, type="CPDAG", alpha=0.05, verbose=TRUE)
+V <- colnames(als.npn)[colnames(als.npn) \%in\% V(graph)$name]
+tree3 <- SEMtree(NULL, als.npn, seed=V, type="CAT", verbose=TRUE)
+tree4 <- SEMtree(NULL, als.npn, seed=V, type="CPDAG", alpha=0.05, verbose=TRUE)
 
 }
 
 }
 \references{
+Grassi M, Tarantino B (2023). SEMtree: tree-based structure learning methods
+with structural equation models. 
+Bioinformatics, 39 (6), 4829–4830 <https://doi.org/10.1093/bioinformatics/btad377>
+
 Kou, L., Markowsky, G., Berman, L. (1981). A fast algorithm for Steiner trees. 
 Acta Informatica 15, 141–145. <https://doi.org/10.1007/BF00288961>
 
