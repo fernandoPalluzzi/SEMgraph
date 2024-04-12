@@ -67,6 +67,8 @@ The full list of **SEMgraph** functions with examples is available at our websit
 
 - [**SEMbap**](https://github.com/fernandoPalluzzi/SEMgraph/blob/master/SEMbap). Bow-free covariance search and data de-correlation.
 
+- [**SEMdag**](). Fast learning of Directed Acyclic Graphs via node or layer ordering.
+
 &nbsp;
 
 ## Available datasets
