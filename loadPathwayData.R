@@ -16,7 +16,7 @@ library(SEMgraph)
 #'
 #' @description Utility to create pathway lists as igraph objects and 
 #' interaction networks from Reactome, KEGG, and other pathway databases.
-#'organism, db, id_type = "ENTREZID", lcc = TRUE
+#'
 #' @param organism A string indicating the source organism. Please, check 
 #' the \code{pathwayDatabases} function from graphite to list the available 
 #' datasets. 
