@@ -73,6 +73,14 @@ The full list of **SEMgraph** functions with examples is available at our websit
 
 ## Available datasets
 
+### Create updated pathway and reference network versions
+
+**SEMgraph** and **SEMdata** reference datasets are freezed to benchmarked versions. If you would like to get the latest version of your favourite database, you can either the 
+[**graphite**](https://bioconductor.org/packages/release/bioc/html/graphite.html) R package ([**graphite tutorial**](https://bioconductor.org/packages/release/bioc/vignettes/graphite/inst/doc/graphite.pdf), 
+or our simple wrapper function, contained in the R script **loadPathwayData.R** at this page (the script comes with description and examples).
+
+### Latest dataset freeze
+
 **SEMgraph** offers several datasets to work with, for both training and research. They include (**\*\*** available with the [**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata) expansion):
 
 - [**KEGG**](https://www.genome.jp/kegg/) directed reference network of 5934 nodes and 77158 edges, derived from the **KEGG** database.
