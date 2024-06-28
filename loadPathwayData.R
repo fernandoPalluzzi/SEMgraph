@@ -16,8 +16,19 @@ library(SEMgraph)
 #'
 #' @description Utility to create pathway lists as igraph objects and 
 #' interaction networks from Reactome, KEGG, and other pathway databases.
-#'
-#' @param graph An igraph object.
+#'organism, db, id_type = "ENTREZID", lcc = TRUE
+#' @param organism A string indicating the source organism. Please, check 
+#' the \code{pathwayDatabases} function from graphite to list the available 
+#' datasets. 
+#' @param db String indicating the database name. Please, check the 
+#' \code{pathwayDatabases} function from graphite to list the available 
+#' datasets.
+#' @param db Gene ID type. The default is set to "ENTREZID" (standard 
+#' SEMlearn nomenclature). A common choice could be "SYMBOL", for 
+#' official gene symbols.
+#' @param lcc A logical value. If TRUE (default), the reference network 
+#' will only include the largest connected component. It will include all 
+#' disconnected components otherwise.
 #' @param ... Currently ignored.
 #'
 #' @details This function uses \code{graphite} to download and preprocess 
@@ -64,7 +75,7 @@ library(SEMgraph)
 #' length(kegg.hs$pathways)
 #' kegg.hs$network
 #'
-loadPathwayData <- function(organism, db, id_type = "ENTREZID", lcc = TRUE) {
+loadPathwayData <- function(organism, db, id_type = "ENTREZID", lcc = TRUE, ...) {
   
   # Import pathway from database
   pathways <- pathways(organism, db)
