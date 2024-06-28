@@ -1,6 +1,6 @@
-#---------------------------------------------------------#
-#  Loading KEGG and Reactome pathway data using graphite  #
-#---------------------------------------------------------#
+#---------------------------------------#
+#  Loading pathway data using graphite  #
+#---------------------------------------#
 
 
 # Loading graphite and preparing the environment
