@@ -75,11 +75,11 @@ The full list of **SEMgraph** functions with examples is available at our websit
 
 ### Create updated pathway and reference network versions
 
-**SEMgraph** and **SEMdata** reference datasets are freezed to benchmarked versions. If you would like to get the latest version of your favourite database, you can use either the 
-[**graphite**](https://bioconductor.org/packages/release/bioc/html/graphite.html) R package ([**graphite tutorial**](https://bioconductor.org/packages/release/bioc/vignettes/graphite/inst/doc/graphite.pdf)), 
+**SEMgraph** and **SEMdata** reference datasets are freezed to benchmarked versions. If you would like to get the latest version of your favourite database, you can use either the R package 
+[**graphite**](https://bioconductor.org/packages/release/bioc/html/graphite.html) ([**graphite tutorial**](https://bioconductor.org/packages/release/bioc/vignettes/graphite/inst/doc/graphite.pdf)), 
 or our simple wrapper function, contained in the R script [**loadPathwayData.R**](https://github.com/fernandoPalluzzi/SEMgraph/blob/master/loadPathwayData.R). The script comes with descriptions and examples.
 
-### Latest dataset freeze
+### Latest stable datasets
 
 **SEMgraph** offers several verified datasets to work with, for both training and research. They include (**\*\*** available with the [**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata) expansion):
 
