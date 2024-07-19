@@ -1,5 +1,5 @@
 #  SEMgraph library
-#  Copyright (C) 2019-2024 Mario Grassi; Fernando Palluzzi; Barbara Tarantino
+#  Copyright (C) 2019-2021 Mario Grassi; Fernando Palluzzi; Barbara Tarantino
 #  e-mail: <mario.grassi@unipv.it>
 #  University of Pavia, Department of Brain and Behavioral Sciences
 #  Via Bassi 21, 27100 Pavia, Italy
@@ -223,7 +223,6 @@
 #' plot(sem2$graph, layout = layout.circle, main = "Between group edge differences")
 #'
 #' \donttest{
-#'
 #' # Fitting and visualization of a large pathway:
 #'
 #' g <- kegg.pathways[["Neurotrophin signaling pathway"]]
@@ -243,50 +242,55 @@
 #' # plot graph
 #' E(g)$color<- E(g2)$color[E(g2) %in% E(g)]
 #' gplot(g, l="fdp", psize=40, main="node and edge group differences")
-#'
 #' }
 #'
 SEMrun <- function(graph, data, group = NULL, fit = 0, algo = "lavaan",
-                   start = NULL, SE = "standard", n_rep = 1000,
-				   limit = 100, ...)
+					start = NULL, SE = "standard", n_rep = 1000,
+					limit = 100, ...)
 {
 	if (is.null(group) & fit != 0) fit <- 0
 	if (!is.null(group) & fit == 0) fit <- 1
 
 	if (fit == 0) {
 		if (algo == "lavaan") {
-			return(fit = SEMfit(graph = graph, data = data, group = NULL,
-			                    start = start, SE = SE, limit = limit))
+			fit <- SEMfit(graph = graph, data = data, group = NULL,
+							start = start, SE = SE, limit = limit)
 		} else if (algo == "cggm") {
-			return(fit = SEMggm(graph = graph, data = data, group = NULL))
+			fit <- SEMggm(graph = graph, data = data, group = NULL)
 		} else if (algo == "ricf") {
-			return(fit = SEMricf(graph = graph, data = data, group = NULL,
-								 n_rep = n_rep))
+			fit <- SEMricf(graph = graph, data = data, group = NULL,
+							n_rep = n_rep)
 		}
+		class(fit) <- "SEM"
+		return(fit)
 	}
 
 	if (fit == 1) {
 		if (algo == "lavaan") {
-			return(fit = SEMfit(graph = graph, data = data, group = group,
-			                    start = start, SE = SE, limit = limit))
+			fit <- SEMfit(graph = graph, data = data, group = group,
+							start = start, SE = SE, limit = limit)
 		} else if (algo == "cggm") {
-			return(fit = SEMggm(graph = graph, data = data, group = group))
+			fit <- SEMggm(graph = graph, data = data, group = group)
 		} else if( algo == "ricf" ) {
-			return(fit = SEMricf(graph = graph, data = data, group = group,
-			                     n_rep = n_rep))
+			fit <- SEMricf(graph = graph, data = data, group = group,
+							n_rep = n_rep)
 		}
+		class(fit) <- "SEM"
+		return(fit)
 	}
 
 	if (fit == 2) {
 		if (algo == "lavaan") {
-			return(fit = SEMfit2(graph = graph, data = data, group = group,
-			                     start = start, SE = SE, limit = limit))
+			fit <- SEMfit2(graph = graph, data = data, group = group,
+							start = start, SE = SE, limit = limit)
 		} else if (algo == "cggm") {
-			return(fit = SEMggm2(graph = graph, data = data, group = group))
+			fit <- SEMggm2(graph = graph, data = data, group = group)
 		} else if (algo == "ricf") {
-			return(fit = SEMricf2(graph = graph, data = data, group = group,
-			                      n_rep = n_rep))
+			fit <- SEMricf2(graph = graph, data = data, group = group,
+							n_rep = n_rep)
 		}
+		class(fit) <- "SEM"
+		return(fit)
 	}
 }
 
@@ -684,11 +688,11 @@ SEMricf<- function (graph, data, group = NULL, n_rep = 1000, ...)
 	}
 	if (is.null(group)) dataXY<- cbind(group=rep(NA, n), dataXY)
 
-	fit <- list(Sigma=Shat, Beta=B, Psi=O, it=fit$it, fitIdx=idx, parameterEstimates=est)
+	fit <- list(Sigma=Shat, Beta=B, Psi=O, fitIdx=idx, parameterEstimates=est,
+				it = fit$it, r_gest = gest[[2]], pval = pval)
 	class(fit) <- "RICF"
 
-	return(list(fit = fit, gest = gest[[1]], model = NULL, graph = ig, 
-		data = dataXY, r_gest = gest[[2]], pval = pval))
+	return(list(fit = fit, gest = gest[[1]], model = NULL, graph = ig, data = dataXY))
 }
 
 SEMricf2 <- function(graph, data, group, n_rep = 1000, ...)
@@ -1166,14 +1170,12 @@ Brown.test <- function (p, x = NULL, theta = NULL, tail = "both", ...)
 #' @examples
 #'
 #' #\donttest{
-#'
 #' # Nonparanormal(npn) transformation
 #' als.npn <- transformData(alsData$exprs)$data
 #' 
 #' sem <- SEMrun(alsData$graph, als.npn)
 #' C_test <- Shipley.test(sem$graph, als.npn, MCX2 = FALSE)
 #' #MC_test <- Shipley.test(sem$graph, als.npn, MCX2 = TRUE)
-#'
 #' #}
 #'
 Shipley.test<- function(graph, data, MCX2=FALSE, cmax=Inf, limit=100, verbose=TRUE,...)

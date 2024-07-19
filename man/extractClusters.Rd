@@ -53,7 +53,6 @@ Extract and fit clusters from an input graph.
 \examples{
 
 \donttest{
-
 # Nonparanormal(npn) transformation
 als.npn <- transformData(alsData$exprs)$data
 
@@ -72,7 +71,6 @@ g <- alsData$graph
 c <- clusters$clusters$HM2
 V(g)$color <- ifelse(V(g)$name \%in\% V(c)$name, "gold", "white")
 gplot(g)
-
 }
 
 }

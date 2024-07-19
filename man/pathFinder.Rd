@@ -59,7 +59,6 @@ perturbation.
 \examples{
 
 \donttest{
-
 # Find and evaluate significantly perturbed paths
 
 # Nonparanormal(npn) transformation
@@ -74,7 +73,6 @@ paths <- pathFinder(alsData$graph, adjData,
 print(paths$dfp)
 head(parameterEstimates(paths$fit[[1]]))
 gplot(paths$paths[[1]])
-
 }
 
 }

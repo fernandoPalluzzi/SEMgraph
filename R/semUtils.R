@@ -1,5 +1,5 @@
 #  SEMgraph library
-#  Copyright (C) 2019-2024 Mario Grassi; Fernando Palluzzi; Barbara Tarantino
+#  Copyright (C) 2019-2021 Mario Grassi; Fernando Palluzzi; Barbara Tarantino
 #  e-mail: <mario.grassi@unipv.it>
 #  University of Pavia, Department of Brain and Behavioral Sciences
 #  Via Bassi 21, 27100 Pavia, Italy
@@ -150,7 +150,7 @@ SEMgsa<- function(g=list(), data, group, method = "BH", alpha = 0.05, n_rep = 10
 	 DEG<- c(DEG, list(genes))
 	 
 	 # data.frame of combined SEM results :
-	 cpval <- fit$pval
+	 cpval <- fit$fit$pval
 	 names(cpval) <- c("pNa", "pNi")
 	 pvmin <- names(cpval)[which.min(cpval)]
 	 sign <- ifelse(pvmin == "pNa", "+", "-")
@@ -929,7 +929,6 @@ attrMatch<- function(g1, g2, ...)
 #' @examples
 #'
 #' \donttest{
-#'
 #' # Model fitting: node perturbation
 #' sem1 <- SEMrun(graph = alsData$graph, data = alsData$exprs,
 #'                group = alsData$group,
@@ -958,7 +957,6 @@ attrMatch<- function(g1, g2, ...)
 #' gplot(colorGraph(est = est21, g, group = NULL),
 #'       main = "edges for group = 1")
 #' par(old.par)
-#'
 #' }
 #'
 colorGraph <- function (est, graph, group, method = "none", alpha = 0.05,

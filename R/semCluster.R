@@ -1,5 +1,5 @@
 #  SEMgraph library
-#  Copyright (C) 2019-2024 Mario Grassi; Fernando Palluzzi; Barbara Tarantino
+#  Copyright (C) 2019-2021 Mario Grassi; Fernando Palluzzi; Barbara Tarantino
 #  e-mail: <mario.grassi@unipv.it>
 #  University of Pavia, Department of Brain and Behavioral Sciences
 #  Via Bassi 21, 27100 Pavia, Italy
@@ -26,7 +26,7 @@
 #' @param type Topological clustering methods. If \code{type = "tahc"},
 #' network modules are generated using the tree agglomerative hierarchical
 #' clustering method (Yu et al., 2015). Other non-tree clustering methods
-#' from \code{\link{igraph}} package include: "wtc"
+#' from \code{igraph} package include: "wtc"
 #' (default value; walktrap community structure with short random walks),
 #' "ebc" (edge betweeness clustering), "fgc" (fast greedy method), "lbc"
 #' (label propagation method), "lec" (leading eigenvector method), "loc"
@@ -602,7 +602,6 @@ fa.em <- function(Y, r, tol = 1e-6, maxiter = 1000) {
 #' @examples
 #'
 #' \donttest{
-#'
 #' # Nonparanormal(npn) transformation
 #' als.npn <- transformData(alsData$exprs)$data
 #'
@@ -621,7 +620,6 @@ fa.em <- function(Y, r, tol = 1e-6, maxiter = 1000) {
 #' c <- clusters$clusters$HM2
 #' V(g)$color <- ifelse(V(g)$name %in% V(c)$name, "gold", "white")
 #' gplot(g)
-#'
 #' }
 #'
 extractClusters<- function(graph, data, group = NULL, membership = NULL, map = FALSE, verbose = FALSE, ...) 
@@ -680,7 +678,7 @@ extractClusters<- function(graph, data, group = NULL, membership = NULL, map = F
 #' membership vector.
 #' @param graph An igraph object.
 #' @param membership Cluster membership vector for each node.
-#' @param l graph layout. One of the \code{\link{igraph}} layouts.
+#' @param l graph layout. One of the \code{igraph} layouts.
 #' If this argument is ignored, an automatic layout will be applied.
 #' @param map A logical value. Visualize cluster mapping over the input
 #' graph. If FALSE (default), visualization will be disabled. For large
@@ -702,7 +700,6 @@ extractClusters<- function(graph, data, group = NULL, membership = NULL, map = F
 #' @examples
 #'
 #' \donttest{
-#'
 #' # Clustering ALS graph with WTC method
 #' G <- alsData$graph
 #' membership <- clusterGraph(graph = G, type = "wtc")
@@ -710,7 +707,6 @@ extractClusters<- function(graph, data, group = NULL, membership = NULL, map = F
 #' cplot(G, membership, map = FALSE, verbose = TRUE)
 #' # The list of cluster graphs !
 #' cg <- cplot(G, membership); cg
-#'
 #' }
 #'
 cplot<- function (graph, membership, l = layout.auto, map = FALSE, verbose = FALSE, ...) 

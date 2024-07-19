@@ -11,7 +11,7 @@ cplot(graph, membership, l = layout.auto, map = FALSE, verbose = FALSE, ...)
 
 \item{membership}{Cluster membership vector for each node.}
 
-\item{l}{graph layout. One of the \code{\link{igraph}} layouts.
+\item{l}{graph layout. One of the \code{igraph} layouts.
 If this argument is ignored, an automatic layout will be applied.}
 
 \item{map}{A logical value. Visualize cluster mapping over the input
@@ -34,7 +34,6 @@ membership vector.
 \examples{
 
 \donttest{
-
 # Clustering ALS graph with WTC method
 G <- alsData$graph
 membership <- clusterGraph(graph = G, type = "wtc")
@@ -42,7 +41,6 @@ cplot(G, membership, map = TRUE, verbose = FALSE)
 cplot(G, membership, map = FALSE, verbose = TRUE)
 # The list of cluster graphs !
 cg <- cplot(G, membership); cg
-
 }
 
 }

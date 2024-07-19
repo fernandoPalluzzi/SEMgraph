@@ -1,5 +1,13 @@
+## Version 1.2.2 Release Notes
+* Delete predictSink() function. A general function for SEM-based
+out-of-sample prediction is now included in the SEMdeep package,
+which uses Deep Neural Network (DNN) and Machine Learning(ML) algorithms,
+has been released on CRAN.
+
+* Various fixed bugs discovered after the release 1.2.1.
+
 ## Version 1.2.1 Release Notes
-* Added new predictSink() function for SEM-based out-of-sample predictions
+* Added new predictSink() function for SEM-based out-of-sample prediction
 of (observed) response y-variables (sink nodes) given the values
 of (observed) x-variables (source and mediator) nodes from the fitted
 graph structure.
@@ -10,7 +18,7 @@ relax the assumption of normality (gaussianity) for continuous data.
 
 * Update kegg.RData and kegg.pathways.RData (February 2024).
 
-* Various fixed bugs
+* Various fixed bugs discovered after the release 1.2.0.
 
 ## Version 1.2.0 Release Notes
 * Version 1.2.0 is a major release with several new features, including:
@@ -43,7 +51,7 @@ parameter can be used to perform only those tests where the number of
 conditioning variables does not exceed the given value. Output of the
 data.frame "dsep" has the same format of the localCI.test() function.
 
-* Various fixed bugs
+* Various fixed bugs discovered after the release 1.1.3.
 
 ## Version 1.1.3 Release Notes
 * Added in SEMrun() function the argumet SE = c("standard" or "none"), if
@@ -61,7 +69,7 @@ of a fitted SEM for RICF and CGGM algorithms similar to lavaan.
 
 * Updating summary.RICF() and summary.GGM() functions with parameterEstimates().
 
-* Various fixed bugs.
+* Various fixed bugs discovered after the release 1.1.2.
 
 ## Version 1.1.2 Release Notes
 * Added new SEMtree() function for tree-based structure learning methods.
@@ -94,7 +102,7 @@ clusterGraph() function).
 if group is NOT NULL also node weighting is actived, and node weights correspond
 to the sign and P-value of the z-test = b/SE(b) from glm(node ~ group).
 
-* Various fixed bugs.
+* Various fixed bugs discovered after the release 1.1.0.
 
 ## Version 1.1.0 Release Notes
 * Version 1.1.0 is a major release with significant changes:
@@ -125,7 +133,7 @@ P-value of the combined C test.
 function, now the induced graph for the "rwr" and "hdi" algorithms is defined
 by the top-n ranking nodes.
 
-* Various fixed bugs
+* Various fixed bugs.
 
 ## Version 1.0.3 Release Notes
 * First stable version on CRAN.

@@ -1,5 +1,5 @@
 #  SEMgraph library
-#  Copyright (C) 2019-2024 Mario Grassi; Fernando Palluzzi; Barbara Tarantino 
+#  Copyright (C) 2019-2021 Mario Grassi; Fernando Palluzzi; Barbara Tarantino 
 #  e-mail: <mario.grassi@unipv.it>
 #  University of Pavia, Department of Brain and Behavioral Sciences
 #  Via Bassi 21, 27100 Pavia, Italy
@@ -370,7 +370,7 @@ ew.r2z <- function(ftm, Y, group, ...)
 #' parameter of a nonparanormal distribution (Harris & Dorton (2013),
 #' and generates the data matrix with the exact same sample covariance
 #' matrix as the estimated one.
-#' \item "polichoric", computes the polychoric correlation matrix and
+#' \item "polychoric", computes the polychoric correlation matrix and
 #' generates the data matrix with the exact same sample covariance matrix
 #' as the estimated one. The polychoric correlation (Olsson, 1974) is a
 #' measure of association between two ordinal variables. It is based on the
@@ -436,43 +436,34 @@ ew.r2z <- function(ftm, Y, group, ...)
 #' X<- data[, colnames(data) %in% V(graph)$name]; dim(X)
 #'
 #' npn.data<- transformData(X, method="npn")
-#' sem0.npn<- SEMrun(graph, npn.data$data)
+#' sem0.npn<- SEMrun(graph, npn.data$data, algo="cggm")
 #'
 #' mvnS.data<- transformData(X, method="spearman")
-#' sem0.mvnS<- SEMrun(graph, mvnS.data$data)
+#' sem0.mvnS<- SEMrun(graph, mvnS.data$data, algo="cggm")
 #'
 #' mvnK.data<- transformData(X, method="kendall")
-#' sem0.mvnK<- SEMrun(graph, mvnK.data$data)
+#' sem0.mvnK<- SEMrun(graph, mvnK.data$data, algo="cggm")
 #' 
 #' #...with ordinal (K=4 categories) ALS data
 #' Xord <- data.frame(X)
 #' Xord <- as.data.frame(lapply(Xord, cut, 4, labels = FALSE))
 #' colnames(Xord) <- sub("X", "", colnames(Xord))
 #' 
-#' \dontrun{
-#'
 #' mvnP.data<- transformData(Xord, method="polychoric")
-#' sem0.mvnP<- SEMrun(graph, mvnP.data$data, algo="ricf", n_rep=1000)
-#'
-#' }
-#'
-#' lin.data<- transformData(Xord, method="lineals")
-#' sem0.lin<- SEMrun(graph, lin.data$data)
-#' lin.data$catscores; head(lin.data$data)
+#' sem0.mvnP<- SEMrun(graph, mvnP.data$data, algo="cggm")
 #'
 #' #...with nominal (K=4 categories) ALS data
 #' mca.data<- transformData(Xord, method="mca")
-#' sem0.mca<- SEMrun(graph, mca.data$data)
+#' sem0.mca<- SEMrun(graph, mca.data$data, algo="cggm")
 #' mca.data$catscores
+#' gplot(sem0.mca$graph, l="fdp", main="ALS mca")
 #' 
 #' # plot colored graphs
-#' #par(mfrow=c(3,2), mar=rep(1,4))
+#' #par(mfrow=c(2,2), mar=rep(1,4))
 #' #gplot(sem0.npn$graph, l="fdp", main="ALS npm")
 #' #gplot(sem0.mvnS$graph, l="fdp", main="ALS mvnS")
 #' #gplot(sem0.mvnK$graph, l="fdp", main="ALS mvnK")
 #' #gplot(sem0.mvnP$graph, l="fdp", main="ALS mvnP")
-#' #gplot(sem0.lin$graph, l="fdp", main="ALS lin")
-#' #gplot(sem0.mca$graph, l="fdp", main="ALS mca")
 #'
 transformData <- function (x, method = "npn", ...)
 {
@@ -542,321 +533,4 @@ generateData <- function(Sest, n, p, ...)
 	fake.data <- as.data.frame(fake.data)
 
 	return(fake.data)
-}
-
-#' @title SEM-based out-of-sample predictions
-#'
-#' @description Given the values of (observed) x-variables in a structural equation
-#' model, this function may be used to predict the values of (observed) y-variables.
-#' Response variables (y) represent sink nodes, and predictor variables (x)
-#' might consist of either (i) just source nodes or (ii) source and mediators from
-#' the fitted graph structure.
-#'
-#' @param object An object, as that created by the function \code{SEMrun()} with the
-#' argument \code{fit} set to \code{fit = 0} or \code{fit = 1}.
-#' @param newdata An optional matrix with rows corresponding to subjects, and
-#' columns to graph nodes (variables). If \code{object$fit} is a model with the
-#' group variable (\code{fit = 1}), the first column of newdata must be the
-#' new group binary vector (0=control, 1=case). As a default \code{newdata = NULL}, 
-#' meaning that the K-fold cross validation is applied on the \code{object$data}.
-#' Conversely, if the argument \code{newdata} is specified, this matrix will be
-#' used for testing (out-of-sample predictions) and \code{object$data} will be
-#' used for training.
-#' @param K_fold The number of subsets (folds) into which the data will be 
-#' partitioned for performing K-fold cross-validation. The model is refit K times, 
-#' each time leaving out one of the K folds (default, K_fold=5). If the argument 
-#' \code{newdata} is specified, the K-fold cross validation will not be done.
-#' @param source A logical value. If FALSE (default), the predictor variables (x) 
-#' include source and mediators. If TRUE, x includes only the source nodes. 
-#' @param verbose A logical value. If FALSE (default), the processed graph 
-#' will not be plotted to screen.
-#' @param ... Currently ignored.
-#'
-#' @details The function uses a SEM-based predictive approach (Rooij et al., 2022)
-#' to produce predictions while accounting for the given graph structure. Predictions
-#' (for y given x) are based on the (joint y and x) model-implied variance-covariance
-#' (Sigma) matrix and mean vector (Mu) of the fitted SEM, and the standard expression
-#' for the conditional mean of a multivariate normal distribution. Thus, the structure
-#' described in the SEM is taken into consideration, which differs from ordinary
-#' least squares (OLS) regression. Note that if the model is saturated (and hence
-#' df = 0), or when \code{source = TRUE}, i.e., the set of predictors will include only
-#' the source nodes, the SEM-based predictions are identical or similar to OLS
-#' predictions. 
-#'
-#' @return A list of 3 objects:
-#' \enumerate{
-#' \item "yobs", the matrix of observed continuous values of sink nodes based on
-#' out-of-bag samples. 
-#' \item "yhat", the matrix of continuous predicted values of sink nodes ased on
-#' out-of-bag samples.
-#' \item "PE", vector of the prediction error equal to the Root Mean Squared Error
-#' (RMSE) for each out-of-bag sink prediction. The first value of PE is the total
-#' RMSE, where we sum over all sink nodes.
-#' }
-#'
-#' @export
-#'
-#' @author Mario Grassi \email{mario.grassi@unipv.it}
-#'
-#' @references 
-#' 
-#' de Rooij M, Karch JD, Fokkema M, Bakk Z, Pratiwi BC, and Kelderman H
-#' (2023). SEM-Based Out-of-Sample Predictions, Structural Equation Modeling:
-#' A Multidisciplinary Journal, 30:1, 132-148
-#' <https://doi.org/10.1080/10705511.2022.2061494>
-#' 
-#' @examples
-#'
-#' # load ALS data
-#' ig<- alsData$graph
-#' X<- alsData$exprs
-#' X<- transformData(X)$data
-#' group<- alsData$group
-#' 
-#' #...with train-test (0.8-0.2) samples
-#' set.seed(1)
-#' train<- sample(1:nrow(X), 0.8*nrow(X))
-#'
-#' # SEM fitting
-#' #sem0<- SEMrun(ig, X[train,], algo="lavaan", SE="none")
-#' #sem0<- SEMrun(ig, X[train,], algo="ricf", n_rep=0)
-#' sem0<- SEMrun(ig, X[train,], algo="cggm")
-#' 
-#' # predictors, source+mediator variables
-#' res1<- predictSink(sem0, newdata=X[-train,]) 
-#' print(res1$PE)
-#' 
-#' # predictors, source variables
-#' res2<- predictSink(sem0, newdata=X[-train,], source=TRUE) 
-#' print(res2$PE)
-#' 
-#' #...with 5-fold cross-validation samples
-#' set.seed(2)
-#'
-#' # SEM fitting
-#' #sem0<- SEMrun(ig, X, algo="lavaan", SE="none")
-#' #sem0<- SEMrun(ig, X, algo="ricf", n_rep=0)
-#' sem0<- SEMrun(ig, X, algo="cggm")
-#' 
-#' # predictors, source+mediator variables	
-#' res3<- predictSink(sem0, K_fold = 5, verbose=TRUE)
-#' print(res3$PE)
-#' 
-#' # predictors, source variables
-#' res4<- predictSink(sem0, K_fold = 5, source=TRUE, verbose=TRUE) 
-#' print(res4$PE)
-#'
-#' \dontrun{
-#'
-#' #...with 10-fold cross-validation samples and 10-iterations
-#' 
-#' # SEM fitting
-#' #sem1<- SEMrun(ig, X, group, algo="lavaan", SE="none")
-#' #sem1<- SEMrun(ig, X, group, algo="ricf", n_rep=0)
-#' sem1<- SEMrun(ig, X, group, algo="cggm")
-#' 
-#' # predictors, source+mediator+group variables
-#' res<- NULL
-#' for (r in 1:10) {
-#' 	set.seed(r)
-#' 	cat("rep = ", r, "\n")
-#' 	resr<- predictSink(sem1, K_fold = 10)
-#' 	res<- rbind(res, resr$PE)
-#' }
-#' res
-#' apply(res, 2, mean)
-#'
-#' }
-#'
-predictSink <- function(object, newdata = NULL, K_fold = 5, source = FALSE,
-						verbose = FALSE, ...)
-{
-	# set graph, predictors and outcomes
-	stopifnot(inherits(object$fit, c("lavaan", "RICF", "GGM")))
-	#stop("ERROR: in SEMrun(..., fit = .) cannot be fit=2 (for now).")
-	graph<- object$graph
-	data<- object$data
-	if (!is.na(data[1,1])) graph<- map_group(graph)
-	if (!is.null(newdata)) {
-		idx<- colnames(data)[colnames(data) %in% colnames(newdata)]
-		train <- data[,idx]
-		test <- newdata[,idx]
-		data<- rbind(train, test)
-	}
-	idv<- colnames(data)[colnames(data) %in% V(graph)$name]
-	graph<- induced_subgraph(graph, vids = V(graph)$name %in% idv)
-	din<- igraph::degree(graph, mode = "in")
-	dout<- igraph::degree(graph, mode = "out")
-	V(graph)$color[din == 0]<- "cyan"
-	V(graph)$color[dout == 0]<- "orange"
-	yn<- V(graph)$name[dout == 0] #sink
-	xn<- V(graph)$name[dout != 0] #source+mediator
-	if (source == TRUE) {
-		xn<- V(graph)$name[din == 0] #source
-		graph<- map_source(xn, yn)
-	}
-	if (verbose) gplot(graph)
-
-	# K-fold cross-validation train indices
-	if (is.null(newdata)) {
-		Y <- rowMeans(data[,yn])
-		idx <- createFolds(y=Y, k=K_fold, list=TRUE, returnTrain=TRUE)
-	}else{
-		K_fold <- 1
-		idx<- list(1:nrow(train))
-	}
-
-	# SEM fitting on train data and predition on test data
-	yobs<- NULL
-	yhat<- NULL
-
-	for (k in 1:K_fold) { #k=1
-	  if (K_fold != 1) {
-		message("Fold: ", k) 
-		fit<- quiet(SEMrun(graph, data[idx[[k]],], algo="ricf", n_rep=0))
-	  }else{
-		fit<- object
-	  }
-	  if (inherits(fit$fit, "lavaan")) {
-		xnames<- paste0("z", xn)
-		ynames<- paste0("z", yn)
-		Sxx<- fitted(fit$fit)$cov[xnames, xnames]
-		Sxy<- fitted(fit$fit)$cov[xnames, ynames]
-		#mx<- fitted(fit$fit)$mean[xnames]
-		#my<- fitted(fit$fit)$mean[ynames]
-	  }else{
-		Sxx<- fit$fit$Sigma[xn, xn]
-		Sxy<- fit$fit$Sigma[xn, yn]
-	  }
-	  mx<- rep(0, length(xn))
-	  my<- rep(0, length(yn))
-	  xtest<- as.matrix(data[-idx[[k]], xn])
-	  xtest<- scale(xtest, center = mx, scale = TRUE)
-	  n<- nrow(xtest)
-	  py<- length(yn)
-	  My<- matrix(my, n, py, byrow = TRUE)
-	  if (corpcor::is.positive.definite(Sxx)) {
-		yhatk<- My + xtest %*% solve(Sxx) %*% Sxy
-	  }else{
-		yhatk<- My + xtest %*% Sxy
-	  }
-	  yobs<- rbind(yobs, scale(data[-idx[[k]], yn]))
-	  yhat<- rbind(yhat, yhatk)
-	}
-
-	PE<- sqrt(colMeans((yobs - yhat)^2))
-	PE<- c(RMSEp=sqrt(mean(PE^2)), PE)
-	if (verbose) print(PE)
-
-	return(list(yobs=yobs, yhat=yhat, PE=PE))
-}
-
-createFolds <- function (y, k = 10, list = TRUE, returnTrain = FALSE, ...) 
-{
-    #createFolds() function from "caret" package (author: Max Kuhn)
-	#All rights reserved. See the file COPYING for license terms.
-
-	if (is.numeric(y)) {
-        cuts <- floor(length(y)/k)
-        if (cuts < 2) 
-            cuts <- 2
-        if (cuts > 5) 
-            cuts <- 5
-        breaks <- unique(quantile(y, probs = seq(0, 1, length = cuts)))
-        y <- cut(y, breaks, include.lowest = TRUE)
-    }
-    if (k < length(y)) {
-        y <- factor(as.character(y))
-        numInClass <- table(y)
-        foldVector <- vector(mode = "integer", length(y))
-        for (i in 1:length(numInClass)) { #i=1
-            min_reps <- numInClass[i]%/%k
-            if (min_reps > 0) {
-                spares <- numInClass[i]%%k
-                seqVector <- rep(1:k, min_reps)
-                if (spares > 0) 
-                  seqVector <- c(seqVector, sample(1:k, spares))
-                foldVector[which(y == names(numInClass)[i])] <- sample(seqVector)
-            }
-            else {
-                foldVector[which(y == names(numInClass)[i])] <- sample(1:k, 
-                  size = numInClass[i])
-            }
-        }
-    }
-    else foldVector <- seq(along = y)
-    if (list) {
-        out <- split(seq(along = y), foldVector)
-        names(out) <- paste("Fold", gsub(" ", "0", format(seq(along = out))), 
-            sep = "")
-        if (returnTrain) 
-            out <- lapply(out, function(data, y) y[-data], y = seq(along = y))
-    }
-    else out <- foldVector
-	
-    return(out)
-}
-
-map_source <- function(xn, yn, verbose=FALSE, ...)
-{
-	gout <- make_empty_graph(length(c(xn,yn)))
-	V(gout)$name <- c(xn,yn)
-	E <- NULL
-	 for(k in 1:length(xn)){
-	  for(j in 1:length(yn)){ #i=1
-		E <- c(E, xn[k], yn[j])
-	  }
-	 }
-	gout <- gout + igraph::edges(E)  
-	if (verbose) gplot(gout)
-	
-	return(gout)	
-}
-
-map_group <- function(graph, verbose=FALSE, ...)
-{
-	gout <- graph + igraph::vertices("group")
-	nodes<- V(graph)$name
-	E <- NULL
-	 for(v in 1:length(nodes)){
-	  	E <- c(E, "group", nodes[v])
-	  }
-	gout <- gout + igraph::edges(E)
-	#V(gout)$color[V(gout)$name == "outcome"] <- "green"
-	if (verbose) gplot(gout)
-	
-	return(gout)	
-}
-
-map_outcome <- function(graph, verbose=FALSE, ...)
-{
-	gout <- graph + igraph::vertices("outcome")
-	dout<- igraph::degree(graph, mode = "out")
-	leaf<- V(graph)$name[dout == 0]
-	E <- NULL
-	 for(v in 1:length(leaf)){
-	  	E <- c(E, leaf[v], "outcome")
-	  }
-	gout <- gout + igraph::edges(E)
-	V(gout)$color[V(gout)$name == "outcome"] <- "green"
-	if (verbose) gplot(gout)
-	
-	return(gout)	
-}
-
-map_LV <- function(graph, data, cg=NULL, verbose=FALSE, ...)
-{
-	VH <- colnames(data)[grepl("LV",colnames(data))]
-	gH <- graph + igraph::vertices(VH)
-	E <- NULL
-	 for(v in 1:length(VH)){
-	  if (!is.null(cg)) graph<- cg[[v]]
-	  for(i in 1:vcount(graph)){ #i=1
-		E <- c(E, VH[v], V(graph)$name[i])
-	  }
-	 }
-	gH <- gH + igraph::edges(E)
-	if (verbose) gplot(gH, l="fdp")
-	
-	return(gH)	
 }

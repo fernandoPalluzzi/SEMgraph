@@ -25,7 +25,7 @@ and blacklisted samples.
 }
 }
 \source{
-\url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE124439/}
+\url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE124439}
 }
 \usage{
 alsData
