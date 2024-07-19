@@ -115,7 +115,6 @@ converted in directed trees using the \code{\link[SEMgraph]{orientEdges}} functi
 \examples{
 
 \donttest{
-
 # Nonparanormal(npn) transformation
 als.npn <- transformData(alsData$exprs)$data
 
@@ -129,7 +128,6 @@ tree2 <- SEMtree(graph, als.npn, seed=NULL, type="MST", verbose=TRUE)
 V <- colnames(als.npn)[colnames(als.npn) \%in\% V(graph)$name]
 tree3 <- SEMtree(NULL, als.npn, seed=V, type="CAT", verbose=TRUE)
 tree4 <- SEMtree(NULL, als.npn, seed=V, type="CPDAG", alpha=0.05, verbose=TRUE)
-
 }
 
 }

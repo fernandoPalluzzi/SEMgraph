@@ -183,7 +183,6 @@ gplot(sem2$graph, main = "Between group edge differences")
 plot(sem2$graph, layout = layout.circle, main = "Between group edge differences")
 
 \donttest{
-
 # Fitting and visualization of a large pathway:
 
 g <- kegg.pathways[["Neurotrophin signaling pathway"]]
@@ -203,7 +202,6 @@ g <- properties(g2)[[1]]
 # plot graph
 E(g)$color<- E(g2)$color[E(g2) \%in\% E(g)]
 gplot(g, l="fdp", psize=40, main="node and edge group differences")
-
 }
 
 }

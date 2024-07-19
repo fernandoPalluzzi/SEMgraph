@@ -75,7 +75,6 @@ and their possible closure into circuits.
 \examples{
 
 \donttest{
-
 # Extract the "Protein processing in endoplasmic reticulum" pathway:
 
 g <- kegg.pathways[["Protein processing in endoplasmic reticulum"]]
@@ -118,7 +117,6 @@ par(mfrow=c(1,2), mar=rep(1,4))
 plot(G1, layout = layout.circle)
 plot(ext, layout = layout.circle)
 par(old.par)
-
 }
 
 }

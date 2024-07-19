@@ -1,5 +1,5 @@
 #  SEMgraph library
-#  Copyright (C) 2019-2024 Mario Grassi; Fernando Palluzzi; Barbara Tarantino 
+#  Copyright (C) 2019-2021 Mario Grassi; Fernando Palluzzi; Barbara Tarantino 
 #  e-mail: <mario.grassi@unipv.it>
 #  University of Pavia, Department of Brain and Behavioral Sciences
 #  Via Bassi 21, 27100 Pavia, Italy
@@ -887,7 +887,7 @@ glmnet.set<- function(x, y, beta, lambdas, pw, ...)
 	set.seed(1324)
 	ftm <- NULL
 	for (k in 1:ncol(y)) {
-	   if (ncol(x) > 1) {
+	   if (ncol(x) > 1 & sum(pw[,k]) != 0) {
 		if (!is.null(lambdas)) {
 			fit <- glmnet::glmnet(x=x, y=y[,k], family="gaussian",
 					#lambda = sqrt(log(ncol(y)+ncol(x))/nrow(y)))
@@ -901,7 +901,7 @@ glmnet.set<- function(x, y, beta, lambdas, pw, ...)
 			b <- coef(fit, s = fit$lambda.min)[-1,]
 		}
 	   }else{
-			fit <- summary(lm(y[,k] ~ x))$coefficients[2,4]
+			fit <- summary(lm(y[,k] ~ x))$coefficients[-1,4]
 			b <- ifelse(fit < 0.05, 1, 0)
 			names(b) <- colnames(x)
 	   }
@@ -1077,7 +1077,6 @@ buildLayers <- function(X, rho = NULL, eta = NULL, eta.scaler = 1)
 #' @examples
 #'
 #' \donttest{
-#'
 #' # Extract the "Protein processing in endoplasmic reticulum" pathway:
 #'
 #' g <- kegg.pathways[["Protein processing in endoplasmic reticulum"]]
@@ -1120,7 +1119,6 @@ buildLayers <- function(X, rho = NULL, eta = NULL, eta.scaler = 1)
 #' plot(G1, layout = layout.circle)
 #' plot(ext, layout = layout.circle)
 #' par(old.par)
-#'
 #' }
 #'
 resizeGraph<- function(g=list(), gnet, d = 2, v = TRUE, verbose = FALSE, ...)
@@ -1344,7 +1342,6 @@ getNetEdges<- function(graph, gnet, d, yes, ...)
 #' @examples
 #' 
 #' \donttest{
-#'
 #' # Nonparanormal(npn) transformation
 #' als.npn <- transformData(alsData$exprs)$data
 #'
@@ -1358,7 +1355,6 @@ getNetEdges<- function(graph, gnet, d, yes, ...)
 #' V <- colnames(als.npn)[colnames(als.npn) %in% V(graph)$name]
 #' tree3 <- SEMtree(NULL, als.npn, seed=V, type="CAT", verbose=TRUE)
 #' tree4 <- SEMtree(NULL, als.npn, seed=V, type="CPDAG", alpha=0.05, verbose=TRUE)
-#'
 #' }
 #'
 SEMtree <- function(graph, data, seed, type = "ST", eweight = NULL, alpha = 0.05, verbose = FALSE, ...)
@@ -1387,7 +1383,7 @@ SEMtree <- function(graph, data, seed, type = "ST", eweight = NULL, alpha = 0.05
 	   ug <- as.undirected(graph, edge.attr.comb = eattr) 
 	   T <- mst(ug, weights = E(ug)$weight, algorithm = "prim")
 	 }
-	 if (is.directed(graph) & !is.directed(T)) T <- orientEdges(ug=T, dg=graph) 
+	 if (is.directed(graph)) T <- orientEdges(ug=T, dg=graph) 
 	 T <- quiet(properties(T)[[1]])
 	 V(T)$color <- ifelse(V(T)$name %in% seed, "aquamarine", "white")
 	 E1 <- attr(E(T), "vnames")
@@ -1679,7 +1675,6 @@ CPDAG <- function(data, alpha, verbose = FALSE, ...)
 #' @examples
 #'
 #' \donttest{
-#'
 #' # Comparison among different model estimation strategies
 #'
 #' # Nonparanormal(npn) transformation
@@ -1703,7 +1698,6 @@ CPDAG <- function(data, alpha, verbose = FALSE, ...)
 #' gplot(m3$graph, main = "outer graph")
 #' gplot(m4$graph, main = "basic graph")
 #' #par(old.par)
-#'
 #' }
 #'
 modelSearch<- function(graph, data, gnet = NULL, d = 2, search = "basic",

@@ -130,7 +130,6 @@ confounding factors, hence a weaker correction
 \examples{
 
 \donttest{
-
 # Comparison among different model estimation strategies
 
 # Nonparanormal(npn) transformation
@@ -154,7 +153,6 @@ gplot(m2$graph, main = "inner graph")
 gplot(m3$graph, main = "outer graph")
 gplot(m4$graph, main = "basic graph")
 #par(old.par)
-
 }
 
 }

@@ -28,7 +28,7 @@ tau correlation for estimation of latent Gaussian correlations
 parameter of a nonparanormal distribution (Harris & Dorton (2013),
 and generates the data matrix with the exact same sample covariance
 matrix as the estimated one.
-\item "polichoric", computes the polychoric correlation matrix and
+\item "polychoric", computes the polychoric correlation matrix and
 generates the data matrix with the exact same sample covariance matrix
 as the estimated one. The polychoric correlation (Olsson, 1974) is a
 measure of association between two ordinal variables. It is based on the
@@ -81,43 +81,34 @@ data<- alsData$exprs; dim(data)
 X<- data[, colnames(data) \%in\% V(graph)$name]; dim(X)
 
 npn.data<- transformData(X, method="npn")
-sem0.npn<- SEMrun(graph, npn.data$data)
+sem0.npn<- SEMrun(graph, npn.data$data, algo="cggm")
 
 mvnS.data<- transformData(X, method="spearman")
-sem0.mvnS<- SEMrun(graph, mvnS.data$data)
+sem0.mvnS<- SEMrun(graph, mvnS.data$data, algo="cggm")
 
 mvnK.data<- transformData(X, method="kendall")
-sem0.mvnK<- SEMrun(graph, mvnK.data$data)
+sem0.mvnK<- SEMrun(graph, mvnK.data$data, algo="cggm")
 
 #...with ordinal (K=4 categories) ALS data
 Xord <- data.frame(X)
 Xord <- as.data.frame(lapply(Xord, cut, 4, labels = FALSE))
 colnames(Xord) <- sub("X", "", colnames(Xord))
 
-\dontrun{
-
 mvnP.data<- transformData(Xord, method="polychoric")
-sem0.mvnP<- SEMrun(graph, mvnP.data$data, algo="ricf", n_rep=1000)
-
-}
-
-lin.data<- transformData(Xord, method="lineals")
-sem0.lin<- SEMrun(graph, lin.data$data)
-lin.data$catscores; head(lin.data$data)
+sem0.mvnP<- SEMrun(graph, mvnP.data$data, algo="cggm")
 
 #...with nominal (K=4 categories) ALS data
 mca.data<- transformData(Xord, method="mca")
-sem0.mca<- SEMrun(graph, mca.data$data)
+sem0.mca<- SEMrun(graph, mca.data$data, algo="cggm")
 mca.data$catscores
+gplot(sem0.mca$graph, l="fdp", main="ALS mca")
 
 # plot colored graphs
-#par(mfrow=c(3,2), mar=rep(1,4))
+#par(mfrow=c(2,2), mar=rep(1,4))
 #gplot(sem0.npn$graph, l="fdp", main="ALS npm")
 #gplot(sem0.mvnS$graph, l="fdp", main="ALS mvnS")
 #gplot(sem0.mvnK$graph, l="fdp", main="ALS mvnK")
 #gplot(sem0.mvnP$graph, l="fdp", main="ALS mvnP")
-#gplot(sem0.lin$graph, l="fdp", main="ALS lin")
-#gplot(sem0.mca$graph, l="fdp", main="ALS mca")
 
 }
 \references{
