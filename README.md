@@ -61,6 +61,8 @@ The full list of **SEMgraph** functions with examples is available at our websit
 
 ## SEMgraph-related projects
 
+- [**SEMdeep**](https://github.com/BarbaraTarantino/SEMdeep). Interpretable artificial intelligence using SEM-based deep learning modeling.
+
 - [**SEMgsa**](https://github.com/fernandoPalluzzi/SEMgraph/tree/master/SEMgsa_replication). SEM-based gene set analysis tool enabling perturbed pathway and gene finding by exploiting the causal structure of a graph.
 
 - [**SEMtree**](https://github.com/fernandoPalluzzi/SEMgraph/tree/master/SEMtree). Tree structure learning methods implemented with graph and data-driven SEM-based algorithms.
@@ -114,3 +116,5 @@ Grassi M, Palluzzi F, Tarantino B. **SEMgraph: an R package for causal network i
 Grassi M, Tarantino B. **SEMgsa: topology-based pathway enrichment analysis with structural equation models**. BMC Bioinformatics, 2022 Aug 17; 23(1):344. https://doi.org/10.1186/s12859-022-04884-8
 
 Grassi M, Tarantino B. **SEMtree: tree-based structure learning methods with structural equation models**. Bioinformatics, 2023 June 09; 39(6):btad377. https://doi.org/10.1093/bioinformatics/btad377
+
+Grassi M, Tarantino B. **SEMbap: Bow-free covariance search and data de-correlation**. PLoS Comput Biol, 2024 Sep 11; 20(9):e1012448. https://doi.org/10.1371/journal.pcbi.1012448
