@@ -23,7 +23,7 @@ library(SEMgraph)
 #' @param db String indicating the database name. Please, check the 
 #' \code{pathwayDatabases} function from graphite to list the available 
 #' datasets.
-#' @param db Gene ID type. The default is set to "ENTREZID" (standard 
+#' @param id_type Gene ID type. The default is set to "ENTREZID" (standard 
 #' SEMlearn nomenclature). A common choice could be "SYMBOL", for 
 #' official gene symbols.
 #' @param lcc A logical value. If TRUE (default), the reference network 
