@@ -17,6 +17,9 @@ Structural Equation Modeling (SEM). **SEMgraph** comes with the following functi
 ## Installation
 
 The latest stable version can be installed from [**CRAN**](https://CRAN.R-project.org/package=SEMgraph):
+``` r
+install.packages("SEMgraph")
+```
 
 The latest development version can be installed from GitHub:
 ``` r
