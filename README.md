@@ -13,6 +13,7 @@ Structural Equation Modeling (SEM). **SEMgraph** comes with the following functi
     <img src="https://github.com/fernandoPalluzzi/SEMgraph/blob/master/docs/figures/SEMgraph_workflow.png" width=85% height=85%>
 </p>
 &nbsp;
+
 ## Installation
 
 The latest stable version can be installed from [**CRAN**](https://CRAN.R-project.org/package=SEMgraph):
