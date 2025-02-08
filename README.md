@@ -36,7 +36,9 @@ devtools::install_github("fernandoPalluzzi/SEMdata")
 &nbsp;
 
 ## Getting help
+
 A gentle introduction to **SEMgraph** functionalities is available at our [**DOCs page**](https://github.com/fernandoPalluzzi/SEMgraph/edit/master/docs).
+
 The full list of **SEMgraph** functions with examples is available at our website [**HERE**](https://fernandopalluzzi.github.io/SEMgraph/).
 &nbsp;
 
