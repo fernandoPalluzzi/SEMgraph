@@ -261,7 +261,7 @@ estimatePSI <- function(dag, data, group, dalgo, method, alpha, cmax, ...)
 	  d_sep <- subset(dsep, p.adjust(dsep[,5 ], method) < alpha)
 	  guu <- graph_from_data_frame(d_sep[,c(1,2)], directed = FALSE)
 	  if (ecount(guu) > 0) {
-	   adj <- as_adj(guu, type = "both", attr = NULL, sparse = FALSE)
+	   adj <- as_adjacency_matrix(guu, type = "both", attr = NULL, sparse = FALSE)
 	   s <- round(sqrt(nrow(X))/log(ncol(X)))
 	   cat("Number of bow-free covariances / df :", nrow(d_sep),"/",nrow(dsep),"\n")
 	   cat("Max parent set(S) / Sparsity idx(s) :", max(dsep[, 3]),"/",s,"\n")
@@ -312,7 +312,7 @@ estimatePSI <- function(dag, data, group, dalgo, method, alpha, cmax, ...)
 	 group<- c(rep(0,nrow(Z_0$Z)),rep(1,nrow(Z_1$Z)))
 	 Z01 <- cbind(group, rbind(Z_0$Z, Z_1$Z))
 	 guu <- Z_0$guu %u% Z_1$guu
-	 adj <- as_adj(guu, type = "both", sparse = FALSE)
+	 adj <- as_adjacency_matrix(guu, type = "both", sparse = FALSE)
 	 Z <- list(guu=guu, adj=adj, Z=Z01)
 	}
 
@@ -372,7 +372,7 @@ estimateGGM <- function(dag, data, group, dalgo, ...)
 	 group<- c(rep(0,nrow(Z_0$Z)),rep(1,nrow(Z_1$Z)))
 	 Z01 <- cbind(group, rbind(Z_0$Z, Z_1$Z))
 	 guu <- Z_0$guu %u% Z_1$guu
-	 adj <- as_adj(guu, type = "both", sparse = FALSE)
+	 adj <- as_adjacency_matrix(guu, type = "both", sparse = FALSE)
 	 Z <- list(guu=guu, adj=adj, Z=Z01)
 	}
 
@@ -796,7 +796,7 @@ map_hidden_dag <- function(graph, data, cg=NULL, verbose=FALSE, ...)
 #' gplot(dag4$dag, main="TLBU")
 #' par(old.par)
 #' 
-SEMdag<- function(graph, data, LO="TO", beta=0, eta=NULL, lambdas=NA, penalty=TRUE, verbose=FALSE, ...)
+SEMdag<- function(graph, data, LO="TO", beta=0, eta=0, lambdas=NA, penalty=TRUE, verbose=FALSE, ...)
 {
 	# Set DAG objects:
 	nodes<- colnames(data)[colnames(data) %in% V(graph)$name]
@@ -852,7 +852,7 @@ getParents<- function(dag, X, LO, beta, eta, lambdas, penalty, verbose, ...)
 	n <- nrow(X)
 	p <- length(L)
 	if (is.na(lambdas)) lambdas <- sqrt(log(p)/n)
-	adj <- as_adj(dag, sparse = FALSE)
+	adj <- as_adjacency_matrix(dag, sparse = FALSE)
 
 	# STEP 2: DAG recovery with BU ordering
 	ftm<- NULL
@@ -901,8 +901,8 @@ glmnet.set<- function(x, y, beta, lambdas, pw, ...)
 			b <- coef(fit, s = fit$lambda.min)[-1,]
 		}
 	   }else{
-			fit <- summary(lm(y[,k] ~ x))$coefficients[-1,4]
-			b <- ifelse(fit < 0.05, 1, 0)
+			fit <- summary(lm(y[,k] ~ x))#NEW
+			b <- coef(fit)[-1, 1]        #NEW
 			names(b) <- colnames(x)
 	   }
 	   from <- names(b)[abs(b) > beta]
@@ -935,7 +935,7 @@ buildLevels <- function(dag, ...)
 	l1<- Leaf_removal(dag)
 	if (length(l1) == 2) return(l1)
 	# leaf removal(dagT)
-	adj <- as_adj(dag, sparse=FALSE)
+	adj <- as_adjacency_matrix(dag, sparse=FALSE)
 	dagT <- graph_from_adjacency_matrix(t(adj), mode="directed")
 	l2 <- Leaf_removal(dagT)
 	l2 <- rev(l2)
@@ -1371,7 +1371,7 @@ SEMtree <- function(graph, data, seed, type = "ST", eweight = NULL, alpha = 0.05
 	  else if (eweight == "custom") E(graph)$weight <- E(graph)$weight
 	 }
 	 else if (is.null(eweight)) {
-	  A <- (1-abs(cor(X)))*as_adj(ig, sparse=FALSE)[nodes,nodes]
+	  A <- (1-abs(cor(X)))*as_adjacency_matrix(ig, sparse=FALSE)[nodes,nodes]
 	  d_u <- ifelse(is.directed(ig), "directed", "undirected")
 	  graph <- graph_from_adjacency_matrix(A, mode=d_u, weighted=TRUE, diag=FALSE)
 	 }
@@ -1502,7 +1502,7 @@ CAT.R<- function(data, limit = 100, ...)
 	 Vr <- cbind(Edges, weight=do.call(rbind,Vr))
 	 Vx <- apply(data, 2, var)
 	 gW <- graph_from_data_frame(Vr)
-	 W <- as_adj(gW, attr="weight", sparse=FALSE)
+	 W <- as_adjacency_matrix(gW, attr="weight", sparse=FALSE)
 	 diag(W) <- Vx
 	}else{
 	 Vx <- rep(1, ncol(data))
@@ -1744,7 +1744,9 @@ modelSearch<- function(graph, data, gnet = NULL, d = 2, search = "basic",
 	if (search == "outer") {
 	 Gt2<- quiet(resizeGraph(g=list(Gt,Gt1.new), gnet, d=d, verbose=FALSE))
 	 green<- V(Gt2)$name[which(V(Gt2)$color == "green")]
-	 dataZ<- cbind(Zt1$data, data[,which(colnames(data) %in% green)])
+	 Zt2<- as.matrix(data[,which(colnames(data) %in% green)])
+	 colnames(Zt2)<- green
+	 dataZ<- cbind(Zt1$data, Zt2); colnames(dataZ)
 	}
 	cat("Done.\n")
 	if (verbose) {

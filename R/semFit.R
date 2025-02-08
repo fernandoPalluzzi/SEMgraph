@@ -493,7 +493,7 @@ SEMfit <- function(graph, data, group = NULL, start = NULL, fit = 0,
 	# Output objects
 	if (SE != "none") ig <- colorGraph(est = est, graph = ig, group = group, alpha = 0.05)
 	if (is.null(group)) dataXY <- cbind(group = rep(NA, n), dataXY)
-	colnames(dataXY) <- gsub("z", "", colnames(dataXY))
+	colnames(dataXY) <- sub(".", "", colnames(dataXY))
 
 	return(list(fit = fit, gest = gest, model = model, graph = ig,
 	            data = dataXY))
@@ -609,7 +609,7 @@ SEMfit2 <- function(graph, data, group, start = NULL, SE = "standard",
 		dest <- NULL
 	}
 	dataXY <- cbind(c(rep(1, n1), rep(0, n0)), rbind(data1, data0))
-	colnames(dataXY) <- c("group", gsub("z", "", colnames(dataXY)[-1]))
+	colnames(dataXY) <- c("group", sub(".", "", colnames(dataXY)[-1]))
 
 	return(list(fit = fit, dest = dest, model = model, graph = ig,
 	            data = dataXY))
@@ -636,7 +636,7 @@ SEMricf<- function (graph, data, group = NULL, n_rep = 1000, ...)
 	}
 	ig <- induced_subgraph(graph, vids = which(V(graph)$name %in% nodes))
 	E(ig)$weight <- ifelse(which_mutual(ig), 100, 1)
-	A <- as_adj(ig, attr = "weight", sparse = FALSE)[nodes,nodes]
+	A <- as_adjacency_matrix(ig, attr = "weight", sparse = FALSE)[nodes,nodes]
 	if (!is.null(group)) {
 		A <- cbind(rep(0, p), rbind(rep(1, p - 1), A))
 		colnames(A)[1] <- rownames(A)[1] <- "group"
@@ -861,9 +861,8 @@ SEMggm <- function(graph, data, group = NULL, ...)
 	Vy<- V(dag)$name[din != 0]
 	px<- length(Vx)
 	py<- length(Vy)
-	dadj<- as_adj(dag, sparse=FALSE)
-	dadj<- dadj[c(Vx,Vy),c(Vx,Vy)]
-	
+	dadj<- as_adjacency_matrix(dag, sparse=FALSE)
+		
 	if( !is.null(group) ){
 	 dadj<- cbind(rep(0, p), rbind(rep(1, p-1),dadj))
 	 colnames(dadj)[1]<- rownames(dadj)[1]<- "group"
@@ -874,7 +873,9 @@ SEMggm <- function(graph, data, group = NULL, ...)
 	}
 
 	# de-biased (de-sparsified) DAG
-	res<- parameterEstimates.DAG(Ay=dadj[,-c(1:px)], Z=scale(dataXY))
+	Ay<- as.matrix(dadj[,Vy])
+	colnames(Ay)<- Vy
+	res<- parameterEstimates.DAG(Ay, Z=scale(dataXY))
 	est<- res$beta
 	sigma<- res$sigma
 
@@ -902,7 +903,9 @@ SEMggm <- function(graph, data, group = NULL, ...)
 
 	if (!is.null(group)) {
 	 Reg<- est[which(est$op == "~"),]
-	 gest<- Reg[Reg$rhs == "group",]
+	 sel<- which(Reg$rhs == "group")
+	 Reg<- rbind(Reg[sel,], Reg[-sel,])
+	 gest<- Reg[sel,]
 	 pval1<- Brown.test(x=dataY, p=gest$pvalue, theta=gest$est, tail="positive")
 	 pval2<- Brown.test(x=dataY, p=gest$pvalue, theta=gest$est, tail="negative")
 	 cat("Brown's combined P-value of node activation:", pval1, "\n\n")
@@ -910,8 +913,8 @@ SEMggm <- function(graph, data, group = NULL, ...)
 	}else{gest<- NULL}
 
 	# output objects
-	fit<- list(Sigma=Shat, Beta=B, Psi=O, fitIdx=idx, parameterEstimates=est)
 	Reg<- est[which(est$op == "~"),]
+	fit<- list(Sigma=Shat, Beta=B, Psi=O, fitIdx=idx, parameterEstimates=Reg)
 	dag<- colorGraph(est=Reg, graph=dag, group=group, alpha=0.05)
 	if (is.null(group)) dataXY<- cbind(group=rep(NA, n), dataXY)
 	class(fit)<- "GGM"
@@ -982,23 +985,20 @@ parameterEstimates.DAG <- function(Ay, Z, ...)
 	# graphical models. In Handbook of Graphical Models (2019).
 	# Chapter 14: 325-349. Chapman & Hall/CRC. ISBN 9780429463976
 
-	est<- NULL
-	n<- nrow(Z)
-	sigma<- rep(1, nrow(Ay)-ncol(Ay))
+	est <- NULL
+	n <- nrow(Z)
+	sigma <- rep(1, nrow(Ay)-ncol(Ay))
+	
 	for (j in 1:ncol(Ay)) { #j=1
-	 yy<- colnames(Ay)[j]
-	 xx<- rownames(Ay)[Ay[,j] == 1]
-	 y<- as.matrix(Z[,yy])
-	 x<- as.matrix(Z[,xx])
-	 if (ncol(y) == 1) colnames(y)<- yy
-	 if (ncol(x) == 1) colnames(x)<- xx
+	 yy <- colnames(Ay)[j]
+	 xx <- rownames(Ay)[Ay[,j] == 1]
+	 y <- as.matrix(Z[,yy])
+	 x <- as.matrix(Z[,xx])
+	 if (ncol(y) == 1) colnames(y) <- yy
+	 if (ncol(x) == 1) colnames(x) <- xx
 	 if (ncol(x) > 1) {
 	    p <- ncol(x) + 1
-		if (p > n) {
-		 l <- sqrt(log(p)/n)
-		}else{
-		 l <- 1e-3
-		}
+		l <- ifelse(p > n, sqrt(log(p)/n), 1e-3)
 		fit <- glmnet::glmnet(x=x, y=y, family="gaussian", lambda=l)
 		b <- coef(fit, s = NULL)[-1,]
 		wi <- glasso::glasso(s=cov(x), rho=l)$wi/n
@@ -1042,7 +1042,7 @@ fitIndices <- function(n, df, npar, S, Sigma, ...)
 	t_fixed <- p*(p+1)/2 - npar - df
 
 	# remove latent variables (LV)
-	colnames(S) <- gsub("z", "", colnames(S))
+	colnames(S) <- sub(".", "", colnames(S))
 	lv <- which(substr(colnames(S),1,2) == "LV")
 	q <- length(lv)
 	#q <- 0
@@ -1220,7 +1220,7 @@ Shipley.test<- function(graph, data, MCX2=FALSE, cmax=Inf, limit=100, verbose=TR
 dsep.test<- function(dag, S, n, cmax, limit, ...)
 {
 	# d-sep (basis set) testing of a DAG
-	A <- ifelse(as_adj(as.undirected(dag), sparse=FALSE) == 1, 0, 1)
+	A <- ifelse(as_adjacency_matrix(as.undirected(dag), sparse=FALSE) == 1, 0, 1)
 	ug <- graph_from_adjacency_matrix(A, mode="undirected", diag=FALSE)
 	M <- attr(E(ug), "vnames")
 	
@@ -1465,8 +1465,8 @@ parameterEstimates<- function(fit, ...)
 {
 	if (inherits(fit, "lavaan")){
 	 est <- lavaan::parameterEstimates(fit)
-	 est$lhs <- gsub("z", "", est$lhs)
-	 est$rhs <- gsub("z", "", est$rhs)
+	 est$lhs <- sub("z", "", est$lhs)
+	 est$rhs <- sub("z", "", est$rhs)
 	 if ("group" %in% colnames(est)){
 	  est <- cbind(est[,-c(4,5)], group=est[,5])
 	 }

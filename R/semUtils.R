@@ -739,6 +739,8 @@ graph2dag<- function(graph, data, bap = FALSE, time.limit = Inf, ...)
 	names(wE) <- paste0(ftm[,1],":",ftm[,2])
 	# delete all mutual edges <-> , i.e. <- & -> 
 	ig <- graph - E(graph)[which_mutual(graph )]
+	#ig <- delete_edge_attr(ig, "zsign")
+	#ig <- delete_edge_attr(ig, "pv")
 	if (is_dag(ig) & bap == FALSE) {
 	 cat("DAG conversion : TRUE\n")
 	 return(dag = ig)
@@ -781,6 +783,8 @@ graph2dag<- function(graph, data, bap = FALSE, time.limit = Inf, ...)
 	 E1 <- unlist(lapply(l, function(x) paste0(x[1],"|",x[2])))
 	 E0 <- attr(E(ig), "vnames")
 	 ig <- delete_edges(ig, which(E0 %in% E1))
+	 #ig <- delete_edge_attr(ig, "zsign")
+	 #ig <- delete_edge_attr(ig, "pv")
 	}
 	if (bap == FALSE) {
 	 cat("DAG conversion :", is_dag(ig),"\n")
@@ -971,58 +975,50 @@ colorGraph <- function (est, graph, group, method = "none", alpha = 0.05,
 		B <- est[est$op == "~",]
 		G <- B[B$rhs == "group",]
 		B <- B[-c(1:nrow(G)),]
-		vnames <- gsub("z", "", G$lhs)
+		vnames <- G$lhs
 		G$pvalue <- p.adjust(G$pvalue, method = method)
 		Vr <- vnames[G$pvalue < alpha & G$est < 0]
 		Va <- vnames[G$pvalue < alpha & G$est > 0]
 		V(graph)$color <- ifelse(V(graph)$name %in% Vr, vcolor[1],
-		                         ifelse(V(graph)$name %in% Va,
-		                         vcolor[3], vcolor[2]))
-		enames <- gsub("z", "", paste0(B$rhs, "|", B$lhs))
+							ifelse(V(graph)$name %in% Va, vcolor[3], vcolor[2]))
+		enames <- paste0(B$rhs, "|", B$lhs)
 		B$pvalue <- p.adjust(B$pvalue, method = method)
 		Er <- enames[B$pvalue < alpha & B$est < 0]
 		Ea <- enames[B$pvalue < alpha & B$est > 0]
-		E(graph)$color <- ifelse(attr(E(graph), "vnames") %in%
-		Er, ecolor[1], ifelse(attr(E(graph), "vnames") %in%
-		                      Ea, ecolor[3], ecolor[2]))
-		E(graph)$width <- ifelse(E(graph)$color == ecolor[2],
-		                         ewidth[1], ewidth[2])
+		E(graph)$color <- ifelse(attr(E(graph), "vnames") %in% Er, ecolor[1], 
+							ifelse(attr(E(graph), "vnames") %in% Ea, ecolor[3], ecolor[2]))                   
+		E(graph)$width <- ifelse(E(graph)$color == ecolor[2], ewidth[1], ewidth[2])
 
-	} else if (colnames(est)[2] == "Stat") {
-			G <- est
-			vnames <- gsub("X", "", rownames(G))
-			G$pvalue <- p.adjust(G$pvalue, method = method)
-			Vr <- vnames[G$pvalue < alpha & G$Stat < 0]
-			Va <- vnames[G$pvalue < alpha & G$Stat > 0]
-			V(graph)$color <- ifelse(V(graph)$name %in% Vr, vcolor[1],
-			                         ifelse(V(graph)$name %in% Va,
-			                         vcolor[3], vcolor[2]))
+		} else if (colnames(est)[2] == "Stat") {
+		 G <- est
+		 vnames <- gsub("X", "", rownames(G))
+		 G$pvalue <- p.adjust(G$pvalue, method = method)
+		 Vr <- vnames[G$pvalue < alpha & G$Stat < 0]
+		 Va <- vnames[G$pvalue < alpha & G$Stat > 0]
+		 V(graph)$color <- ifelse(V(graph)$name %in% Vr, vcolor[1],
+							ifelse(V(graph)$name %in% Va, vcolor[3], vcolor[2]))
 		}
 	}
 	if (is.null(group)) {
 		if (colnames(est)[4] == "est") {
-			B <- est[est$op == "~", ]
-			enames <- gsub("z", "", paste0(B$rhs, "|", B$lhs))
-			B$pvalue <- p.adjust(B$pvalue, method = method)
-			Er <- enames[B$pvalue < alpha & B$est < 0]
-			Ea <- enames[B$pvalue < alpha & B$est > 0]
-			E(graph)$color <- ifelse(attr(E(graph), "vnames") %in%
-			   Er, ecolor[1], ifelse(attr(E(graph), "vnames") %in%
-			                         Ea, ecolor[3], ecolor[2]))
-			E(graph)$width <- ifelse(E(graph)$color == ecolor[2],
-			                         ewidth[1], ewidth[2])
+		 B <- est[est$op == "~", ]
+		 enames <- paste0(B$rhs, "|", B$lhs)
+		 B$pvalue <- p.adjust(B$pvalue, method = method)
+		 Er <- enames[B$pvalue < alpha & B$est < 0]
+		 Ea <- enames[B$pvalue < alpha & B$est > 0]
+		 E(graph)$color <- ifelse(attr(E(graph), "vnames") %in%  Er, ecolor[1],
+							ifelse(attr(E(graph), "vnames") %in% Ea, ecolor[3], ecolor[2]))
+		 E(graph)$width <- ifelse(E(graph)$color == ecolor[2], ewidth[1], ewidth[2])
 
 		} else if (colnames(est)[4] == "d_est") {
-			B <- est[est$op == "~", ]
-			enames <- gsub("z", "", paste0(B$rhs, "|", B$lhs))
-			B$pvalue<- p.adjust(B$pvalue, method=method)
-			Er <- enames[B$pvalue < alpha & B$d_est < 0]
-			Ea <- enames[B$pvalue < alpha & B$d_est > 0]
-			E(graph)$color <- ifelse(attr(E(graph), "vnames") %in%
-			   Er, ecolor[1], ifelse(attr(E(graph), "vnames") %in%
-			                         Ea, ecolor[3], ecolor[2]))
-			E(graph)$width <- ifelse(E(graph)$color == ecolor[2],
-			                         ewidth[1], ewidth[2])
+		 B <- est[est$op == "~", ]
+		 enames <- paste0(B$rhs, "|", B$lhs)
+		 B$pvalue <- p.adjust(B$pvalue, method=method)
+		 Er <- enames[B$pvalue < alpha & B$d_est < 0]
+		 Ea <- enames[B$pvalue < alpha & B$d_est > 0]
+		 E(graph)$color <- ifelse(attr(E(graph), "vnames") %in% Er, ecolor[1],
+							ifelse(attr(E(graph), "vnames") %in% Ea, ecolor[3], ecolor[2]))
+		 E(graph)$width <- ifelse(E(graph)$color == ecolor[2], ewidth[1], ewidth[2])
 		}
 	}
 	return(graph)

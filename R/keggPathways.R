@@ -22,12 +22,12 @@
 #' @title KEGG pathways
 #'
 #' @description KEGG pathways extracted using the \code{ROntoTools}
-#' R package (update: February, 2024).
+#' R package (update: Jan, 2025).
 #' @name kegg.pathways
 #' @usage kegg.pathways
 #' @docType data
 #' @format
-#' "kegg.pathways" is a list of 227 igraph objects corresponding to the
+#' "kegg.pathways" is a list of 231 igraph objects corresponding to the
 #' KEGG pathways.
 #' @source \url{https://www.genome.jp/kegg/}
 #' @references
