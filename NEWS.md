@@ -1,8 +1,13 @@
+## Version 1.2.3 Release Notes
+* Update kegg.RData and kegg.pathways.RData (February 2025).
+
+* Various fixed bugs discovered after the release 1.2.2.
+
 ## Version 1.2.2 Release Notes
 * Delete predictSink() function. A general function for SEM-based
 out-of-sample prediction is now included in the SEMdeep package,
 which uses Deep Neural Network (DNN) and Machine Learning(ML) algorithms,
-has been released on CRAN.
+has been released on CRAN: 10.32614/CRAN.package.SEMdeep
 
 * Various fixed bugs discovered after the release 1.2.1.
 
