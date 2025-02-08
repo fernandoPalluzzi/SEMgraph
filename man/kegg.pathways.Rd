@@ -5,7 +5,7 @@
 \alias{kegg.pathways}
 \title{KEGG pathways}
 \format{
-"kegg.pathways" is a list of 227 igraph objects corresponding to the
+"kegg.pathways" is a list of 231 igraph objects corresponding to the
 KEGG pathways.
 }
 \source{
@@ -16,7 +16,7 @@ kegg.pathways
 }
 \description{
 KEGG pathways extracted using the \code{ROntoTools}
-R package (update: February, 2024).
+R package (update: Jan, 2025).
 }
 \examples{
 

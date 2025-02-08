@@ -9,7 +9,7 @@ SEMdag(
   data,
   LO = "TO",
   beta = 0,
-  eta = NULL,
+  eta = 0,
   lambdas = NA,
   penalty = TRUE,
   verbose = FALSE,

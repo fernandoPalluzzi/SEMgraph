@@ -44,7 +44,7 @@ table(alsData$group)
 \references{
 Tam OH, Rozhkov NV, Shaw R, Kim D et al. (2019). Postmortem Cortex 
 Samples Identify Distinct Molecular Subtypes of ALS: Retrotransposon 
-Activation, Oxidative Stress, and Activated Glia. Cell Repprts, 
+Activation, Oxidative Stress, and Activated Glia. Cell Reports, 
 29(5):1164-1177.e5. <https://doi.org/10.1016/j.celrep.2019.09.066>
 
 Jeffrey T. Leek, W. Evan Johnson, Hilary S. Parker, Andrew E. Jaffe, 
