@@ -5,7 +5,7 @@ the assumption of normality (gaussianity) for continuous data."><!-- mathjax -->
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -19,7 +19,7 @@ the assumption of normality (gaussianity) for continuous data."><!-- mathjax -->
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.3</span>
       </span>
     </div>
 
@@ -33,14 +33,14 @@ the assumption of normality (gaussianity) for continuous data."><!-- mathjax -->
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/fernandoPalluzzi/SEMgraph/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
@@ -62,12 +62,14 @@ the assumption of normality (gaussianity) for continuous data.</p>
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>x</dt>
+
+
+<dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
 <dd><p>A matrix or data.frame (n x p). Rows correspond to subjects, and
 columns to graph nodes.</p></dd>
 
 
-<dt>method</dt>
+<dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
 <dd><p>Trasform data method. It can be one of the following:</p><ol><li><p>"npn" (default), performs nonparanormal(npn) or semiparametric
 Gaussian copula model (Liu et al, 2009), estimating the Gaussian copula
 by marginally transforming the variables using smooth ECDF functions.
@@ -84,7 +86,7 @@ tau correlation for estimation of latent Gaussian correlations
 parameter of a nonparanormal distribution (Harris &amp; Dorton (2013),
 and generates the data matrix with the exact same sample covariance
 matrix as the estimated one.</p></li>
-<li><p>"polichoric", computes the polychoric correlation matrix and
+<li><p>"polychoric", computes the polychoric correlation matrix and
 generates the data matrix with the exact same sample covariance matrix
 as the estimated one. The polychoric correlation (Olsson, 1974) is a
 measure of association between two ordinal variables. It is based on the
@@ -103,15 +105,13 @@ latent space of the observed variables is unidimensional.</p></li>
 </ol></dd>
 
 
-<dt>...</dt>
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Currently ignored.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>A list of 2 objects is returned:</p><ol><li><p>"data", the matrix (n x p) of n observations and p transformed
+    <p>A list of 2 objects is returned:</p><ol><li><p>"data", the matrix (n x p) of n observations and p transformed
 variables or the matrix (n x p) of simulate observations based on the
 selected correlation matrix.</p></li>
 <li><p>"catscores", the category weights for "lineals" or "mca"
@@ -158,26 +158,26 @@ non-correlational aspects in R. Journal of Statistical Software, 32(9), 1-23.</p
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">npn.data</span><span class="op">&lt;-</span> <span class="fu">transformData</span><span class="op">(</span><span class="va">X</span>, method<span class="op">=</span><span class="st">"npn"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Conducting the nonparanormal transformation via shrunkun ECDF...done.</span>
-<span class="r-in"><span><span class="va">sem0.npn</span><span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">graph</span>, <span class="va">npn.data</span><span class="op">$</span><span class="va">data</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NLMINB solver ended normally after 1 iterations </span>
+<span class="r-in"><span><span class="va">sem0.npn</span><span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">graph</span>, <span class="va">npn.data</span><span class="op">$</span><span class="va">data</span>, algo<span class="op">=</span><span class="st">"cggm"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> GGM (de-biased nodewise L1) solver ended normally after 23 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 10.92504  srmr: 0.2858859 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 11.1374  srmr: 0.288874 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">mvnS.data</span><span class="op">&lt;-</span> <span class="fu">transformData</span><span class="op">(</span><span class="va">X</span>, method<span class="op">=</span><span class="st">"spearman"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Simulating gaussian data via Spearman correlations...done.</span>
-<span class="r-in"><span><span class="va">sem0.mvnS</span><span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">graph</span>, <span class="va">mvnS.data</span><span class="op">$</span><span class="va">data</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NLMINB solver ended normally after 1 iterations </span>
+<span class="r-in"><span><span class="va">sem0.mvnS</span><span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">graph</span>, <span class="va">mvnS.data</span><span class="op">$</span><span class="va">data</span>, algo<span class="op">=</span><span class="st">"cggm"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> GGM (de-biased nodewise L1) solver ended normally after 23 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 11.71544  srmr: 0.2881886 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 11.90066  srmr: 0.2908674 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">mvnK.data</span><span class="op">&lt;-</span> <span class="fu">transformData</span><span class="op">(</span><span class="va">X</span>, method<span class="op">=</span><span class="st">"kendall"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Simulating gaussian data via Kendall correlations...done.</span>
-<span class="r-in"><span><span class="va">sem0.mvnK</span><span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">graph</span>, <span class="va">mvnK.data</span><span class="op">$</span><span class="va">data</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NLMINB solver ended normally after 6 iterations </span>
+<span class="r-in"><span><span class="va">sem0.mvnK</span><span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">graph</span>, <span class="va">mvnK.data</span><span class="op">$</span><span class="va">data</span>, algo<span class="op">=</span><span class="st">"cggm"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> GGM (de-biased nodewise L1) solver ended normally after 23 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 14.10983  srmr: 0.395726 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 15.58564  srmr: 0.4082966 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">#...with ordinal (K=4 categories) ALS data</span></span></span>
@@ -185,291 +185,21 @@ non-correlational aspects in R. Journal of Statistical Software, 32(9), 1-23.</p
 <span class="r-in"><span><span class="va">Xord</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">Xord</span>, <span class="va">cut</span>, <span class="fl">4</span>, labels <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">Xord</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"X"</span>, <span class="st">""</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">Xord</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">mvnP.data</span><span class="op">&lt;-</span> <span class="fu">transformData</span><span class="op">(</span><span class="va">Xord</span>, method<span class="op">=</span><span class="st">"polychoric"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Simulating gaussian data via polychoric correlations...done.</span>
-<span class="r-in"><span><span class="va">sem0.mvnP</span><span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">graph</span>, <span class="va">mvnP.data</span><span class="op">$</span><span class="va">data</span>, algo<span class="op">=</span><span class="st">"ricf"</span>, n_rep<span class="op">=</span><span class="fl">1000</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> RICF solver ended normally after 2 iterations </span>
+<span class="r-in"><span><span class="va">sem0.mvnP</span><span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">graph</span>, <span class="va">mvnP.data</span><span class="op">$</span><span class="va">data</span>, algo<span class="op">=</span><span class="st">"cggm"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> GGM (de-biased nodewise L1) solver ended normally after 23 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 23.32914  srmr: 0.3188226 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 23.74632  srmr: 0.3171873 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Model randomization with B = 1000 bootstrap samples ...</span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># }</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">lin.data</span><span class="op">&lt;-</span> <span class="fu">transformData</span><span class="op">(</span><span class="va">Xord</span>, method<span class="op">=</span><span class="st">"lineals"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Conducting the optimal (ordinal) linearizing transformation...</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>the standard deviation is zero</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> done.</span>
-<span class="r-in"><span><span class="va">sem0.lin</span><span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">graph</span>, <span class="va">lin.data</span><span class="op">$</span><span class="va">data</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Estimating optimal shrinkage intensity lambda (correlation matrix): 0.1642 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NLMINB solver ended normally after 1 iterations </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 34.40295  srmr: 0.2453185 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span><span class="va">lin.data</span><span class="op">$</span><span class="va">catscores</span>; <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">lin.data</span><span class="op">$</span><span class="va">data</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`317`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.13521162</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -0.07583129</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.07355762</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.07355762</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`572`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.191746085</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0.003537308</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.003537308</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.123269847</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`581`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.1216547441</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0.0007229829</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.1071747055</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.1071747055</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`596`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.18630619</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -0.03480288</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.08244315</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.08244315</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`598`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.09628079</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0.01069357</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.14889455</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.14889455</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`836`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.18169318</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -0.04286281</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.07004522</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.15463583</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`842`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.17052695</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -0.11277710</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.05186556</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.05186556</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`54205`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.022997786</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -0.022997786</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.005749447</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.005749447</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`1616`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.15626481</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0.01940459</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.06599235</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.11576736</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`79139`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -6.505213e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -6.505213e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 -6.505213e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 -6.505213e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`5606`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.050817752</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0.006721351</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.006721351</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.091466747</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`5608`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 2.602085e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 2.602085e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 2.602085e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 2.602085e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`4217`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.15520107</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -0.02573987</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.09240626</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.10384974</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`5600`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.0575267058</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0.0007281861</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.0007281861</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.0007281861</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`6300`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.01692033</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -0.01692033</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.04068079</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.04068079</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`5603`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -1.105886e-17</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -1.105886e-17</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 -1.105886e-17</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 -1.105886e-17</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`1432`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 8.182338e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 8.182338e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 8.182338e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 8.182338e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`4744`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.0059010283</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -0.0059010283</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.0003517169</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.0003517169</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`4747`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.047142139</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -0.047142139</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.001836707</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.001836707</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`4741`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.0223512546</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -0.0223512546</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.0008708281</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.0008708281</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`5530`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.043859676</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -0.043859676</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.002614153</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.002614153</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`5532`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.091071226</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -0.091071226</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.009421161</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.009421161</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`5533`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.276543764</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -0.007196858</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.033276472</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.033276472</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`5534`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.038447032</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -0.038447032</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.002291545</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.002291545</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`5535`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -6.288373e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -6.288373e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 -6.288373e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 -6.288373e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`5630`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.12292007</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0.04662486</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.04662486</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.04662486</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`6647`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.08251265</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -0.08251265</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.01750268</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.01750268</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`7132`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.150056849</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0.009326866</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.053775689</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.053775689</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`7133`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.005233238</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -0.005233238</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 -0.005233238</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.050587967</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`10452`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -1.734723e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -1.734723e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 -1.734723e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 -1.734723e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $`84134`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -3.676123e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -3.676123e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 -3.676123e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 -3.676123e-18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          317         572          581        596        598        836</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.9275263 -0.04460376  1.534007954 -1.0395686 -0.1348408  0.5404794</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -0.9275263  2.41782613 -0.009116467 -1.0395686  1.2140546 -0.8832366</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 -0.9275263 -0.04460376 -0.009116467 -1.0395686 -0.1348408  0.5404794</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 -0.9275263 -0.04460376  1.534007954 -1.0395686 -0.1348408 -0.8832366</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 -0.9275263 -0.04460376  1.534007954 -1.0395686 -0.1348408  0.5404794</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 -0.9275263  2.41782613 -0.009116467  0.4388476  1.2140546 -0.8832366</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          842       54205       1616        5606       4217         5600</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  1.4220651 -0.07249776 -0.2446826 -0.08475302  0.3245673 -0.009182078</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -0.6539998 -0.07249776 -0.2446826  0.64078747  0.3245673 -0.009182078</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 -0.6539998  0.28999105 -0.2446826 -0.08475302 -1.1651986 -0.009182078</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 -0.6539998 -0.07249776 -0.2446826 -0.08475302 -1.1651986 -0.009182078</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 -0.6539998 -0.07249776 -0.2446826 -0.08475302 -1.1651986 -0.009182078</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  1.4220651 -0.07249776  1.9704243 -0.08475302 -1.1651986 -0.009182078</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         6300         4744        4747        4741        5530       5532</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  0.2133572 -0.004434982 -0.02315999 -0.01098072 -0.03296321 -0.1187963</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0.2133572 -0.004434982 -0.02315999 -0.01098072 -0.03296321 -0.1187963</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 -0.5129652 -0.004434982 -0.02315999 -0.01098072 -0.03296321 -0.1187963</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.2133572 -0.004434982 -0.02315999 -0.01098072 -0.03296321 -0.1187963</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  0.2133572 -0.004434982 -0.02315999 -0.01098072 -0.03296321 -0.1187963</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  0.2133572 -0.004434982 -0.02315999 -0.01098072 -0.03296321 -0.1187963</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          5533        5534       5630       6647       7132       7133 79139</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.41960034 -0.02889528  1.5499632 -0.2207004 -0.1176073 0.06598862     3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0.09074892 -0.02889528 -0.5879171 -0.2207004  1.8921449 0.06598862     4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.09074892 -0.02889528 -0.5879171  1.0404449 -0.6780856 0.06598862     2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 -0.41960034 -0.02889528  1.5499632 -0.2207004 -0.6780856 0.06598862     4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 -0.41960034 -0.02889528 -0.5879171 -0.2207004 -0.6780856 0.06598862     3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  0.09074892 -0.02889528 -0.5879171 -0.2207004 -0.6780856 0.06598862     3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   5608 5603 1432 5535 10452 84134</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1    4    4    3    3     2     3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2    4    3    3    4     2     2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3    3    4    4    4     2     3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4    4    4    4    4     1     3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5    3    3    4    3     1     3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6    4    4    3    3     2     3</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">#...with nominal (K=4 categories) ALS data</span></span></span>
 <span class="r-in"><span><span class="va">mca.data</span><span class="op">&lt;-</span> <span class="fu">transformData</span><span class="op">(</span><span class="va">Xord</span>, method<span class="op">=</span><span class="st">"mca"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Conducting the first solution of Multiple Correspondence Analysis...done.</span>
-<span class="r-in"><span><span class="va">sem0.mca</span><span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">graph</span>, <span class="va">mca.data</span><span class="op">$</span><span class="va">data</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NLMINB solver ended normally after 6 iterations </span>
+<span class="r-in"><span><span class="va">sem0.mca</span><span class="op">&lt;-</span> <span class="fu"><a href="SEMrun.html">SEMrun</a></span><span class="op">(</span><span class="va">graph</span>, <span class="va">mca.data</span><span class="op">$</span><span class="va">data</span>, algo<span class="op">=</span><span class="st">"cggm"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> GGM (de-biased nodewise L1) solver ended normally after 23 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 9.120595  srmr: 0.3147939 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 10.20209  srmr: 0.3175633 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="va">mca.data</span><span class="op">$</span><span class="va">catscores</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $`317`</span>
@@ -689,15 +419,15 @@ non-correlational aspects in R. Journal of Statistical Software, 32(9), 1-23.</p
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.3288807</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.2508747</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">sem0.mca</span><span class="op">$</span><span class="va">graph</span>, l<span class="op">=</span><span class="st">"fdp"</span>, main<span class="op">=</span><span class="st">"ALS mca"</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="transformData-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># plot colored graphs</span></span></span>
-<span class="r-in"><span><span class="co">#par(mfrow=c(3,2), mar=rep(1,4))</span></span></span>
+<span class="r-in"><span><span class="co">#par(mfrow=c(2,2), mar=rep(1,4))</span></span></span>
 <span class="r-in"><span><span class="co">#gplot(sem0.npn$graph, l="fdp", main="ALS npm")</span></span></span>
 <span class="r-in"><span><span class="co">#gplot(sem0.mvnS$graph, l="fdp", main="ALS mvnS")</span></span></span>
 <span class="r-in"><span><span class="co">#gplot(sem0.mvnK$graph, l="fdp", main="ALS mvnK")</span></span></span>
 <span class="r-in"><span><span class="co">#gplot(sem0.mvnP$graph, l="fdp", main="ALS mvnP")</span></span></span>
-<span class="r-in"><span><span class="co">#gplot(sem0.lin$graph, l="fdp", main="ALS lin")</span></span></span>
-<span class="r-in"><span><span class="co">#gplot(sem0.mca$graph, l="fdp", main="ALS mca")</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
@@ -713,15 +443,15 @@ non-correlational aspects in R. Journal of Statistical Software, 32(9), 1-23.</p
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

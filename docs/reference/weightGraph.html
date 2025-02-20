@@ -3,7 +3,7 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.3</span>
       </span>
     </div>
 
@@ -31,14 +31,14 @@
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/fernandoPalluzzi/SEMgraph/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
@@ -58,16 +58,18 @@
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>graph</dt>
+
+
+<dl><dt id="arg-graph">graph<a class="anchor" aria-label="anchor" href="#arg-graph"></a></dt>
 <dd><p>An igraph object.</p></dd>
 
 
-<dt>data</dt>
+<dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>A matrix or data.frame. Rows correspond to subjects, and
 columns to graph nodes.</p></dd>
 
 
-<dt>group</dt>
+<dt id="arg-group">group<a class="anchor" aria-label="anchor" href="#arg-group"></a></dt>
 <dd><p>Binary vector. This vector must be as long as the number
 of subjects. Each vector element must be 1 for cases and 0 for control
 subjects. By default, <code>group = NULL</code>. If group is not NULL, also
@@ -77,30 +79,30 @@ y ~ x, i.e., lm(node ~ group)) and V(graph)$sign (-1 if z&lt;-2, +1 if z&gt;2,
 0 otherwise).</p></dd>
 
 
-<dt>method</dt>
+<dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
 <dd><p>Edge weighting method. It can be one of the following:</p><ol><li><p>"r2z", weight edges are defined using Fisher's r-to-z transform
 (Fisher, 1915) to test the correlation coefficient of pairs of interacting
 nodes, if <code>group=NULL</code>. Otherwise, the difference between group of
 the r-to-z trasform will be tested. Edge weights correspond to the attribute:
 E(graph)$pv (P-value of the z-test) and E(graph)$sign (-1 if z&lt;-2, +1 if z&gt;2,
 0 otherwise).</p></li>
-<li><p>"sem", edge weights are defined by a SEM model that implies 
+<li><p>"sem", edge weights are defined by a SEM model that implies
 testing the group effect simultaneously on source and sink nodes.
-A new parameter w is defined as the weighted sum of the total effect 
-of the group on source and sink nodes, adjusted by node degree centrality. 
+A new parameter w is defined as the weighted sum of the total effect
+of the group on source and sink nodes, adjusted by node degree centrality.
 Edge weights correspond to the attribute: E(graph)$pv (P-value of the
-z-test = w/SE(w)) and E(graph)$sign (-1 if z&lt;-2, +1 if z&gt;2, 0 otherwise). 
+z-test = w/SE(w)) and E(graph)$sign (-1 if z&lt;-2, +1 if z&gt;2, 0 otherwise).
 Not available if <code>group=NULL</code>.</p></li>
-<li><p>"cov", edge weights are defined by a new parameter w combining 
-the group effect on the source node (mean group difference, adjusted 
-by source degree centrality), the sink node (mean group difference, 
-adjusted by sink degree centrality), and the source--sink interaction 
+<li><p>"cov", edge weights are defined by a new parameter w combining
+the group effect on the source node (mean group difference, adjusted
+by source degree centrality), the sink node (mean group difference,
+adjusted by sink degree centrality), and the source–sink interaction
 (correlation difference). Edge weights correspond to the attribute:
 E(graph)$pv (P-value of the z-test = w/SE(w) of the combined difference
 of the group over source node, sink node, and their connection) and
 E(graph)$sign (-1 if z&lt;-2, +1 if z&gt;2, 0 otherwise).
 Not available if <code>group=NULL</code>.</p></li>
-<li><p>"cfa", edge weights are defined by a CFA1 model that implies 
+<li><p>"cfa", edge weights are defined by a CFA1 model that implies
 testing the group effect, w on a latent variable (LV) with observed
 indicators two interacting nodes, fixing loading coefficients and residual
 variances for model identification. Edge weights correspond to the
@@ -110,26 +112,24 @@ Not available if <code>group=NULL</code>.</p></li>
 </ol></dd>
 
 
-<dt>limit</dt>
-<dd><p>An integer value corresponding to the number of graph 
-edges. Beyond this limit, multicore computation is enabled to reduce 
+<dt id="arg-limit">limit<a class="anchor" aria-label="anchor" href="#arg-limit"></a></dt>
+<dd><p>An integer value corresponding to the number of graph
+edges. Beyond this limit, multicore computation is enabled to reduce
 the computational burden. By default, <code>limit = 10000</code>.</p></dd>
 
 
-<dt>...</dt>
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Currently ignored.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>A weighted graph, as an igraph object.</p>
+    <p>A weighted graph, as an igraph object.</p>
     </div>
     <div id="references">
     <h2>References</h2>
     <p>Grassi M, Tarantino B (2023). [Supplementary material of] SEMtree: tree-based structure
-learning methods with structural equation models. 
+learning methods with structural equation models.
 Bioinformatics, 39 (6), 4829–4830 &lt;https://doi.org/10.1093/bioinformatics/btad377&gt;</p>
 <p>Fisher RA (1915). Frequency Distribution of the Values of the Correlation
 Coefficient in Samples from an Indefinitely Large Population. Biometrika,
@@ -187,15 +187,15 @@ Coefficient in Samples from an Indefinitely Large Population. Biometrika,
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

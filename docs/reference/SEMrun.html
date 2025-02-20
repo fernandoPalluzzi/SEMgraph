@@ -9,7 +9,7 @@ two nodes) are not allowed."><!-- mathjax --><script src="https://cdnjs.cloudfla
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -23,7 +23,7 @@ two nodes) are not allowed."><!-- mathjax --><script src="https://cdnjs.cloudfla
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.3</span>
       </span>
     </div>
 
@@ -37,14 +37,14 @@ two nodes) are not allowed."><!-- mathjax --><script src="https://cdnjs.cloudfla
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/fernandoPalluzzi/SEMgraph/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
@@ -81,23 +81,25 @@ two nodes) are not allowed.</p>
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>graph</dt>
+
+
+<dl><dt id="arg-graph">graph<a class="anchor" aria-label="anchor" href="#arg-graph"></a></dt>
 <dd><p>An igraph object.</p></dd>
 
 
-<dt>data</dt>
+<dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>A matrix whith rows corresponding to subjects, and
 columns to graph nodes (variables).</p></dd>
 
 
-<dt>group</dt>
+<dt id="arg-group">group<a class="anchor" aria-label="anchor" href="#arg-group"></a></dt>
 <dd><p>A binary vector. This vector must be as long as the
 number of subjects. Each vector element must be 1 for cases and 0
 for control subjects. If <code>NULL</code> (default), group influence will
 not be considered.</p></dd>
 
 
-<dt>fit</dt>
+<dt id="arg-fit">fit<a class="anchor" aria-label="anchor" href="#arg-fit"></a></dt>
 <dd><p>A numeric value indicating the SEM fitting mode.
 If <code>fit = 0</code> (default), no group effect is considered.
 If <code>fit = 1</code>, a "common" model is used to evaluate group effects
@@ -106,7 +108,7 @@ If <code>fit = 2</code>, a two-group model is used to evaluate group effects
 on graph edges.</p></dd>
 
 
-<dt>algo</dt>
+<dt id="arg-algo">algo<a class="anchor" aria-label="anchor" href="#arg-algo"></a></dt>
 <dd><p>MLE method used for SEM fitting. If <code>algo = "lavaan"</code>
 (default), the SEM will be fitted using the NLMINB solver from
 <code>lavaan</code> R package, with standard errors derived from the expected
@@ -118,7 +120,7 @@ Graphical Modeling (CGGM), with DAG nodewise Lasso procedure and
 de-biasing asymptotic inference (Jankova &amp; Van De Geer, 2019).</p></dd>
 
 
-<dt>start</dt>
+<dt id="arg-start">start<a class="anchor" aria-label="anchor" href="#arg-start"></a></dt>
 <dd><p>Starting value of SEM parameters for <code>algo = "lavaan"</code>.
 If start is <code>NULL</code> (default), the algorithm will determine the
 starting values. If start is a numeric value, it will be used as a
@@ -131,21 +133,21 @@ option to avoid this problem. As a rule of thumb, to our experience,
 <code>start = 0.1</code> generally performs well with (-1, 0, 1) weights.</p></dd>
 
 
-<dt>SE</dt>
+<dt id="arg-se">SE<a class="anchor" aria-label="anchor" href="#arg-se"></a></dt>
 <dd><p>If "standard" (default), with <code>algo = "lavaan"</code>,
 conventional standard errors are computed based on inverting the observed
 information matrix. If "none", no standard errors are computed.</p></dd>
 
 
-<dt>n_rep</dt>
+<dt id="arg-n-rep">n_rep<a class="anchor" aria-label="anchor" href="#arg-n-rep"></a></dt>
 <dd><p>Number of randomization replicates (default = 1000),
 for permutation flip or boostrap samples, if <code>algo = "ricf"</code>.</p></dd>
 
 
-<dt>limit</dt>
+<dt id="arg-limit">limit<a class="anchor" aria-label="anchor" href="#arg-limit"></a></dt>
 <dd><p>An integer value corresponding to the network size
 (i.e., number of nodes). Beyond this limit, the execution under
-<code>algo = "lavaan"</code> will run with <code>SE = "none"</code>, if 
+<code>algo = "lavaan"</code> will run with <code>SE = "none"</code>, if
 <code>fit = 0</code>, or will be ridirected to <code>algo = "ricf"</code>, if
 <code>fit = 1</code>, or to <code>algo = "cggm"</code>, if <code>fit = 2</code>.
 This redirection is necessary to reduce the computational demand of
@@ -153,15 +155,13 @@ standard error estimation by lavaan. Increasing this number will
 enforce lavaan execution when <code>algo = "lavaan"</code>.</p></dd>
 
 
-<dt>...</dt>
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Currently ignored.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>A list of 5 objects:</p><ol><li><p>"fit", SEM fitted lavaan, ricf, or cggm object,
+    <p>A list of 5 objects:</p><ol><li><p>"fit", SEM fitted lavaan, ricf, or cggm object,
 depending on the MLE method specified by the <code>algo</code> argument;</p></li>
 <li><p>"gest" or "dest", a data.frame of node-specific
 ("gest") or edge-specific ("dest") group effect estimates and P-values;</p></li>
@@ -260,7 +260,7 @@ for RICF algorithm and constrained GGM algorithm details, respectively.</p></div
 <span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 66.93938  srmr: 0.0894911 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sem0</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> lavaan 0.6-18 ended normally after 10 iterations</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> lavaan 0.6-19 ended normally after 10 iterations</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Estimator                                         ML</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Optimization method                           NLMINB</span>
@@ -360,7 +360,7 @@ for RICF algorithm and constrained GGM algorithm details, respectively.</p></div
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Fitting summaries</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sem1</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> lavaan 0.6-18 ended normally after 5 iterations</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> lavaan 0.6-19 ended normally after 5 iterations</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Estimator                                         ML</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Optimization method                           NLMINB</span>
@@ -496,7 +496,7 @@ for RICF algorithm and constrained GGM algorithm details, respectively.</p></div
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Summaries</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sem2</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> lavaan 0.6-18 ended normally after 12 iterations</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> lavaan 0.6-19 ended normally after 12 iterations</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Estimator                                         ML</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Optimization method                           NLMINB</span>
@@ -661,7 +661,6 @@ for RICF algorithm and constrained GGM algorithm details, respectively.</p></div
 <span class="r-plt img"><img src="SEMrun-6.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Fitting and visualization of a large pathway:</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="va">kegg.pathways</span><span class="op">[[</span><span class="st">"Neurotrophin signaling pathway"</span><span class="op">]</span><span class="op">]</span></span></span>
@@ -669,7 +668,7 @@ for RICF algorithm and constrained GGM algorithm details, respectively.</p></div
 <span class="r-out co"><span class="r-pr">#&gt;</span> Frequency distribution of graph components</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   n.nodes n.graphs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1     117        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     118        1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Percent of vertices in the giant component: 98.3 %</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -677,9 +676,9 @@ for RICF algorithm and constrained GGM algorithm details, respectively.</p></div
 <span class="r-out co"><span class="r-pr">#&gt;</span>        TRUE       FALSE        TRUE        TRUE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> which.mutual.FALSE </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                357 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                368 </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">G</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH dccc085 DNW- 117 357 -- </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH bf4145f DNW- 118 368 -- </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> + attr: name (v/c), weight (e/n)</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Nonparanormal(npn) transformation</span></span></span>
@@ -690,20 +689,20 @@ for RICF algorithm and constrained GGM algorithm details, respectively.</p></div
 <span class="r-out co"><span class="r-pr">#&gt;</span> DAG conversion : TRUE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> GGM (de-biased nodewise L1) solver ended normally after 45 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 8.778113  srmr: 0.2940863 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 8.778111  srmr: 0.2940889 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node activation: 6.584955e-12 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node activation: 3.28626e-13 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 0.05531611 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of node inhibition: 1.665335e-15 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="va">g2</span> <span class="op">&lt;-</span> <span class="fu">SEMrun</span><span class="op">(</span><span class="va">g1</span>, <span class="va">als.npn</span>, <span class="va">alsData</span><span class="op">$</span><span class="va">group</span>, fit <span class="op">=</span> <span class="fl">2</span>, algo <span class="op">=</span> <span class="st">"cggm"</span><span class="op">)</span><span class="op">$</span><span class="va">graph</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> GGM (de-biased nodewise L1) solver ended normally after 0 iterations </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 14.06649  srmr: 0.3218909 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> deviance/df: 14.39114  srmr: 0.3446835 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of edge activation: 1.098886e-07 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of edge activation: 1.085838e-07 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of edge inhibition: 7.3611e-09 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Brown's combined P-value of edge inhibition: 7.301832e-09 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># extract the subgraph with node and edge differences</span></span></span>
@@ -728,7 +727,6 @@ for RICF algorithm and constrained GGM algorithm details, respectively.</p></div
 <span class="r-in"><span><span class="fu"><a href="https://r.igraph.org/reference/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span><span class="op">$</span><span class="va">color</span><span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">g2</span><span class="op">)</span><span class="op">$</span><span class="va">color</span><span class="op">[</span><span class="fu"><a href="https://r.igraph.org/reference/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">g2</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://r.igraph.org/reference/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span><span class="op">]</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="gplot.html">gplot</a></span><span class="op">(</span><span class="va">g</span>, l<span class="op">=</span><span class="st">"fdp"</span>, psize<span class="op">=</span><span class="fl">40</span>, main<span class="op">=</span><span class="st">"node and edge group differences"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="SEMrun-7.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
@@ -745,15 +743,15 @@ for RICF algorithm and constrained GGM algorithm details, respectively.</p></div
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 
