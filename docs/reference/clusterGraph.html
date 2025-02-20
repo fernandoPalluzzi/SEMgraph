@@ -3,7 +3,7 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.3</span>
       </span>
     </div>
 
@@ -31,14 +31,14 @@
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/fernandoPalluzzi/SEMgraph/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
@@ -58,11 +58,13 @@
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>graph</dt>
+
+
+<dl><dt id="arg-graph">graph<a class="anchor" aria-label="anchor" href="#arg-graph"></a></dt>
 <dd><p>An igraph object.</p></dd>
 
 
-<dt>type</dt>
+<dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
 <dd><p>Topological clustering methods. If <code>type = "tahc"</code>,
 network modules are generated using the tree agglomerative hierarchical
 clustering method (Yu et al., 2015). Other non-tree clustering methods
@@ -74,7 +76,7 @@ from <code>igraph</code> package include: "wtc"
 (spinglass statistical mechanics).</p></dd>
 
 
-<dt>HM</dt>
+<dt id="arg-hm">HM<a class="anchor" aria-label="anchor" href="#arg-hm"></a></dt>
 <dd><p>Hidden model type. Enables the visualization of the hidden
 model, gHM. If set to "none" (default), no gHM igraph object is saved.
 For each defined hidden module:
@@ -87,26 +89,24 @@ act as common regressors influencing the other nodes via an unmeasured
 variable (see also <code><a href="clusterScore.html">clusterScore</a></code>).</p></dd>
 
 
-<dt>size</dt>
+<dt id="arg-size">size<a class="anchor" aria-label="anchor" href="#arg-size"></a></dt>
 <dd><p>Minimum number of nodes per module. By default, a minimum
 number of 5 nodes is required.</p></dd>
 
 
-<dt>verbose</dt>
+<dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p>A logical value. If FALSE (default), the gHM igraph
 will not be plotted to screen, saving execution time (they will be
 returned in output anyway).</p></dd>
 
 
-<dt>...</dt>
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Currently ignored.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>If HM is not "none" a list of 2 objects is returned:</p><ol><li><p>"gHM", subgraph containing hidden modules as an igraph object;</p></li>
+    <p>If HM is not "none" a list of 2 objects is returned:</p><ol><li><p>"gHM", subgraph containing hidden modules as an igraph object;</p></li>
 <li><p>"membership", cluster membership vector for each node.</p></li>
 </ol><p>If HM is "none", only the cluster membership vector is returned.</p>
     </div>
@@ -172,15 +172,15 @@ Chaos 25(2): 023107. &lt;https://doi.org/10.1063/1.4908014&gt;</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

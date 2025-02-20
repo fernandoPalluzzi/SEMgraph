@@ -7,7 +7,7 @@ the data matrix, Y or (iii) spectral transformation of Y."><!-- mathjax --><scri
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -21,7 +21,7 @@ the data matrix, Y or (iii) spectral transformation of Y."><!-- mathjax --><scri
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.3</span>
       </span>
     </div>
 
@@ -35,14 +35,14 @@ the data matrix, Y or (iii) spectral transformation of Y."><!-- mathjax --><scri
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/fernandoPalluzzi/SEMgraph/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
@@ -78,25 +78,27 @@ the data matrix, Y or (iii) spectral transformation of Y.</p>
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>graph</dt>
+
+
+<dl><dt id="arg-graph">graph<a class="anchor" aria-label="anchor" href="#arg-graph"></a></dt>
 <dd><p>An igraph object.</p></dd>
 
 
-<dt>data</dt>
+<dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>A matrix whith rows corresponding to subjects, and columns to
 graph nodes (variables).</p></dd>
 
 
-<dt>group</dt>
+<dt id="arg-group">group<a class="anchor" aria-label="anchor" href="#arg-group"></a></dt>
 <dd><p>A binary vector. This vector must be as long as the
 number of subjects. Each vector element must be 1 for cases and 0
 for control subjects. If <code>NULL</code> (default), confouding within group
 will not be considered.</p></dd>
 
 
-<dt>dalgo</dt>
+<dt id="arg-dalgo">dalgo<a class="anchor" aria-label="anchor" href="#arg-dalgo"></a></dt>
 <dd><p>Deconfounding method. Four algorithms are available:</p><ul><li><p>"cggm" (default). The algorithm make: (i) exhaustive search
-of bow-free significant covariances (see details) through  
+of bow-free significant covariances (see details) through
 <code><a href="Shipley.test.html">Shipley.test</a></code> function; (ii) estimation of the inverse
 of the selected covariance matrix (i.e. the precision matrix, W) through
 <code><a href="https://rdrr.io/pkg/ggm/man/fitConGraph.html" class="external-link">fitConGraph</a></code> function; (iii) obtain the de-correlated data
@@ -123,13 +125,13 @@ costant (t), where t = median of the singuar values.</p></li>
 </ul></dd>
 
 
-<dt>method</dt>
+<dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
 <dd><p>Multiple testing correction method. One of the values
 available in <code><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">p.adjust</a></code>. By default, <code>method</code>
 is set to "BH" (i.e., Benjamini-Hochberg multiple test correction).</p></dd>
 
 
-<dt>alpha</dt>
+<dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
 <dd><p>Significance level for false discovery rate (FDR) used
 for d-separation test. This argument is used to
 control data de-correlation. A higher <code>alpha</code> level includes more
@@ -138,21 +140,21 @@ If <code>alpha = 0</code>, data de-correlation is disabled. By default,
 <code>alpha = 0.05</code>.</p></dd>
 
 
-<dt>hcount</dt>
+<dt id="arg-hcount">hcount<a class="anchor" aria-label="anchor" href="#arg-hcount"></a></dt>
 <dd><p>The number of latent (or hidden) variables. By default
 <code>hcount="auto"</code>, the hidden count is determined with a
 permutation method (see details). Currently ignored if (dalgo ="cggm"
 or "trim").</p></dd>
 
 
-<dt>cmax</dt>
+<dt id="arg-cmax">cmax<a class="anchor" aria-label="anchor" href="#arg-cmax"></a></dt>
 <dd><p>Maximum number of parents set, C. This parameter can be
 used to perform only those tests where the number of conditioning
 variables does not exceed the given value. High-dimensional conditional
 independence tests can be very unreliable. By default, cmax = Inf.</p></dd>
 
 
-<dt>limit</dt>
+<dt id="arg-limit">limit<a class="anchor" aria-label="anchor" href="#arg-limit"></a></dt>
 <dd><p>An integer value corresponding to the graph size (vcount)
 tolerance. Beyond this limit, the precision matrix is estimated by
 "glasso" algorithm (FHT, 2008) to reduce the computational burden of the
@@ -160,24 +162,22 @@ exaustive BAP search of the <code><a href="Shipley.test.html">Shipley.test</a></
 By default, <code>limit = 200</code>.</p></dd>
 
 
-<dt>verbose</dt>
+<dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p>A logical value. If FALSE (default), the processed graphs
 will not be plotted to screen.</p></dd>
 
 
-<dt>...</dt>
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Currently ignored.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>A list of four objects:</p><ul><li><p>"dag", the directed acyclic graph (DAG) extracted from input graph.
+    <p>A list of four objects:</p><ul><li><p>"dag", the directed acyclic graph (DAG) extracted from input graph.
 If (dalgo = "glpc" or "pc"), the DAG also includes LVs as source nodes.</p></li>
 <li><p>"guu", the bow-free covariance graph, BAP = dag + guu. If (dalgo =
 "pc" or "trim"), guu is equal to NULL</p></li>
-<li><p>"adj", the adjacency matrix of selected bow-free covariances; i.e, the 
+<li><p>"adj", the adjacency matrix of selected bow-free covariances; i.e, the
 missing edges selected after multiple testing correction. If (dalgo = "pc"
 or "trim"), adj matrix is equal to NULL.</p></li>
 <li><p>"data", the adjusted (de-correlated) data matrix or if (dalgo = "glpc",
@@ -222,9 +222,9 @@ Bioinformatics, 38(20), 4829–4830.
 <p>Shipley B (2000). A new inferential test for path models based on DAGs.
 Structural Equation Modeling, 7(2), 206-218.
 &lt;https://doi.org/10.1207/S15328007SEM0702_4&gt;</p>
-<p>Jiang B, Ding C, Bin L, Tang J (2013). Graph-Laplacian PCA: 
+<p>Jiang B, Ding C, Bin L, Tang J (2013). Graph-Laplacian PCA:
 Closed-Form Solution and Robustness. IEEE Conference on Computer
-Vision and Pattern Recognition, 3492-3498. 
+Vision and Pattern Recognition, 3492-3498.
 &lt;https://doi.org/10.1109/CVPR.2013.448&gt;</p>
 <p>Ćevid D,  Bühlmann P, Meinshausen N (2020). Spectral deconfounding via
 perturbed sparse linear models. J. Mach. Learn. Res, 21(232), 1-41.
@@ -312,15 +312,15 @@ estimation with the graphical lasso. Biostatistics, 9(3), 432-441.
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

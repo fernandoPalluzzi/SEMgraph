@@ -7,7 +7,7 @@ Brown’s combined permutation p-values of node activation and inhibition."><!--
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -21,7 +21,7 @@ Brown’s combined permutation p-values of node activation and inhibition."><!--
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.3</span>
       </span>
     </div>
 
@@ -35,14 +35,14 @@ Brown’s combined permutation p-values of node activation and inhibition."><!--
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/fernandoPalluzzi/SEMgraph/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
@@ -66,44 +66,44 @@ Brown’s combined permutation p-values of node activation and inhibition.</p>
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>g</dt>
+
+
+<dl><dt id="arg-g">g<a class="anchor" aria-label="anchor" href="#arg-g"></a></dt>
 <dd><p>A list of pathways to be tested.</p></dd>
 
 
-<dt>data</dt>
+<dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>A matrix or data.frame. Rows correspond to subjects, and
 columns to graph nodes (variables).</p></dd>
 
 
-<dt>group</dt>
+<dt id="arg-group">group<a class="anchor" aria-label="anchor" href="#arg-group"></a></dt>
 <dd><p>A binary vector. This vector must be as long as the number
 of subjects. Each vector element must be 1 for cases and 0 for control
 subjects.</p></dd>
 
 
-<dt>method</dt>
+<dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
 <dd><p>Multiple testing correction method. One of the values
 available in <code><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">p.adjust</a></code>. By default, method is set
 to "BH" (i.e., Benjamini-Hochberg correction).</p></dd>
 
 
-<dt>alpha</dt>
+<dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
 <dd><p>Gene set test significance level (default = 0.05).</p></dd>
 
 
-<dt>n_rep</dt>
+<dt id="arg-n-rep">n_rep<a class="anchor" aria-label="anchor" href="#arg-n-rep"></a></dt>
 <dd><p>Number of randomization replicates (default = 1000).</p></dd>
 
 
-<dt>...</dt>
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Currently ignored.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>A list of 2 objects:</p><ol><li><p>"gsa", A data.frame reporting the following information for each
+    <p>A list of 2 objects:</p><ol><li><p>"gsa", A data.frame reporting the following information for each
 pathway in the input list:</p><ul><li><p>"No.nodes", pathway size (number of nodes);</p></li>
 <li><p>"No.DEGs", number of differential espression genes (DEGs) within
 the pathway, after multiple test correction with one of the methods
@@ -179,24 +179,24 @@ https://doi.org/10.1186/s12859-022-04884-8</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> k = 6 Amyotrophic lateral sclerosis </span>
 <span class="r-in"><span><span class="va">GSA</span><span class="op">$</span><span class="va">gsa</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                             No.nodes No.DEGs     pert</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Neurotrophin signaling pathway                   119      17   up act</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Neurotrophin signaling pathway                   120      17   up act</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Protein processing in endoplasmic reticulum      170       9 down act</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Wnt signaling pathway                            174       8 down inh</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> MAPK signaling pathway                           301      47   up act</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Amyotrophic lateral sclerosis                    364       9 down inh</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Endocytosis                                      250       2     &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> MAPK signaling pathway                           300      47   up act</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Amyotrophic lateral sclerosis                    371       9 down inh</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Endocytosis                                      252       2     &lt;NA&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                      pNa          pNi</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Neurotrophin signaling pathway              2.353673e-14 9.359608e-07</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Protein processing in endoplasmic reticulum 4.187547e-09 1.130873e-12</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Wnt signaling pathway                       4.591216e-12 2.752644e-01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> MAPK signaling pathway                      6.054046e-12 4.914468e-09</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> MAPK signaling pathway                      6.008527e-12 4.861690e-09</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Amyotrophic lateral sclerosis               8.383960e-12 1.452882e-03</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Endocytosis                                 1.564526e-01 3.142695e-04</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                     PVAL         ADJP</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Neurotrophin signaling pathway              4.707346e-14 2.824407e-13</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Protein processing in endoplasmic reticulum 2.261746e-12 1.357048e-11</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Wnt signaling pathway                       9.182433e-12 5.509460e-11</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> MAPK signaling pathway                      1.210809e-11 7.264855e-11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> MAPK signaling pathway                      1.201705e-11 7.210232e-11</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Amyotrophic lateral sclerosis               1.676792e-11 1.006075e-10</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Endocytosis                                 6.285389e-04 3.771234e-03</span>
 <span class="r-in"><span><span class="va">GSA</span><span class="op">$</span><span class="va">DEG</span></span></span>
@@ -243,15 +243,15 @@ https://doi.org/10.1186/s12859-022-04884-8</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

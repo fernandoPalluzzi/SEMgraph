@@ -6,7 +6,7 @@ undirected graph are preserved in the output directed graph."><!-- mathjax --><s
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -20,7 +20,7 @@ undirected graph are preserved in the output directed graph."><!-- mathjax --><s
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.3</span>
       </span>
     </div>
 
@@ -34,14 +34,14 @@ undirected graph are preserved in the output directed graph."><!-- mathjax --><s
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/fernandoPalluzzi/SEMgraph/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
@@ -64,30 +64,32 @@ undirected graph are preserved in the output directed graph.</p>
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>ug</dt>
+
+
+<dl><dt id="arg-ug">ug<a class="anchor" aria-label="anchor" href="#arg-ug"></a></dt>
 <dd><p>An undirected graph as an igraph object.</p></dd>
 
 
-<dt>dg</dt>
+<dt id="arg-dg">dg<a class="anchor" aria-label="anchor" href="#arg-dg"></a></dt>
 <dd><p>A directed reference graph.</p></dd>
 
 
-<dt>...</dt>
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Currently ignored.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>A directed graph as an igraph object.</p>
+    <p>A directed graph as an igraph object.</p>
     </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Graphs definition</span></span></span>
-<span class="r-in"><span><span class="va">G0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.directed.html" class="external-link">as.undirected</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">graph</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">G0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.undirected.html" class="external-link">as.undirected</a></span><span class="op">(</span><span class="va">sachs</span><span class="op">$</span><span class="va">graph</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`as.undirected()` was deprecated in igraph 2.1.0.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Please use `as_undirected()` instead.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Reference graph-based orientation</span></span></span>
 <span class="r-in"><span><span class="va">G1</span> <span class="op">&lt;-</span> <span class="fu">orientEdges</span><span class="op">(</span>ug <span class="op">=</span> <span class="va">G0</span>, dg <span class="op">=</span> <span class="va">sachs</span><span class="op">$</span><span class="va">graph</span><span class="op">)</span></span></span>
@@ -114,15 +116,15 @@ undirected graph are preserved in the output directed graph.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

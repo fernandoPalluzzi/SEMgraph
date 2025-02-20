@@ -8,7 +8,7 @@ of connections to be checked against a directed reference network
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -22,7 +22,7 @@ of connections to be checked against a directed reference network
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.3</span>
       </span>
     </div>
 
@@ -36,14 +36,14 @@ of connections to be checked against a directed reference network
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/fernandoPalluzzi/SEMgraph/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
@@ -68,11 +68,13 @@ of connections to be checked against a directed reference network
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>g</dt>
+
+
+<dl><dt id="arg-g">g<a class="anchor" aria-label="anchor" href="#arg-g"></a></dt>
 <dd><p>A list of two graphs as igraph objects, g=list(graph1, graph2).</p></dd>
 
 
-<dt>gnet</dt>
+<dt id="arg-gnet">gnet<a class="anchor" aria-label="anchor" href="#arg-gnet"></a></dt>
 <dd><p>External directed network as an igraph object. The reference
 network should have weighted edges, corresponding to their interaction
 p-values, as an edge attribute <code>E(gnet)$pv</code>. Then, connections in
@@ -82,7 +84,7 @@ ones by the Dijkstra algorithm, as implemented in the <span class="pkg">igraph</
 <code><a href="https://r.igraph.org/reference/distances.html" class="external-link">all_shortest_paths()</a></code>.</p></dd>
 
 
-<dt>d</dt>
+<dt id="arg-d">d<a class="anchor" aria-label="anchor" href="#arg-d"></a></dt>
 <dd><p>An integer value indicating the maximum geodesic distance between
 two nodes in the interactome to consider the inferred interaction between
 the same two nodes in <code>graph2</code> as validated, otherwise the edges are
@@ -94,31 +96,25 @@ allowed). Typical <code>d</code> values include <code>2</code> (at most one medi
 the reference network). Setting d = 0, is equivalent to <code>gnet = NULL</code>.</p></dd>
 
 
-<dt>v</dt>
+<dt id="arg-v">v<a class="anchor" aria-label="anchor" href="#arg-v"></a></dt>
 <dd><p>A logical value. If TRUE (default) new nodes and edges on the
 validated shortest path in the reference interactome will be added in the
 re-sized graph.</p></dd>
 
 
-<dt>verbose</dt>
+<dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p>A logical value. If FALSE (default), the processed graphs
 will not be plotted to screen, saving execution time (for large graphs)</p></dd>
 
 
-<dt>...</dt>
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Currently ignored.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>"Ug", the re-sized graph, the graph union of the causal graph <code>graph1</code></p>
-
-
-<p>and the re-sized graph <code>graph2</code></p>
-
-
+    <p>"Ug", the re-sized graph, the graph union of the causal graph <code>graph1</code>
+and the re-sized graph <code>graph2</code></p>
     </div>
     <div id="details">
     <h2>Details</h2>
@@ -160,7 +156,6 @@ Bioinformatics, 38 (20), 4829–4830 &lt;https://doi.org/10.1093/bioinformatics/
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Extract the "Protein processing in endoplasmic reticulum" pathway:</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="va">kegg.pathways</span><span class="op">[[</span><span class="st">"Protein processing in endoplasmic reticulum"</span><span class="op">]</span><span class="op">]</span></span></span>
@@ -180,7 +175,7 @@ Bioinformatics, 38 (20), 4829–4830 &lt;https://doi.org/10.1093/bioinformatics/
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> which.mutual.FALSE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 28 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH cf84db4 DNW- 23 28 -- </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH b143108 DNW- 23 28 -- </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> + attr: name (v/c), weight (e/n)</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Extend a graph using new inferred DAG edges (dag+dag.new):</span></span></span>
@@ -239,7 +234,6 @@ Bioinformatics, 38 (20), 4829–4830 &lt;https://doi.org/10.1093/bioinformatics/
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ext</span>, layout <span class="op">=</span> <span class="va">layout.circle</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="resizeGraph-3.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">old.par</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
@@ -256,15 +250,15 @@ Bioinformatics, 38 (20), 4829–4830 &lt;https://doi.org/10.1093/bioinformatics/
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

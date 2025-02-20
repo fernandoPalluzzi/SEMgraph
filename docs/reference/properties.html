@@ -4,7 +4,7 @@ graph components (ordered by decreasing size), without self-loops."><!-- mathjax
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -18,7 +18,7 @@ graph components (ordered by decreasing size), without self-loops."><!-- mathjax
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SEMgraph</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.3</span>
       </span>
     </div>
 
@@ -32,14 +32,14 @@ graph components (ordered by decreasing size), without self-loops."><!-- mathjax
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/fernandoPalluzzi/SEMgraph/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
@@ -60,25 +60,25 @@ graph components (ordered by decreasing size), without self-loops.</p>
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>graph</dt>
+
+
+<dl><dt id="arg-graph">graph<a class="anchor" aria-label="anchor" href="#arg-graph"></a></dt>
 <dd><p>Input network as an igraph object.</p></dd>
 
 
-<dt>data</dt>
+<dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>An optional data matrix (default data = NULL) whith rows
 corresponding to subjects, and columns to graph nodes (variables).
 Nodes will be mapped onto variable names.</p></dd>
 
 
-<dt>...</dt>
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Currently ignored.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>List of graph components, ordered by decreasing size (the first
+    <p>List of graph components, ordered by decreasing size (the first
 component is the giant one), without self-loops.</p>
     </div>
     <div id="author">
@@ -92,40 +92,40 @@ component is the giant one), without self-loops.</p>
 <span class="r-in"><span><span class="co"># Extract the "Type II diabetes mellitus" pathway:</span></span></span>
 <span class="r-in"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="va">kegg.pathways</span><span class="op">[[</span><span class="st">"Type II diabetes mellitus"</span><span class="op">]</span><span class="op">]</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH 0b17847 DNW- 46 124 -- </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH 218cd1b DNW- 47 130 -- </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> + attr: name (v/c), weight (e/n)</span>
 <span class="r-in"><span><span class="fu">properties</span><span class="op">(</span><span class="va">g</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Frequency distribution of graph components</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   n.nodes n.graphs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1       7        1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2      38        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      39        1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Percent of vertices in the giant component: 82.6 %</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Percent of vertices in the giant component: 83 %</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   is.simple      is.dag is.directed is.weighted </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        TRUE       FALSE        TRUE        TRUE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> which.mutual.FALSE </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                114 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                120 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH cf6220f DNW- 38 114 -- </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH b12a2a0 DNW- 39 120 -- </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> + attr: name (v/c), weight (e/n)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> + edges from cf6220f (vertex names):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 5290  -&gt;6517 5290  -&gt;2475 5290  -&gt;5590 5291  -&gt;6517 5291  -&gt;2475</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6] 5291  -&gt;5590 5293  -&gt;6517 5293  -&gt;2475 5293  -&gt;5590 5295  -&gt;6517</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11] 5295  -&gt;2475 5295  -&gt;5590 5296  -&gt;6517 5296  -&gt;2475 5296  -&gt;5590</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [16] 8503  -&gt;6517 8503  -&gt;2475 8503  -&gt;5590 3667  -&gt;5290 3667  -&gt;5291</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [21] 3667  -&gt;5293 3667  -&gt;5295 3667  -&gt;5296 3667  -&gt;8503 3643  -&gt;3667</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [26] 3643  -&gt;8471 3643  -&gt;8660 3643  -&gt;5594 3643  -&gt;5595 3630  -&gt;3643</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [31] 122809-&gt;3667 122809-&gt;8471 122809-&gt;8660 122809-&gt;3643 8651  -&gt;3667</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [36] 8651  -&gt;8471 8651  -&gt;8660 8651  -&gt;3643 8835  -&gt;3667 8835  -&gt;8471</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> + edges from b12a2a0 (vertex names):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 110117499-&gt;6517      110117499-&gt;2475      110117499-&gt;5590     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4] 5290     -&gt;6517      5290     -&gt;2475      5290     -&gt;5590     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] 5291     -&gt;6517      5291     -&gt;2475      5291     -&gt;5590     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10] 5293     -&gt;6517      5293     -&gt;2475      5293     -&gt;5590     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13] 5295     -&gt;6517      5295     -&gt;2475      5295     -&gt;5590     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [16] 5296     -&gt;6517      5296     -&gt;2475      5296     -&gt;5590     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [19] 8503     -&gt;6517      8503     -&gt;2475      8503     -&gt;5590     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [22] 3667     -&gt;110117499 3667     -&gt;5290      3667     -&gt;5291     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> + ... omitted several edges</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[2]]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH cf621f7 DNW- 7 10 -- </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH b12a23e DNW- 7 10 -- </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> + attr: name (v/c), weight (e/n)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> + edges from cf621f7 (vertex names):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> + edges from b12a23e (vertex names):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 2645 -&gt;5313 2645 -&gt;5315 3098 -&gt;5313 3098 -&gt;5315 3099 -&gt;5313 3099 -&gt;5315</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [7] 3101 -&gt;5313 3101 -&gt;5315 80201-&gt;5313 80201-&gt;5315</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -144,15 +144,15 @@ component is the giant one), without self-loops.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 
