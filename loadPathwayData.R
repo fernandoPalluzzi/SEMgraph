@@ -2,16 +2,6 @@
 #  Loading pathway data using graphite  #
 #---------------------------------------#
 
-
-# Loading graphite and preparing the environment
-
-library(graphite)
-library(org.Hs.eg.db)          # Homo sapiens annotations
-library(org.Mm.eg.db)          # Mus Musculus annotations
-library(igraph)
-library(SEMgraph)
-
-
 #' @title Import pathways and generate a reference network
 #'
 #' @description Utility to create pathway lists as igraph objects and 
@@ -75,37 +65,53 @@ library(SEMgraph)
 #' length(kegg.hs$pathways)
 #' kegg.hs$network
 #'
-loadPathwayData <- function(organism, db, id_type = "ENTREZID", lcc = TRUE, ...) {
+loadPathwayData0 <- function(db, organism = "hsapiens", id_type = "ENTREZID", lcc = TRUE, ...) {
   
   # Import pathway from database
   pathways <- pathways(organism, db)
   pathway.list <- list()
   n <- length(pathways)
+  del <- NULL
   
-  for (i in 1:n) {
-    
+  for (i in 1:n) { #i=51
     pw.name <- names(pathways)[[i]]
-    message(paste0("Pathway ", i, " of ", n, ": ", pw.name))
+	#if (i %% 10 == 0) message("  Processed ", i, "/", n, " pathways")
+    #message(paste0("Pathway ", i, " of ", n, ": ", pw.name))
     
     # Node ID conversion
     pw <- graphite::convertIdentifiers(pathways[[i]], id_type)
     
     # Conversion pathway -> GraphNEL -> igraph
-    G <- igraph::igraph.from.graphNEL(pathwayGraph(pw))
-    
-    # Removing node name prefix
-    V(G)$name <- sub(paste0(id_type, ":"), "", V(G)$name)
-    
-    # Adding graph to the list
+    G <- igraph::graph_from_graphnel(pathwayGraph(pw))
+	G <- simplify(G, remove.loops = TRUE)
+    G <- G - E(G)[which_mutual(G)]
+  	
+	# Skip small graph
+    if (igraph::vcount(G) <= 5 || igraph::ecount(G) == 0) {
+	 message(paste0("Delete pathway ", i, " of ", n, ": ", pw.name))
+	 del <- c(del, i); next
+	}
+		    
+    #Removing node name prefix and edge weight
+	V(G)$name <- sub(paste0(id_type, ":"), "", V(G)$name)
+	G <- delete_edge_attr(G, "weight")
+	
+	# Adding graph to the list
     pathway.list[[i]] <- G
     names(pathway.list)[[i]] <- pw.name
   }
   
   # Generating reference network
-  reference <- igraph::graph.union(pathway.list)
-  if (lcc) {
-    reference <- SEMgraph::properties(reference)[[1]]
+  reference <-  Reduce(igraph::union, pathway.list)
+  if (lcc) reference <- properties(reference)[[1]] #SEMgraph
+  
+  # Add node labels to all graphs
+  add_labels <- function(g) {
+    V(g)$label <- suppressMessages(mapIds(org.Hs.eg.db, V(g)$name, "SYMBOL", id_type))
+    g
   }
+  pathway.list <- lapply(pathway.list[-del], add_labels)
+  reference <- add_labels(reference)
+  
   return(list(pathways = pathway.list, network = reference))
 }
-
