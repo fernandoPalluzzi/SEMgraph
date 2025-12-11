@@ -31,6 +31,7 @@ devtools::install_github("fernandoPalluzzi/SEMgraph")
 
 The full list of **SEMgraph** functions with examples and a tutorial is available [**HERE**](https://grassiMario.github.io/SEMgraph/).
 &nbsp;
+&nbsp;
 
 ## Companion packages
 
