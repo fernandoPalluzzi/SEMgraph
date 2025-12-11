@@ -38,9 +38,7 @@ It contains useful high-throughput sequencing data, reference networks, and path
 ``` r
 devtools::install_github("fernandoPalluzzi/SEMdata")
 ```
-&nbsp;
-
-[**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata) package offers several verified datasets to work with, for both training and research. They include:
+Specifically, **SEMdata** package includes:
 - **KEGG pathways**. A comprehensive list of igraph objects for 227 [KEGG](https://www.genome.jp/kegg/) pathways (last update: November 2021).
 - **KEGG circuits**. A comprehensvive list of igraph objects for 146 KEGG signalling pathways, which are subdivided into "effector" subpathays (i.e., a list  1868 subgraphs with many different input nodes and one output node), and "decomposed" subpathays (i.e., a list 8409 subgraphs with one input node and one output node) extracted from R package [**hipathia**](https://bioconductor.org/packages/hipathia/) in Bioconductor project (last update: October, 2024).
 - **Reactome pathways**. A comprehensive list of igraph objects for 1641 [Reactome](https://reactome.org/) pathways (last update: April 2020).
