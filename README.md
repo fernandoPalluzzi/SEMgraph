@@ -65,10 +65,10 @@ devtools::install_github("fernandoPalluzzi/SEMdata")
 - **Frontotemporal Dementia** (FTD) DNA methylation dataset 150 cases and 150 healthy controls, from Li Y. *et al.*, 2014 (GEO accession: [**GSE53740**](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE53740)). 
 - **COVID-19** RNA-seq dataset of 46 critical and 23 non-critical COVID-19 cases in young patients, from Carapito R. *et al.*, 2022 (GEO accession: [**GSE172114**](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE172114).
 - **Breast Cancer** RNA-seq dataset of 112 BRCA patients and 112 healthy controls from [**TCGA**](https://www.cancer.gov/about-nci/organization/ccg/research/structural-genomics/tcga).
-- **Flow cytometry** data and causal model from [Sachs *et al.*, 2005](https://www.science.org/lookup/doi/10.1126/science.1105809) available in [**SEMgraph**].
+- **Flow cytometry** data and causal model from [Sachs *et al.*, 2005](https://www.science.org/lookup/doi/10.1126/science.1105809) available in **SEMgraph**.
 &nbsp;
 
-**SEMdata** reference datasets are freezed to benchmarked versions. If you would like to get the latest version of your favourite database, you can use either the R package [**graphite**](https://bioconductor.org/packages/release/bioc/html/graphite.html) in Bioconductor project, or the wrapper function \code{SEMgraph::loadPathways()}, contained in the **SEMgraph** v.1.2.4 or above. 
+**SEMdata** reference datasets are freezed to benchmarked versions. If you would like to get the latest version of your favourite database, you can use either the R package [**graphite**](https://bioconductor.org/packages/release/bioc/html/graphite.html) in Bioconductor project, or the wrapper function **loadPathways()** contained in the **SEMgraph** v.1.2.4 or above. 
 
 ## References
 
