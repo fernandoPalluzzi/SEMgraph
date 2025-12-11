@@ -30,14 +30,7 @@ devtools::install_github("fernandoPalluzzi/SEMgraph")
 The full list of **SEMgraph** functions with examples and a tutorial is available [**HERE**](https://grassiMario.github.io/SEMgraph/).
 &nbsp;
 
-## Companion packages
-
-[**SEMdeep**](https://github.com/BarbaraTarantino/SEMdeep).
-It provides a SEM-based framework using **machine learning (ML)** and **deep neural network (DNN)** algorithms. 
-
-``` r
-install.packages("SEMdeep")
-```
+## Companion package
 
 [**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata). 
 It contains useful high-throughput sequencing data, reference networks, and pathways for SEMgraph training:
@@ -47,16 +40,6 @@ devtools::install_github("fernandoPalluzzi/SEMdata")
 ```
 &nbsp;
 
-## SEMgraph-related projects
-
-- [**SEMdeep**](https://github.com/BarbaraTarantino/SEMdeep). Interpretable artificial intelligence using SEM-based deep learning modeling.
-- [**SEMdag**](https://github.com/fernandoPalluzzi/SEMgraph/tree/master/SEMdag). Fast learning of Directed Acyclic Graphs via node or layer ordering.
-- [**SEMgsa**](https://github.com/fernandoPalluzzi/SEMgraph/tree/master/SEMgsa_replication). SEM-based gene set analysis tool enabling perturbed pathway and gene finding by exploiting the causal structure of a graph.
-- [**SEMtree**](https://github.com/fernandoPalluzzi/SEMgraph/tree/master/SEMtree). Tree structure learning methods implemented with graph and data-driven SEM-based algorithms.
-- [**SEMbap**](https://github.com/fernandoPalluzzi/SEMgraph/blob/master/SEMbap). Bow-free covariance search and data de-correlation.
-&nbsp;
-
-## Available datasets
 [**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata) package offers several verified datasets to work with, for both training and research. They include:
 - **KEGG pathways**. A comprehensive list of igraph objects for 227 [KEGG](https://www.genome.jp/kegg/) pathways (last update: November 2021).
 - **KEGG circuits**. A comprehensvive list of igraph objects for 146 KEGG signalling pathways, which are subdivided into "effector" subpathays (i.e., a list  1868 subgraphs with many different input nodes and one output node), and "decomposed" subpathays (i.e., a list 8409 subgraphs with one input node and one output node) extracted from R package [**hipathia**](https://bioconductor.org/packages/hipathia/) in Bioconductor project (last update: October, 2024).
@@ -69,6 +52,15 @@ devtools::install_github("fernandoPalluzzi/SEMdata")
 &nbsp;
 
 **SEMdata** reference datasets are freezed to benchmarked versions. If you would like to get the latest version of your favourite database, you can use either the R package [**graphite**](https://bioconductor.org/packages/release/bioc/html/graphite.html) in Bioconductor project, or the wrapper function **loadPathways()** contained in the **SEMgraph** v.1.2.4 or above. 
+
+## SEMgraph-related projects
+
+- [**SEMdeep**](https://github.com/BarbaraTarantino/SEMdeep). SEM-based framework using machine learning (ML) and deep neural network (DNN) algorithms. 
+- [**SEMdag**](https://github.com/fernandoPalluzzi/SEMgraph/tree/master/SEMdag). Fast learning of Directed Acyclic Graphs via node or layer ordering.
+- [**SEMgsa**](https://github.com/fernandoPalluzzi/SEMgraph/tree/master/SEMgsa_replication). SEM-based gene set analysis tool enabling perturbed pathway and gene finding by exploiting the causal structure of a graph.
+- [**SEMtree**](https://github.com/fernandoPalluzzi/SEMgraph/tree/master/SEMtree). Tree structure learning methods implemented with graph and data-driven SEM-based algorithms.
+- [**SEMbap**](https://github.com/fernandoPalluzzi/SEMgraph/blob/master/SEMbap). Bow-free covariance search and data de-correlation.
+&nbsp;
 
 ## References
 
