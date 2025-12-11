@@ -25,6 +25,7 @@ The latest development version can be installed from GitHub:
 ``` r
 devtools::install_github("fernandoPalluzzi/SEMgraph")
 ```
+&nbsp;
 
 ## Getting Started
 
