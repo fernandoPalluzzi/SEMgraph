@@ -32,12 +32,12 @@ The full list of **SEMgraph** functions with examples and a tutorial is availabl
 
 ## Companion package
 
-[**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata). 
-It contains useful high-throughput sequencing data, reference networks, and pathways for SEMgraph training:
+Do not forget to install the [**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata) package too! It contains useful high-throughput sequencing data, reference networks, and pathways for SEMgraph training:
 
 ``` r
 devtools::install_github("fernandoPalluzzi/SEMdata")
 ```
+
 Specifically, **SEMdata** includes:
 - **KEGG pathways**. A comprehensive list of igraph objects for 227 [**KEGG**](https://www.genome.jp/kegg/) pathways (last update: November 2021).
 - **KEGG circuits**. A comprehensvive list of igraph objects for 146 KEGG signalling pathways, which are subdivided into "effector" subpathays (i.e., a list  1868 subgraphs with many different input nodes and one output node), and "decomposed" subpathays (i.e., a list 8409 subgraphs with one input node and one output node) extracted from R package [**hipathia**](https://bioconductor.org/packages/hipathia/) in Bioconductor project (last update: October, 2024).
