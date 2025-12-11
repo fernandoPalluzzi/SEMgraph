@@ -2,9 +2,9 @@
 
 ## Overview
 
-**SEMgraph**  Estimate networks and causal relations in complex systems with **Structural Equation Modeling** using as input a **directed graph** that encodes the hypothesized or data-driven causal relationships among variables. 
+**SEMgraph**  Estimate causal relations in network or in complex systems with **Structural Equation Modeling** (SEM) using as input a **directed graph** that encodes the hypothesized or data-driven causal relationships among variables, a **data matrix** with *n* samples and *p* variables, and (optional) a  binary **group** vector of experimental conditions for the *n* samples.
 **SEMgraph** comes with the following functionalities:
-- Interchangeable model representation as either an igraph object or the corresponding SEM in lavaan syntax. Model management functions include graph-to-SEM conversion, automated covariance matrix regularization, graph conversion to DAG, and tree (arborescence) from correlation matrices.
+- Interchangeable model representation as either an [igraph](https://igraph.org/) object or the corresponding SEM in [lavaan](https://lavaan.ugent.be/) syntax. Model management functions include graph-to-SEM conversion, automated covariance matrix regularization, graph conversion to DAG (Directed Acyclic Graph), and tree (arborescence) from correlation matrices.
 - Heuristic filtering, node and edge weighting, resampling and parallelization settings for fast fitting in case of very large models.
 - Automated data-driven model building and improvement, through causal structure learning and bow-free interaction search and latent variable confounding adjustment.
 - Perturbed paths finding, community searching and sample scoring, together with graph plotting utilities, tracing model architecture modifications and perturbation (i.e., activation or repression) routes.
@@ -30,34 +30,28 @@ devtools::install_github("fernandoPalluzzi/SEMgraph")
 The full list of **SEMgraph** functions with examples and a tutorial is available [**HERE**](https://fernandopalluzzi.github.io/SEMgraph/).
 &nbsp;
 
-## Companion package
+## Companion packages
 
-Do not forget to install the [**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata) package too! It contains useful high-throughput sequencing data, reference networks, and pathways for SEMgraph training:
+(Optional) install also:
+
+[**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata) It contains useful high-throughput sequencing data, reference networks, and pathways for SEMgraph training:
 
 ``` r
 devtools::install_github("fernandoPalluzzi/SEMdata")
 ```
 
-Specifically, **SEMdata** includes:
-- **KEGG pathways**. A comprehensive list of igraph objects for 227 [**KEGG**](https://www.genome.jp/kegg/) pathways (last update: November 2021).
-- **KEGG circuits**. A comprehensvive list of igraph objects for 146 KEGG signalling pathways, which are subdivided into "effector" subpathays (i.e., a list  1868 subgraphs with many different input nodes and one output node), and "decomposed" subpathays (i.e., a list 8409 subgraphs with one input node and one output node) extracted from R package [**hipathia**](https://bioconductor.org/packages/hipathia/) in Bioconductor project (last update: October, 2024).
-- **Reactome pathways**. A comprehensive list of igraph objects for 1641 [**Reactome**](https://reactome.org/) pathways (last update: April 2020).
-- **Amyotrophic Lateral Sclerosis** (ALS) RNA-seq dataset of 139 cases and 21 healthy controls, from Tam O.H. *et al.*, 2019 (GEO accession: [**GSE124439**](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE124439)).
-- **Frontotemporal Dementia** (FTD) DNA methylation dataset 150 cases and 150 healthy controls, from Li Y. *et al.*, 2014 (GEO accession: [**GSE53740**](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE53740)). 
-- **COVID-19** RNA-seq dataset of 46 critical and 23 non-critical COVID-19 cases in young patients, from Carapito R. *et al.*, 2022 (GEO accession: [**GSE172114**](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE172114).
-- **Breast Cancer** RNA-seq dataset of 112 BRCA patients and 112 healthy controls from [**TCGA**](https://www.cancer.gov/about-nci/organization/ccg/research/structural-genomics/tcga).
-- **Flow cytometry** data and causal model from [Sachs *et al.*, 2005](https://www.science.org/lookup/doi/10.1126/science.1105809) available in **SEMgraph**.
-&nbsp;
+[**SEMdeep**](https://github.com/BarbaraTarantino/SEMdeep). It provides a SEM-based framework using **machine learning (ML)** and **deep neural network (DNN)** algorithms. 
 
-**SEMdata** reference datasets are freezed to benchmarked versions. If you would like to get the latest version of your favourite database, you can use either the R package [**graphite**](https://bioconductor.org/packages/release/bioc/html/graphite.html) in Bioconductor project, or the wrapper function **loadPathways()** contained in the **SEMgraph** v.1.2.4 or above. 
+``` r
+install.packages("SEMdeep")
+```
 
-## SEMgraph-related projects
+## Associated projects with SEMgraph functions:
 
-- [**SEMdeep**](https://github.com/BarbaraTarantino/SEMdeep). SEM-based framework using machine learning (ML) and deep neural network (DNN) algorithms. 
-- [**SEMdag**](https://github.com/fernandoPalluzzi/SEMgraph/tree/master/SEMdag). Fast learning of Directed Acyclic Graphs via node or layer ordering.
 - [**SEMgsa**](https://github.com/fernandoPalluzzi/SEMgraph/tree/master/SEMgsa_replication). SEM-based gene set analysis tool enabling perturbed pathway and gene finding by exploiting the causal structure of a graph.
 - [**SEMtree**](https://github.com/fernandoPalluzzi/SEMgraph/tree/master/SEMtree). Tree structure learning methods implemented with graph and data-driven SEM-based algorithms.
 - [**SEMbap**](https://github.com/fernandoPalluzzi/SEMgraph/blob/master/SEMbap). Bow-free covariance search and data de-correlation.
+- [**SEMdag**](https://github.com/fernandoPalluzzi/SEMgraph/tree/master/SEMdag). Fast learning of Directed Acyclic Graphs via node or layer ordering.
 &nbsp;
 
 ## References
