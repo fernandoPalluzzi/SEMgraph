@@ -39,7 +39,6 @@ It provides a SEM-based framework using **machine learning (ML)** and **deep neu
 ``` r
 install.packages("SEMdeep")
 ```
-&nbsp;
 
 [**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata). 
 It contains useful high-throughput sequencing data, reference networks, and pathways for SEMgraph training:
