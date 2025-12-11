@@ -59,16 +59,13 @@ devtools::install_github("fernandoPalluzzi/SEMdata")
 
 ## Available datasets
 [**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata) package offers several verified datasets to work with, for both training and research. They include:
-- [**KEGG**](https://www.genome.jp/kegg/) directed reference network of 5934 nodes and 77158 edges, derived from the **KEGG** database.
 - **KEGG pathways**. A comprehensive list of 227 KEGG pathways (last update: November 2021).
 - **KEGG circuits**. A comprehensvive list of 146 KEGG signalling pathways, which are subdivided into "effector" subpathays (i.e., a list  1868 subgraphs with many different input nodes and one output node),
-#' and "decomposed" subpathays(i.e., a list 8409 subgraphs with one input node and one output node)extracted from R package [**hipathia**](https://bioconductor.org/packages/hipathia/) 
-- [**Reactome**](https://reactome.org) directed reference network of 9762 nodes and 416128 edges, derived from **Reactome** database.
-- **Reactome pathways**. A comprehensive list of 1641 pathways (last update: April 2020)
-- [**STRING**](https://string-db.org/) interactome (version 10.5) of 9725 nodes and 170987 edges
-- **Amyotrophic Lateral Sclerosis** (ALS) RNA-seq dataset of 139 cases and 21 healthy controls, from Tam O.H. *et al.*, 2019 (GEO accession: [**GSE124439**](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE124439)). [[**\*\***](https://github.com/fernandoPalluzzi/SEMdata)]
+and "decomposed" subpathays(i.e., a list 8409 subgraphs with one input node and one output node)extracted from R package [**hipathia**](https://bioconductor.org/packages/hipathia/) 
+- **Reactome pathways**. A comprehensive list of 1641 pathways (last update: April 2020).
+- **Amyotrophic Lateral Sclerosis** (ALS) RNA-seq dataset of 139 cases and 21 healthy controls, from Tam O.H. *et al.*, 2019 (GEO accession: [**GSE124439**](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE124439)).
 - **Frontotemporal Dementia** (FTD) DNA methylation dataset 150 cases and 150 healthy controls, from Li Y. *et al.*, 2014 (GEO accession: [**GSE53740**](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE53740)). [[**\*\***](https://github.com/fernandoPalluzzi/SEMdata)]
-- **COVID-19** RNA-seq dataset of 46 critical and 23 non-critical COVID-19 cases in young patients, from Carapito R. *et al.*, 2022 (GEO accession: [**GSE172114**](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE172114)). [[**\*\***](https://github.com/fernandoPalluzzi/SEMdata)]
+- **COVID-19** RNA-seq dataset of 46 critical and 23 non-critical COVID-19 cases in young patients, from Carapito R. *et al.*, 2022 (GEO accession: [**GSE172114**](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE172114)).
 - **Breast Cancer** RNA-seq dataset of 112 BRCA patients and 112 healthy controls from [**TCGA**](https://www.cancer.gov/about-nci/organization/ccg/research/structural-genomics/tcga)
 - **Flow cytometry** data and causal model from [Sachs *et al.*, 2005](https://www.science.org/lookup/doi/10.1126/science.1105809) available in [**SEMgraph**].
 &nbsp;
