@@ -61,7 +61,7 @@ devtools::install_github("fernandoPalluzzi/SEMdata")
 [**SEMdata**](https://github.com/fernandoPalluzzi/SEMdata) package offers several verified datasets to work with, for both training and research. They include:
 - **KEGG pathways**. A comprehensive list of 227 KEGG pathways (last update: November 2021).
 - **KEGG circuits**. A comprehensvive list of 146 KEGG signalling pathways, which are subdivided into "effector" subpathays (i.e., a list  1868 subgraphs with many different input nodes and one output node),
-and "decomposed" subpathays(i.e., a list 8409 subgraphs with one input node and one output node)extracted from R package [**hipathia**](https://bioconductor.org/packages/hipathia/) 
+and "decomposed" subpathays (i.e., a list 8409 subgraphs with one input node and one output node)extracted from R package [**hipathia**](https://bioconductor.org/packages/hipathia/) (last update: October, 2024).
 - **Reactome pathways**. A comprehensive list of 1641 pathways (last update: April 2020).
 - **Amyotrophic Lateral Sclerosis** (ALS) RNA-seq dataset of 139 cases and 21 healthy controls, from Tam O.H. *et al.*, 2019 (GEO accession: [**GSE124439**](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE124439)).
 - **Frontotemporal Dementia** (FTD) DNA methylation dataset 150 cases and 150 healthy controls, from Li Y. *et al.*, 2014 (GEO accession: [**GSE53740**](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE53740)). [[**\*\***](https://github.com/fernandoPalluzzi/SEMdata)]
