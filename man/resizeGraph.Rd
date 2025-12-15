@@ -75,10 +75,14 @@ and their possible closure into circuits.
 \examples{
 
 \donttest{
+
 # Extract the "Protein processing in endoplasmic reticulum" pathway:
 
 g <- kegg.pathways[["Protein processing in endoplasmic reticulum"]]
 G <- properties(g)[[1]]; summary(G)
+
+# Reference network (KEGG interactome)
+gnet <- kegg
 
 # Extend a graph using new inferred DAG edges (dag+dag.new):
 
@@ -87,7 +91,7 @@ als.npn <- transformData(alsData$exprs)$data
 
 dag <- SEMdag(graph = G, data = als.npn, beta = 0.1)
 gplot(dag$dag)
-ext <- resizeGraph(g=list(dag$dag, dag$dag.new), gnet = kegg, d = 2)
+ext <- resizeGraph(g=list(dag$dag, dag$dag.new), gnet = gnet, d = 2)
 gplot(ext) 
 
 # Create a directed graph from correlation matrix, using
@@ -109,7 +113,7 @@ selectedData <- als.npn[, v]
 G0 <- make_empty_graph(n = ncol(selectedData))
 V(G0)$name <- colnames(selectedData)
 G1 <- corr2graph(R = cor(selectedData), n= nrow(selectedData))
-ext <- resizeGraph(g=list(G0, G1), gnet = kegg, d = 2, v = TRUE)
+ext <- resizeGraph(g=list(G0, G1), gnet = gnet, d = 2, v = TRUE)
 
 #Graphs
 old.par <- par(no.readonly = TRUE)
@@ -118,6 +122,7 @@ plot(G1, layout = layout.circle)
 plot(ext, layout = layout.circle)
 par(old.par)
 }
+
 
 }
 \references{

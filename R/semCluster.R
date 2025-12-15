@@ -86,7 +86,7 @@ clusterGraph <- function(graph, type = "wtc", HM = "none", size = 5,
 	if (!is_directed(graph)) {
 		ug <- graph
 	} else {
-		ug <- as.undirected(graph, mode = "collapse",
+		ug <- as_undirected(graph, mode = "collapse",
 		                    edge.attr.comb = "ignore")
 	}
 
@@ -311,7 +311,7 @@ clusterScore <- function(graph, data, group, HM = "LV", type = "wtc",
 
 	# Hidden modules X -> UV -> Y
 	if (HM == "UV") {
-		if (!is.directed(graph)) {
+		if (!is_directed(graph)) {
 			return(message("UV is not applicable with udirected graph !"))
 		}
 		LXY <- clusterGraph(graph = ig, type = type,

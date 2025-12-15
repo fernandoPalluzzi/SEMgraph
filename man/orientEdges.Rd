@@ -25,7 +25,7 @@ undirected graph are preserved in the output directed graph.
 \examples{
 
 # Graphs definition
-G0 <- as.undirected(sachs$graph)
+G0 <- as_undirected(sachs$graph)
 
 # Reference graph-based orientation
 G1 <- orientEdges(ug = G0, dg = sachs$graph)

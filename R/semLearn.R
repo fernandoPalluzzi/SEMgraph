@@ -135,11 +135,6 @@
 #'
 #' @references
 #'
-#' Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
-#' Analysis of High-Throughput Data with Structural Equation Models.
-#' Bioinformatics, 38(20), 4829–4830.
-#' <https://doi.org/10.1093/bioinformatics/btac567>
-#'
 #' Shipley B (2000). A new inferential test for path models based on DAGs.
 #' Structural Equation Modeling, 7(2), 206-218.
 #' <https://doi.org/10.1207/S15328007SEM0702_4>
@@ -161,6 +156,10 @@
 #' estimation with the graphical lasso. Biostatistics, 9(3), 432-441.
 #' <https://doi.org/10.1093/biostatistics/kxm045>
 #'
+#' Grassi M, Tarantino B (2024). SEMbap: Bow-free covariance search and data
+#' de-correlation.#' PLoS Comput Biol, Sep 11; 20(9):e1012448.
+#' <https://doi.org/10.1371/journal.pcbi.1012448>
+#' 
 #' @examples
 #'
 #' #Set function param
@@ -755,7 +754,11 @@ map_hidden_dag <- function(graph, data, cg=NULL, verbose=FALSE, ...)
 #' Peters J, Bühlmann P (2014). Identifiability of Gaussian structural equation
 #' models with equal error variances. Biometrika, 101(1):219–228.
 #' <https://doi.org/10.1093/biomet/ast043>
-#'
+#' 
+#' Grassi M, Tarantino B (2025). SEMdag: Fast learning of Directed Acyclic Graphs
+#' via node or layer ordering. PLoS ONE, Jan 08; 20(1): e0317283.
+#' <https://doi.org/10.1371/journal.pone.0317283>
+#' 
 #' @examples
 #'
 #' #Set function param
@@ -1077,10 +1080,14 @@ buildLayers <- function(X, rho = NULL, eta = NULL, eta.scaler = 1)
 #' @examples
 #'
 #' \donttest{
+#'
 #' # Extract the "Protein processing in endoplasmic reticulum" pathway:
 #'
 #' g <- kegg.pathways[["Protein processing in endoplasmic reticulum"]]
 #' G <- properties(g)[[1]]; summary(G)
+#'
+#' # Reference network (KEGG interactome)
+#' gnet <- kegg
 #'
 #' # Extend a graph using new inferred DAG edges (dag+dag.new):
 #'
@@ -1089,7 +1096,7 @@ buildLayers <- function(X, rho = NULL, eta = NULL, eta.scaler = 1)
 #'
 #' dag <- SEMdag(graph = G, data = als.npn, beta = 0.1)
 #' gplot(dag$dag)
-#' ext <- resizeGraph(g=list(dag$dag, dag$dag.new), gnet = kegg, d = 2)
+#' ext <- resizeGraph(g=list(dag$dag, dag$dag.new), gnet = gnet, d = 2)
 #' gplot(ext) 
 #'
 #' # Create a directed graph from correlation matrix, using
@@ -1111,7 +1118,7 @@ buildLayers <- function(X, rho = NULL, eta = NULL, eta.scaler = 1)
 #' G0 <- make_empty_graph(n = ncol(selectedData))
 #' V(G0)$name <- colnames(selectedData)
 #' G1 <- corr2graph(R = cor(selectedData), n= nrow(selectedData))
-#' ext <- resizeGraph(g=list(G0, G1), gnet = kegg, d = 2, v = TRUE)
+#' ext <- resizeGraph(g=list(G0, G1), gnet = gnet, d = 2, v = TRUE)
 #' 
 #' #Graphs
 #' old.par <- par(no.readonly = TRUE)
@@ -1120,6 +1127,7 @@ buildLayers <- function(X, rho = NULL, eta = NULL, eta.scaler = 1)
 #' plot(ext, layout = layout.circle)
 #' par(old.par)
 #' }
+#'
 #'
 resizeGraph<- function(g=list(), gnet, d = 2, v = TRUE, verbose = FALSE, ...)
 {
@@ -1133,7 +1141,7 @@ resizeGraph<- function(g=list(), gnet, d = 2, v = TRUE, verbose = FALSE, ...)
 	ig<- g[[1]]
 	if(!is.null(V(ig)$color)) ig<- delete_vertex_attr(ig, "color")
 	if(!is.null(E(ig)$color)) ig<- delete_edge_attr(ig, "color")
-	guu<- getNetEdges(g[[2]], gnet, d, yes = is.directed(g[[2]]))
+	guu<- getNetEdges(g[[2]], gnet, d, yes = is_directed(g[[2]]))
 	if (ecount(guu) == 0) {
 	 message(" no edges u->u (or u--u) found !")
 	 return(graph = ig)
@@ -1145,7 +1153,7 @@ resizeGraph<- function(g=list(), gnet, d = 2, v = TRUE, verbose = FALSE, ...)
 	 ftm<- as_edgelist(guu)
 	 vpath<- ftmuv<-  NULL
 	 for (i in 1:nrow(ftm)) {
-		mode<- ifelse(is.directed(guu) & is.directed(gnet), "out", "all")
+		mode<- ifelse(is_directed(guu) & is_directed(gnet), "out", "all")
 		if(distances(gnet,ftm[i,1],ftm[i,2],mode=mode,weights=NA) == Inf) next
 		if(is.null(E(gnet)$pv)){
 		suppressWarnings(path<- shortest_paths(gnet, ftm[i,1], ftm[i,2],
@@ -1170,7 +1178,7 @@ resizeGraph<- function(g=list(), gnet, d = 2, v = TRUE, verbose = FALSE, ...)
 	 }
 	
 	 ftmuv<- na.omit(ftmuv[duplicated(ftmuv) != TRUE,])
-	 guv<- graph_from_edgelist(ftmuv, directed=is.directed(guu))
+	 guv<- graph_from_edgelist(ftmuv, directed=is_directed(guu))
 	 #guv<- guv - E(guv)[which_mutual(guv)]
 	 vv<- V(guv)$name[-which(V(guv)$name %in% V(ig)$name)]
 	 V(guv)$color[V(guv)$name %in% vv]<- "green"
@@ -1178,8 +1186,9 @@ resizeGraph<- function(g=list(), gnet, d = 2, v = TRUE, verbose = FALSE, ...)
 	 guv<- guu
 	}
 	
-	if (!is.directed(guv)) guv <- orientEdges(guv, gnet)
-	Ug<- graph.union(g=list(ig,guv))
+	if (!is_directed(guv)) guv <- orientEdges(guv, gnet)
+	#Ug<- graph.union(g=list(ig,guv))
+	Ug <- union(ig,guv)
 	Ug<- quiet(properties(Ug)[[1]])
 	E1 <- attr(E(Ug), "vnames")
 	E0 <- attr(E(ig), "vnames")
@@ -1314,10 +1323,6 @@ getNetEdges<- function(graph, gnet, d, yes, ...)
 #' 
 #' @references
 #'
-#' Grassi M, Tarantino B (2023). SEMtree: tree-based structure learning methods
-#' with structural equation models. 
-#' Bioinformatics, 39 (6), 4829–4830 <https://doi.org/10.1093/bioinformatics/btad377>
-#'
 #' Kou, L., Markowsky, G., Berman, L. (1981). A fast algorithm for Steiner trees. 
 #' Acta Informatica 15, 141–145. <https://doi.org/10.1007/BF00288961>
 #'
@@ -1338,6 +1343,10 @@ getNetEdges<- function(graph, gnet, d, yes, ...)
 #' Lou, X., Hu, Y., Li, X. (2022). Linear Polytree Structural Equation Models:
 #' Structural Learning and Inverse Correlation Estimation. arXiv:
 #' <https://doi.org/10.48550/arxiv.2107.10955>
+#'
+#' Grassi M, Tarantino B (2023). SEMtree: tree-based structure learning methods
+#' with structural equation models. Bioinformatics, 39 (6), 4829–4830
+#' <https://doi.org/10.1093/bioinformatics/btad377>
 #'
 #' @examples
 #' 
@@ -1372,7 +1381,7 @@ SEMtree <- function(graph, data, seed, type = "ST", eweight = NULL, alpha = 0.05
 	 }
 	 else if (is.null(eweight)) {
 	  A <- (1-abs(cor(X)))*as_adjacency_matrix(ig, sparse=FALSE)[nodes,nodes]
-	  d_u <- ifelse(is.directed(ig), "directed", "undirected")
+	  d_u <- ifelse(is_directed(ig), "directed", "undirected")
 	  graph <- graph_from_adjacency_matrix(A, mode=d_u, weighted=TRUE, diag=FALSE)
 	 }
 	 # SteinerTree(ST) or MinimumSpanningTree(MST):
@@ -1383,7 +1392,7 @@ SEMtree <- function(graph, data, seed, type = "ST", eweight = NULL, alpha = 0.05
 	   ug <- as.undirected(graph, edge.attr.comb = eattr) 
 	   T <- mst(ug, weights = E(ug)$weight, algorithm = "prim")
 	 }
-	 if (is.directed(graph)) T <- orientEdges(ug=T, dg=graph) 
+	 if (is_directed(graph)) T <- orientEdges(ug=T, dg=graph) 
 	 T <- quiet(properties(T)[[1]])
 	 V(T)$color <- ifelse(V(T)$name %in% seed, "aquamarine", "white")
 	 E1 <- attr(E(T), "vnames")
@@ -1679,13 +1688,15 @@ CPDAG <- function(data, alpha, verbose = FALSE, ...)
 #'
 #' # Nonparanormal(npn) transformation
 #' als.npn <- transformData(alsData$exprs)$data
+#' # Reference network (KEGG interactome)
+#' gnet <- kegg
 #'
 #' # Models estimation
-#' m1 <- modelSearch(graph = alsData$graph, data = als.npn, gnet = kegg,
+#' m1 <- modelSearch(graph = alsData$graph, data = als.npn, gnet = gnet,
 #'       search = "direct", beta = 0, alpha = 0.05)
-#' m2 <- modelSearch(graph = alsData$graph, data = als.npn, gnet = kegg,
+#' m2 <- modelSearch(graph = alsData$graph, data = als.npn, gnet = gnet,
 #'       d = 2, search = "inner", beta = 0, alpha = 0.05)
-#' m3 <- modelSearch(graph = alsData$graph, data = als.npn, gnet = kegg,
+#' m3 <- modelSearch(graph = alsData$graph, data = als.npn, gnet = gnet,
 #'       d = 2, search = "outer", beta = 0, alpha = 0.05)
 #' m4 <- modelSearch(graph = alsData$graph, data = als.npn, gnet = NULL,
 #'       search = "basic", beta = 0.1, alpha = 0.05)
@@ -1744,9 +1755,9 @@ modelSearch<- function(graph, data, gnet = NULL, d = 2, search = "basic",
 	if (search == "outer") {
 	 Gt2<- quiet(resizeGraph(g=list(Gt,Gt1.new), gnet, d=d, verbose=FALSE))
 	 green<- V(Gt2)$name[which(V(Gt2)$color == "green")]
-	 Zt2<- as.matrix(data[,which(colnames(data) %in% green)])
-	 colnames(Zt2)<- green
-	 dataZ<- cbind(Zt1$data, Zt2); colnames(dataZ)
+	 names<- colnames(data)[which(colnames(data) %in% green)]
+	 dataZ<- cbind(Zt1$data, data[,names])
+	 colnames(dataZ)<- c(colnames(Zt1$data),names)
 	}
 	cat("Done.\n")
 	if (verbose) {

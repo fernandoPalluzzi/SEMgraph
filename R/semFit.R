@@ -298,9 +298,9 @@ SEMmodel <- function(ig, nodes, group, ...)
 {
 	# Set from-to-matrix representation of gene-gene links
 	ftm <- igraph::as_data_frame(ig)
-	if (is.directed(ig) & sum(which_mutual(ig)) > 0) {
+	if (is_directed(ig) & sum(which_mutual(ig)) > 0) {
 		dg <- ig - E(ig)[which_mutual(ig)]
-		ug <- as.undirected(ig-E(ig)[!which_mutual(ig)])
+		ug <- as_undirected(ig-E(ig)[!which_mutual(ig)])
 		ftm <- igraph::as_data_frame(dg)
 		ftb <- igraph::as_data_frame(ug)
 	} else {
@@ -308,7 +308,7 @@ SEMmodel <- function(ig, nodes, group, ...)
 	}
 
 	modelY <- modelV <- vector()
-	if (is.directed(ig)) {
+	if (is_directed(ig)) {
 		if (nrow(ftm) > 0) {
 			for(j in 1:nrow(ftm)) {
 				modelY[j] <- paste0("z", ftm[j, 2], "~z", ftm[j, 1])
@@ -355,7 +355,7 @@ SEMstart <- function(ig, data, group, a, ...)
 		}
 
 		dg <- ig - E(ig)[which_mutual(ig)]
-		ug <- as.undirected(ig - E(ig)[!which_mutual(ig)])
+		ug <- as_undirected(ig - E(ig)[!which_mutual(ig)])
 		ftm <- igraph::as_data_frame(dg)
 		ftb <- igraph::as_data_frame(ug)
 
@@ -493,7 +493,7 @@ SEMfit <- function(graph, data, group = NULL, start = NULL, fit = 0,
 	# Output objects
 	if (SE != "none") ig <- colorGraph(est = est, graph = ig, group = group, alpha = 0.05)
 	if (is.null(group)) dataXY <- cbind(group = rep(NA, n), dataXY)
-	colnames(dataXY) <- sub(".", "", colnames(dataXY))
+	colnames(dataXY)[-1] <- sub(".", "", colnames(dataXY)[-1]) #new
 
 	return(list(fit = fit, gest = gest, model = model, graph = ig,
 	            data = dataXY))
@@ -1183,7 +1183,7 @@ Shipley.test<- function(graph, data, MCX2=FALSE, cmax=Inf, limit=100, verbose=TR
 	# graph to DAG conversion :
 	nodes<- colnames(data)[colnames(data) %in% V(graph)$name]
 	graph<- induced_subgraph(graph, vids=which(V(graph)$name %in% nodes))
-	df1<- vcount(graph)*(vcount(graph)-1)/2-ecount(as.undirected(graph))
+	df1<- vcount(graph)*(vcount(graph)-1)/2-ecount(as_undirected(graph))
 	dataY<- as.matrix(data[, nodes])
 	S<- cov(dataY)
 	n<- nrow(dataY)
@@ -1192,7 +1192,7 @@ Shipley.test<- function(graph, data, MCX2=FALSE, cmax=Inf, limit=100, verbose=TR
 	 cat("WARNING: input graph is not acyclic !\n")
 	 cat(" Applying graph -> DAG conversion...\n")
 	 dag<- graph2dag(graph, dataY, bap=FALSE) #del cycles & all <->
-	 df2<- vcount(dag)*(vcount(dag)-1)/2-ecount(as.undirected(dag))
+	 df2<- vcount(dag)*(vcount(dag)-1)/2-ecount(as_undirected(dag))
 	 cat(" \nDegrees of freedom:\n Input graph  =", 
             df1, "\n Output graph =", df2, "\n\n")
 	}else{
@@ -1220,7 +1220,7 @@ Shipley.test<- function(graph, data, MCX2=FALSE, cmax=Inf, limit=100, verbose=TR
 dsep.test<- function(dag, S, n, cmax, limit, ...)
 {
 	# d-sep (basis set) testing of a DAG
-	A <- ifelse(as_adjacency_matrix(as.undirected(dag), sparse=FALSE) == 1, 0, 1)
+	A <- ifelse(as_adjacency_matrix(as_undirected(dag), sparse=FALSE) == 1, 0, 1)
 	ug <- graph_from_adjacency_matrix(A, mode="undirected", diag=FALSE)
 	M <- attr(E(ug), "vnames")
 	
@@ -1373,7 +1373,7 @@ localCI.test<- function(graph, data, bap=FALSE, limit=100, verbose=TRUE, ...)
 	nodes<- colnames(data)[colnames(data) %in% V(graph)$name]
 	graph<- induced_subgraph(graph, vids=which(V(graph)$name %in% nodes))
 	dataY<- as.matrix(data[, nodes])
-	df1<- vcount(graph)*(vcount(graph)-1)/2-ecount(as.undirected(graph))
+	df1<- vcount(graph)*(vcount(graph)-1)/2-ecount(as_undirected(graph))
 	if (vcount(graph) > limit){
 	 message("too many degree of fredoom, switch to Shipley.test...\n")
 	 CI<- Shipley.test(graph, dataY)
@@ -1390,7 +1390,7 @@ localCI.test<- function(graph, data, bap=FALSE, limit=100, verbose=TRUE, ...)
 	  cat(" Applying graph -> DAG conversion...\n")
 	  bap<- graph2dag(graph, dataY, bap=bap) #del cycles & all <->
 	 }
-	 df2<- vcount(bap)*(vcount(bap)-1)/2-ecount(as.undirected(bap))
+	 df2<- vcount(bap)*(vcount(bap)-1)/2-ecount(as_undirected(bap))
 	  cat(" \nDegrees of freedom:\n Input graph  =", 
              df1, "\n Output graph =", df2, "\n\n")
 	}else{

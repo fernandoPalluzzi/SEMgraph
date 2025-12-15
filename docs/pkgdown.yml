@@ -1,5 +1,9 @@
 pandoc: '3.3'
-pkgdown: 2.1.1
+pkgdown: 2.2.0
 pkgdown_sha: ~
-articles: {}
-last_built: 2025-02-05T09:14Z
+articles:
+  SEMgraph_tutorial: SEMgraph_tutorial.html
+last_built: 2025-12-15T15:28Z
+urls:
+  reference: https://grassiMario.github.io/SEMgraph/reference
+  article: https://grassiMario.github.io/SEMgraph/articles

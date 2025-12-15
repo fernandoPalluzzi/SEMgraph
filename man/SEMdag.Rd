@@ -154,6 +154,10 @@ inverse covariance estimation. Electronic Journal of Statistics,
 Peters J, Bühlmann P (2014). Identifiability of Gaussian structural equation
 models with equal error variances. Biometrika, 101(1):219–228.
 <https://doi.org/10.1093/biomet/ast043>
+
+Grassi M, Tarantino B (2025). SEMdag: Fast learning of Directed Acyclic Graphs
+via node or layer ordering. PLoS ONE, Jan 08; 20(1): e0317283.
+<https://doi.org/10.1371/journal.pone.0317283>
 }
 \seealso{
 \code{\link[SEMgraph]{modelSearch}}

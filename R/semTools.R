@@ -18,6 +18,293 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # -------------------------------------------------------------------- #
+#' @title SEM-based gene set analysis
+#'
+#' @description Gene Set Analysis (GSA) via self-contained test for group
+#' effect on signaling (directed) pathways based on SEM. The core of the
+#' methodology is implemented in the RICF algorithm of \code{SEMrun()},
+#' recovering from RICF output node-specific group effect p-values, and
+#' Brown’s combined permutation p-values of node activation and inhibition.
+#'
+#' @param g A list of pathways to be tested.
+#' @param data A matrix or data.frame. Rows correspond to subjects, and
+#' columns to graph nodes (variables).
+#' @param group A binary vector. This vector must be as long as the number
+#' of subjects. Each vector element must be 1 for cases and 0 for control
+#' subjects.
+#' @param method Multiple testing correction method. One of the values
+#' available in \code{\link[stats]{p.adjust}}. By default, method is set
+#' to "BH" (i.e., Benjamini-Hochberg correction).
+#' @param alpha Gene set test significance level (default = 0.05).
+#' @param n_rep Number of randomization replicates (default = 1000).
+#' @param ... Currently ignored.
+#'
+#' @details For gaining more biological insights into the functional roles
+#' of pre-defined subsets of genes, node perturbation obtained from RICF
+#' fitting has been combined with up- or down-regulation of genes from a
+#' reference interactome to obtain overall pathway perturbation as follows: 
+#' \itemize{
+#' \item The node perturbation is defined as activated when the minimum among
+#' the p-values is positive; if negative, the status is inhibited. 
+#' \item Up- or down- regulation of genes is computed from the weighted adjacency
+#' matrix of each pathway as column sum of weights(-1,0,1) over each source node.
+#' If the overall sum of node weights is below 1, the pathway is flagged as
+#' down-regulated, otherwise as up-regulated. 
+#' \item The combination between these two quantities allows to define the
+#' direction (up or down) of gene perturbation. Up- or down regulated gene status,
+#' associated with node inhibition, indicates a decrease in activation (or
+#' increase in inhibition) in cases with respect to control group. Conversely,
+#' up- or down regulated gene status, associated with node activation, indicates
+#' an increase in activation (or decrease in inhibition) in cases with
+#' respect to control group.
+#' }
+#' 
+#' @return A list of 2 objects:
+#' \enumerate{
+#' \item "gsa", A data.frame reporting the following information for each
+#' pathway in the input list:
+#' \itemize{
+#' \item "No.nodes", pathway size (number of nodes);
+#' \item "No.DEGs", number of differential espression genes (DEGs) within
+#' the pathway, after multiple test correction with one of the methods
+#' available in \code{\link[stats]{p.adjust}};
+#' \item "pert", pathway perturbation status (see details);
+#' \item "pNA", Brown's combined P-value of pathway node activation;
+#' \item "pNI", Brown's combined P-value of pathway node inhibition;
+#' \item "PVAL", Bonferroni combined P-value of pNA, and pNI; i.e.,
+#' 2* min(pNA, PNI);
+#' \item "ADJP", Adjusted Bonferroni P-value of pathway perturbation; i.e.,
+#' min(No.pathways * PVAL; 1).
+#' }
+#' \item "DEG", a list with DEGs names per pathways.
+#' }
+#'
+#' @export
+#'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
+#' @references
+#'
+#' Grassi, M., Tarantino, B. (2022). SEMgsa: topology-based pathway enrichment analysis
+#' with structural equation models. BMC Bioinformatics, 17 Aug, 23, 344.
+#' <https://doi.org/10.1186/s12859-022-04884-8>
+#' 
+#' @examples
+#'
+#' \dontrun{
+#'
+#' # Nonparanormal(npn) transformation
+#' als.npn <- transformData(alsData$exprs)$data
+#'
+#' # Selection of FTD-ALS pathways from KEGG pathways
+#'
+#' paths.name <- c("MAPK signaling pathway",
+#'                 "Protein processing in endoplasmic reticulum",
+#'                 "Endocytosis",
+#'                 "Wnt signaling pathway",
+#'                 "Neurotrophin signaling pathway",
+#'                 "Amyotrophic lateral sclerosis")
+#' 
+#' j <- which(names(kegg.pathways) %in% paths.name)
+#'
+#' GSA <- SEMgsa(kegg.pathways[j], als.npn, alsData$group,
+#'               method = "bonferroni", alpha = 0.05,
+#'               n_rep = 1000)
+#' GSA$gsa
+#' GSA$DEG
+#' 
+#' }
+#'
+SEMgsa<- function(g=list(), data, group, method = "BH", alpha = 0.05, n_rep = 1000, ...)
+{
+ 	# set loop objects:
+	gs <- names(g)
+    K <- length(g)
+	res.tbl <- NULL
+	DEG <- list()
+		
+	for (k in 1:K){
+	 cat( "k =", k, gs[k], "\n" )
+	 ig <- simplify(g[[k]], remove.loops = TRUE)
+	 if (length(E(ig)$weight) == 0) E(ig)$weight <- 1
+	 adj <- as.matrix(get.adjacency(ig, attr = "weight"))
+	 adj <- colSums(adj)
+	 nodes <- ifelse(adj >= 1, 1, ifelse(adj == 0, 0, -1))
+	 status <- ifelse(sum(nodes) >= 1, 1, ifelse(sum(nodes) == 0, 0, -1))
+	 
+	 # RICF fitting:
+	 fit <- NULL
+	 err <- paste(" ValueError: Model converged = FALSE for k =",k,"\n")
+	 tryCatch(fit <- quiet(SEMricf(ig, data, group, n_rep)),
+	 					    error = function(c) cat(err))
+	 if (length(fit[[1]]) == 0) {
+	  res.tbl<- rbind(res.tbl, rep(NA,6))
+	  colnames(res.tbl) <- c("No.nodes","No.DEGs","pert","pNa","pNi","PVAL")
+	  DEG <- c(DEG, list(NULL))
+	  next
+	 }
+	 pval<- fit$gest$pvalue
+	 genes<- gsub("X", "", rownames(fit$gest))
+	 genes<- genes[p.adjust(pval, method=method) < alpha]
+	 DEG<- c(DEG, list(genes))
+	 
+	 # data.frame of combined SEM results :
+	 cpval <- fit$fit$pval
+	 names(cpval) <- c("pNa", "pNi")
+	 pvmin <- names(cpval)[which.min(cpval)]
+	 sign <- ifelse(pvmin == "pNa", "+", "-")
+	 if ( status != 0 ) {
+	  if (status == -1 & sign == "-") pert <- "up inh"
+	  else if (status == -1 & sign == "+") pert <- "down inh"
+	  else if (status == 1 & sign == "+") pert <- "up act"
+	  else if (status == 1 & sign == "-") pert <- "down act"
+	 }else{pert <- NA}
+	 df <- data.frame(
+	   No.nodes = vcount(ig),
+	   No.DEGs = sum(p.adjust(pval, method=method) < alpha),
+	   pert = pert,
+	   pNa = cpval[1],
+	   pNi = cpval[2],
+	   PVAL = min(2 * min(cpval[1], cpval[2]), 1)
+	 )
+	 res.tbl <- rbind(res.tbl,df)
+	}
+ 
+ 	ADJP <- p.adjust(res.tbl$PVAL, method="bonferroni")
+	res.tbl<- cbind(res.tbl, ADJP)
+	rownames(res.tbl) <- names(DEG) <- names(g)
+	gsa <- res.tbl[order(res.tbl$ADJP),]
+	DEG <- DEG[rownames(gsa)]
+	
+	return( list(gsa=gsa, DEG=DEG) )
+}
+
+#' @title SEM-based differential network analysis
+#'
+#' @description Differential Connected Inference (DCI) via a sub-network with
+#' perturbed edges obtained from the output of \code{\link[SEMgraph]{SEMace}},
+#' comparable to the procedure in Jablonski et al (2022), or \code{\link[SEMgraph]{SEMrun}}
+#' with two-group and CGGM solver, comparable to the algorithm 2 in Belyaeva et al (2021). 
+#' To increase the efficiency of computations for large graphs, users can
+#' select to break the network structure into clusters, and select the
+#' topological clustering method (see \code{\link[SEMgraph]{clusterGraph}}).
+#' The function \code{\link[SEMgraph]{SEMrun}} is applied iteratively on
+#' each cluster (with size min > 10 and max < 500) to obtain the graph
+#' with the full list of perturbed edges. 
+#' 
+#' @param graph Input network as an igraph object.
+#' @param data A matrix or data.frame. Rows correspond to subjects, and
+#' columns to graph nodes (variables).
+#' @param group A binary vector. This vector must be as long as the number
+#' of subjects. Each vector element must be 1 for cases and 0 for control
+#' subjects.
+#' @param type  Average Causal Effect (ACE) with two-group, "parents"
+#' (back-door) adjustement set, and "direct" effects (\code{type = "ace"},
+#' default), or CGGM solver with two-group using a clustering method.
+#' If \code{type = "tahc"}, network modules are generated using the tree
+#' agglomerative hierarchical clustering method, or non-tree clustering
+#' methods from igraph package, i.e., \code{type = "wtc"} (walktrap community
+#' structure with short random walks), \code{type ="ebc"} (edge betweeness
+#' clustering), \code{type = "fgc"} (fast greedy method), \code{type = "lbc"}
+#' (label propagation method), \code{type = "lec"} (leading eigenvector method),
+#' \code{type = "loc"} (multi-level optimization), \code{type = "opc"} (optimal
+#' community structure), \code{type = "sgc"} (spinglass statistical mechanics),
+#' \code{type = "none"} (no breaking network structure into clusters).
+#' @param method Multiple testing correction method. One of the values
+#' available in \code{\link[stats]{p.adjust}}. By default, method is set
+#' to "BH" (i.e., FDR multiple test correction).
+#' @param alpha Significance level (default = 0.05) for edge set selection.
+#' @param ... Currently ignored.
+#'
+#' @return An igraph object.
+#'
+#' @export
+#'
+#' @author Mario Grassi \email{mario.grassi@unipv.it}
+#'
+#' @references
+#'
+#' Belyaeva A, Squires C, Uhler C (2021). DCI: learning causal differences
+#' between gene regulatory networks. Bioinformatics, 37(18): 3067–3069.
+#' <https://doi: 10.1093/bioinformatics/btab167>
+#'
+#' Jablonski K, Pirkl M, Ćevid D, Bühlmann P, Beerenwinkel N (2022).
+#' Identifying cancer pathway dysregulations using differential
+#' causal effects. Bioinformatics, 38(6):1550–1559.
+#' <https://doi.org/10.1093/bioinformatics/btab847>
+#'
+#' @examples
+#'
+#' \dontrun{
+#'
+#' #load SEMdata package for ALS data with 17K genes:
+#' devtools::install_github("fernandoPalluzzi/SEMdata")
+#' library(SEMdata)
+#'
+#' # Nonparanormal(npn) transformation
+#' data.npn<- transformData(SEMdata::alsData$exprs)$data
+#' dim(data.npn) #160 17695
+#'
+#' # KEGG interactome (max component)
+#' gU <- properties(kegg)[[1]]
+#' #summary(gU)
+#'
+#' # Modules with ALS perturbed edges using fast gready clustering
+#' gD<- SEMdci(gU, data.npn, alsData$group, type="fgc")
+#' summary(gD)
+#' gcD<- properties(gD)
+#'
+#' old.par <- par(no.readonly = TRUE)
+#' par(mfrow=c(2,2), mar=rep(2,4))
+#' gplot(gcD[[1]], l="fdp", main="max component")
+#' gplot(gcD[[2]], l="fdp", main="2nd component")
+#' gplot(gcD[[3]], l="fdp", main="3rd component")
+#' gplot(gcD[[4]], l="fdp", main="4th component")
+#' par(old.par)
+#'
+#' }
+#'
+SEMdci<- function (graph, data, group, type = "ace", method = "BH", alpha = 0.05, ...) 
+{
+    if (type == "ace") {
+        dest <- SEMace(graph, data, group, type = "parents", 
+            effect = "direct", method = method, alpha = alpha, 
+            boot = NULL)
+        ftm <- data.frame(from = dest$source, to = dest$sink)
+        return(gD = graph_from_data_frame(ftm))
+    }
+    if (type != "none") {
+        C <- clusterGraph(graph, type = type, size = 10)
+        K <- as.numeric(names(table(C)))
+        gL <- NULL
+        for (k in 1:length(K)) {
+            cat("fit cluster =", K[k], "\n")
+            V <- names(C)[C == K[k]][names(C)[C == K[k]] %in% colnames(data)]
+            g <- simplify(induced_subgraph(graph, vids = V))
+            if (vcount(g) > 500 | ecount(g) < 9) next
+			dest <- tryCatch(quiet(SEMggm2(g, data, group)$dest),
+                             error = function(err) NULL)
+			if (is.null(dest)) next
+			dsub <- subset(dest, p.adjust(dest$pvalue, method = method) < alpha)
+            if (nrow(dsub) == 0) next
+            ftm <- data.frame(from = dsub$rhs, to = dsub$lhs)
+            gC <- graph_from_data_frame(ftm)
+            if (ecount(gC) > 0) gL <- c(gL, list(gC))
+        }
+        cat("Done.\n")
+        if (is.null(gL)) 
+            return(gD = make_empty_graph(n = length(K)))
+        #gD <- graph.union(gL)
+		gD <- Reduce(union, gL)
+    }
+    else if (type == "none") {
+        dest <- quiet(SEMggm2(g, data, group)$dest)
+        dsub <- subset(dest, p.adjust(dest$pvalue, method = method) < alpha)
+        ftm <- data.frame(from = dsub$rhs, to = dsub$lhs)
+        gD <- graph_from_data_frame(ftm)
+    }
+    return(gD)
+}
 
 #' @title Graph weighting methods
 #'
@@ -125,7 +412,7 @@ weightGraph<- function(graph, data, group = NULL, method = "r2z", limit = 10000,
 	pv[pv <= 0] <- 1e-15
 	pv[pv >= 1] <- 1 - 1e-15
 	ftm <- cbind(ftm, zsign, pv)
-	gdf <- graph_from_data_frame(ftm, directed = is.directed(graph))
+	gdf <- graph_from_data_frame(ftm, directed = is_directed(graph))
 	Vattr <- vertex_attr(graph)
 	if (length(Vattr) > 1) {
 		idx <- match(V(gdf)$name, Vattr$name)
@@ -482,7 +769,7 @@ transformData <- function (x, method = "npn", ...)
 		cat("Simulating gaussian data via Spearman correlations...")
 		x <- 2 * sin(pi/6 * cor(x, method = "spearman"))
 		z <- generateData(Sest = x, n = n, p = p)
-    }
+	}
 	if (method == "kendall") { 
 		cat("Simulating gaussian data via Kendall correlations...")
 		x <- sin(pi/2 * cor(x, method = "kendall"))
@@ -493,7 +780,7 @@ transformData <- function (x, method = "npn", ...)
 		#x <- suppressWarnings(lavCor(x, ordered = names(x))[1:p,1:p])
 		x <- lavCor(x, ordered=names(x), cor.smooth=TRUE)[1:p,1:p]
 		z <- generateData(Sest = x, n = n, p = p)
-    }
+	}
 	if (method == "lineals") {
 		cat("Conducting the optimal (ordinal) linearizing transformation...")
 		z <- aspect::lineals(x, level = "ordinal")
@@ -509,7 +796,7 @@ transformData <- function (x, method = "npn", ...)
 
 	cat("done.\n")
 	colnames(z) <- x.col
-    rownames(z) <- x.row
+	rownames(z) <- x.row
 	v0 <- which(apply(z, 2, var) == 0)
 	if (length(v0) > 0) z <- cbind(z[,-v0], x[,v0])
 
@@ -533,4 +820,109 @@ generateData <- function(Sest, n, p, ...)
 	fake.data <- as.data.frame(fake.data)
 
 	return(fake.data)
+}
+
+#' @title Import pathways and generate a reference network
+#'
+#' @description Utility to create pathway lists as igraph objects and 
+#' interaction networks from Reactome, KEGG, and other pathway databases.
+#'
+#' @param db String indicating the database name. Please, check the 
+#' \code{\link[graphite]{pathways}} function from \pkg{graphite} to list
+#' the available datasets.
+#' @param organism A string indicating the source organism. Please, check 
+#' the \code{\link[graphite]{pathways}} function from \pkg{graphite} to list
+#' the available datasets (default = "hsapiens") 
+#' @param id_type Gene ID type. The default is set to "ENTREZID" (standard 
+#' SEM fitting nomenclature). A common choice could be "SYMBOL", for 
+#' official gene symbols.
+#' @param lcc A logical value. If TRUE (default), the reference network 
+#' will only include the largest connected component. It will include all 
+#' disconnected components otherwise.
+#' @param ... Currently ignored.
+#'
+#' @details This function uses \code{graphite} to download and preprocess 
+#' network data from pathway databases. The output is then created using 
+#' igraph and SEMgraph utilities.
+#'
+#' @return A list of 2 objects:
+#' \enumerate{
+#' \item a list of pathways ad igraph objects;
+#' \item the union of graphs in the pathway list.
+#' }
+#'
+#' @export
+#'
+#' @author Fernando Palluzzi \email{fernando.palluzzi@gmail.com}
+#'
+#' @references
+#'
+#' Sales G, Calura E, Cavalieri D, Romualdi C (2012). graphite - a Bioconductor 
+#' package to convert pathway topology to gene network. 
+#' BMC Bioinformatics. 
+#' <https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-13-20>
+#'
+#' @examples
+#'
+#' \dontrun{
+#' 
+#' # Create KEGG reference pathway list and reference network for Homo sapiens
+#' kegg.hs <- loadPathways("kegg", "hsapiens", "ENTREZID")
+#' 
+#' # Inspect results
+#' names(kegg.hs$pathways)
+#' kegg.hs$network
+#'
+#' }
+#'
+loadPathways <- function(db, organism = "hsapiens", id_type = "ENTREZID", lcc = TRUE, ...)
+{
+	# Import pathway from database
+	pathways <- graphite::pathways(organism, db)
+	pathway.list <- list()
+	n <- length(pathways)
+	del <- NULL
+
+	for (i in 1:n) { #i=51
+	  pw.name <- names(pathways)[[i]]
+	  #if (i %% 10 == 0) message("  Processed ", i, "/", n, " pathways")
+	  #message(paste0("Pathway ", i, " of ", n, ": ", pw.name))
+
+	  # Node ID conversion
+	  pw <- graphite::convertIdentifiers(pathways[[i]], id_type)
+	  
+	  # Conversion pathway -> GraphNEL -> igraph
+	  G <- igraph::graph_from_graphnel(graphite::pathwayGraph(pw))
+	  G <- igraph::simplify(G, remove.loops = TRUE)
+	  G <- G - E(G)[igraph::which_mutual(G)]
+
+	  # Skip small graph
+	  if (igraph::vcount(G) <= 5 || igraph::ecount(G) == 0) {
+	  message(paste0("Delete pathway ", i, " of ", n, ": ", pw.name))
+	  del <- c(del, i); next
+	  }
+
+	  #Removing node name prefix and edge weight
+	  V(G)$name <- sub(paste0(id_type, ":"), "", V(G)$name)
+	  G <- igraph::delete_edge_attr(G, "weight")
+	  
+	  # Adding graph to the list
+	  pathway.list[[i]] <- G
+	  names(pathway.list)[[i]] <- pw.name
+	}
+
+	# Generating reference network
+	reference <-  Reduce(igraph::union, pathway.list)
+	if (lcc) reference <- properties(reference)[[1]] #SEMgraph
+
+	# Add node labels to all graphs
+	db <- org.Hs.eg.db::org.Hs.eg.db
+	add_labels <- function(g) {
+	 V(g)$label <- suppressMessages(AnnotationDbi::mapIds(db, V(g)$name, "SYMBOL", id_type))
+	 g
+	}
+	pathway.list <- lapply(pathway.list[-del], add_labels)
+	reference <- add_labels(reference)
+	
+	return(list(pathways = pathway.list, network = reference))
 }

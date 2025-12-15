@@ -1,6 +1,6 @@
 #  SEMgraph library
-#  Copyright (C) 2019-2021 Mario Grassi; Fernando Palluzzi; Barbara Tarantino
-#  e-mail: <mario.grassi@unipv.it>
+#  Copyright (C) 2019-2021 Fernando Palluzzi; Mario Grassi
+#  e-mail: <fernando.palluzzi@gmail.com>
 #  University of Pavia, Department of Brain and Behavioral Sciences
 #  Via Bassi 21, 27100 Pavia, Italy
 
@@ -22,12 +22,12 @@
 #' @title KEGG pathways
 #'
 #' @description KEGG pathways extracted using the \code{ROntoTools}
-#' R package (update: Jan, 2025).
+#' R package (update: November, 2021).
 #' @name kegg.pathways
 #' @usage kegg.pathways
 #' @docType data
 #' @format
-#' "kegg.pathways" is a list of 231 igraph objects corresponding to the
+#' "kegg.pathways" is a list of 225 igraph objects corresponding to the
 #' KEGG pathways.
 #' @source \url{https://www.genome.jp/kegg/}
 #' @references
@@ -36,23 +36,23 @@
 #' Nucleic Acid Research 28(1): 27-30. 
 #' <https://doi.org/10.1093/nar/27.1.29>
 #'
-#' Calin Voichita, Sahar Ansari and Sorin Draghici (2023).
-#' ROntoTools: R Onto-Tools suite. R package version 2.30.0.
+#' Calin Voichita, Sahar Ansari and Sorin Draghici (2021).
+#' ROntoTools: R Onto-Tools suite. R package version 2.20.0.
 #' 
 #' @examples
 #' 
 #' \donttest{
-#' library(igraph)
+#' library(SEMgraph)
 #' 
 #' # KEGG pathways
-#' names(kegg.pathways)
+#' length(kegg.pathways)
+#' head(names(kegg.pathways))
+#' tail(names(kegg.pathways))
 #' 
-#' i<-which(names(kegg.pathways)=="Type II diabetes mellitus");i
+#' # Load Type II diabetes graph
+#' i<-which(names(kegg.pathways) == "Type II diabetes mellitus");i
 #' ig<- kegg.pathways[[i]]
-#' summary(ig)
-#' V(ig)$name
-#' E(ig)$weight
-#' 
+#' properties(ig)
 #' gplot(ig, l="fdp", psize=50, main=names(kegg.pathways[i]))
 #' 
 #' }

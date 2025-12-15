@@ -134,13 +134,15 @@ confounding factors, hence a weaker correction
 
 # Nonparanormal(npn) transformation
 als.npn <- transformData(alsData$exprs)$data
+# Reference network (KEGG interactome)
+gnet <- kegg
 
 # Models estimation
-m1 <- modelSearch(graph = alsData$graph, data = als.npn, gnet = kegg,
+m1 <- modelSearch(graph = alsData$graph, data = als.npn, gnet = gnet,
       search = "direct", beta = 0, alpha = 0.05)
-m2 <- modelSearch(graph = alsData$graph, data = als.npn, gnet = kegg,
+m2 <- modelSearch(graph = alsData$graph, data = als.npn, gnet = gnet,
       d = 2, search = "inner", beta = 0, alpha = 0.05)
-m3 <- modelSearch(graph = alsData$graph, data = als.npn, gnet = kegg,
+m3 <- modelSearch(graph = alsData$graph, data = als.npn, gnet = gnet,
       d = 2, search = "outer", beta = 0, alpha = 0.05)
 m4 <- modelSearch(graph = alsData$graph, data = als.npn, gnet = NULL,
       search = "basic", beta = 0.1, alpha = 0.05)

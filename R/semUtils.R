@@ -19,294 +19,6 @@
 
 # -------------------------------------------------------------------- #
 
-#' @title SEM-based gene set analysis
-#'
-#' @description Gene Set Analysis (GSA) via self-contained test for group
-#' effect on signaling (directed) pathways based on SEM. The core of the
-#' methodology is implemented in the RICF algorithm of \code{SEMrun()},
-#' recovering from RICF output node-specific group effect p-values, and
-#' Brown’s combined permutation p-values of node activation and inhibition.
-#'
-#' @param g A list of pathways to be tested.
-#' @param data A matrix or data.frame. Rows correspond to subjects, and
-#' columns to graph nodes (variables).
-#' @param group A binary vector. This vector must be as long as the number
-#' of subjects. Each vector element must be 1 for cases and 0 for control
-#' subjects.
-#' @param method Multiple testing correction method. One of the values
-#' available in \code{\link[stats]{p.adjust}}. By default, method is set
-#' to "BH" (i.e., Benjamini-Hochberg correction).
-#' @param alpha Gene set test significance level (default = 0.05).
-#' @param n_rep Number of randomization replicates (default = 1000).
-#' @param ... Currently ignored.
-#'
-#' @details For gaining more biological insights into the functional roles
-#' of pre-defined subsets of genes, node perturbation obtained from RICF
-#' fitting has been combined with up- or down-regulation of genes from KEGG
-#' to obtain overall pathway perturbation as follows: 
-#' \itemize{
-#' \item The node perturbation is defined as activated when the minimum among
-#' the p-values is positive; if negative, the status is inhibited. 
-#' \item Up- or down- regulation of genes (derived from KEGG database) has
-#' been obtained from the weighted adjacency matrix of each pathway as column
-#' sum of weights over each source node. If the overall sum of node weights
-#' is below 1, the pathway is flagged as down-regulated otherwise as up-regulated. 
-#' \item The combination between these two quantities allows to define the
-#' direction (up or down) of gene perturbation. Up- or down regulated gene status,
-#' associated with node inhibition, indicates a decrease in activation (or
-#' increase in inhibition) in cases with respect to control group. Conversely,
-#' up- or down regulated gene status, associated with node activation, indicates
-#' an increase in activation (or decrease in inhibition) in cases with
-#' respect to control group.
-#' }
-#' 
-#' @return A list of 2 objects:
-#' \enumerate{
-#' \item "gsa", A data.frame reporting the following information for each
-#' pathway in the input list:
-#' \itemize{
-#' \item "No.nodes", pathway size (number of nodes);
-#' \item "No.DEGs", number of differential espression genes (DEGs) within
-#' the pathway, after multiple test correction with one of the methods
-#' available in \code{\link[stats]{p.adjust}};
-#' \item "pert", pathway perturbation status (see details);
-#' \item "pNA", Brown's combined P-value of pathway node activation;
-#' \item "pNI", Brown's combined P-value of pathway node inhibition;
-#' \item "PVAL", Bonferroni combined P-value of pNA, and pNI; i.e.,
-#' 2* min(pNA, PNI);
-#' \item "ADJP", Adjusted Bonferroni P-value of pathway perturbation; i.e.,
-#' min(No.pathways * PVAL; 1).
-#' }
-#' \item "DEG", a list with DEGs names per pathways.
-#' }
-#'
-#' @export
-#'
-#' @author Mario Grassi \email{mario.grassi@unipv.it}
-#'
-#' @references
-#'
-#' Grassi, M., Tarantino, B. SEMgsa: topology-based pathway enrichment analysis with
-#' structural equation models. BMC Bioinformatics 23, 344 (2022).
-#' https://doi.org/10.1186/s12859-022-04884-8
-#' 
-#' @examples
-#'
-#' \dontrun{
-#'
-#' # Nonparanormal(npn) transformation
-#' als.npn <- transformData(alsData$exprs)$data
-#'
-#' # Selection of FTD-ALS pathways from kegg.pathways.Rdata
-#'
-#' paths.name <- c("MAPK signaling pathway",
-#'                 "Protein processing in endoplasmic reticulum",
-#'                 "Endocytosis",
-#'                 "Wnt signaling pathway",
-#'                 "Neurotrophin signaling pathway",
-#'                 "Amyotrophic lateral sclerosis")
-#' 
-#' j <- which(names(kegg.pathways) %in% paths.name)
-#'
-#' GSA <- SEMgsa(kegg.pathways[j], als.npn, alsData$group,
-#'               method = "bonferroni", alpha = 0.05,
-#'               n_rep = 1000)
-#' GSA$gsa
-#' GSA$DEG
-#' 
-#' }
-#'
-SEMgsa<- function(g=list(), data, group, method = "BH", alpha = 0.05, n_rep = 1000, ...)
-{
- 	# set loop objects:
-	gs <- names(g)
-    K <- length(g)
-	res.tbl <- NULL
-	DEG <- list()
-		
-	for (k in 1:K){
-	 cat( "k =", k, gs[k], "\n" )
-	 ig <- simplify(g[[k]], remove.loops = TRUE)
-	 if (length(E(ig)$weight) == 0) E(ig)$weight <- 1
-	 adj <- as.matrix(get.adjacency(ig, attr = "weight"))
-	 adj <- colSums(adj)
-	 nodes <- ifelse(adj >= 1, 1, ifelse(adj == 0, 0, -1))
-	 status <- ifelse(sum(nodes) >= 1, 1, ifelse(sum(nodes) == 0, 0, -1))
-	 
-	 # RICF fitting:
-	 fit <- NULL
-	 err <- paste(" ValueError: Model converged = FALSE for k =",k,"\n")
-	 tryCatch(fit <- quiet(SEMricf(ig, data, group, n_rep)),
-	 					    error = function(c) cat(err))
-	 if (length(fit[[1]]) == 0) {
-	  res.tbl<- rbind(res.tbl, rep(NA,6))
-	  colnames(res.tbl) <- c("No.nodes","No.DEGs","pert","pNa","pNi","PVAL")
-	  DEG <- c(DEG, list(NULL))
-	  next
-	 }
-	 pval<- fit$gest$pvalue
-	 genes<- gsub("X", "", rownames(fit$gest))
-	 genes<- genes[p.adjust(pval, method=method) < alpha]
-	 DEG<- c(DEG, list(genes))
-	 
-	 # data.frame of combined SEM results :
-	 cpval <- fit$fit$pval
-	 names(cpval) <- c("pNa", "pNi")
-	 pvmin <- names(cpval)[which.min(cpval)]
-	 sign <- ifelse(pvmin == "pNa", "+", "-")
-	 if ( status != 0 ) {
-	  if (status == -1 & sign == "-") pert <- "up inh"
-	  else if (status == -1 & sign == "+") pert <- "down inh"
-	  else if (status == 1 & sign == "+") pert <- "up act"
-	  else if (status == 1 & sign == "-") pert <- "down act"
-	 }else{pert <- NA}
-	 df <- data.frame(
-	   No.nodes = vcount(ig),
-	   No.DEGs = sum(p.adjust(pval, method=method) < alpha),
-	   pert = pert,
-	   pNa = cpval[1],
-	   pNi = cpval[2],
-	   PVAL = min(2 * min(cpval[1], cpval[2]), 1)
-	 )
-	 res.tbl <- rbind(res.tbl,df)
-	}
- 
- 	ADJP <- p.adjust(res.tbl$PVAL, method="bonferroni")
-	res.tbl<- cbind(res.tbl, ADJP)
-	rownames(res.tbl) <- names(DEG) <- names(g)
-	gsa <- res.tbl[order(res.tbl$ADJP),]
-	DEG <- DEG[rownames(gsa)]
-	
-	return( list(gsa=gsa, DEG=DEG) )
-}
-
-#' @title SEM-based differential network analysis
-#'
-#' @description Creates a sub-network with perturbed edges obtained from the
-#' output of \code{\link[SEMgraph]{SEMace}}, comparable to the procedure in
-#' Jablonski et al (2022), or of \code{\link[SEMgraph]{SEMrun}} with two-group
-#' and CGGM solver, comparable to the algorithm 2 in Belyaeva et al (2021). 
-#' To increase the efficiency of computations for large graphs, users can
-#' select to break the network structure into clusters, and select the
-#' topological clustering method (see \code{\link[SEMgraph]{clusterGraph}}).
-#' The function \code{\link[SEMgraph]{SEMrun}} is applied iteratively on
-#' each cluster (with size min > 10 and max < 500) to obtain the graph
-#' with the full list of perturbed edges. 
-#' 
-#' @param graph Input network as an igraph object.
-#' @param data A matrix or data.frame. Rows correspond to subjects, and
-#' columns to graph nodes (variables).
-#' @param group A binary vector. This vector must be as long as the number
-#' of subjects. Each vector element must be 1 for cases and 0 for control
-#' subjects.
-#' @param type  Average Causal Effect (ACE) with two-group, "parents"
-#' (back-door) adjustement set, and "direct" effects (\code{type = "ace"},
-#' default), or CGGM solver with two-group using a clustering method.
-#' If \code{type = "tahc"}, network modules are generated using the tree
-#' agglomerative hierarchical clustering method, or non-tree clustering
-#' methods from igraph package, i.e., \code{type = "wtc"} (walktrap community
-#' structure with short random walks), \code{type ="ebc"} (edge betweeness
-#' clustering), \code{type = "fgc"} (fast greedy method), \code{type = "lbc"}
-#' (label propagation method), \code{type = "lec"} (leading eigenvector method),
-#' \code{type = "loc"} (multi-level optimization), \code{type = "opc"} (optimal
-#' community structure), \code{type = "sgc"} (spinglass statistical mechanics),
-#' \code{type = "none"} (no breaking network structure into clusters).
-#' @param method Multiple testing correction method. One of the values
-#' available in \code{\link[stats]{p.adjust}}. By default, method is set
-#' to "BH" (i.e., FDR multiple test correction).
-#' @param alpha Significance level (default = 0.05) for edge set selection.
-#' @param ... Currently ignored.
-#'
-#' @return An igraph object.
-#'
-#' @export
-#'
-#' @author Mario Grassi \email{mario.grassi@unipv.it}
-#'
-#' @references
-#'
-#' Belyaeva A, Squires C, Uhler C (2021). DCI: learning causal differences
-#' between gene regulatory networks. Bioinformatics, 37(18): 3067–3069.
-#' <https://doi: 10.1093/bioinformatics/btab167>
-#'
-#' Jablonski K, Pirkl M, Ćevid D, Bühlmann P, Beerenwinkel N (2022).
-#' Identifying cancer pathway dysregulations using differential
-#' causal effects. Bioinformatics, 38(6):1550–1559.
-#' <https://doi.org/10.1093/bioinformatics/btab847>
-#'
-#' @examples
-#'
-#' \dontrun{
-#'
-#' #load SEMdata package for ALS data with 17K genes:
-#' #devtools::install_github("fernandoPalluzzi/SEMdata")
-#' #library(SEMdata)
-#'
-#' # Nonparanormal(npn) transformation
-#' library(huge)
-#' data.npn<- huge.npn(alsData$exprs)
-#' dim(data.npn) #160 17695
-#'
-#' # Extract KEGG interactome (max component)
-#' KEGG<- properties(kegg)[[1]]
-#' summary(KEGG)
-#'
-#' # KEGG modules with ALS perturbed edges using fast gready clustering
-#' gD<- SEMdci(KEGG, data.npn, alsData$group, type="fgc")
-#' summary(gD)
-#' gcD<- properties(gD)
-#'
-#' old.par <- par(no.readonly = TRUE)
-#' par(mfrow=c(2,2), mar=rep(2,4))
-#' gplot(gcD[[1]], l="fdp", main="max component")
-#' gplot(gcD[[2]], l="fdp", main="2nd component")
-#' gplot(gcD[[3]], l="fdp", main="3rd component")
-#' gplot(gcD[[4]], l="fdp", main="4th component")
-#' par(old.par)
-#'
-#' }
-#'
-SEMdci<- function (graph, data, group, type = "ace", method = "BH", alpha = 0.05, ...) 
-{
-    if (type == "ace") {
-        dest <- SEMace(graph, data, group, type = "parents", 
-            effect = "direct", method = method, alpha = alpha, 
-            boot = NULL)
-        ftm <- data.frame(from = dest$source, to = dest$sink)
-        return(gD = graph_from_data_frame(ftm))
-    }
-    if (type != "none") {
-        C <- clusterGraph(graph, type = type, size = 10)
-        K <- as.numeric(names(table(C)))
-        gL <- NULL
-        for (k in 1:length(K)) {
-            cat("fit cluster =", K[k], "\n")
-            V <- names(C)[C == K[k]][names(C)[C == K[k]] %in% colnames(data)]
-            g <- simplify(induced_subgraph(graph, vids = V))
-            if (vcount(g) > 500 | ecount(g) < 9) next
-			dest <- tryCatch(quiet(SEMggm2(g, data, group)$dest),
-                             error = function(err) NULL)
-			if (is.null(dest)) next
-			dsub <- subset(dest, p.adjust(dest$pvalue, method = method) < alpha)
-            if (nrow(dsub) == 0) next
-            ftm <- data.frame(from = dsub$rhs, to = dsub$lhs)
-            gC <- graph_from_data_frame(ftm)
-            if (ecount(gC) > 0) gL <- c(gL, list(gC))
-        }
-        cat("Done.\n")
-        if (is.null(gL)) 
-            return(gD = make_empty_graph(n = length(K)))
-        gD <- graph.union(gL)
-    }
-    else if (type == "none") {
-        dest <- quiet(SEMggm2(g, data, group)$dest)
-        dsub <- subset(dest, p.adjust(dest$pvalue, method = method) < alpha)
-        ftm <- data.frame(from = dsub$rhs, to = dsub$lhs)
-        gD <- graph_from_data_frame(ftm)
-    }
-    return(gD)
-}
-
 #' @title Graph properties summary and graph decomposition
 #'
 #' @description Produces a summary of network properties and returns
@@ -326,8 +38,8 @@ SEMdci<- function (graph, data, group, type = "ace", method = "BH", alpha = 0.05
 #'
 #' @examples
 #'
-#' # Extract the "Type II diabetes mellitus" pathway:
-#' g <- kegg.pathways[["Type II diabetes mellitus"]]
+#' # Extract the "Neurotrophin signaling pathway":
+#' g <- kegg.pathways[["Neurotrophin signaling pathway"]]
 #' summary(g)
 #' properties(g)
 #'
@@ -536,24 +248,46 @@ gplot <- function(graph, l = "dot", main = "", cex.main = 1, font.main = 1,
 #' G1 <- lavaan2graph(model, psi = FALSE)
 #' plot(G1, layout = layout.circle)
 #'
-lavaan2graph<- function (model, directed = TRUE, psi = TRUE, verbose = FALSE, ...)			
+lavaan2graph <- function(model, directed = TRUE, psi = TRUE, verbose = FALSE, ...) 
 {
     lav <- lavParTable(model, fixed.x = FALSE)
+    lav <- lav[lav$user == 1, ]
+	#lav <- parse_txt(model)
     lavb <- subset(lav, lav$op == "~")
     lavc <- subset(lav, lav$op == "~~" & (lav$rhs != lav$lhs))
-	lavc<- lavc[lavc$user == 1,]
-    ftm <- data.frame(cbind(from = lavb$rhs, to = lavb$lhs, label = lavb$label), 
-        color = "black")
-    if (nrow(lavc) != 0 & psi == TRUE) {
-		ftmc1 <- data.frame(cbind(from = lavc$rhs, to = lavc$lhs, 
-            label = "", color = "red"))
-        ftmc2 <- data.frame(cbind(from = lavc$lhs, to = lavc$rhs, 
-            label = "", color = "red"))
+	if (nrow(lavb) != 0 & directed == TRUE) {
+	    ftm <- data.frame(cbind(from = lavb$rhs, to = lavb$lhs, color = "black"))
+    }
+	if (directed == FALSE) psi <- FALSE
+	if (nrow(lavc) != 0 & psi == TRUE) {
+        ftmc1 <- data.frame(cbind(from = lavc$rhs, to = lavc$lhs, color = "red"))
+        ftmc2 <- data.frame(cbind(from = lavc$lhs, to = lavc$rhs, color = "red"))
         ftm <- rbind(ftm, ftmc1, ftmc2)
     }
     graph <- graph_from_data_frame(ftm, directed = directed)
-	if (verbose) gplot(graph)
+    if (verbose) gplot(graph)
     return(graph)
+}
+
+parse_txt <- function(txt) {
+  #parse sem$model: chr "z10452~z6647\z1432~z5606\z1432~~z5608\n..."
+  # Split into lines and clean
+  lines <- strsplit(txt, "\n")[[1]]
+  lines <- trimws(lines)
+  lines <- lines[lines != ""]
+  
+  # Parse each line
+  out <- lapply(lines, function(x) {
+    m <- regmatches(x, regexec("^([0-9]+)\\s*(~+)\\s*([0-9]+)$", x))[[1]]
+    data.frame(
+      lhs  = m[2],
+      op = m[3],
+      rhs  = m[4],
+      stringsAsFactors = FALSE
+    )
+  })
+  
+  do.call(rbind, out)
 }
 
 #' @title Graph to lavaan model
@@ -576,37 +310,40 @@ lavaan2graph<- function (model, directed = TRUE, psi = TRUE, verbose = FALSE, ..
 #'
 #' @return A model in lavaan syntax.
 #'
-graph2lavaan <- function(graph, nodes = V(graph)$name, ...)
+graph2lavaan <- function(graph, nodes = V(graph)$name, ...) 
 {
-	# Set from-to-matrix representation of edge links
-	ig <- induced_subgraph(graph, vids = which(V(graph)$name %in% nodes))
-	ftm <- igraph::as_data_frame(ig)
-
-	if (is.directed(ig) & sum(which_mutual(ig)) > 0) {
-		sel <- as.numeric(c(E(ig)[which_mutual(ig)]))
-		ftm <- igraph::as_data_frame(ig)[-sel,]
-		uft <- igraph::as_data_frame(ig)[sel,]
-		ubg <- as.undirected(graph_from_data_frame(uft))
-		ftb <- igraph::as_data_frame(ubg)
-	} else {
-		ftb <- NULL
-	}
-
-	modelY <- modelV <- vector()
-	if (is.directed(ig)) {
-		for(j in 1:nrow(ftm)) {
-			modelY[j] <- paste0(ftm[j, 2], "~", ftm[j, 1])
-		}
-		if (length(ftb) > 0) {
-			for(k in 1:nrow(ftb)) {
-				modelV[k] <- paste0(ftb[k, 2], "~~", ftb[k, 1])
-			}
-		}
-	} else {
-		for(j in 1:nrow(ftm)) modelY[j] <- paste0(ftm[j, 2], "~~", ftm[j, 1])
-	}
-	model <- paste(c(sort(modelY), modelV), collapse = "\n")
-	return(model)
+    ig <- induced_subgraph(graph, vids = which(V(graph)$name %in% nodes))#gplot(ig)
+	V(ig)$name <- paste0("z", V(ig)$name)
+    ftm <- igraph::as_data_frame(ig)
+    if (is_directed(ig) & sum(which_mutual(ig)) > 0) {
+        sel <- as.numeric(c(E(ig)[which_mutual(ig)]))
+        ftm <- igraph::as_data_frame(ig)[-sel, ]
+        uft <- igraph::as_data_frame(ig)[sel, ]
+        ubg <- as_undirected(graph_from_data_frame(uft))
+        ftb <- igraph::as_data_frame(ubg)
+    }
+    else {
+        ftb <- NULL
+    }
+    modelY <- modelV <- vector()
+    if (is.directed(ig)) {
+        if (nrow(ftm) > 0) {
+          for (j in 1:nrow(ftm)) {
+            modelY[j] <- paste0(ftm[j, 2], "~", ftm[j, 1])
+          }
+        }
+        if (!is.null(ftb)) {
+          for (k in 1:nrow(ftb)) {
+            modelV[k] <- paste0(ftb[k, 2], "~~", ftb[k, 1])
+          }
+        }
+    }
+    else {
+        for (j in 1:nrow(ftm)) modelY[j] <- paste0(ftm[j, 2], 
+            "~~", ftm[j, 1])
+    }
+    model <- paste(c(sort(modelY), modelV), collapse = "\n")
+    return(model)
 }
 
 #' @title Graph conversion from igraph to dagitty
@@ -637,7 +374,7 @@ graph2dagitty<- function (graph, graphType = "dag", verbose = FALSE, ...)
 {
     if (!is.igraph(graph)) graph <- graph_from_adjacency_matrix(graph)
 	dg <- graph - E(graph)[which_mutual(graph)]
-    ug <- as.undirected(graph - E(graph)[!which_mutual(graph)])
+    ug <- as_undirected(graph - E(graph)[!which_mutual(graph)])
     ed <- attr(E(dg), "vnames")
     eb <- attr(E(ug), "vnames")
     de <- paste(gsub("\\|", "->", ed), collapse = "\n")
@@ -816,7 +553,7 @@ graph2dag<- function(graph, data, bap = FALSE, time.limit = Inf, ...)
 #' @examples
 #'
 #' # Graphs definition
-#' G0 <- as.undirected(sachs$graph)
+#' G0 <- as_undirected(sachs$graph)
 #'
 #' # Reference graph-based orientation
 #' G1 <- orientEdges(ug = G0, dg = sachs$graph)
@@ -838,7 +575,7 @@ orientEdges<- function(ug, dg, ...)
 	}
 	
 	# graph edge comparison:
-	mg <- as.directed(ug, mode = "mutual")
+	mg <- as_directed(ug, mode = "mutual")
 	exy0 <- attr(E(mg), "vnames")
 	exy1 <- attr(E(dg)[which_mutual(dg) == FALSE], "vnames")
 	exy2 <- exy0[which(exy0 %in% exy1)]
@@ -847,11 +584,12 @@ orientEdges<- function(ug, dg, ...)
 	ftm1 <- matrix(unlist(str2),nrow=length(str2),byrow=TRUE)
 	g1 <- graph_from_edgelist(ftm1, directed=TRUE)
 	# plot(g1, layout=layout.circle)
-	ug0 <- difference(ug, as.undirected(g1))
-	mg0 <- as.directed(ug0, mode = "mutual")
+	ug0 <- difference(ug, as_undirected(g1))
+	mg0 <- as_directed(ug0, mode = "mutual")
 	
 	#output graph with attr matching:
-	g <- graph.union(mg0, g1)
+	#g <- graph.union(mg0, g1)
+	g <- union(mg0, g1)
 	gattr<- attrMatch(mg, g)
 	V(g)$color <- gattr[[1]]
 	E(g)$color <- gattr[[2]]

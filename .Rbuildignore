@@ -1,2 +1,11 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^_pkgdown\.yml$
+^pkgdown$
+^docs$
+^SEMbap$
+^SEMdag$
+^SEMgsa$
+^SEMtree$
+^README\.Rmd$
+^README\.png$

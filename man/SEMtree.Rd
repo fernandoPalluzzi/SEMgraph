@@ -132,10 +132,6 @@ tree4 <- SEMtree(NULL, als.npn, seed=V, type="CPDAG", alpha=0.05, verbose=TRUE)
 
 }
 \references{
-Grassi M, Tarantino B (2023). SEMtree: tree-based structure learning methods
-with structural equation models. 
-Bioinformatics, 39 (6), 4829–4830 <https://doi.org/10.1093/bioinformatics/btad377>
-
 Kou, L., Markowsky, G., Berman, L. (1981). A fast algorithm for Steiner trees. 
 Acta Informatica 15, 141–145. <https://doi.org/10.1007/BF00288961>
 
@@ -156,6 +152,10 @@ Structure Learning for Directed Trees. arXiv:
 Lou, X., Hu, Y., Li, X. (2022). Linear Polytree Structural Equation Models:
 Structural Learning and Inverse Correlation Estimation. arXiv:
 <https://doi.org/10.48550/arxiv.2107.10955>
+
+Grassi M, Tarantino B (2023). SEMtree: tree-based structure learning methods
+with structural equation models. Bioinformatics, 39 (6), 4829–4830
+<https://doi.org/10.1093/bioinformatics/btad377>
 }
 \author{
 Mario Grassi \email{mario.grassi@unipv.it}

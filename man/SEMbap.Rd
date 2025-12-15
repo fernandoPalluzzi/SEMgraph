@@ -160,11 +160,6 @@ svd1 <- SEMrun(svd$dag, svd$data, group)
 
 }
 \references{
-Grassi M, Palluzzi F, Tarantino B (2022). SEMgraph: An R Package for Causal Network
-Analysis of High-Throughput Data with Structural Equation Models.
-Bioinformatics, 38(20), 4829–4830.
-<https://doi.org/10.1093/bioinformatics/btac567>
-
 Shipley B (2000). A new inferential test for path models based on DAGs.
 Structural Equation Modeling, 7(2), 206-218.
 <https://doi.org/10.1207/S15328007SEM0702_4>
@@ -185,6 +180,10 @@ Ann. Statist. 48(5): 2824-2847
 Friedman J, Hastie T, Tibshirani R (2008). Sparse inverse covariance
 estimation with the graphical lasso. Biostatistics, 9(3), 432-441.
 <https://doi.org/10.1093/biostatistics/kxm045>
+
+Grassi M, Tarantino B (2024). SEMbap: Bow-free covariance search and data
+de-correlation.#' PLoS Comput Biol, Sep 11; 20(9):e1012448.
+<https://doi.org/10.1371/journal.pcbi.1012448>
 }
 \author{
 Mario Grassi \email{mario.grassi@unipv.it}

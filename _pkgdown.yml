@@ -1,0 +1,8 @@
+template:
+  bootstrap: 5
+
+url: https://grassiMario.github.io/SEMgraph/
+
+home:
+  title: SEMgraph
+  description: Network Analysis and Causal Inference Through SEM

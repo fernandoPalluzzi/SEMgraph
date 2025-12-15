@@ -25,8 +25,8 @@ graph components (ordered by decreasing size), without self-loops.
 }
 \examples{
 
-# Extract the "Type II diabetes mellitus" pathway:
-g <- kegg.pathways[["Type II diabetes mellitus"]]
+# Extract the "Neurotrophin signaling pathway":
+g <- kegg.pathways[["Neurotrophin signaling pathway"]]
 summary(g)
 properties(g)
 
