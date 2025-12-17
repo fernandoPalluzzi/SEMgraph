@@ -266,11 +266,13 @@ SEMgsa<- function(g=list(), data, group, method = "BH", alpha = 0.05, n_rep = 10
 #' summary(gD)
 #' gcD<- properties(gD)
 #' 
+#' old.par <- par(no.readonly = TRUE)
 #' par(mfrow=c(2,2), mar=rep(2,4))
 #' gplot(gcD[[1]], l="fdp", main="max component")
 #' gplot(gcD[[2]], l="fdp", main="2nd component")
 #' gplot(gcD[[3]], l="fdp", main="3rd component")
 #' gplot(gcD[[4]], l="fdp", main="4th component")
+#' par(old.par)
 #' 
 #' }
 #'
