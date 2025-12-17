@@ -238,30 +238,40 @@ SEMgsa<- function(g=list(), data, group, method = "BH", alpha = 0.05, n_rep = 10
 #' \dontrun{
 #'
 #' #load SEMdata package for ALS data with 17K genes:
-#' devtools::install_github("fernandoPalluzzi/SEMdata")
-#' library(SEMdata)
-#'
+#' #devtools::install_github("fernandoPalluzzi/SEMdata")
+#' #library(SEMdata)
+#' 
 #' # Nonparanormal(npn) transformation
-#' data.npn<- transformData(SEMdata::alsData$exprs)$data
-#' dim(data.npn) #160 17695
-#'
-#' # KEGG interactome (max component)
-#' gU <- properties(kegg)[[1]]
+#' data.npn<- transformData(alsData$exprs)$data
+#' dim(data.npn)
+#' 
+#' # Selection of FTD-ALS pathways from KEGG pathways
+#' 
+#' paths.name <- c("MAPK signaling pathway",
+#'                 "Protein processing in endoplasmic reticulum",
+#'                 "Endocytosis",
+#'                 "Wnt signaling pathway",
+#'                 "Neurotrophin signaling pathway",
+#'                 "Amyotrophic lateral sclerosis")
+#' 
+#' j <- which(names(kegg.pathways) %in% paths.name)
+#' 
+#' # Neuro interactome (max component)
+#' gU <- Reduce(igraph::union, kegg.pathways[j])
+#' gU <- properties(gU)[[1]]
 #' #summary(gU)
-#'
+#' 
 #' # Modules with ALS perturbed edges using fast gready clustering
 #' gD<- SEMdci(gU, data.npn, alsData$group, type="fgc")
 #' summary(gD)
 #' gcD<- properties(gD)
-#'
-#' old.par <- par(no.readonly = TRUE)
+#' 
 #' par(mfrow=c(2,2), mar=rep(2,4))
 #' gplot(gcD[[1]], l="fdp", main="max component")
 #' gplot(gcD[[2]], l="fdp", main="2nd component")
 #' gplot(gcD[[3]], l="fdp", main="3rd component")
 #' gplot(gcD[[4]], l="fdp", main="4th component")
-#' par(old.par)
-#'
+#' 
 #' }
 #'
 SEMdci<- function (graph, data, group, type = "ace", method = "BH", alpha = 0.05, ...) 
