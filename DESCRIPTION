@@ -17,7 +17,7 @@ Depends: igraph (>= 1.6.0), lavaan (>= 0.6-1), R (>= 4.0)
 Imports: aspect, boot, corpcor, dagitty, flip, gdata, ggm, glasso,
         glmnet, graph, mgcv, mvtnorm, pbapply, protoclust, RBGL,
         Rgraphviz, graphite, AnnotationDbi
-Suggests: knitr, rmarkdown, SEMdata, org.Hs.eg.db
+Suggests: knitr, rmarkdown, org.Hs.eg.db
 VignetteBuilder: knitr
 License: GPL-3
 LazyData: true
